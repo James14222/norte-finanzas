@@ -3055,8 +3055,8 @@ function addChatMsg(html,role) {
 }
 
 // ── INIT ─────────────────────────────────────────────────────
-curMonth = 3; // Abril
-curYear  = 2026;
+curMonth = new Date().getMonth();   // mes actual (0 = enero)
+curYear  = new Date().getFullYear();
 updateMonthDisplay();
 renderDash();
 initSync();
