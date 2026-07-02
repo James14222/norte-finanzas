@@ -163,6 +163,11 @@ tr:hover td { background: #fafbfc; }
 /* CUSTOM RUBRO */
 .custom-rubro-wrap { margin-top: 8px; display: none; }
 .custom-rubro-wrap.show { display: block; }
+.manage-rubros-link { background:none;border:none;padding:4px 0 0;font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline;display:block;margin-top:6px; }
+.manage-rubros-link:hover { color:var(--primary); }
+.custom-rubro-chip { display:inline-flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:3px 10px 3px 12px;font-size:12px;margin:3px;font-weight:500; }
+.custom-rubro-chip button { background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0; }
+.custom-rubro-chip button:hover { color:var(--danger); }
 
 /* SEMÁFORO DE SALUD */
 .health-card { display:flex; align-items:center; gap:24px; margin-bottom:14px; }
@@ -949,6 +954,20 @@ tr:hover td { background: #fafbfc; }
         </select>
         <div class="custom-rubro-wrap" id="customRubroWrap">
           <input type="text" id="txRubroCustom" placeholder="Escribí el rubro personalizado...">
+          <div style="font-size:11px;color:var(--success);margin-top:4px">✓ Se guardará en tu lista al confirmar</div>
+        </div>
+        <button type="button" class="manage-rubros-link" onclick="toggleRubrosManager()">⚙ Gestionar rubros personalizados</button>
+        <div id="rubrosManagerPanel" style="display:none;margin-top:8px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;">
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Rubros personalizados</div>
+          <div id="customRubrosList" style="margin-bottom:10px"></div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="text" id="newRubroInput" placeholder="Nombre del rubro..." style="flex:1;font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:7px;background:var(--card);color:var(--text);">
+            <select id="newRubroTipoSel" style="font-size:13px;padding:6px 8px;border:1px solid var(--border);border-radius:7px;background:var(--card);color:var(--text);">
+              <option value="Gasto">Gasto</option>
+              <option value="Ingreso">Ingreso</option>
+            </select>
+            <button type="button" onclick="addCustomRubroFromPanel()" style="padding:6px 12px;background:var(--primary);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer">Agregar</button>
+          </div>
         </div>
       </div>
 
@@ -1096,7 +1115,7 @@ tr:hover td { background: #fafbfc; }
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const RUBROS = {
   Ingreso: ['Sueldo','Freelance / Consultoría','Alquiler cobrado','Inversiones / Dividendos','Bono / Extra','Otros ingresos','Personalizado...'],
-  Gasto:   ['Alquiler / Vivienda','Supermercado / Alimentación','Servicios (luz, gas, agua)','Telefonía / Cable','Transporte','Auto','Salud / Médico','Educación','Entretenimiento / Ocio','Indumentaria','Seguros','Impuestos / Tasas','Tarjetas','Deudas / Cuotas','Banco','Abogado','Ahorro / Inversión','Freelance / Consultoría','Otros gastos','Personalizado...']
+  Gasto:   ['Alquiler / Vivienda','Supermercado / Alimentación','Farmacia / Perfumería','Servicios (luz, gas, agua)','Telefonía / Cable','Transporte','Auto','Salud / Médico','Educación','Entretenimiento / Ocio','Indumentaria','Seguros','Impuestos / Tasas','Tarjetas','Deudas / Cuotas','Banco','Abogado','Ahorro / Inversión','Freelance / Consultoría','Otros gastos','Personalizado...']
 };
 // Normalización: variantes históricas → rubro canónico (se aplica una sola vez sobre datos guardados)
 const RUBRO_NORMALIZE = {
@@ -1129,6 +1148,23 @@ const getData  = () => {
   });
 };
 const saveData = d  => localStorage.setItem('fin_data', JSON.stringify(d));
+const getCustomRubros  = () => JSON.parse(localStorage.getItem('fin_rubros_custom') || '{"Gasto":[],"Ingreso":[]}');
+const saveCustomRubros = r  => localStorage.setItem('fin_rubros_custom', JSON.stringify(r));
+// Devuelve la lista completa (base + custom) para un tipo
+function getAllRubros(tipo) {
+  const base   = RUBROS[tipo] || [];
+  const custom = (getCustomRubros()[tipo] || []).filter(r => !base.includes(r));
+  return [...base.filter(r => r !== 'Personalizado...'), ...custom, 'Personalizado...'];
+}
+// Persiste un rubro nuevo si no existe ya
+function persistCustomRubro(tipo, nombre) {
+  if (!nombre || RUBROS[tipo]?.includes(nombre)) return;
+  const cr = getCustomRubros();
+  if (!(cr[tipo] || []).includes(nombre)) {
+    cr[tipo] = [...(cr[tipo] || []), nombre];
+    saveCustomRubros(cr);
+  }
+}
 const uid      = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 const monthKey = (y, m) => `${y}-${String(m+1).padStart(2,'0')}`;
 const curKey   = () => monthKey(curYear, curMonth);
@@ -3114,9 +3150,14 @@ function drawDoughnut(id, entries) {
 
 // ── MODAL ────────────────────────────────────────────────────
 function populateRubros(tipo, selected) {
+  const all = getAllRubros(tipo);
+  const custom = getCustomRubros()[tipo] || [];
   const sel = document.getElementById('txRubro');
   sel.innerHTML = '<option value="">Seleccionar rubro</option>' +
-    RUBROS[tipo].map(r => `<option value="${r}" ${r===selected?'selected':''}>${r}</option>`).join('');
+    all.map(r => {
+      const isCustom = custom.includes(r);
+      return `<option value="${r}" ${r===selected?'selected':''}>${r}${isCustom?' ★':''}</option>`;
+    }).join('');
 }
 
 function setTipoForm(tipo) {
@@ -3143,6 +3184,51 @@ function handleRubroChange(v) {
   } else {
     wrap.classList.remove('show');
   }
+}
+
+function toggleRubrosManager() {
+  const panel = document.getElementById('rubrosManagerPanel');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) renderCustomRubrosList();
+}
+
+function renderCustomRubrosList() {
+  const cr  = getCustomRubros();
+  const all = [...(cr.Gasto||[]).map(r=>({r,t:'Gasto'})), ...(cr.Ingreso||[]).map(r=>({r,t:'Ingreso'}))];
+  const el  = document.getElementById('customRubrosList');
+  if (!all.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted)">No hay rubros personalizados todavía.</div>';
+    return;
+  }
+  el.innerHTML = all.map(({r,t}) =>
+    `<span class="custom-rubro-chip">
+      <span style="color:var(--muted);font-size:10px;margin-right:2px">${t==='Gasto'?'💸':'💚'}</span>
+      ${esc(r)}
+      <button type="button" onclick="deleteCustomRubro('${esc(t)}','${esc(r)}')" title="Eliminar">×</button>
+    </span>`
+  ).join('');
+}
+
+function addCustomRubroFromPanel() {
+  const nombre = document.getElementById('newRubroInput').value.trim();
+  const tipo   = document.getElementById('newRubroTipoSel').value;
+  if (!nombre) return;
+  persistCustomRubro(tipo, nombre);
+  document.getElementById('newRubroInput').value = '';
+  renderCustomRubrosList();
+  // Refrescar el select del form si el tipo coincide
+  const tipoActual = document.getElementById('txTipo')?.value;
+  if (tipoActual === tipo) populateRubros(tipo, nombre);
+}
+
+function deleteCustomRubro(tipo, nombre) {
+  const cr = getCustomRubros();
+  cr[tipo] = (cr[tipo] || []).filter(r => r !== nombre);
+  saveCustomRubros(cr);
+  renderCustomRubrosList();
+  const tipoActual = document.getElementById('txTipo')?.value;
+  if (tipoActual === tipo) populateRubros(tipo, document.getElementById('txRubro').value);
 }
 
 function openModal(id) {
@@ -3192,6 +3278,7 @@ function saveTx(e) {
   let rubro    = document.getElementById('txRubro').value;
   if (rubro === 'Personalizado...') {
     rubro = document.getElementById('txRubroCustom').value.trim() || 'Personalizado';
+    persistCustomRubro(tipo, rubro); // guarda permanentemente en la lista
   }
   const impP   = Number(document.getElementById('txImpPesos').value) || 0;
   const pagado = Number(document.getElementById('txPagado').value)   || 0;
