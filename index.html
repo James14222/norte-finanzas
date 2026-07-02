@@ -2258,7 +2258,7 @@ function renderTx() {
       <td>${fmtP(t.pagado)}</td>
       <td>${
         tcPendiente
-          ? `<span class="saldo-pend" style="font-size:11px">💳 Pendiente</span>`
+          ? `<span class="saldo-pend" style="font-size:11px">💳 ${(Number(t.impUSD)||0) > 0 && !(Number(t.impPesos)||0) ? 'U$S '+((Number(t.impUSD)||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})) : fmtP(Number(t.impPesos)||0)}</span>`
           : (isTCTx && t.tcPagado === true)
             ? '<span class="saldo-ok">✓ TC</span>'
             : saldo<=0 ? '<span class="saldo-ok">✓</span>' : '<span class="saldo-pend">'+fmtP(saldo)+'</span>'
