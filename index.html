@@ -594,6 +594,7 @@ tr:hover td { background: #fafbfc; }
             <button class="btn btn-secondary" onclick="replicarGastosFijos()" title="Crea el esqueleto de tus gastos fijos del mes anterior, sin importe, para no olvidarte de ninguno">🧩 Replicar gastos fijos</button>
             <button class="btn btn-secondary" onclick="document.getElementById('tcFileInput').click()" title="Importar resumen de tarjeta de crédito (.xlsx)">💳 Importar TC</button>
             <input type="file" id="tcFileInput" accept=".xlsx,.xls" style="display:none" onchange="handleTCImport(this)">
+            <button class="btn btn-secondary" onclick="openPagarTC()" title="Registrar pago de resumen de tarjeta de crédito">✅ Pagar TC</button>
             <button class="btn btn-primary" onclick="openModal()">+ Agregar</button>
           </div>
         </div>
@@ -1098,6 +1099,34 @@ tr:hover td { background: #fafbfc; }
 </div>
 
 <!-- CONFIRM DELETE -->
+<!-- ── MODAL PAGAR TC ─────────────────────────────────────── -->
+<div class="overlay" id="pagarTCOverlay">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title">✅ Pagar Tarjeta de Crédito</div>
+      <button class="modal-close" onclick="closePagarTC()">×</button>
+    </div>
+    <div style="padding:20px 24px">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
+        Seleccioná qué resumen querés marcar como pagado. Todos los gastos de ese banco y moneda en <strong id="pagarTCMesLabel"></strong> pasarán a <span class="saldo-ok">✓ TC</span>.
+      </div>
+
+      <!-- Combos pendientes -->
+      <div id="pagarTCCombos" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px"></div>
+
+      <!-- Sin pendientes -->
+      <div id="pagarTCSinPendientes" style="display:none;text-align:center;padding:20px 0;color:var(--muted)">
+        <div style="font-size:32px;margin-bottom:8px">🎉</div>
+        <div style="font-weight:600">No hay resúmenes TC pendientes de pago este mes.</div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button class="btn btn-secondary" onclick="closePagarTC()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="confirmOverlay">
   <div class="confirm-box">
     <div class="confirm-ico">🗑️</div>
@@ -1633,10 +1662,11 @@ function confirmTCImport() {
       impPesos:  impP,
       impUSD:    r.esUSD ? r.monto : 0,
       venc:      '',
-      pagado:    impP,
-      saldo:     0,
+      pagado:    0,
+      saldo:     impP,
       origen:    'TARJETA',
       banco:     tcBank,
+      tcPagado:  false,
     });
   });
   saveData(data);
@@ -1661,6 +1691,94 @@ function openImportModal()  {
 function closeImport() {
   document.getElementById('importOverlay').classList.remove('open');
   tcRows = []; tcPendFile = null; tcBank = ''; tcTargetMes = '';
+}
+
+// ── PAGAR TC ─────────────────────────────────────────────────
+function openPagarTC() {
+  const mes = curKey();
+  const [y, m] = mes.split('-').map(Number);
+  document.getElementById('pagarTCMesLabel').textContent = MESES[m - 1] + ' ' + y;
+  renderPagarTCCombos(mes);
+  document.getElementById('pagarTCOverlay').classList.add('show');
+}
+
+function closePagarTC() {
+  document.getElementById('pagarTCOverlay').classList.remove('show');
+}
+
+function renderPagarTCCombos(mes) {
+  const all = getData();
+  // Buscar combinaciones banco+moneda con TC pendientes en el mes
+  const pendientes = all.filter(t =>
+    isTCOrigen(t) && t.mes === mes && t.tcPagado === false
+  );
+
+  const combosEl  = document.getElementById('pagarTCCombos');
+  const sinPendEl = document.getElementById('pagarTCSinPendientes');
+
+  if (!pendientes.length) {
+    combosEl.style.display  = 'none';
+    sinPendEl.style.display = 'block';
+    return;
+  }
+  combosEl.style.display  = 'flex';
+  sinPendEl.style.display = 'none';
+
+  // Agrupar por banco + moneda
+  const grupos = {};
+  pendientes.forEach(t => {
+    const banco  = getBanco(t) || 'TC';
+    const moneda = (Number(t.impUSD) || 0) > 0 && !(Number(t.impPesos) || 0) ? 'USD' : 'ARS';
+    const key    = `${banco}|${moneda}`;
+    if (!grupos[key]) grupos[key] = { banco, moneda, items: [] };
+    grupos[key].items.push(t);
+  });
+
+  combosEl.innerHTML = Object.values(grupos).map(g => {
+    const label  = getBancoLabel({ banco: g.banco });
+    const n      = g.items.length;
+    const totARS = g.moneda === 'ARS' ? g.items.reduce((s,t) => s + (Number(t.impPesos)||0), 0) : 0;
+    const totUSD = g.moneda === 'USD' ? g.items.reduce((s,t) => s + (Number(t.impUSD)||0), 0) : 0;
+    const totalStr = g.moneda === 'ARS' ? fmtP(totARS) : `U$S ${totUSD.toFixed(2)}`;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:2px solid var(--border);border-radius:12px;gap:12px">
+      <div>
+        <div style="font-weight:700;font-size:14px">🏦 ${esc(label)} — ${g.moneda}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">${n} transacción${n!==1?'es':''} pendiente${n!==1?'s':''} · Total: <strong>${totalStr}</strong></div>
+      </div>
+      <button class="btn btn-primary" style="white-space:nowrap;font-size:13px"
+        onclick="ejecutarPagoTC('${g.banco}','${g.moneda}','${mes}')">
+        ✅ Marcar pagado
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function ejecutarPagoTC(banco, moneda, mes) {
+  const all = getData();
+  let count = 0;
+  const updated = all.map(t => {
+    if (!isTCOrigen(t) || getBanco(t) !== banco || t.mes !== mes || t.tcPagado !== false) return t;
+    const esUSD = (Number(t.impUSD) || 0) > 0 && !(Number(t.impPesos) || 0);
+    if ((moneda === 'USD') !== esUSD) return t;
+    count++;
+    return {
+      ...t,
+      tcPagado: true,
+      pagado: moneda === 'ARS' ? (Number(t.impPesos) || 0) : 0,
+      saldo:  0,
+    };
+  });
+  saveData(updated);
+  render();
+  // Refrescar el panel (puede quedar abierto para pagar otras combos)
+  renderPagarTCCombos(mes);
+  // Toast
+  const toast = document.createElement('div');
+  const bancoLabel = getBancoLabel({ banco });
+  toast.textContent = `✓ ${count} gasto${count!==1?'s':''} de ${bancoLabel} en ${moneda} marcado${count!==1?'s':''} como pagado${count!==1?'s':''}`;
+  Object.assign(toast.style, { position:'fixed', bottom:'24px', left:'50%', transform:'translateX(-50%)', background:'var(--success)', color:'#fff', padding:'10px 22px', borderRadius:'999px', fontSize:'14px', fontWeight:'600', zIndex:'9999', boxShadow:'0 4px 16px rgba(0,0,0,.2)', pointerEvents:'none' });
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
 }
 
 // ── SYNC (Firebase Realtime Database) ───────────────────────
@@ -2125,6 +2243,9 @@ function renderTx() {
   tbody.innerHTML = rows.map(t => {
     const saldo = (Number(t.impPesos)||0) - (Number(t.pagado)||0);
     const pendiente = t.tipo === 'Gasto' && t.tipoGasto === 'Fijo' && (Number(t.impPesos)||0) === 0;
+    // Para TC: usar tcPagado como flag explícito (cubre ARS y USD)
+    const isTCTx  = isTCOrigen(t);
+    const tcPendiente = isTCTx && t.tcPagado === false;
     return `<tr${pendiente ? ' style="background:#fffbeb"' : ''}>
       <td><input type="checkbox" class="tx-check" data-id="${t.id}" ${selectedTx.has(t.id)?'checked':''} onchange="toggleSelectTx('${t.id}', this.checked)"></td>
       <td><strong>${esc(t.detalle)}</strong>${pendiente ? ' <span title="Esqueleto de gasto fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de Crédito" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>` : ''}</td>
@@ -2135,7 +2256,13 @@ function renderTx() {
       <td style="color:var(--muted)">${fmtU(t.impUSD)}</td>
       <td>${fmtD(t.venc)}</td>
       <td>${fmtP(t.pagado)}</td>
-      <td>${saldo<=0 ? '<span class="saldo-ok">✓</span>' : '<span class="saldo-pend">'+fmtP(saldo)+'</span>'}</td>
+      <td>${
+        tcPendiente
+          ? `<span class="saldo-pend" style="font-size:11px">💳 Pendiente</span>`
+          : (isTCTx && t.tcPagado === true)
+            ? '<span class="saldo-ok">✓ TC</span>'
+            : saldo<=0 ? '<span class="saldo-ok">✓</span>' : '<span class="saldo-pend">'+fmtP(saldo)+'</span>'
+      }</td>
       <td>
         <button class="act-btn" onclick="openModal('${t.id}')" title="Editar">✏️</button>
         <button class="act-btn" onclick="askDelete('${t.id}')" title="Eliminar">🗑️</button>
