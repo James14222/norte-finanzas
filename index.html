@@ -200,6 +200,16 @@ tr:hover td { background: #fafbfc; }
 .stat-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
 .rep-select { border:1px solid var(--border); border-radius:8px; padding:6px 11px; font-size:13px; background:var(--bg); color:var(--text); outline:none; cursor:pointer; }
 .rep-select:focus { border-color:var(--primary); }
+.tgl-group { display:flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.tgl-btn { padding:5px 12px; border:none; background:var(--bg); color:var(--muted); font-size:12px; font-weight:600; cursor:pointer; border-right:1px solid var(--border); transition:all .15s; white-space:nowrap; }
+.tgl-btn:last-child { border-right:none; }
+.tgl-btn.active { background:var(--primary); color:#fff; }
+.tgl-btn:hover:not(.active) { background:var(--card); color:var(--text); }
+.tc-summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; }
+.tc-bank-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+.tc-bank-title { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px; }
+.tc-bank-row { display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:2px 0; }
+.tc-bank-total { font-weight:700; font-size:16px; color:var(--danger); margin-top:6px; }
 .data-table { width:100%; border-collapse:collapse; font-size:13px; }
 .data-table th { padding:9px 12px; text-align:right; font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; background:#f8fafc; border-bottom:1px solid var(--border); white-space:nowrap; }
 .data-table th:first-child { text-align:left; }
@@ -427,7 +437,12 @@ tr:hover td { background: #fafbfc; }
 .import-footer { padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:12px; }
 .import-footer .import-summary { font-size:13px;color:var(--muted); }
 .import-footer .import-summary b { color:var(--text); }
-@media(max-width:880px){.import-modal{max-height:95vh;border-radius:12px 12px 0 0;margin-top:auto;} .import-overlay{align-items:flex-end;padding:0;} .import-drop{padding:24px;}}
+.tc-option { display:flex;align-items:center;gap:10px;padding:11px 14px;border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .15s,background .15s;user-select:none; }
+.tc-option:hover { border-color:var(--brand-accent);background:rgba(255,138,92,.04); }
+.tc-option.selected { border-color:var(--brand-accent);background:rgba(255,138,92,.08); }
+.tc-option-ico { font-size:18px;flex-shrink:0; }
+.tc-option-label { font-size:13px;font-weight:600;color:var(--text); }
+@media(max-width:880px){.import-modal{max-height:95vh;border-radius:12px 12px 0 0;margin-top:auto;} .import-overlay{align-items:flex-end;padding:0;} .import-drop{padding:24px;} #importConfig{grid-template-columns:1fr !important;}}
 </style>
 </head>
 <body>
@@ -686,11 +701,22 @@ tr:hover td { background: #fafbfc; }
 
     <!-- REPORTES -->
     <div id="page-reportes" class="page">
-      <div class="rep-tabs">
-        <button class="rep-tab active" onclick="setRepTab('evol',this)">📅 Evolución</button>
-        <button class="rep-tab" onclick="setRepTab('rubros',this)">📊 Por Rubro</button>
-        <button class="rep-tab" onclick="setRepTab('promedios',this)">📈 Promedios</button>
-        <button class="rep-tab" onclick="setRepTab('ingresos',this)">💚 Ingresos</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:2px">
+        <div class="rep-tabs" style="margin-bottom:0">
+          <button class="rep-tab active" onclick="setRepTab('evol',this)">📅 Evolución</button>
+          <button class="rep-tab" onclick="setRepTab('rubros',this)">📊 Por Rubro</button>
+          <button class="rep-tab" onclick="setRepTab('promedios',this)">📈 Promedios</button>
+          <button class="rep-tab" onclick="setRepTab('ingresos',this)">💚 Ingresos</button>
+          <button class="rep-tab" onclick="setRepTab('tarjetas',this)">💳 Tarjetas</button>
+        </div>
+        <div id="repMonedaWrap" style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:12px;color:var(--muted);font-weight:600">Moneda:</span>
+          <div class="tgl-group">
+            <button class="tgl-btn active" id="repMonARS" onclick="setRepMoneda('ARS',this)">$ ARS</button>
+            <button class="tgl-btn" id="repMonUSD" onclick="setRepMoneda('USD',this)">USD</button>
+            <button class="tgl-btn" id="repMonAMB" onclick="setRepMoneda('AMBAS',this)">Ambas</button>
+          </div>
+        </div>
       </div>
 
       <!-- Tab: Evolución -->
@@ -759,6 +785,41 @@ tr:hover td { background: #fafbfc; }
           <div class="report-card full">
             <div class="report-title">📋 Detalle de ingresos</div>
             <div style="overflow-x:auto"><table class="data-table" id="ingDetalleTable"></table></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Tarjetas -->
+      <div id="rep-tarjetas" class="rep-panel">
+        <div class="reports-grid">
+          <div class="report-card full">
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+              <div class="report-title" style="margin:0">💳 Gastos con Tarjeta</div>
+              <select class="rep-select" id="tcBancoFilter" onchange="renderRepTarjetas()">
+                <option value="">Todos los bancos</option>
+                <option value="BAPRO">Banco Provincia</option>
+                <option value="SANTANDER">Santander</option>
+              </select>
+              <select class="rep-select" id="tcRubroFilter" onchange="renderRepTarjetas()">
+                <option value="">Todos los rubros</option>
+              </select>
+              <select class="rep-select" id="tcMesFilter" onchange="renderRepTarjetas()">
+                <option value="">Todo el año</option>
+              </select>
+            </div>
+          </div>
+          <div class="report-card full" id="tcSummaryCards"></div>
+          <div class="report-card">
+            <div class="report-title">📊 Por rubro</div>
+            <canvas id="tcRubroChart" height="280"></canvas>
+          </div>
+          <div class="report-card">
+            <div class="report-title">📅 Evolución mensual</div>
+            <canvas id="tcMensualChart" height="280"></canvas>
+          </div>
+          <div class="report-card full">
+            <div class="report-title">📋 Detalle de transacciones</div>
+            <div style="overflow-x:auto"><table class="data-table" id="tcDetalleTable"></table></div>
           </div>
         </div>
       </div>
@@ -950,6 +1011,46 @@ tr:hover td { background: #fafbfc; }
         <input type="file" id="tcFileInput2" accept=".xlsx,.xls" style="display:none" onchange="handleTCImport(this)">
       </div>
     </div>
+
+    <!-- PASO DE CONFIGURACIÓN: banco + mes de impacto -->
+    <div id="importConfig" style="display:none; padding:20px 24px 8px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">1. ¿De qué banco es la tarjeta?</div>
+          <div style="display:flex;flex-direction:column;gap:8px" id="bankSelector">
+            <label class="tc-option" onclick="tcSelectBank(this,'BAPRO')">
+              <input type="radio" name="tcBank" value="BAPRO" style="display:none">
+              <span class="tc-option-ico">🏦</span>
+              <span class="tc-option-label">Banco Provincia</span>
+            </label>
+            <label class="tc-option" onclick="tcSelectBank(this,'SANTANDER')">
+              <input type="radio" name="tcBank" value="SANTANDER" style="display:none">
+              <span class="tc-option-ico">🏦</span>
+              <span class="tc-option-label">Santander</span>
+            </label>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">2. ¿En qué mes impactan los gastos?</div>
+          <div style="display:flex;flex-direction:column;gap:8px" id="mesSelector">
+            <label class="tc-option" onclick="tcSelectMes(this,'actual')">
+              <input type="radio" name="tcMes" value="actual" style="display:none">
+              <span class="tc-option-ico">📅</span>
+              <span class="tc-option-label" id="tcMesActualLabel"></span>
+            </label>
+            <label class="tc-option" onclick="tcSelectMes(this,'siguiente')">
+              <input type="radio" name="tcMes" value="siguiente" style="display:none">
+              <span class="tc-option-ico">📅</span>
+              <span class="tc-option-label" id="tcMesSigLabel"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-bottom:4px">
+        <button class="btn btn-secondary" onclick="closeImport()">Cancelar</button>
+        <button class="btn btn-primary" id="tcConfigContinuar" onclick="tcProcesarArchivo()" disabled>Continuar →</button>
+      </div>
+    </div>
     <div class="import-body" id="importBody" style="display:none">
       <div class="import-info" id="importInfo"></div>
       <div class="import-table-wrap">
@@ -995,15 +1096,16 @@ tr:hover td { background: #fafbfc; }
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const RUBROS = {
   Ingreso: ['Sueldo','Freelance / Consultoría','Alquiler cobrado','Inversiones / Dividendos','Bono / Extra','Otros ingresos','Personalizado...'],
-  Gasto:   ['Alquiler / Vivienda','Supermercado / Alimentación','Servicios (luz, gas, agua)','Telefonía / Cable','Transporte','Auto','Salud / Médico','Educación','Entretenimiento / Ocio','Indumentaria','Seguros','Impuestos / Tasas','Tarjetas','Deudas / Cuotas','Banco','Abogado','Ahorro / Inversión','Trabajo Freelance JLL','Otros gastos','Personalizado...']
+  Gasto:   ['Alquiler / Vivienda','Supermercado / Alimentación','Servicios (luz, gas, agua)','Telefonía / Cable','Transporte','Auto','Salud / Médico','Educación','Entretenimiento / Ocio','Indumentaria','Seguros','Impuestos / Tasas','Tarjetas','Deudas / Cuotas','Banco','Abogado','Ahorro / Inversión','Freelance / Consultoría','Otros gastos','Personalizado...']
 };
 // Normalización: variantes históricas → rubro canónico (se aplica una sola vez sobre datos guardados)
 const RUBRO_NORMALIZE = {
-  'Impuestos':  'Impuestos / Tasas',
-  'Salud':      'Salud / Médico',
-  'Telefonía':  'Telefonía / Cable',
-  'Cable':      'Telefonía / Cable',
-  'Telecomunicaciones': 'Telefonía / Cable'
+  'Impuestos':           'Impuestos / Tasas',
+  'Salud':               'Salud / Médico',
+  'Telefonía':           'Telefonía / Cable',
+  'Cable':               'Telefonía / Cable',
+  'Telecomunicaciones':  'Telefonía / Cable',
+  'Trabajo Freelance JLL': 'Freelance / Consultoría'
 };
 const COLORS = ['#2563eb','#7c3aed','#db2777','#ef4444','#f59e0b','#10b981','#06b6d4','#84cc16','#6366f1','#f97316','#14b8a6','#a855f7'];
 
@@ -1018,11 +1120,23 @@ let selectedTx = new Set();
 let charts   = {};
 
 // ── STORAGE ─────────────────────────────────────────────────
-const getData  = () => JSON.parse(localStorage.getItem('fin_data') || '[]');
+const getData  = () => {
+  const raw = JSON.parse(localStorage.getItem('fin_data') || '[]');
+  // Normalizar rubros on-the-fly (cubre datos viejos y snapshots remotos de Firebase)
+  return raw.map(t => {
+    const norm = RUBRO_NORMALIZE[t.rubro];
+    return norm ? { ...t, rubro: norm } : t;
+  });
+};
 const saveData = d  => localStorage.setItem('fin_data', JSON.stringify(d));
 const uid      = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 const monthKey = (y, m) => `${y}-${String(m+1).padStart(2,'0')}`;
 const curKey   = () => monthKey(curYear, curMonth);
+// Helpers TC (soportan formato nuevo {origen:'TARJETA',banco:'BAPRO'} y viejo {origen:'TC-BAPRO'})
+const isTCOrigen   = t => t.origen === 'TARJETA' || (t.origen && t.origen.startsWith('TC'));
+const getBanco     = t => t.banco || (t.origen?.replace('TC-','') || '');
+const getBancoLabel= t => ({ BAPRO:'Banco Provincia', SANTANDER:'Santander' }[getBanco(t)] || getBanco(t));
+const lastDayOfMonth = (y, m) => new Date(y, m + 1, 0).getDate();
 
 // ── PRESUPUESTO / META DE AHORRO ────────────────────────────
 const getBudgets  = ()  => JSON.parse(localStorage.getItem('fin_budgets') || '{}');
@@ -1113,6 +1227,7 @@ const TC_RUBRO_MAP = [
   { rubro:'Banco',                       keys:['comision bancaria','mantenimiento','costo tarjeta','cargo tarjeta'] },
   { rubro:'Seguros',                     keys:['seguro','zurich','sura','rio uruguay','prudential','mapfre','seguros'] },
   { rubro:'Educación',                   keys:['udemy','coursera','universidad','colegio','jardin','educacion','instituto','academia','duolingo'] },
+  { rubro:'Freelance / Consultoría',     keys:['linkedin','anthropic','openai','chatgpt','google *cloud','google cloud','google *workspace','google workspace','zoom','slack','microsoft teams','webex','notion','figma','github','aws','heroku','digitalocean','dropbox business','1password'] },
   { rubro:'Supermercado / Alimentación', keys:['rappi','pedidosya','pedidos ya','glovo','ifood','burger','mcdonalds','starbucks','cafe','sushi','pizza','resto','restaurant','delivery'] },
 ];
 
@@ -1134,6 +1249,108 @@ function tcParseCuota(desc) {
   m = desc.match(/\b(\d{1,2})\s*DE\s*(\d{1,2})\b/i);
   if (m) return `${parseInt(m[1])}/${parseInt(m[2])}`;
   return '';
+}
+
+// Parsea importes argentinos: "$1.252.283,67" o "U$S231,49" → número
+function parseArgAmount(s) {
+  const str = String(s || '').trim();
+  if (!str) return 0;
+  const cleaned = str
+    .replace(/U\$S|[$\s]/gi, '')  // quitar símbolo de moneda
+    .replace(/\./g, '')           // quitar separador de miles
+    .replace(',', '.');           // coma decimal → punto
+  return parseFloat(cleaned) || 0;
+}
+
+// ── PARSER ESPECÍFICO SANTANDER ─────────────────────────────
+// El resumen de Santander tiene múltiples bloques por portador:
+//   "Adicional de Nombre - Visa terminada en XXXX"  → sección portador
+//   "Tarjeta de Nombre - Visa terminada en XXXX"    → sección portador
+//   "Pago de tarjeta y devoluciones"               → ignorar
+// Cada bloque tiene header: Fecha | Descripción | Cuotas | Comprobante | Monto en pesos | Monto en dólares
+function parseSantander(raw) {
+  const rows = [];
+  let titular  = '';   // nombre del portador actual
+  let inBlock  = false; // dentro de un bloque de datos
+  let skipSection = false; // bloque a ignorar (pagos)
+
+  for (let i = 0; i < raw.length; i++) {
+    const row   = raw[i];
+    const first = String(row[0] || '').trim();
+    const fl    = first.toLowerCase();
+
+    // ── Detección de sección de portador ──────────────────
+    if (/^(adicional de|tarjeta de)\s/i.test(first)) {
+      skipSection = false;
+      inBlock     = false;
+      const isTitular = /^tarjeta de\s/i.test(first);
+      const nameM     = first.match(/^(?:adicional de|tarjeta de)\s+([^-–]+)/i);
+      const name      = nameM ? nameM[1].trim() : first;
+      const firstName = name.split(' ')[0];
+      titular = isTitular ? `Titular (${firstName})` : `Adicional (${firstName})`;
+      continue;
+    }
+
+    // ── Sección de pagos/devoluciones → ignorar ───────────
+    if (/^pago de tarjeta|^otros conceptos/i.test(fl)) {
+      skipSection = true;
+      inBlock     = false;
+      titular     = '';
+      continue;
+    }
+
+    if (skipSection) continue;
+
+    // ── Header row del bloque actual ──────────────────────
+    if (titular && !inBlock) {
+      const cells = row.map(c => String(c||'').toLowerCase().trim());
+      const hasDesc  = cells.some(c => c.includes('descripci'));
+      const hasMonto = cells.some(c => c.includes('monto'));
+      if (hasDesc && hasMonto) { inBlock = true; continue; }
+    }
+
+    // ── Filas de datos ────────────────────────────────────
+    if (titular && inBlock) {
+      // Fin del bloque
+      if (/^total de/i.test(first)) { inBlock = false; titular = ''; continue; }
+
+      const desc = String(row[1] || '').trim();
+      if (!desc) continue;
+
+      // Ignorar pagos embebidos
+      if (/^su pago|pago en pesos|pago en usd|acreditacion|nota de cr/i.test(desc.toLowerCase())) continue;
+
+      const montoARS = parseArgAmount(row[4]); // col 4 = Monto en pesos
+      const montoUSD = parseArgAmount(row[5]); // col 5 = Monto en dólares
+
+      // Ignorar si ambos son cero o negativos
+      if (montoARS <= 0 && montoUSD <= 0) continue;
+
+      // Cuota: "3 de 3" → "3/3"
+      const cuotaRaw = String(row[2] || '').trim();
+      let cuota = '';
+      if (cuotaRaw && cuotaRaw !== '-') {
+        const cm = cuotaRaw.match(/(\d+)\s+de\s+(\d+)/i);
+        cuota = cm ? `${parseInt(cm[1])}/${parseInt(cm[2])}` : tcParseCuota(cuotaRaw);
+      }
+      if (!cuota) cuota = tcParseCuota(desc);
+
+      const esUSD = montoUSD > 0 && montoARS <= 0;
+      const monto = esUSD ? montoUSD : montoARS;
+
+      rows.push({
+        id:       uid(),
+        desc,
+        monto,
+        esUSD,
+        cuota,
+        titular,
+        rubro:    tcGuessRubro(desc),
+        selected: true
+      });
+    }
+  }
+  return rows;
 }
 
 // Detecta la fila de encabezados buscando palabras clave
@@ -1163,7 +1380,10 @@ function tcMapCols(headerRow) {
   return cols;
 }
 
-let tcRows = []; // filas parseadas en curso
+let tcRows      = [];   // filas parseadas en curso
+let tcPendFile  = null; // archivo pendiente hasta que se confirme config
+let tcBank      = '';   // 'BAPRO' | 'SANTANDER'
+let tcTargetMes = '';   // monthKey del mes de impacto
 
 function handleTCImport(input) {
   const file = input.files[0];
@@ -1175,6 +1395,46 @@ function handleTCImport(input) {
 function handleTCFile(file) {
   if (!file) return;
   openImportModal();
+  tcPendFile = file; // asignar DESPUÉS de openImportModal (que resetea las variables)
+  // Mostrar paso de configuración
+  document.getElementById('importDropZone').style.display = 'none';
+  document.getElementById('importConfig').style.display   = 'block';
+  // Etiquetas de mes actual / siguiente
+  const sigKey  = (() => { const d = new Date(curYear, curMonth + 1, 1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; })();
+  const nomAct  = MESES[curMonth] + ' ' + curYear;
+  const nomSig  = MESES[new Date(curYear, curMonth + 1, 1).getMonth()] + ' ' + new Date(curYear, curMonth + 1, 1).getFullYear();
+  document.getElementById('tcMesActualLabel').textContent = nomAct + ' (mes actual)';
+  document.getElementById('tcMesSigLabel').textContent    = nomSig + ' (mes siguiente)';
+  // Reset selecciones
+  tcBank = ''; tcTargetMes = '';
+  document.querySelectorAll('.tc-option').forEach(el => el.classList.remove('selected'));
+  document.getElementById('tcConfigContinuar').disabled = true;
+}
+
+function tcSelectBank(el, val) {
+  document.querySelectorAll('#bankSelector .tc-option').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  tcBank = val;
+  tcCheckConfig();
+}
+
+function tcSelectMes(el, val) {
+  document.querySelectorAll('#mesSelector .tc-option').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  const sigKey = (() => { const d = new Date(curYear, curMonth + 1, 1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; })();
+  tcTargetMes = val === 'actual' ? curKey() : sigKey;
+  tcCheckConfig();
+}
+
+function tcCheckConfig() {
+  document.getElementById('tcConfigContinuar').disabled = !(tcBank && tcTargetMes);
+}
+
+function tcProcesarArchivo() {
+  if (!tcPendFile || !tcBank || !tcTargetMes) return;
+  document.getElementById('importConfig').style.display = 'none';
+  const file = tcPendFile;
+  tcPendFile  = null;
   const reader = new FileReader();
   reader.onload = e => {
     try {
@@ -1182,55 +1442,43 @@ function handleTCFile(file) {
       const ws = wb.Sheets[wb.SheetNames[0]];
       const raw = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
 
-      const headerIdx = tcFindHeaderRow(raw);
-      if (headerIdx === -1) {
-        alert('No se encontró una tabla de transacciones en este archivo.\nVerificá que sea el resumen de movimientos exportado desde el homebanking.');
-        return;
-      }
-
-      const cols = tcMapCols(raw[headerIdx]);
-      if (cols.desc === undefined || cols.importe === undefined) {
-        alert('No se pudieron identificar las columnas de Concepto e Importe.\nEl archivo puede tener un formato distinto al esperado.');
-        return;
-      }
-
-      tcRows = [];
-      for (let i = headerIdx + 1; i < raw.length; i++) {
-        const row = raw[i];
-        const desc = String(row[cols.desc] || '').trim();
-        if (!desc) continue;
-
-        // Filtrar pagos/acreditaciones (monto negativo o descripción de pago)
-        let rawMonto = parseFloat(String(row[cols.importe] || '0').replace(/[^\d,.\-]/g,'').replace(',','.')) || 0;
-        if (rawMonto <= 0) continue;
-        if (/^SU PAGO|PAGO EN PESOS|PAGO EN USD|ACREDITACION|NOTA DE CR/i.test(desc)) continue;
-
-        const monto = rawMonto;
-
-        // Moneda: ARS o USD
-        const moneda = cols.moneda !== undefined ? String(row[cols.moneda] || '').trim().toUpperCase() : 'ARS';
-        const esUSD  = moneda === 'USD';
-
-        // Cuota: columnas "Cuota vigente" y "Cuotas del plan" (Banco Provincia)
-        let cuota = '';
-        if (cols.cuotaA !== undefined && cols.cuotaT !== undefined) {
-          const ca = String(row[cols.cuotaA] || '').trim().replace(/[^0-9]/g,'');
-          const ct = String(row[cols.cuotaT] || '').trim().replace(/[^0-9]/g,'');
-          if (ca && ct && ca !== '0' && ct !== '0') cuota = `${ca}/${ct}`;
-        } else if (cols.cuota !== undefined) {
-          cuota = String(row[cols.cuota] || '').trim();
+      // ── Bifurcación por banco ──────────────────────────────
+      if (tcBank === 'SANTANDER') {
+        tcRows = parseSantander(raw);
+      } else {
+        // BAPRO y cualquier otro formato genérico
+        const headerIdx = tcFindHeaderRow(raw);
+        if (headerIdx === -1) {
+          alert('No se encontró una tabla de transacciones en este archivo.\nVerificá que sea el resumen de movimientos exportado desde el homebanking.');
+          return;
         }
-        if (!cuota || cuota === '-') cuota = tcParseCuota(desc);
-
-        tcRows.push({
-          id:    uid(),
-          desc,
-          monto,
-          esUSD,
-          cuota,
-          rubro: tcGuessRubro(desc),
-          selected: true
-        });
+        const cols = tcMapCols(raw[headerIdx]);
+        if (cols.desc === undefined || cols.importe === undefined) {
+          alert('No se pudieron identificar las columnas de Concepto e Importe.\nEl archivo puede tener un formato distinto al esperado.');
+          return;
+        }
+        tcRows = [];
+        for (let i = headerIdx + 1; i < raw.length; i++) {
+          const row  = raw[i];
+          const desc = String(row[cols.desc] || '').trim();
+          if (!desc) continue;
+          let rawMonto = parseFloat(String(row[cols.importe] || '0').replace(/[^\d,.\-]/g,'').replace(',','.')) || 0;
+          if (rawMonto <= 0) continue;
+          if (/^SU PAGO|PAGO EN PESOS|PAGO EN USD|ACREDITACION|NOTA DE CR/i.test(desc)) continue;
+          const monto  = rawMonto;
+          const moneda = cols.moneda !== undefined ? String(row[cols.moneda] || '').trim().toUpperCase() : 'ARS';
+          const esUSD  = moneda === 'USD';
+          let cuota = '';
+          if (cols.cuotaA !== undefined && cols.cuotaT !== undefined) {
+            const ca = String(row[cols.cuotaA] || '').trim().replace(/[^0-9]/g,'');
+            const ct = String(row[cols.cuotaT] || '').trim().replace(/[^0-9]/g,'');
+            if (ca && ct && ca !== '0' && ct !== '0') cuota = `${ca}/${ct}`;
+          } else if (cols.cuota !== undefined) {
+            cuota = String(row[cols.cuota] || '').trim();
+          }
+          if (!cuota || cuota === '-') cuota = tcParseCuota(desc);
+          tcRows.push({ id:uid(), desc, monto, esUSD, cuota, titular:'', rubro:tcGuessRubro(desc), selected:true });
+        }
       }
 
       if (tcRows.length === 0) {
@@ -1252,12 +1500,29 @@ function renderImportPreview(filename) {
   document.getElementById('importBody').style.display = 'block';
   document.getElementById('importFooter').style.display = 'flex';
 
-  const mesLabel = MESES[curMonth] + ' ' + curYear;
+  const [my, mm] = tcTargetMes.split('-').map(Number);
+  const mesLabel  = MESES[mm - 1] + ' ' + my;
+  const bankLabel = tcBank === 'BAPRO' ? 'Banco Provincia' : 'Santander';
   document.getElementById('importInfo').innerHTML =
-    `Archivo: <b>${esc(filename)}</b> · <b>${tcRows.length}</b> movimientos detectados · Se importarán como gastos del mes <b>${mesLabel}</b>`;
+    `<b>💳 ${bankLabel}</b> · <b>${tcRows.length}</b> movimientos detectados · Impacto en <b>${mesLabel}</b>`;
 
   const rubroOpts = RUBROS.Gasto.filter(r => r !== 'Personalizado...')
     .map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('');
+
+  const hasTitular = tcRows.some(r => r.titular);
+  // Actualizar encabezado de la tabla
+  const thead = document.querySelector('#importTable thead tr');
+  if (thead) {
+    const titularTh = thead.querySelector('.th-titular');
+    if (hasTitular && !titularTh) {
+      const th = document.createElement('th');
+      th.className = 'th-titular';
+      th.textContent = 'Portador';
+      thead.insertBefore(th, thead.children[2]); // after Descripción
+    } else if (!hasTitular && titularTh) {
+      titularTh.remove();
+    }
+  }
 
   const tbody = document.getElementById('importTableBody');
   tbody.innerHTML = tcRows.map((r, i) => `
@@ -1266,6 +1531,7 @@ function renderImportPreview(filename) {
       <td>
         <input type="text" value="${esc(r.desc)}" oninput="tcRows[${i}].desc=this.value" style="min-width:180px">
       </td>
+      ${hasTitular ? `<td><span style="font-size:11px;font-weight:600;color:var(--primary);white-space:nowrap">${esc(r.titular||'—')}</span></td>` : ''}
       <td style="white-space:nowrap">
         ${r.esUSD
           ? `<span style="font-size:11px;color:var(--muted)">USD</span>
@@ -1317,20 +1583,24 @@ function confirmTCImport() {
   const sel = tcRows.filter(r => r.selected && r.monto > 0);
   if (!sel.length) { alert('No hay movimientos seleccionados.'); return; }
   const data = getData();
-  const mes  = curKey();
+  const mes  = tcTargetMes || curKey();
   sel.forEach(r => {
+    const impP = r.esUSD ? 0 : r.monto;
     data.push({
       id:        r.id,
       mes,
       tipo:      'Gasto',
       tipoGasto: 'Variable',
       rubro:     r.rubro || 'Otros gastos',
-      desc:      r.desc + (r.cuota ? ` [${r.cuota}]` : ''),
+      detalle:   r.desc + (r.cuota ? ` [${r.cuota}]` : '') + (r.titular ? ` · ${r.titular}` : ''),
       cliente:   '',
-      monto:     r.esUSD ? 0 : r.monto,
-      monedaUSD: r.esUSD ? r.monto : 0,
+      impPesos:  impP,
+      impUSD:    r.esUSD ? r.monto : 0,
       venc:      '',
-      pagado:    r.esUSD ? 0 : r.monto,
+      pagado:    impP,
+      saldo:     0,
+      origen:    'TARJETA',
+      banco:     tcBank,
     });
   });
   saveData(data);
@@ -1347,13 +1617,14 @@ function confirmTCImport() {
 function openImportModal()  {
   document.getElementById('importOverlay').classList.add('open');
   document.getElementById('importDropZone').style.display = 'block';
-  document.getElementById('importBody').style.display = 'none';
-  document.getElementById('importFooter').style.display = 'none';
-  tcRows = [];
+  document.getElementById('importConfig').style.display   = 'none';
+  document.getElementById('importBody').style.display     = 'none';
+  document.getElementById('importFooter').style.display   = 'none';
+  tcRows = []; tcPendFile = null; tcBank = ''; tcTargetMes = '';
 }
 function closeImport() {
   document.getElementById('importOverlay').classList.remove('open');
-  tcRows = [];
+  tcRows = []; tcPendFile = null; tcBank = ''; tcTargetMes = '';
 }
 
 // ── SYNC (Firebase Realtime Database) ───────────────────────
@@ -1820,7 +2091,7 @@ function renderTx() {
     const pendiente = t.tipo === 'Gasto' && t.tipoGasto === 'Fijo' && (Number(t.impPesos)||0) === 0;
     return `<tr${pendiente ? ' style="background:#fffbeb"' : ''}>
       <td><input type="checkbox" class="tx-check" data-id="${t.id}" ${selectedTx.has(t.id)?'checked':''} onchange="toggleSelectTx('${t.id}', this.checked)"></td>
-      <td><strong>${esc(t.detalle)}</strong>${pendiente ? ' <span title="Esqueleto de gasto fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}</td>
+      <td><strong>${esc(t.detalle)}</strong>${pendiente ? ' <span title="Esqueleto de gasto fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de Crédito" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>` : ''}</td>
       <td><span class="badge badge-${t.tipo.toLowerCase()}">${t.tipo}</span></td>
       <td><span class="rubro-tag">${esc(t.rubro||'-')}</span>${t.tipo==='Gasto' && t.tipoGasto ? `<span style="display:inline-block;margin-left:5px;font-size:10.5px;font-weight:600;color:var(--muted)">· ${t.tipoGasto}</span>` : ''}</td>
       <td>${t.cliente ? `<span style="font-size:12px;font-weight:600;color:var(--primary)">${esc(t.cliente)}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
@@ -2286,10 +2557,23 @@ function setMetaAhorro(v) {
 
 // ── REPORTES ─────────────────────────────────────────────────
 let curRepTab = 'evol';
+let repMoneda = 'ARS'; // 'ARS' | 'USD' | 'AMBAS'
+
+// Ocultar/mostrar el selector de moneda según tab
+const TABS_CON_MONEDA = new Set(['evol','rubros','promedios','tarjetas']);
+
+function setRepMoneda(m, btn) {
+  repMoneda = m;
+  document.querySelectorAll('.tgl-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderReportes();
+}
 
 function setRepTab(tab, btn) {
   curRepTab = tab;
   document.querySelectorAll('.rep-tab').forEach(b => b.classList.remove('active'));
+  const wrap = document.getElementById('repMonedaWrap');
+  if (wrap) wrap.style.display = TABS_CON_MONEDA.has(tab) ? 'flex' : 'none';
   document.querySelectorAll('.rep-panel').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('rep-' + tab).classList.add('active');
@@ -2297,10 +2581,27 @@ function setRepTab(tab, btn) {
 }
 
 function renderReportes() {
-  if      (curRepTab === 'evol')     renderRepEvol();
-  else if (curRepTab === 'rubros')   renderRepRubros();
+  if      (curRepTab === 'evol')      renderRepEvol();
+  else if (curRepTab === 'rubros')    renderRepRubros();
   else if (curRepTab === 'promedios') renderRepPromedios();
-  else if (curRepTab === 'ingresos') renderRepIngresos();
+  else if (curRepTab === 'ingresos')  renderRepIngresos();
+  else if (curRepTab === 'tarjetas')  renderRepTarjetas();
+}
+
+// Helpers moneda
+function getField(t) {
+  // Devuelve el valor según la moneda seleccionada globalmente
+  if (repMoneda === 'USD') return Number(t.impUSD) || 0;
+  return Number(t.impPesos) || 0;
+}
+function fmtM(v) {
+  // Formatea según moneda seleccionada
+  if (repMoneda === 'USD') return 'U$S ' + v.toLocaleString('es-AR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  return fmtP(v);
+}
+function fmtMShort(v) {
+  if (repMoneda === 'USD') return 'U$S ' + (v >= 1000 ? (v/1000).toFixed(1)+'k' : v.toFixed(0));
+  return fmtShort(v);
 }
 
 const fmtShort = v => '$' + (v >= 1000000 ? (v/1000000).toFixed(1)+'M' : v >= 1000 ? (v/1000).toFixed(0)+'k' : v);
@@ -2310,28 +2611,46 @@ function renderRepEvol() {
   const all = getData();
   document.getElementById('evolYear').textContent = curYear;
 
+  const sumField = (arr, tipo) => {
+    const items = arr.filter(t => t.tipo === tipo);
+    if (repMoneda === 'AMBAS') {
+      return { ars: items.reduce((s,t)=>s+(Number(t.impPesos)||0),0), usd: items.reduce((s,t)=>s+(Number(t.impUSD)||0),0) };
+    }
+    return items.reduce((s,t) => s + getField(t), 0);
+  };
+
   // Ingresos vs Gastos
-  const ings = [], gas = [];
+  const ings = [], gas = [], ingsUSD = [], gasUSD = [];
   for (let m = 0; m < 12; m++) {
     const k = monthKey(curYear, m);
     const mt = all.filter(t => t.mes === k);
-    ings.push(mt.filter(t=>t.tipo==='Ingreso').reduce((s,t)=>s+(Number(t.impPesos)||0),0));
-    gas.push( mt.filter(t=>t.tipo==='Gasto' ).reduce((s,t)=>s+(Number(t.impPesos)||0),0));
+    if (repMoneda === 'AMBAS') {
+      const si = sumField(mt,'Ingreso'), sg = sumField(mt,'Gasto');
+      ings.push(si.ars); ingsUSD.push(si.usd);
+      gas.push(sg.ars);  gasUSD.push(sg.usd);
+    } else {
+      ings.push(sumField(mt,'Ingreso'));
+      gas.push(sumField(mt,'Gasto'));
+    }
   }
+
   if (charts.evol) charts.evol.destroy();
+  const evolDatasets = repMoneda === 'AMBAS' ? [
+    { label:'Ingresos ARS', data:ings,    backgroundColor:'#10b98133', borderColor:'#10b981', borderWidth:2, borderRadius:5 },
+    { label:'Gastos ARS',   data:gas,     backgroundColor:'#ef444433', borderColor:'#ef4444', borderWidth:2, borderRadius:5 },
+    { label:'Ingresos USD', data:ingsUSD, backgroundColor:'#3b82f633', borderColor:'#3b82f6', borderWidth:2, borderRadius:5 },
+    { label:'Gastos USD',   data:gasUSD,  backgroundColor:'#f97b2233', borderColor:'#f97b22', borderWidth:2, borderRadius:5 },
+  ] : [
+    { label:'Ingresos', data:ings, backgroundColor:'#10b98133', borderColor:'#10b981', borderWidth:2, borderRadius:5 },
+    { label:'Gastos',   data:gas,  backgroundColor:'#ef444433', borderColor:'#ef4444', borderWidth:2, borderRadius:5 }
+  ];
   charts.evol = new Chart(document.getElementById('evolChart').getContext('2d'), {
     type: 'bar',
-    data: {
-      labels: MESES,
-      datasets: [
-        { label:'Ingresos', data:ings, backgroundColor:'#10b98133', borderColor:'#10b981', borderWidth:2, borderRadius:5 },
-        { label:'Gastos',   data:gas,  backgroundColor:'#ef444433', borderColor:'#ef4444', borderWidth:2, borderRadius:5 }
-      ]
-    },
+    data: { labels: MESES, datasets: evolDatasets },
     options: {
       responsive:true,
-      plugins: { legend:{position:'top'}, tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmtP(c.raw)}`}} },
-      scales: { y: { ticks:{ callback: v => fmtShort(v) } } }
+      plugins: { legend:{position:'top'}, tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmtMShort(c.raw)}`}} },
+      scales: { y: { ticks:{ callback: v => fmtMShort(v) } } }
     }
   });
 
@@ -2346,28 +2665,34 @@ function renderRepEvol() {
 
   // Evolución por rubro
   const selRubro = rubroSel.value;
-  const rubroData = [];
+  const rubroData = [], rubroDataUSD = [];
   for (let m = 0; m < 12; m++) {
     const k = monthKey(curYear, m);
     const mt = all.filter(t => t.mes===k && t.tipo===tipo && (!selRubro || t.rubro===selRubro));
-    rubroData.push(mt.reduce((s,t)=>s+(Number(t.impPesos)||0),0));
+    if (repMoneda === 'AMBAS') {
+      rubroData.push(mt.reduce((s,t)=>s+(Number(t.impPesos)||0),0));
+      rubroDataUSD.push(mt.reduce((s,t)=>s+(Number(t.impUSD)||0),0));
+    } else {
+      rubroData.push(mt.reduce((s,t)=>s+getField(t),0));
+    }
   }
   if (charts.evolRubro) charts.evolRubro.destroy();
   const col = tipo==='Ingreso' ? '#10b981' : '#ef4444';
+  const evolRubroDatasets = repMoneda === 'AMBAS' ? [
+    { label:(selRubro||'Total') + ' ARS', data:rubroData,    backgroundColor:col+'33',  borderColor:col,       borderWidth:2, borderRadius:5 },
+    { label:(selRubro||'Total') + ' USD', data:rubroDataUSD, backgroundColor:'#3b82f633', borderColor:'#3b82f6', borderWidth:2, borderRadius:5 },
+  ] : [{
+    label: selRubro || ('Total ' + tipo + 's'),
+    data: rubroData,
+    backgroundColor: col+'33', borderColor: col, borderWidth:2, borderRadius:5
+  }];
   charts.evolRubro = new Chart(document.getElementById('evolRubroChart').getContext('2d'), {
     type: 'bar',
-    data: {
-      labels: MESES,
-      datasets: [{
-        label: selRubro || ('Total ' + tipo + 's'),
-        data: rubroData,
-        backgroundColor: col+'33', borderColor: col, borderWidth:2, borderRadius:5
-      }]
-    },
+    data: { labels: MESES, datasets: evolRubroDatasets },
     options: {
       responsive:true,
-      plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>` ${fmtP(c.raw)}`}} },
-      scales: { y: { ticks:{ callback: v => fmtShort(v) } } }
+      plugins: { legend:{display: repMoneda==='AMBAS'}, tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmtMShort(c.raw)}`}} },
+      scales: { y: { ticks:{ callback: v => fmtMShort(v) } } }
     }
   });
 }
@@ -2385,10 +2710,14 @@ function renderRepRubros() {
   )].sort();
   const RCOLORS = COLORS.slice(0, rubros.length);
 
+  const getV = (arr) => repMoneda==='AMBAS'
+    ? arr.reduce((s,t)=>s+(Number(t.impPesos)||0),0)  // tabla ARS cuando Ambas
+    : arr.reduce((s,t)=>s+getField(t),0);
+
   const datasets = rubros.map((r,i) => ({
     label: r,
     data: monthsWithData.map(({k}) =>
-      all.filter(t=>t.mes===k&&t.tipo==='Gasto'&&t.rubro===r).reduce((s,t)=>s+(Number(t.impPesos)||0),0)
+      getV(all.filter(t=>t.mes===k&&t.tipo==='Gasto'&&t.rubro===r))
     ),
     backgroundColor: RCOLORS[i]+'99', borderColor: RCOLORS[i], borderWidth:1, borderRadius:2
   }));
@@ -2404,38 +2733,47 @@ function renderRepRubros() {
       responsive:true,
       plugins: {
         legend: { position:'top', labels:{font:{size:11},boxWidth:10,padding:8} },
-        tooltip: { callbacks:{ label: c=>` ${c.dataset.label}: ${fmtP(c.raw)}` } }
+        tooltip: { callbacks:{ label: c=>` ${c.dataset.label}: ${fmtMShort(c.raw)}` } }
       },
       scales: {
         x:{stacked:true},
-        y:{stacked:true, ticks:{callback: v => fmtShort(v)}}
+        y:{stacked:true, ticks:{callback: v => fmtMShort(v)}}
       }
     }
   });
 
-  // Table rubro × mes
+  // Table rubro × mes — cuando AMBAS mostramos ARS + columna USD aparte
+  const showUSD = repMoneda === 'AMBAS';
+  const getARS = arr => arr.reduce((s,t)=>s+(Number(t.impPesos)||0),0);
+  const getUSD = arr => arr.reduce((s,t)=>s+(Number(t.impUSD)||0),0);
+
   const headers = ['<th>Rubro</th>',
     ...monthsWithData.map(({m})=>`<th>${MESES[m].slice(0,3)}</th>`),
-    '<th>Total</th>'].join('');
+    showUSD ? '<th>Total ARS</th><th>Total USD</th>' : '<th>Total</th>'
+  ].join('');
   const rows = rubros.map((r,ri) => {
     const vals = monthsWithData.map(({k}) =>
-      all.filter(t=>t.mes===k&&t.tipo==='Gasto'&&t.rubro===r).reduce((s,t)=>s+(Number(t.impPesos)||0),0)
+      getV(all.filter(t=>t.mes===k&&t.tipo==='Gasto'&&t.rubro===r))
     );
     const total = vals.reduce((a,b)=>a+b,0);
+    const totalUSD = showUSD ? getUSD(all.filter(t=>t.mes.startsWith(String(curYear))&&t.tipo==='Gasto'&&t.rubro===r)) : 0;
     return `<tr>
       <td style="color:${RCOLORS[ri]};font-weight:600">${esc(r)}</td>
-      ${vals.map(v=>v?`<td>${fmtP(v)}</td>`:'<td style="color:var(--muted)">—</td>').join('')}
+      ${vals.map(v=>v?`<td>${fmtMShort(v)}</td>`:'<td style="color:var(--muted)">—</td>').join('')}
       <td style="font-weight:700">${fmtP(total)}</td>
+      ${showUSD ? `<td style="font-weight:700;color:var(--brand-accent)">${totalUSD?'U$S '+totalUSD.toFixed(2):'—'}</td>` : ''}
     </tr>`;
   });
   const totals = monthsWithData.map(({k}) =>
-    all.filter(t=>t.mes===k&&t.tipo==='Gasto').reduce((s,t)=>s+(Number(t.impPesos)||0),0)
+    getV(all.filter(t=>t.mes===k&&t.tipo==='Gasto'))
   );
   const grand = totals.reduce((a,b)=>a+b,0);
+  const grandUSD = showUSD ? getUSD(all.filter(t=>t.mes.startsWith(String(curYear))&&t.tipo==='Gasto')) : 0;
   const totRow = `<tr style="background:#f8fafc">
     <td style="font-weight:700">TOTAL</td>
-    ${totals.map(v=>`<td style="font-weight:700">${fmtP(v)}</td>`).join('')}
+    ${totals.map(v=>`<td style="font-weight:700">${fmtMShort(v)}</td>`).join('')}
     <td style="font-weight:700;color:var(--danger)">${fmtP(grand)}</td>
+    ${showUSD ? `<td style="font-weight:700;color:var(--brand-accent)">${grandUSD?'U$S '+grandUSD.toFixed(2):'—'}</td>` : ''}
   </tr>`;
   document.getElementById('rubroMesTable').innerHTML =
     `<thead><tr>${headers}</tr></thead><tbody>${rows.join('')}${totRow}</tbody>`;
@@ -2451,7 +2789,7 @@ function renderRepPromedios() {
   }
   const n = months.length || 1;
   const sum = (arr, tipo) => arr.reduce((s,k) =>
-    s + all.filter(t=>t.mes===k&&t.tipo===tipo).reduce((a,t)=>a+(Number(t.impPesos)||0),0), 0);
+    s + all.filter(t=>t.mes===k&&t.tipo===tipo).reduce((a,t)=>a+getField(t),0), 0);
   const totIng = sum(months, 'Ingreso');
   const totGas = sum(months, 'Gasto');
   const avgIng = totIng/n, avgGas = totGas/n, avgBal = avgIng-avgGas;
@@ -2466,20 +2804,20 @@ function renderRepPromedios() {
     <div class="card">
       <div class="card-icon">💚</div>
       <div class="card-label">Promedio ingresos/mes</div>
-      <div class="card-value positive">${fmtP(avgIng)}</div>
-      <div class="card-sub">Proyección: ${fmtP(avgIng*12)}</div>
+      <div class="card-value positive">${fmtM(avgIng)}</div>
+      <div class="card-sub">Proyección: ${fmtM(avgIng*12)}</div>
     </div>
     <div class="card">
       <div class="card-icon">🔴</div>
       <div class="card-label">Promedio gastos/mes</div>
-      <div class="card-value negative">${fmtP(avgGas)}</div>
-      <div class="card-sub">Proyección: ${fmtP(avgGas*12)}</div>
+      <div class="card-value negative">${fmtM(avgGas)}</div>
+      <div class="card-sub">Proyección: ${fmtM(avgGas*12)}</div>
     </div>
     <div class="card">
       <div class="card-icon">⚖️</div>
       <div class="card-label">Balance promedio/mes</div>
-      <div class="card-value ${avgBal>=0?'positive':'negative'}">${fmtP(avgBal)}</div>
-      <div class="card-sub">Proyección: ${fmtP(avgBal*12)}</div>
+      <div class="card-value ${avgBal>=0?'positive':'negative'}">${fmtM(avgBal)}</div>
+      <div class="card-sub">Proyección: ${fmtM(avgBal*12)}</div>
     </div>`;
 
   const rubros = [...new Set(
@@ -2487,13 +2825,13 @@ function renderRepPromedios() {
   )].sort();
   const tableRows = rubros.map(r => {
     const total = all.filter(t=>t.mes.startsWith(String(curYear))&&t.tipo==='Gasto'&&t.rubro===r)
-      .reduce((s,t)=>s+(Number(t.impPesos)||0),0);
+      .reduce((s,t)=>s+getField(t),0);
     const avg = total/n;
     return `<tr>
       <td>${esc(r)}</td>
-      <td>${fmtP(avg)}</td>
-      <td>${fmtP(total)}</td>
-      <td>${fmtP(avg*12)}</td>
+      <td>${fmtM(avg)}</td>
+      <td>${fmtM(total)}</td>
+      <td>${fmtM(avg*12)}</td>
     </tr>`;
   });
   document.getElementById('promRubroTable').innerHTML = `
@@ -2593,6 +2931,166 @@ function renderRepIngresos() {
   document.getElementById('ingDetalleTable').innerHTML = `
     <thead><tr><th>Detalle</th><th>Rubro</th><th>Cliente</th><th>Importe</th></tr></thead>
     <tbody>${tableRows.join('')}</tbody>`;
+}
+
+// TAB 5 — TARJETAS
+function renderRepTarjetas() {
+  const all = getData();
+  const yearTC = all.filter(t =>
+    t.mes.startsWith(String(curYear)) &&
+    isTCOrigen(t)
+  );
+
+  // Populate filtros
+  const bancoFilt = document.getElementById('tcBancoFilter');
+  const rubroFilt = document.getElementById('tcRubroFilter');
+  const mesFilt2  = document.getElementById('tcMesFilter');
+  const prevBanco = bancoFilt.value;
+  const prevRubro = rubroFilt.value;
+  const prevMes   = mesFilt2.value;
+
+  const allRubros = [...new Set(yearTC.map(t=>t.rubro).filter(Boolean))].sort();
+  rubroFilt.innerHTML = '<option value="">Todos los rubros</option>' +
+    allRubros.map(r=>`<option value="${r}" ${r===prevRubro?'selected':''}>${r}</option>`).join('');
+
+  const allMeses = [...new Set(yearTC.map(t=>t.mes))].sort();
+  mesFilt2.innerHTML = '<option value="">Todo el año</option>' +
+    allMeses.map(k=>{
+      const [,m] = k.split('-');
+      return `<option value="${k}" ${k===prevMes?'selected':''}>${MESES[parseInt(m)-1]}</option>`;
+    }).join('');
+
+  // Aplicar filtros (banco filter por campo banco, con compat formato viejo)
+  const filtered = yearTC.filter(t =>
+    (!prevBanco || getBanco(t) === prevBanco) &&
+    (!prevRubro || t.rubro === prevRubro) &&
+    (!prevMes   || t.mes   === prevMes)
+  );
+
+  // Totales por banco
+  const bancos = ['BAPRO','SANTANDER'];
+  const summaryCards = bancos.map(b => {
+    const items = filtered.filter(t => getBanco(t) === b);
+    if (!items.length && prevBanco && prevBanco !== b) return '';
+    const totalARS = items.reduce((s,t)=>s+(Number(t.impPesos)||0),0);
+    const totalUSD = items.reduce((s,t)=>s+(Number(t.impUSD)||0),0);
+    const topRubro = (() => {
+      const rm = {}; items.forEach(t=>{ rm[t.rubro]=(rm[t.rubro]||0)+(Number(t.impPesos)||0); });
+      const top = Object.entries(rm).sort((a,b)=>b[1]-a[1])[0];
+      return top ? top[0] : '—';
+    })();
+    const bLabel = { BAPRO:'🏦 Banco Provincia', SANTANDER:'🏦 Santander' }[b] || b;
+    return `<div class="tc-bank-card">
+      <div class="tc-bank-title">${bLabel}</div>
+      <div class="tc-bank-row"><span>${items.length} transacciones</span></div>
+      <div class="tc-bank-row"><span>Principal rubro</span><span style="font-weight:600">${esc(topRubro)}</span></div>
+      <div class="tc-bank-total">${fmtP(totalARS)}${totalUSD?` + U$S ${totalUSD.toFixed(2)}`:''}</div>
+    </div>`;
+  }).filter(Boolean);
+
+  const totalFiltARS = filtered.reduce((s,t)=>s+(Number(t.impPesos)||0),0);
+  const totalFiltUSD = filtered.reduce((s,t)=>s+(Number(t.impUSD)||0),0);
+  summaryCards.push(`<div class="tc-bank-card" style="border-color:var(--primary)">
+    <div class="tc-bank-title" style="color:var(--primary)">📊 TOTAL FILTRADO</div>
+    <div class="tc-bank-row"><span>${filtered.length} transacciones</span></div>
+    <div class="tc-bank-total" style="font-size:20px">${fmtP(totalFiltARS)}${totalFiltUSD?` + U$S ${totalFiltUSD.toFixed(2)}`:''}</div>
+  </div>`);
+
+  document.getElementById('tcSummaryCards').innerHTML =
+    `<div class="tc-summary-grid">${summaryCards.join('')}</div>`;
+
+  // Gráfico por rubro (doughnut)
+  const rubroMap = {};
+  filtered.forEach(t => {
+    const v = repMoneda==='USD' ? (Number(t.impUSD)||0) : (Number(t.impPesos)||0);
+    rubroMap[t.rubro||'Otros'] = (rubroMap[t.rubro||'Otros']||0) + v;
+  });
+  const rubroEntries = Object.entries(rubroMap).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);
+  if (rubroEntries.length) {
+    if (charts['tcRubroChart']) charts['tcRubroChart'].destroy();
+    charts['tcRubroChart'] = new Chart(document.getElementById('tcRubroChart').getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: rubroEntries.map(e=>e[0]),
+        datasets: [{ data: rubroEntries.map(e=>e[1]), backgroundColor: COLORS.slice(0,rubroEntries.length), borderWidth:2, borderColor:'#fff' }]
+      },
+      options: {
+        responsive:true,
+        plugins: {
+          legend: { position:'right', labels:{ font:{size:11}, padding:8, boxWidth:12 } },
+          tooltip: { callbacks: { label: c => ` ${c.label}: ${fmtMShort(c.raw)}` } }
+        }
+      }
+    });
+  }
+
+  // Gráfico mensual (barras por banco)
+  const months12 = [];
+  for (let m=0;m<12;m++) months12.push(monthKey(curYear,m));
+  const sumBanco = (k, b) => filtered.filter(t=>t.mes===k&&getBanco(t)===b)
+    .reduce((s,t)=>s+(repMoneda==='USD'?(Number(t.impUSD)||0):(Number(t.impPesos)||0)),0);
+  const bapro  = months12.map(k=>sumBanco(k,'BAPRO'));
+  const santan = months12.map(k=>sumBanco(k,'SANTANDER'));
+  if (charts['tcMensualChart']) charts['tcMensualChart'].destroy();
+  charts['tcMensualChart'] = new Chart(document.getElementById('tcMensualChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: MESES.map(m=>m.slice(0,3)),
+      datasets: [
+        { label:'BAPRO',     data:bapro,  backgroundColor:'#3b82f633', borderColor:'#3b82f6', borderWidth:2, borderRadius:4 },
+        { label:'Santander', data:santan, backgroundColor:'#ef444433', borderColor:'#ef4444', borderWidth:2, borderRadius:4 },
+      ]
+    },
+    options: {
+      responsive:true,
+      plugins: { legend:{position:'top'}, tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmtMShort(c.raw)}`}} },
+      scales: { x:{stacked:true}, y:{stacked:true, ticks:{callback:v=>fmtMShort(v)}} }
+    }
+  });
+
+  // Tabla detalle agrupada por banco → rubro
+  const byBanco = {};
+  filtered.forEach(t => {
+    const b = getBanco(t) || 'TC';
+    const r = t.rubro || 'Otros gastos';
+    if (!byBanco[b]) byBanco[b] = {};
+    if (!byBanco[b][r]) byBanco[b][r] = [];
+    byBanco[b][r].push(t);
+  });
+
+  let tableHTML = `<thead><tr>
+    <th>Descripción</th><th>Rubro</th><th>Mes</th>
+    <th>Importe ARS</th><th>Importe USD</th><th>Banco</th>
+  </tr></thead><tbody>`;
+
+  Object.entries(byBanco).sort().forEach(([banco, rubros]) => {
+    const bLabel = getBancoLabel({banco});
+    const bItems = Object.values(rubros).flat();
+    const bTotARS = bItems.reduce((s,t)=>s+(Number(t.impPesos)||0),0);
+    const bTotUSD = bItems.reduce((s,t)=>s+(Number(t.impUSD)||0),0);
+    tableHTML += `<tr style="background:#eff6ff"><td colspan="6" style="font-weight:700;color:var(--primary)">🏦 ${esc(bLabel)} — ${bItems.length} transacciones | ARS: ${fmtP(bTotARS)}${bTotUSD?` | USD: U$S ${bTotUSD.toFixed(2)}`:''}</td></tr>`;
+
+    Object.entries(rubros).sort().forEach(([rubro, items]) => {
+      const rTotARS = items.reduce((s,t)=>s+(Number(t.impPesos)||0),0);
+      const rTotUSD = items.reduce((s,t)=>s+(Number(t.impUSD)||0),0);
+      tableHTML += `<tr style="background:#f8fafc"><td colspan="3" style="font-size:12px;font-weight:600;color:var(--muted);padding-left:20px">▸ ${esc(rubro)}</td><td style="font-size:12px;font-weight:600">${fmtP(rTotARS)}</td><td style="font-size:12px;font-weight:600">${rTotUSD?'U$S '+rTotUSD.toFixed(2):'—'}</td><td></td></tr>`;
+      items.sort((a,b)=>a.mes>b.mes?1:-1).forEach(t => {
+        const [,m] = t.mes.split('-');
+        tableHTML += `<tr>
+          <td style="padding-left:28px">${esc(t.detalle||'—')}</td>
+          <td><span class="rubro-tag">${esc(t.rubro||'—')}</span></td>
+          <td style="color:var(--muted)">${MESES[parseInt(m)-1]}</td>
+          <td>${t.impPesos?fmtP(Number(t.impPesos)):'—'}</td>
+          <td>${t.impUSD?'U$S '+Number(t.impUSD).toFixed(2):'—'}</td>
+          <td><span class="rubro-tag" style="background:var(--primary);color:#fff">${esc(bLabel)}</span></td>
+        </tr>`;
+      });
+    });
+  });
+
+  if (!filtered.length) tableHTML += `<tr><td colspan="6"><div class="empty"><div class="ei">💳</div><p>Sin transacciones TC para el período</p></div></td></tr>`;
+  tableHTML += '</tbody>';
+  document.getElementById('tcDetalleTable').innerHTML = tableHTML;
 }
 
 // ── CHART HELPER ─────────────────────────────────────────────
@@ -3165,21 +3663,47 @@ function clonarMesAnterior() {
   const prevY = curMonth === 0 ? curYear - 1 : curYear;
   const prevKey = monthKey(prevY, prevM);
   const allData = getData();
-  const prevItems = allData.filter(t => t.mes === prevKey);
-  if (!prevItems.length) {
-    alert(`No hay registros en ${MESES[prevM]} ${prevY} para clonar.`);
+
+  // Solo Fijos, excluyendo TC (que varían cada mes)
+  const prevFijos = allData.filter(t =>
+    t.mes === prevKey &&
+    t.tipoGasto === 'Fijo' &&
+    !isTCOrigen(t)
+  );
+
+  if (!prevFijos.length) {
+    alert(`No encontré registros Fijos (sin tarjeta) en ${MESES[prevM]} ${prevY} para clonar.\n\nAsegurate de marcar tus gastos/ingresos recurrentes como "Fijo" al cargarlos.`);
     return;
   }
-  const currItems = allData.filter(t => t.mes === curKey());
-  const msg = currItems.length
-    ? `Esto va a agregar ${prevItems.length} registros de ${MESES[prevM]} a ${MESES[curMonth]} ${curYear}.\n(Ya hay ${currItems.length} registros este mes — se suman, no se reemplazan)\n\n¿Continuar?`
-    : `¿Clonar ${prevItems.length} registros de ${MESES[prevM]} ${prevY} a ${MESES[curMonth]} ${curYear}?`;
+
+  // Evitar duplicar los que ya existen este mes (por detalle)
+  const currDetalles = new Set(allData.filter(t => t.mes === curKey()).map(t => t.detalle));
+  const aReplicar = prevFijos.filter(t => !currDetalles.has(t.detalle));
+  const omitidos = prevFijos.length - aReplicar.length;
+
+  if (!aReplicar.length) {
+    alert(`Los ${prevFijos.length} conceptos fijos de ${MESES[prevM]} ${prevY} ya están en ${MESES[curMonth]} ${curYear}. No hay nada nuevo para clonar.`);
+    return;
+  }
+
+  // Fecha de cierre = último día del mes destino
+  const lastDay = lastDayOfMonth(curYear, curMonth);
+  const vencMes = `${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+
+  const msg = `Clonar ${aReplicar.length} concepto${aReplicar.length===1?'':'s'} fijo${aReplicar.length===1?'':'s'} de ${MESES[prevM]} a ${MESES[curMonth]} ${curYear}.\n\n⚠️ Se copian SIN importe (quedan en $0) y con fecha de cierre ${lastDay}/${curMonth+1}/${curYear}.\nCompletá los importes cuando te lleguen los vencimientos.`
+    + (omitidos ? `\n\n(${omitidos} ya estaban cargados este mes — se omiten)` : '')
+    + `\n\n¿Continuar?`;
   if (!confirm(msg)) return;
-  const cloned = prevItems.map(t => ({
+
+  const cloned = aReplicar.map(t => ({
     ...t,
-    id:  uid(),
-    mes: curKey(),
-    // Mantener pagado/saldo igual al mes anterior
+    id:       uid(),
+    mes:      curKey(),
+    impPesos: 0,
+    impUSD:   0,
+    pagado:   0,
+    saldo:    0,
+    venc:     vencMes,
   }));
   saveData([...allData, ...cloned]);
   render();
