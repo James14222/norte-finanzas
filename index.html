@@ -547,8 +547,9 @@ tr:hover td { background: #fafbfc; }
       <div class="dash-grid">
         <div class="card">
           <div class="report-title">Gastos por rubro este mes</div>
-          <canvas id="dashChart" height="260"></canvas>
+          <canvas id="dashChart" height="180"></canvas>
           <div id="dashEmpty" class="empty" style="display:none"><div class="ei">📭</div><p>Sin gastos este mes</p></div>
+          <div id="dashLegend" style="margin-top:6px"></div>
         </div>
         <div class="card">
           <div class="report-title">Últimas transacciones</div>
@@ -751,12 +752,24 @@ tr:hover td { background: #fafbfc; }
       <!-- Tab: Por Rubro -->
       <div id="rep-rubros" class="rep-panel">
         <div class="reports-grid">
+          <!-- Desglose composición -->
+          <div class="report-card">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+              <div class="report-title" style="margin:0">🍩 Composición de gastos</div>
+              <select class="rep-select" id="desglosePerFilter" onchange="renderDesgloseRubro()">
+                <option value="">Acumulado anual</option>
+              </select>
+            </div>
+            <canvas id="desgloseRubroChart" height="260"></canvas>
+          </div>
+          <div class="report-card" id="desgloseRubroTable" style="overflow-y:auto;max-height:420px"></div>
+          <!-- Evolución mensual apilada -->
           <div class="report-card full">
-            <div class="report-title">📊 Gastos por rubro — comparación mensual (apilado)</div>
+            <div class="report-title">📊 Evolución mensual por rubro (apilado)</div>
             <canvas id="rubroMensualChart" height="100"></canvas>
           </div>
           <div class="report-card full">
-            <div class="report-title">Desglose por rubro y mes</div>
+            <div class="report-title">Tabla rubro × mes</div>
             <div style="overflow-x:auto"><table class="data-table" id="rubroMesTable"></table></div>
           </div>
         </div>
@@ -1994,13 +2007,29 @@ function renderDash() {
   const rubroMap = {};
   gas.forEach(t => { rubroMap[t.rubro] = (rubroMap[t.rubro]||0) + (Number(t.impPesos)||0); });
   const entries = Object.entries(rubroMap).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);
-  const emptyEl = document.getElementById('dashEmpty');
-  const cvs     = document.getElementById('dashChart');
+  const emptyEl   = document.getElementById('dashEmpty');
+  const cvs        = document.getElementById('dashChart');
+  const legendEl   = document.getElementById('dashLegend');
   if (!entries.length) {
     emptyEl.style.display = 'block'; cvs.style.display = 'none';
+    legendEl.innerHTML = '';
   } else {
     emptyEl.style.display = 'none'; cvs.style.display = '';
-    drawDoughnut('dashChart', entries);
+    drawDoughnutCompact('dashChart', entries);
+    const total = entries.reduce((s,e)=>s+e[1],0);
+    legendEl.innerHTML = `<table style="width:100%;font-size:12px;border-collapse:collapse">
+      ${entries.map((e,i)=>`<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:4px 5px 4px 0;width:14px"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${COLORS[i%COLORS.length]}"></span></td>
+        <td style="padding:4px 0;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e[0])}</td>
+        <td style="text-align:right;font-weight:600;padding:4px 0 4px 6px;white-space:nowrap">${fmtP(e[1])}</td>
+        <td style="text-align:right;color:var(--muted);padding:4px 0 4px 6px;white-space:nowrap;width:42px">${(e[1]/total*100).toFixed(1)}%</td>
+      </tr>`).join('')}
+      <tr>
+        <td colspan="2" style="font-weight:700;padding:6px 0 2px">Total</td>
+        <td style="text-align:right;font-weight:700;color:var(--danger);padding:6px 0 2px 6px;white-space:nowrap">${fmtP(total)}</td>
+        <td></td>
+      </tr>
+    </table>`;
   }
 
   // Semáforo + Alertas
@@ -2868,6 +2897,17 @@ function renderRepRubros() {
     const k = monthKey(curYear, m);
     if (all.some(t => t.mes===k && t.tipo==='Gasto')) monthsWithData.push({k, m});
   }
+
+  // Poblar selector de período del desglose
+  const perSel = document.getElementById('desglosePerFilter');
+  if (perSel) {
+    const prev = perSel.value;
+    perSel.innerHTML = '<option value="">Acumulado anual</option>' +
+      monthsWithData.map(({k,m})=>`<option value="${k}" ${k===prev?'selected':''}>${MESES[m]}</option>`).join('');
+  }
+
+  // Renderizar desglose
+  renderDesgloseRubro();
   const rubros = [...new Set(
     all.filter(t=>t.mes.startsWith(String(curYear))&&t.tipo==='Gasto').map(t=>t.rubro).filter(Boolean)
   )].sort();
@@ -3256,7 +3296,7 @@ function renderRepTarjetas() {
   document.getElementById('tcDetalleTable').innerHTML = tableHTML;
 }
 
-// ── CHART HELPER ─────────────────────────────────────────────
+// ── CHART HELPERS ────────────────────────────────────────────
 function drawDoughnut(id, entries) {
   if (charts[id]) charts[id].destroy();
   charts[id] = new Chart(document.getElementById(id).getContext('2d'), {
@@ -3273,6 +3313,101 @@ function drawDoughnut(id, entries) {
       }
     }
   });
+}
+
+// Donut sin leyenda lateral (la leyenda se muestra en HTML separado)
+function drawDoughnutCompact(id, entries) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id).getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: entries.map(e=>e[0]),
+      datasets: [{ data: entries.map(e=>e[1]), backgroundColor: COLORS.slice(0,entries.length), borderWidth:2, borderColor:'#fff' }]
+    },
+    options: {
+      responsive:true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => {
+          const total = c.dataset.data.reduce((a,b)=>a+b,0);
+          return ` ${c.label}: ${fmtP(c.raw)} (${(c.raw/total*100).toFixed(1)}%)`;
+        }}}
+      }
+    }
+  });
+}
+
+// ── DESGLOSE POR RUBRO (Reportes) ────────────────────────────
+function renderDesgloseRubro() {
+  const all = getData();
+  const selectedPer = document.getElementById('desglosePerFilter')?.value || '';
+
+  // Filtrar datos según período
+  let gastos;
+  if (selectedPer) {
+    gastos = all.filter(t => t.mes === selectedPer && t.tipo === 'Gasto');
+  } else {
+    gastos = all.filter(t => t.mes.startsWith(String(curYear)) && t.tipo === 'Gasto');
+  }
+
+  // Agregar por rubro según moneda seleccionada
+  const rubroMap = {};
+  gastos.forEach(t => {
+    const v = getField(t);
+    if (v > 0) rubroMap[t.rubro] = (rubroMap[t.rubro]||0) + v;
+  });
+  const entries = Object.entries(rubroMap).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);
+  const total   = entries.reduce((s,e)=>s+e[1],0);
+
+  // Donut
+  if (entries.length) {
+    drawDoughnutCompact('desgloseRubroChart', entries);
+  } else if (charts.desgloseRubroChart) {
+    charts.desgloseRubroChart.destroy();
+  }
+
+  // Tabla rankeada
+  const tableEl = document.getElementById('desgloseRubroTable');
+  if (!entries.length) {
+    tableEl.innerHTML = '<div class="empty" style="padding:30px"><div class="ei">📭</div><p>Sin datos</p></div>';
+    return;
+  }
+  tableEl.innerHTML = `
+    <div class="report-title" style="margin-bottom:12px">📋 Ranking por rubro</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="border-bottom:2px solid var(--border)">
+        <th style="text-align:left;padding:5px 0">#</th>
+        <th style="text-align:left;padding:5px 0">Rubro</th>
+        <th style="text-align:right;padding:5px 0">Total</th>
+        <th style="text-align:right;padding:5px 0">%</th>
+        <th style="padding:5px 0 5px 8px"></th>
+      </tr></thead>
+      <tbody>
+        ${entries.map((e,i)=>{
+          const pct = total ? (e[1]/total*100) : 0;
+          return `<tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:6px 8px 6px 0;color:var(--muted);font-size:11px">${i+1}</td>
+            <td style="padding:6px 0;display:flex;align-items:center;gap:6px">
+              <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${COLORS[i%COLORS.length]};flex-shrink:0"></span>
+              ${esc(e[0])}
+            </td>
+            <td style="text-align:right;font-weight:600;padding:6px 0;white-space:nowrap">${fmtM(e[1])}</td>
+            <td style="text-align:right;padding:6px 0;color:var(--muted);white-space:nowrap">${pct.toFixed(1)}%</td>
+            <td style="padding:6px 0 6px 8px;width:80px">
+              <div style="background:var(--bg);border-radius:4px;height:6px;overflow:hidden">
+                <div style="background:${COLORS[i%COLORS.length]};width:${pct.toFixed(1)}%;height:100%;border-radius:4px"></div>
+              </div>
+            </td>
+          </tr>`;
+        }).join('')}
+        <tr style="border-top:2px solid var(--border)">
+          <td colspan="2" style="font-weight:700;padding:7px 0">TOTAL</td>
+          <td style="text-align:right;font-weight:700;color:var(--danger);padding:7px 0">${fmtM(total)}</td>
+          <td style="text-align:right;padding:7px 0">100%</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>`;
 }
 
 // ── MODAL ────────────────────────────────────────────────────
