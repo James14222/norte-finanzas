@@ -729,10 +729,19 @@ tr:hover td { background: #fafbfc; }
       <!-- Tab: Evolución -->
       <div id="rep-evol" class="rep-panel active">
         <div class="reports-grid">
+          <!-- Resumen anual -->
+          <div class="report-card full" id="evolResumenAnual"></div>
+          <!-- Gráfico mensual -->
           <div class="report-card full">
             <div class="report-title">📅 Ingresos vs Gastos — <span id="evolYear"></span></div>
             <canvas id="evolChart" height="90"></canvas>
           </div>
+          <!-- Tabla mes a mes -->
+          <div class="report-card full">
+            <div class="report-title">📋 Detalle mes a mes</div>
+            <div style="overflow-x:auto"><table class="data-table" id="evolTablaAnual"></table></div>
+          </div>
+          <!-- Evolución por rubro -->
           <div class="report-card full">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
               <div class="report-title" style="margin:0">📈 Evolución por rubro</div>
@@ -763,6 +772,7 @@ tr:hover td { background: #fafbfc; }
             <canvas id="desgloseRubroChart" height="260"></canvas>
           </div>
           <div class="report-card" id="desgloseRubroTable" style="overflow-y:auto;max-height:420px"></div>
+          <div class="report-card full" id="desgloseDetalle" style="display:none"></div>
           <!-- Evolución mensual apilada -->
           <div class="report-card full">
             <div class="report-title">📊 Evolución mensual por rubro (apilado)</div>
@@ -2827,22 +2837,37 @@ function renderRepEvol() {
   }
 
   if (charts.evol) charts.evol.destroy();
-  const evolDatasets = repMoneda === 'AMBAS' ? [
-    { label:'Ingresos ARS', data:ings,    backgroundColor:'#10b98133', borderColor:'#10b981', borderWidth:2, borderRadius:5 },
-    { label:'Gastos ARS',   data:gas,     backgroundColor:'#ef444433', borderColor:'#ef4444', borderWidth:2, borderRadius:5 },
-    { label:'Ingresos USD', data:ingsUSD, backgroundColor:'#3b82f633', borderColor:'#3b82f6', borderWidth:2, borderRadius:5 },
-    { label:'Gastos USD',   data:gasUSD,  backgroundColor:'#f97b2233', borderColor:'#f97b22', borderWidth:2, borderRadius:5 },
+  const isAmbas = repMoneda === 'AMBAS';
+  const evolDatasets = isAmbas ? [
+    { label:'Ingresos ARS', data:ings,    backgroundColor:'#10b98133', borderColor:'#10b981', borderWidth:2, borderRadius:5, yAxisID:'y'  },
+    { label:'Gastos ARS',   data:gas,     backgroundColor:'#ef444433', borderColor:'#ef4444', borderWidth:2, borderRadius:5, yAxisID:'y'  },
+    { label:'Ingresos USD', data:ingsUSD, backgroundColor:'#3b82f633', borderColor:'#3b82f6', borderWidth:2, borderRadius:5, yAxisID:'y1' },
+    { label:'Gastos USD',   data:gasUSD,  backgroundColor:'#f97b2233', borderColor:'#f97b22', borderWidth:2, borderRadius:5, yAxisID:'y1' },
   ] : [
     { label:'Ingresos', data:ings, backgroundColor:'#10b98133', borderColor:'#10b981', borderWidth:2, borderRadius:5 },
     { label:'Gastos',   data:gas,  backgroundColor:'#ef444433', borderColor:'#ef4444', borderWidth:2, borderRadius:5 }
   ];
+  const evolScales = isAmbas ? {
+    y:  { position:'left',  ticks:{ callback: v => fmtMShort(v) }, title:{ display:true, text:'ARS', color:'var(--muted)', font:{size:11} } },
+    y1: { position:'right', ticks:{ callback: v => 'U$S '+(v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(0)) }, grid:{ drawOnChartArea:false }, title:{ display:true, text:'USD', color:'#3b82f6', font:{size:11} } }
+  } : {
+    y: { ticks:{ callback: v => fmtMShort(v) } }
+  };
   charts.evol = new Chart(document.getElementById('evolChart').getContext('2d'), {
     type: 'bar',
     data: { labels: MESES, datasets: evolDatasets },
     options: {
       responsive:true,
-      plugins: { legend:{position:'top'}, tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmtMShort(c.raw)}`}} },
-      scales: { y: { ticks:{ callback: v => fmtMShort(v) } } }
+      plugins: {
+        legend:{ position:'top' },
+        tooltip:{ callbacks:{ label: c => {
+          const isUSD = c.dataset.yAxisID === 'y1';
+          const v = c.raw;
+          const fmt = isUSD ? ('U$S '+(v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(2))) : fmtMShort(v);
+          return ` ${c.dataset.label}: ${fmt}`;
+        }}}
+      },
+      scales: evolScales
     }
   });
 
@@ -2887,6 +2912,98 @@ function renderRepEvol() {
       scales: { y: { ticks:{ callback: v => fmtMShort(v) } } }
     }
   });
+
+  // ── RESUMEN ANUAL ────────────────────────────────────────────
+  const yearData = all.filter(t => t.mes.startsWith(String(curYear)));
+  const sumARS = (tipo) => yearData.filter(t=>t.tipo===tipo).reduce((s,t)=>s+(Number(t.impPesos)||0),0);
+  const sumUSD = (tipo) => yearData.filter(t=>t.tipo===tipo).reduce((s,t)=>s+(Number(t.impUSD)||0),0);
+
+  const totIngARS = sumARS('Ingreso'), totGasARS = sumARS('Gasto');
+  const totIngUSD = sumUSD('Ingreso'), totGasUSD = sumUSD('Gasto');
+  const balARS    = totIngARS - totGasARS;
+  const balUSD    = totIngUSD - totGasUSD;
+  const pctAhorro = totIngARS > 0 ? ((balARS / totIngARS) * 100).toFixed(1) : '—';
+  const fmtUSD2   = v => 'U$S ' + v.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const showUSD   = totIngUSD > 0 || totGasUSD > 0;
+
+  const cardStyle = (color) => `background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;flex:1;min-width:130px;border-top:3px solid ${color}`;
+  document.getElementById('evolResumenAnual').innerHTML = `
+    <div class="report-title" style="margin-bottom:14px">📊 Resumen anual ${curYear}</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div style="${cardStyle('#10b981')}">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Ingresos</div>
+        <div style="font-weight:700;font-size:17px;color:#10b981">${fmtP(totIngARS)}</div>
+        ${showUSD && totIngUSD > 0 ? `<div style="font-size:12px;color:#3b82f6;margin-top:2px">${fmtUSD2(totIngUSD)}</div>` : ''}
+      </div>
+      <div style="${cardStyle('#ef4444')}">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Gastos</div>
+        <div style="font-weight:700;font-size:17px;color:#ef4444">${fmtP(totGasARS)}</div>
+        ${showUSD && totGasUSD > 0 ? `<div style="font-size:12px;color:#f97b22;margin-top:2px">${fmtUSD2(totGasUSD)}</div>` : ''}
+      </div>
+      <div style="${cardStyle(balARS>=0?'#10b981':'#ef4444')}">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Balance</div>
+        <div style="font-weight:700;font-size:17px;color:${balARS>=0?'#10b981':'#ef4444'}">${fmtP(balARS)}</div>
+        ${showUSD && (balUSD !== 0) ? `<div style="font-size:12px;color:${balUSD>=0?'#3b82f6':'#f97b22'};margin-top:2px">${fmtUSD2(balUSD)}</div>` : ''}
+      </div>
+      <div style="${cardStyle('#6366f1')}">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Tasa de ahorro</div>
+        <div style="font-weight:700;font-size:17px;color:#6366f1">${pctAhorro}%</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">de los ingresos ARS</div>
+      </div>
+    </div>`;
+
+  // ── TABLA MES A MES ──────────────────────────────────────────
+  const mesesConDatos = [];
+  for (let m = 0; m < 12; m++) {
+    const k = monthKey(curYear, m);
+    const mt = all.filter(t => t.mes === k);
+    if (mt.length) mesesConDatos.push({m, k, mt});
+  }
+  const totFilaARS = {ing:0, gas:0};
+  const totFilaUSD = {ing:0, gas:0};
+
+  const filas = mesesConDatos.map(({m, mt}) => {
+    const iARS = mt.filter(t=>t.tipo==='Ingreso').reduce((s,t)=>s+(Number(t.impPesos)||0),0);
+    const gARS = mt.filter(t=>t.tipo==='Gasto').reduce((s,t)=>s+(Number(t.impPesos)||0),0);
+    const iUSD = mt.filter(t=>t.tipo==='Ingreso').reduce((s,t)=>s+(Number(t.impUSD)||0),0);
+    const gUSD = mt.filter(t=>t.tipo==='Gasto').reduce((s,t)=>s+(Number(t.impUSD)||0),0);
+    const bARS = iARS - gARS, bUSD = iUSD - gUSD;
+    const pct  = iARS > 0 ? ((bARS/iARS)*100).toFixed(1)+'%' : '—';
+    totFilaARS.ing += iARS; totFilaARS.gas += gARS;
+    totFilaUSD.ing += iUSD; totFilaUSD.gas += gUSD;
+    const rowColor = bARS < 0 ? 'background:#fff5f5' : '';
+    return `<tr style="${rowColor}">
+      <td style="font-weight:600">${MESES[m]}</td>
+      <td style="text-align:right;color:#10b981;white-space:nowrap">${fmtP(iARS)}${iUSD>0?`<br><span style="font-size:11px;color:#3b82f6">${fmtUSD2(iUSD)}</span>`:''}</td>
+      <td style="text-align:right;color:#ef4444;white-space:nowrap">${fmtP(gARS)}${gUSD>0?`<br><span style="font-size:11px;color:#f97b22">${fmtUSD2(gUSD)}</span>`:''}</td>
+      <td style="text-align:right;font-weight:600;color:${bARS>=0?'#10b981':'#ef4444'};white-space:nowrap">${fmtP(bARS)}${(iUSD||gUSD)?`<br><span style="font-size:11px;color:${bUSD>=0?'#3b82f6':'#f97b22'}">${fmtUSD2(bUSD)}</span>`:''}</td>
+      <td style="text-align:right;color:${parseFloat(pct)<0?'#ef4444':'#6366f1'}">${pct}</td>
+    </tr>`;
+  });
+
+  const totBalARS = totFilaARS.ing - totFilaARS.gas;
+  const totBalUSD = totFilaUSD.ing - totFilaUSD.gas;
+  const totPct    = totFilaARS.ing > 0 ? ((totBalARS/totFilaARS.ing)*100).toFixed(1)+'%' : '—';
+  const usdTot    = totFilaUSD.ing > 0 || totFilaUSD.gas > 0;
+
+  document.getElementById('evolTablaAnual').innerHTML = `
+    <thead><tr>
+      <th>Mes</th>
+      <th style="text-align:right">Ingresos</th>
+      <th style="text-align:right">Gastos</th>
+      <th style="text-align:right">Balance</th>
+      <th style="text-align:right">% Ahorro</th>
+    </tr></thead>
+    <tbody>
+      ${filas.join('')}
+      <tr style="border-top:2px solid var(--border);font-weight:700;background:var(--bg)">
+        <td>TOTAL ${curYear}</td>
+        <td style="text-align:right;color:#10b981;white-space:nowrap">${fmtP(totFilaARS.ing)}${usdTot&&totFilaUSD.ing>0?`<br><span style="font-size:11px;color:#3b82f6">${fmtUSD2(totFilaUSD.ing)}</span>`:''}</td>
+        <td style="text-align:right;color:#ef4444;white-space:nowrap">${fmtP(totFilaARS.gas)}${usdTot&&totFilaUSD.gas>0?`<br><span style="font-size:11px;color:#f97b22">${fmtUSD2(totFilaUSD.gas)}</span>`:''}</td>
+        <td style="text-align:right;color:${totBalARS>=0?'#10b981':'#ef4444'};white-space:nowrap">${fmtP(totBalARS)}${usdTot?`<br><span style="font-size:11px;color:${totBalUSD>=0?'#3b82f6':'#f97b22'}">${fmtUSD2(totBalUSD)}</span>`:''}</td>
+        <td style="text-align:right;color:#6366f1">${totPct}</td>
+      </tr>
+    </tbody>`;
 }
 
 // TAB 2 — POR RUBRO
@@ -3338,6 +3455,8 @@ function drawDoughnutCompact(id, entries) {
 }
 
 // ── DESGLOSE POR RUBRO (Reportes) ────────────────────────────
+let _desgloseRubroActivo = null; // rubro seleccionado para drill-down
+
 function renderDesgloseRubro() {
   const all = getData();
   const selectedPer = document.getElementById('desglosePerFilter')?.value || '';
@@ -3350,7 +3469,7 @@ function renderDesgloseRubro() {
     gastos = all.filter(t => t.mes.startsWith(String(curYear)) && t.tipo === 'Gasto');
   }
 
-  // Agregar por rubro según moneda seleccionada
+  // Agregar por rubro
   const rubroMap = {};
   gastos.forEach(t => {
     const v = getField(t);
@@ -3370,10 +3489,11 @@ function renderDesgloseRubro() {
   const tableEl = document.getElementById('desgloseRubroTable');
   if (!entries.length) {
     tableEl.innerHTML = '<div class="empty" style="padding:30px"><div class="ei">📭</div><p>Sin datos</p></div>';
+    document.getElementById('desgloseDetalle').style.display = 'none';
     return;
   }
   tableEl.innerHTML = `
-    <div class="report-title" style="margin-bottom:12px">📋 Ranking por rubro</div>
+    <div class="report-title" style="margin-bottom:12px">📋 Ranking por rubro <span style="font-size:11px;font-weight:400;color:var(--muted)">— hacé click para ver el detalle</span></div>
     <table style="width:100%;border-collapse:collapse;font-size:13px">
       <thead><tr style="border-bottom:2px solid var(--border)">
         <th style="text-align:left;padding:5px 0">#</th>
@@ -3385,15 +3505,20 @@ function renderDesgloseRubro() {
       <tbody>
         ${entries.map((e,i)=>{
           const pct = total ? (e[1]/total*100) : 0;
-          return `<tr style="border-bottom:1px solid var(--border)">
-            <td style="padding:6px 8px 6px 0;color:var(--muted);font-size:11px">${i+1}</td>
-            <td style="padding:6px 0;display:flex;align-items:center;gap:6px">
-              <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${COLORS[i%COLORS.length]};flex-shrink:0"></span>
-              ${esc(e[0])}
+          const isActive = _desgloseRubroActivo === e[0];
+          return `<tr data-rubro="${esc(e[0])}" onclick="drillRubro(this)"
+            style="border-bottom:1px solid var(--border);cursor:pointer;${isActive?'background:var(--primary-light,#EEF4FB)':''}">
+            <td style="padding:7px 8px 7px 0;color:var(--muted);font-size:11px">${i+1}</td>
+            <td style="padding:7px 0">
+              <span style="display:inline-flex;align-items:center;gap:6px">
+                <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${COLORS[i%COLORS.length]};flex-shrink:0"></span>
+                <span style="font-weight:${isActive?'700':'400'}">${esc(e[0])}</span>
+                ${isActive ? '<span style="font-size:10px;color:var(--primary)">▼</span>' : ''}
+              </span>
             </td>
-            <td style="text-align:right;font-weight:600;padding:6px 0;white-space:nowrap">${fmtM(e[1])}</td>
-            <td style="text-align:right;padding:6px 0;color:var(--muted);white-space:nowrap">${pct.toFixed(1)}%</td>
-            <td style="padding:6px 0 6px 8px;width:80px">
+            <td style="text-align:right;font-weight:600;padding:7px 0;white-space:nowrap">${fmtM(e[1])}</td>
+            <td style="text-align:right;padding:7px 0;color:var(--muted);white-space:nowrap">${pct.toFixed(1)}%</td>
+            <td style="padding:7px 0 7px 8px;width:80px">
               <div style="background:var(--bg);border-radius:4px;height:6px;overflow:hidden">
                 <div style="background:${COLORS[i%COLORS.length]};width:${pct.toFixed(1)}%;height:100%;border-radius:4px"></div>
               </div>
@@ -3408,6 +3533,102 @@ function renderDesgloseRubro() {
         </tr>
       </tbody>
     </table>`;
+
+  // Re-render drill-down si hay uno activo
+  if (_desgloseRubroActivo) renderDrillDown(gastos, _desgloseRubroActivo);
+  else document.getElementById('desgloseDetalle').style.display = 'none';
+}
+
+function drillRubro(tr) {
+  const rubro = tr.dataset.rubro;
+  _desgloseRubroActivo = _desgloseRubroActivo === rubro ? null : rubro;
+  // Re-render para actualizar highlight
+  renderDesgloseRubro();
+  if (_desgloseRubroActivo) {
+    document.getElementById('desgloseDetalle').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+}
+
+function renderDrillDown(gastos, rubro) {
+  // Leer TODOS los datos directamente (sin filtrar por repMoneda)
+  const all = getData();
+  const selectedPer = document.getElementById('desglosePerFilter')?.value || '';
+  const txsAll = all.filter(t => {
+    if (t.tipo !== 'Gasto' || t.rubro !== rubro) return false;
+    return selectedPer ? t.mes === selectedPer : t.mes.startsWith(String(curYear));
+  }).sort((a,b) => {
+    if (b.mes !== a.mes) return b.mes.localeCompare(a.mes);
+    return (b.venc||'').localeCompare(a.venc||'');
+  });
+
+  const el = document.getElementById('desgloseDetalle');
+  el.style.display = 'block';
+
+  // Totales por moneda (siempre ambas, independiente del filtro repMoneda)
+  const totalARS = txsAll.reduce((s,t) => s + (Number(t.impPesos)||0), 0);
+  const totalUSD = txsAll.reduce((s,t) => s + (Number(t.impUSD)||0), 0);
+  const fmtUSD = v => 'U$S ' + v.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const totalLabel = [
+    totalARS > 0 ? fmtP(totalARS) : null,
+    totalUSD > 0 ? fmtUSD(totalUSD) : null
+  ].filter(Boolean).join(' · ');
+
+  const perLabel = selectedPer
+    ? MESES[parseInt(selectedPer.split('-')[1])-1]
+    : `Año ${curYear}`;
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div class="report-title" style="margin:0">🔍 ${esc(rubro)}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${perLabel} · ${txsAll.length} movimiento${txsAll.length!==1?'s':''} · Total: <strong style="color:var(--danger)">${totalLabel}</strong></div>
+      </div>
+      <button onclick="_desgloseRubroActivo=null;renderDesgloseRubro()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;color:var(--muted)">✕ Cerrar</button>
+    </div>
+    <div style="overflow-x:auto">
+    <table class="data-table">
+      <thead><tr>
+        <th>Mes</th>
+        <th>Detalle</th>
+        <th>Tipo</th>
+        <th>Banco</th>
+        <th style="text-align:right">$ ARS</th>
+        <th style="text-align:right">USD</th>
+        <th>Vto</th>
+        <th>Estado</th>
+      </tr></thead>
+      <tbody>
+        ${txsAll.map(t=>{
+          const ars = Number(t.impPesos) || 0;
+          const usd = Number(t.impUSD)   || 0;
+          const mesLabel = selectedPer === ''
+            ? MESES[parseInt(t.mes.split('-')[1])-1].slice(0,3) : '';
+          const isTCTx   = isTCOrigen(t);
+          const banco    = isTCTx ? getBancoLabel(t) : '';
+          const pagadoOk = isTCTx ? t.tcPagado === true : (Number(t.saldo)||0) <= 0;
+          return `<tr>
+            <td style="color:var(--muted);font-size:12px;white-space:nowrap">${mesLabel}</td>
+            <td>${esc(t.detalle||'')}</td>
+            <td><span style="font-size:11px;background:var(--bg);border-radius:4px;padding:2px 6px">${t.tipoGasto||''}</span></td>
+            <td style="font-size:12px;color:var(--muted);white-space:nowrap">${banco}</td>
+            <td style="text-align:right;font-weight:600;color:var(--danger);white-space:nowrap">${ars > 0 ? fmtP(ars) : '<span style="color:var(--muted)">—</span>'}</td>
+            <td style="text-align:right;font-weight:600;color:#2563eb;white-space:nowrap">${usd > 0 ? fmtUSD(usd) : '<span style="color:var(--muted)">—</span>'}</td>
+            <td style="font-size:12px;color:var(--muted);white-space:nowrap">${fmtD(t.venc)}</td>
+            <td>${pagadoOk
+              ? '<span style="color:var(--success);font-size:13px">✓</span>'
+              : '<span style="color:var(--warning);font-size:11px">Pend.</span>'
+            }</td>
+          </tr>`;
+        }).join('')}
+        <tr style="border-top:2px solid var(--border);font-weight:700">
+          <td colspan="4" style="padding:6px 0">TOTAL</td>
+          <td style="text-align:right;color:var(--danger);white-space:nowrap;padding:6px 0">${totalARS > 0 ? fmtP(totalARS) : '—'}</td>
+          <td style="text-align:right;color:#2563eb;white-space:nowrap;padding:6px 0">${totalUSD > 0 ? fmtUSD(totalUSD) : '—'}</td>
+          <td colspan="2"></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>`;
 }
 
 // ── MODAL ────────────────────────────────────────────────────
