@@ -448,9 +448,64 @@ tr:hover td { background: #fafbfc; }
 .tc-option-ico { font-size:18px;flex-shrink:0; }
 .tc-option-label { font-size:13px;font-weight:600;color:var(--text); }
 @media(max-width:880px){.import-modal{max-height:95vh;border-radius:12px 12px 0 0;margin-top:auto;} .import-overlay{align-items:flex-end;padding:0;} .import-drop{padding:24px;} #importConfig{grid-template-columns:1fr !important;}}
+
+/* ── LOGIN ── */
+#loginScreen { position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;background:var(--brand-navy); }
+.login-box { background:var(--card);border-radius:18px;padding:40px 36px;width:360px;max-width:92vw;box-shadow:0 24px 64px rgba(0,0,0,0.35); }
+.login-logo { text-align:center;margin-bottom:28px; }
+.login-logo .ln { font-size:26px;font-weight:800;color:var(--brand-navy);letter-spacing:-0.5px; }
+.login-logo .ls { font-size:12px;color:var(--muted);margin-top:3px; }
+.login-field { margin-bottom:14px; }
+.login-field label { display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:var(--text); }
+.login-field input, .login-field select { width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--bg);color:var(--text);outline:none; }
+.login-field input:focus, .login-field select:focus { border-color:var(--primary); }
+.login-btn { width:100%;padding:11px;background:var(--primary);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:600;cursor:pointer;margin-top:6px; }
+.login-btn:hover { opacity:0.9; }
+#loginError { color:#ef4444;font-size:12px;text-align:center;margin-bottom:10px;display:none; }
+
+/* ── ADMIN ── */
+.admin-section { margin-bottom:24px; }
+.admin-table { width:100%;border-collapse:collapse;font-size:13px; }
+.admin-table th { text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-weight:600; }
+.admin-table td { padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle; }
+.admin-table tr:last-child td { border-bottom:none; }
+.badge-role { display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600; }
+.badge-admin { background:#fef3c7;color:#92400e; }
+.badge-viewer { background:#e0f2fe;color:#075985; }
+.empresa-chip { display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:12px; }
+.sidebar-user { padding:10px 20px 4px;border-top:1px solid rgba(255,255,255,0.08);font-size:12px;color:rgba(255,255,255,0.55); }
+.sidebar-user strong { color:rgba(255,255,255,0.85);display:block; }
+.logout-btn { width:100%;text-align:left;background:none;border:none;color:rgba(255,255,255,0.5);font-size:12px;padding:6px 20px 14px;cursor:pointer;display:flex;align-items:center;gap:6px; }
+.logout-btn:hover { color:#fff; }
 </style>
 </head>
 <body>
+
+<!-- ── LOGIN SCREEN ─────────────────────────────────────────── -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="ln">Norte</div>
+      <div class="ls">Gestión financiera</div>
+    </div>
+    <form onsubmit="doLogin(event)">
+      <div class="login-field">
+        <label>Empresa</label>
+        <select id="loginEmpresa"></select>
+      </div>
+      <div class="login-field">
+        <label>Usuario</label>
+        <input id="loginUser" type="text" autocomplete="username" placeholder="usuario">
+      </div>
+      <div class="login-field" style="margin-bottom:18px">
+        <label>Contraseña</label>
+        <input id="loginPwd" type="password" autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <div id="loginError">Usuario, contraseña o empresa incorrectos</div>
+      <button type="submit" class="login-btn">Ingresar →</button>
+    </form>
+  </div>
+</div>
 
 <nav class="sidebar">
   <div class="sidebar-logo">
@@ -473,7 +528,13 @@ tr:hover td { background: #fafbfc; }
     <div class="nav-item" onclick="showPage('progreso')"><span class="ico">🏆</span> Progreso</div>
     <div class="nav-item" onclick="showPage('reportes')"><span class="ico">📈</span> Reportes</div>
     <div class="nav-item" onclick="showPage('consultas')"><span class="ico">🤖</span> Consultas IA</div>
+    <div class="nav-item" id="navAdmin" style="display:none" onclick="showPage('admin')"><span class="ico">⚙️</span> Admin</div>
   </div>
+  <div class="sidebar-user" id="sidebarUser" style="display:none">
+    <strong id="sidebarUsername">—</strong>
+    <span id="sidebarEmpresa" style="opacity:0.7"></span>
+  </div>
+  <button class="logout-btn" id="logoutBtn" style="display:none" onclick="doLogout()">🚪 Cerrar sesión</button>
   <div class="sidebar-footer">
     <span class="sync-badge sync-offline" id="syncStatus"><span>☁️</span> Conectando…</span>
     <div class="data-btns">
@@ -936,6 +997,88 @@ tr:hover td { background: #fafbfc; }
   <button class="fab-btn" id="fabBtn" onclick="toggleQuickPanel()" title="Registro rápido">+</button>
 </div>
 
+<!-- ADMIN PAGE -->
+<div id="page-admin" class="page">
+  <div style="max-width:860px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:20px">
+
+    <div class="card admin-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="report-title" style="margin:0">🏢 Empresas</div>
+        <button class="btn btn-primary" style="font-size:13px;padding:7px 14px" onclick="openCreateEmpresa()">+ Nueva empresa</button>
+      </div>
+      <table class="admin-table" id="adminEmpresasTable"><tbody></tbody></table>
+    </div>
+
+    <div class="card admin-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="report-title" style="margin:0">👥 Usuarios</div>
+        <button class="btn btn-primary" style="font-size:13px;padding:7px 14px" onclick="openCreateUser()">+ Nuevo usuario</button>
+      </div>
+      <table class="admin-table" id="adminUsersTable"><tbody></tbody></table>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal: Nuevo usuario -->
+<div class="overlay" id="adminUserOverlay" style="display:none">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title" id="adminUserTitle">Nuevo usuario</div>
+    <div class="form-group">
+      <label>Usuario</label>
+      <input class="form-input" id="adminNewUsername" type="text" placeholder="nombre de usuario" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input class="form-input" id="adminNewPwd" type="password" placeholder="contraseña inicial">
+    </div>
+    <div class="form-group">
+      <label>Rol global</label>
+      <select class="form-input" id="adminNewRole">
+        <option value="viewer">Viewer</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Empresa a asignar</label>
+      <select class="form-input" id="adminNewEmpresa"></select>
+    </div>
+    <div class="form-group">
+      <label>Rol en esa empresa</label>
+      <select class="form-input" id="adminNewEmpresaRole">
+        <option value="viewer">Viewer (solo lectura)</option>
+        <option value="editor">Editor</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div id="adminUserError" style="color:#ef4444;font-size:12px;margin-bottom:8px;display:none"></div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeAdminUserModal()">Cancelar</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveAdminUser()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Nueva empresa -->
+<div class="overlay" id="adminEmpresaOverlay" style="display:none">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title">Nueva empresa</div>
+    <div class="form-group">
+      <label>Nombre</label>
+      <input class="form-input" id="adminNewEmpresaNombre" type="text" placeholder="Nombre de la empresa">
+    </div>
+    <div class="form-group">
+      <label>ID (sin espacios)</label>
+      <input class="form-input" id="adminNewEmpresaId" type="text" placeholder="Ej: ACME" style="text-transform:uppercase">
+    </div>
+    <div id="adminEmpresaError" style="color:#ef4444;font-size:12px;margin-bottom:8px;display:none"></div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-secondary" style="flex:1" onclick="document.getElementById('adminEmpresaOverlay').style.display='none'">Cancelar</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveAdminEmpresa()">Crear</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL ADD/EDIT -->
 <div class="overlay" id="modalOverlay">
   <div class="modal">
@@ -1191,17 +1334,245 @@ let selectedTx = new Set();
 let charts   = {};
 
 // ── STORAGE ─────────────────────────────────────────────────
+// ── AUTH / MULTI-EMPRESA ─────────────────────────────────────
+async function hashPwd(pwd) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('norte-salt:' + pwd));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// Storage
+const getUsers       = ()  => JSON.parse(localStorage.getItem('fin_users')    || '[]');
+const saveUsers      = u   => localStorage.setItem('fin_users',    JSON.stringify(u));
+const getEmpresas    = ()  => JSON.parse(localStorage.getItem('fin_empresas') || '[]');
+const saveEmpresas   = e   => localStorage.setItem('fin_empresas', JSON.stringify(e));
+const getSession     = ()  => JSON.parse(localStorage.getItem('fin_session')  || 'null');
+const setSession     = s   => localStorage.setItem('fin_session',  JSON.stringify(s));
+const clearSession   = ()  => localStorage.removeItem('fin_session');
+
+// Current context helpers
+const curEmpresa     = ()  => getSession()?.empresaId || 'JLL';
+const curEmpresaRole = ()  => getSession()?.empresaRole || 'viewer';
+const isAdmin        = ()  => getSession()?.role === 'admin' || curEmpresaRole() === 'admin';
+
+// Migration: runs once to move flat data → empresa-scoped data
+async function runMigration() {
+  if (localStorage.getItem('fin_migrated_v2')) return;
+
+  // 1) Create JLL
+  if (!getEmpresas().length) {
+    saveEmpresas([{ id:'JLL', nombre:'JLL', createdAt: new Date().toISOString() }]);
+  }
+
+  // 2) Create admin user
+  if (!getUsers().length) {
+    const pwdHash = await hashPwd('norte2026');
+    saveUsers([{
+      id: uid(),
+      username: 'jaime',
+      pwdHash,
+      role: 'admin',
+      empresas: [{ id:'JLL', role:'admin' }]
+    }]);
+  }
+
+  // 3) Copy existing flat data → JLL namespace (non-destructive)
+  const keys = ['fin_data', 'fin_budgets', 'fin_meta_ahorro', 'fin_rubros_custom'];
+  keys.forEach(k => {
+    const v = localStorage.getItem(k);
+    if (v) localStorage.setItem(k + '_JLL', v);
+  });
+
+  localStorage.setItem('fin_migrated_v2', '1');
+}
+
+// Login
+async function doLogin(e) {
+  e.preventDefault();
+  const empresaId = document.getElementById('loginEmpresa').value;
+  const username  = document.getElementById('loginUser').value.trim().toLowerCase();
+  const pwd       = document.getElementById('loginPwd').value;
+  const errEl     = document.getElementById('loginError');
+  errEl.style.display = 'none';
+
+  const pwdHash = await hashPwd(pwd);
+  const users   = getUsers();
+  const user    = users.find(u => u.username.toLowerCase() === username && u.pwdHash === pwdHash);
+
+  if (!user) { errEl.style.display = 'block'; return; }
+
+  // Check access to this empresa
+  const empAccess = user.empresas?.find(e => e.id === empresaId);
+  if (!empAccess && user.role !== 'admin') { errEl.style.display = 'block'; return; }
+
+  const empresa = getEmpresas().find(e => e.id === empresaId);
+  setSession({
+    userId:      user.id,
+    username:    user.username,
+    role:        user.role,
+    empresaId,
+    empresaRole: empAccess?.role || (user.role === 'admin' ? 'admin' : 'viewer'),
+    empresaNombre: empresa?.nombre || empresaId,
+  });
+
+  bootApp();
+}
+
+function doLogout() {
+  clearSession();
+  location.reload();
+}
+
+function populateLoginEmpresas() {
+  const sel = document.getElementById('loginEmpresa');
+  const empresas = getEmpresas();
+  sel.innerHTML = empresas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+}
+
+function bootApp() {
+  const sess = getSession();
+  if (!sess) { document.getElementById('loginScreen').style.display = 'flex'; populateLoginEmpresas(); return; }
+
+  // Hide login
+  document.getElementById('loginScreen').style.display = 'none';
+
+  // Show session info in sidebar
+  const userEl = document.getElementById('sidebarUser');
+  const unEl   = document.getElementById('sidebarUsername');
+  const emEl   = document.getElementById('sidebarEmpresa');
+  userEl.style.display = 'block';
+  document.getElementById('logoutBtn').style.display = 'block';
+  unEl.textContent = sess.username;
+  emEl.textContent = sess.empresaNombre || sess.empresaId;
+
+  // Show Admin nav if admin
+  if (isAdmin()) document.getElementById('navAdmin').style.display = 'flex';
+
+  // Update Firebase sync path to empresa scope
+  reinitSync();
+
+  // Render app
+  curMonth = new Date().getMonth();
+  curYear  = new Date().getFullYear();
+  updateMonthDisplay();
+  renderDash();
+}
+
+// ── ADMIN PANEL ──────────────────────────────────────────────
+function renderAdmin() {
+  const empresas = getEmpresas();
+  const users    = getUsers();
+
+  // Empresas table
+  const empBody = document.querySelector('#adminEmpresasTable tbody');
+  empBody.innerHTML = empresas.length
+    ? empresas.map(e => `<tr>
+        <td><strong>${esc(e.nombre)}</strong></td>
+        <td style="color:var(--muted);font-size:12px">${e.id}</td>
+        <td style="color:var(--muted);font-size:12px">${e.createdAt ? new Date(e.createdAt).toLocaleDateString('es-AR') : '—'}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="3" style="color:var(--muted)">Sin empresas registradas</td></tr>';
+
+  // Users table
+  const usersBody = document.querySelector('#adminUsersTable tbody');
+  usersBody.innerHTML = users.length
+    ? users.map(u => {
+        const emps = (u.empresas||[]).map(ea => {
+          const en = empresas.find(e=>e.id===ea.id)?.nombre || ea.id;
+          return `<span class="empresa-chip">${esc(en)} <span style="opacity:0.6">${ea.role}</span></span>`;
+        }).join(' ');
+        return `<tr>
+          <td><strong>${esc(u.username)}</strong></td>
+          <td><span class="badge-role badge-${u.role}">${u.role}</span></td>
+          <td style="font-size:12px">${emps || '<span style="color:var(--muted)">Sin empresa</span>'}</td>
+          <td>
+            <button class="act-btn" onclick="resetUserPwd('${u.id}')" title="Resetear contraseña" style="font-size:12px">🔑</button>
+            ${u.username !== getSession()?.username ? `<button class="act-btn" onclick="deleteUser('${u.id}')" title="Eliminar usuario" style="font-size:12px">🗑️</button>` : ''}
+          </td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="4" style="color:var(--muted)">Sin usuarios</td></tr>';
+}
+
+function openCreateUser() {
+  // Populate empresa selector
+  const sel = document.getElementById('adminNewEmpresa');
+  sel.innerHTML = getEmpresas().map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('');
+  document.getElementById('adminNewUsername').value = '';
+  document.getElementById('adminNewPwd').value = '';
+  document.getElementById('adminNewRole').value = 'viewer';
+  document.getElementById('adminUserError').style.display = 'none';
+  document.getElementById('adminUserOverlay').style.display = 'flex';
+}
+function closeAdminUserModal() {
+  document.getElementById('adminUserOverlay').style.display = 'none';
+}
+
+async function saveAdminUser() {
+  const username    = document.getElementById('adminNewUsername').value.trim().toLowerCase();
+  const pwd         = document.getElementById('adminNewPwd').value;
+  const role        = document.getElementById('adminNewRole').value;
+  const empresaId   = document.getElementById('adminNewEmpresa').value;
+  const empresaRole = document.getElementById('adminNewEmpresaRole').value;
+  const errEl       = document.getElementById('adminUserError');
+
+  if (!username || !pwd) { errEl.textContent='Completá usuario y contraseña'; errEl.style.display='block'; return; }
+  if (getUsers().find(u=>u.username===username)) { errEl.textContent='Ese usuario ya existe'; errEl.style.display='block'; return; }
+
+  const pwdHash = await hashPwd(pwd);
+  const users = getUsers();
+  users.push({ id:uid(), username, pwdHash, role, empresas:[{id:empresaId, role:empresaRole}] });
+  saveUsers(users);
+  closeAdminUserModal();
+  renderAdmin();
+}
+
+async function resetUserPwd(userId) {
+  const newPwd = prompt('Nueva contraseña para el usuario:');
+  if (!newPwd) return;
+  const pwdHash = await hashPwd(newPwd);
+  const users = getUsers().map(u => u.id === userId ? {...u, pwdHash} : u);
+  saveUsers(users);
+  alert('Contraseña actualizada.');
+}
+
+function deleteUser(userId) {
+  if (!confirm('¿Eliminar este usuario?')) return;
+  saveUsers(getUsers().filter(u => u.id !== userId));
+  renderAdmin();
+}
+
+function openCreateEmpresa() {
+  document.getElementById('adminNewEmpresaNombre').value = '';
+  document.getElementById('adminNewEmpresaId').value = '';
+  document.getElementById('adminEmpresaError').style.display = 'none';
+  document.getElementById('adminEmpresaOverlay').style.display = 'flex';
+}
+
+function saveAdminEmpresa() {
+  const nombre  = document.getElementById('adminNewEmpresaNombre').value.trim();
+  const id      = document.getElementById('adminNewEmpresaId').value.trim().toUpperCase().replace(/\s+/g,'');
+  const errEl   = document.getElementById('adminEmpresaError');
+  if (!nombre || !id) { errEl.textContent='Completá nombre e ID'; errEl.style.display='block'; return; }
+  if (getEmpresas().find(e=>e.id===id)) { errEl.textContent='Ese ID ya existe'; errEl.style.display='block'; return; }
+  const emps = getEmpresas();
+  emps.push({ id, nombre, createdAt: new Date().toISOString() });
+  saveEmpresas(emps);
+  document.getElementById('adminEmpresaOverlay').style.display = 'none';
+  renderAdmin();
+}
+
+// ── DATOS (empresa-scoped) ────────────────────────────────────
 const getData  = () => {
-  const raw = JSON.parse(localStorage.getItem('fin_data') || '[]');
+  const raw = JSON.parse(localStorage.getItem(`fin_data_${curEmpresa()}`) || '[]');
   // Normalizar rubros on-the-fly (cubre datos viejos y snapshots remotos de Firebase)
   return raw.map(t => {
     const norm = RUBRO_NORMALIZE[t.rubro];
     return norm ? { ...t, rubro: norm } : t;
   });
 };
-const saveData = d  => localStorage.setItem('fin_data', JSON.stringify(d));
-const getCustomRubros  = () => JSON.parse(localStorage.getItem('fin_rubros_custom') || '{"Gasto":[],"Ingreso":[]}');
-const saveCustomRubros = r  => localStorage.setItem('fin_rubros_custom', JSON.stringify(r));
+const saveData = d  => localStorage.setItem(`fin_data_${curEmpresa()}`, JSON.stringify(d));
+const getCustomRubros  = () => JSON.parse(localStorage.getItem(`fin_rubros_custom_${curEmpresa()}`) || '{"Gasto":[],"Ingreso":[]}');
+const saveCustomRubros = r  => localStorage.setItem(`fin_rubros_custom_${curEmpresa()}`, JSON.stringify(r));
 // Devuelve la lista completa (base + custom) para un tipo
 function getAllRubros(tipo) {
   const base   = RUBROS[tipo] || [];
@@ -1227,10 +1598,10 @@ const getBancoLabel= t => ({ BAPRO:'Banco Provincia', SANTANDER:'Santander' }[ge
 const lastDayOfMonth = (y, m) => new Date(y, m + 1, 0).getDate();
 
 // ── PRESUPUESTO / META DE AHORRO ────────────────────────────
-const getBudgets  = ()  => JSON.parse(localStorage.getItem('fin_budgets') || '{}');
-const saveBudgets = b   => localStorage.setItem('fin_budgets', JSON.stringify(b));
-const getMetaAhorro  = () => Number(localStorage.getItem('fin_meta_ahorro') || 0);
-const saveMetaAhorro = v  => localStorage.setItem('fin_meta_ahorro', String(Number(v)||0));
+const getBudgets  = ()  => JSON.parse(localStorage.getItem(`fin_budgets_${curEmpresa()}`) || '{}');
+const saveBudgets = b   => localStorage.setItem(`fin_budgets_${curEmpresa()}`, JSON.stringify(b));
+const getMetaAhorro  = () => Number(localStorage.getItem(`fin_meta_ahorro_${curEmpresa()}`) || 0);
+const saveMetaAhorro = v  => localStorage.setItem(`fin_meta_ahorro_${curEmpresa()}`, String(Number(v)||0));
 
 function prevKey(key) {
   const [y, m] = key.split('-').map(Number);
@@ -1239,12 +1610,14 @@ function prevKey(key) {
 
 // ── EXPORTAR / IMPORTAR DATOS ───────────────────────────────
 function exportarDatos() {
+  const eid = curEmpresa();
   const backup = {
-    version: 1,
+    version: 2,
+    empresaId: eid,
     exportado: new Date().toISOString(),
-    fin_data:         localStorage.getItem('fin_data')         || '[]',
-    fin_budgets:      localStorage.getItem('fin_budgets')      || '{}',
-    fin_meta_ahorro:  localStorage.getItem('fin_meta_ahorro')  || '0',
+    fin_data:         localStorage.getItem(`fin_data_${eid}`)         || '[]',
+    fin_budgets:      localStorage.getItem(`fin_budgets_${eid}`)      || '{}',
+    fin_meta_ahorro:  localStorage.getItem(`fin_meta_ahorro_${eid}`)  || '0',
   };
   const json = JSON.stringify(backup, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
@@ -1275,9 +1648,10 @@ function importarDatos(input) {
       const n = JSON.parse(finData).length;
       if (!confirm(`¿Restaurar backup?\n\n· ${n} transacciones encontradas${backup.exportado ? '\n· Exportado: ' + new Date(backup.exportado).toLocaleString('es-AR') : ''}\n\nEsto va a reemplazar todos los datos actuales.`)) return;
 
-      localStorage.setItem('fin_data', finData);
-      if (finBudgets) localStorage.setItem('fin_budgets', finBudgets);
-      if (finMeta)    localStorage.setItem('fin_meta_ahorro', finMeta);
+      const eid = curEmpresa();
+      localStorage.setItem(`fin_data_${eid}`, finData);
+      if (finBudgets) localStorage.setItem(`fin_budgets_${eid}`, finBudgets);
+      if (finMeta)    localStorage.setItem(`fin_meta_ahorro_${eid}`, finMeta);
 
       render();
 
@@ -1818,8 +2192,15 @@ const firebaseConfig = {
   messagingSenderId: "770320644005",
   appId: "1:770320644005:web:07473cb04562bc6951da4c"
 };
-const SYNC_KEYS = ['fin_data', 'fin_budgets', 'fin_meta_ahorro'];
-const SYNC_PATH = 'norteSync';
+// SYNC_KEYS y SYNC_PATH son dinámicos: dependen de la empresa logueada
+function getSyncKeys() {
+  const eid = curEmpresa();
+  return [`fin_data_${eid}`, `fin_budgets_${eid}`, `fin_meta_ahorro_${eid}`];
+}
+function getSyncPath() { return `norteSync/empresas/${curEmpresa()}`; }
+// Compat aliases (se sobreescriben después del login)
+let SYNC_KEYS = getSyncKeys();
+let SYNC_PATH = getSyncPath();
 
 let syncClientId = localStorage.getItem('fin_sync_client');
 if (!syncClientId) {
@@ -1846,14 +2227,14 @@ function setSyncStatus(state) {
 
 function syncSnapshot() {
   const snap = { _client: syncClientId, _ts: Date.now() };
-  SYNC_KEYS.forEach(k => { snap[k] = localStorage.getItem(k); });
+  getSyncKeys().forEach(k => { snap[k] = localStorage.getItem(k); });
   return snap;
 }
 
 function applyRemoteSnapshot(remote) {
   syncApplyingRemote = true;
   try {
-    SYNC_KEYS.forEach(k => {
+    getSyncKeys().forEach(k => {
       if (remote[k] != null) localStorage.setItem(k, remote[k]);
       else localStorage.removeItem(k);
     });
@@ -1873,10 +2254,20 @@ function schedulePush() {
   }, 900);
 }
 
+function reinitSync() {
+  // Called after login to (re-)initialize sync with the empresa-scoped path
+  SYNC_KEYS = getSyncKeys();
+  SYNC_PATH = getSyncPath();
+  if (fbRef) fbRef.off(); // detach previous listeners
+  fbRef = null;
+  initSync();
+}
+
 function initSync() {
   if (typeof firebase === 'undefined') { setSyncStatus('offline'); return; }
   try {
-    firebase.initializeApp(firebaseConfig);
+    // firebase.initializeApp only needs to run once
+    if (!firebase.apps?.length) firebase.initializeApp(firebaseConfig);
     fbRef = firebase.database().ref(SYNC_PATH);
   } catch (e) {
     console.warn('No se pudo inicializar Firebase:', e);
@@ -1915,7 +2306,7 @@ function initSync() {
   const origSetItem = localStorage.setItem.bind(localStorage);
   localStorage.setItem = function(key, value) {
     origSetItem(key, value);
-    if (SYNC_KEYS.includes(key)) schedulePush();
+    if (getSyncKeys().includes(key)) schedulePush();
   };
 
   window.addEventListener('online',  () => { setSyncStatus('pending'); schedulePush(); });
@@ -1946,7 +2337,7 @@ function showPage(p) {
   toggleSidebar(false);
   const navIdx = ['dashboard','transacciones','presupuesto','analisis','progreso','reportes','consultas'].indexOf(p);
   if (navIdx >= 0) document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
-  document.getElementById('pageTitle').textContent = {dashboard:'Dashboard',transacciones:'Transacciones',presupuesto:'Presupuesto',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',consultas:'Consultas IA'}[p] || p;
+  document.getElementById('pageTitle').textContent = {dashboard:'Dashboard',transacciones:'Transacciones',presupuesto:'Presupuesto',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',consultas:'Consultas IA',admin:'Administración'}[p] || p;
   curPage = p;
   render();
 }
@@ -1972,6 +2363,7 @@ function render() {
   else if (curPage === 'analisis')      renderAnalisis();
   else if (curPage === 'progreso')      renderProgreso();
   else if (curPage === 'reportes')      renderReportes();
+  else if (curPage === 'admin')         renderAdmin();
   // consultas no necesita re-render al cambiar mes
 }
 
@@ -4558,11 +4950,10 @@ function addChatMsg(html,role) {
 }
 
 // ── INIT ─────────────────────────────────────────────────────
-curMonth = new Date().getMonth();   // mes actual (0 = enero)
-curYear  = new Date().getFullYear();
-updateMonthDisplay();
-renderDash();
-initSync();
+(async () => {
+  await runMigration();   // no-op si ya corrió; migra datos planos → JLL la primera vez
+  bootApp();              // si hay sesión activa, entra directo; si no, muestra login
+})();
 </script>
 </body>
 </html>
