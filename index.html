@@ -449,6 +449,37 @@ tr:hover td { background: #fafbfc; }
 .tc-option-label { font-size:13px;font-weight:600;color:var(--text); }
 @media(max-width:880px){.import-modal{max-height:95vh;border-radius:12px 12px 0 0;margin-top:auto;} .import-overlay{align-items:flex-end;padding:0;} .import-drop{padding:24px;} #importConfig{grid-template-columns:1fr !important;}}
 
+/* ── AYUDA ── */
+#ayudaOverlay { position:fixed;inset:0;z-index:1500;display:none;background:rgba(0,0,0,0.45);backdrop-filter:blur(2px); }
+#ayudaOverlay.show { display:flex; }
+.ayuda-panel { position:fixed;top:0;right:0;bottom:0;width:780px;max-width:100vw;background:var(--card);display:flex;flex-direction:column;box-shadow:-8px 0 40px rgba(0,0,0,0.2); }
+.ayuda-header { display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);flex-shrink:0; }
+.ayuda-header h2 { font-size:18px;font-weight:700;margin:0; }
+.ayuda-close { background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:4px 8px;border-radius:6px; }
+.ayuda-close:hover { background:var(--bg); }
+.ayuda-body { display:flex;flex:1;overflow:hidden; }
+.ayuda-nav { width:190px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;padding:12px 0;background:var(--bg); }
+.ayuda-nav-item { display:flex;align-items:center;gap:9px;padding:10px 18px;cursor:pointer;font-size:13px;font-weight:500;border-left:3px solid transparent;color:var(--text);transition:all 0.15s; }
+.ayuda-nav-item:hover { background:rgba(0,0,0,0.04); }
+.ayuda-nav-item.active { border-left-color:var(--primary);background:var(--card);font-weight:700;color:var(--primary); }
+.ayuda-nav-item .ai { font-size:16px; }
+.ayuda-content { flex:1;overflow-y:auto;padding:28px 30px; }
+.ayuda-section { display:none; }
+.ayuda-section.active { display:block; }
+.ayuda-section h3 { font-size:20px;font-weight:700;margin:0 0 6px;display:flex;align-items:center;gap:10px; }
+.ayuda-section .subtitulo { font-size:13px;color:var(--muted);margin-bottom:22px; }
+.ayuda-bloque { margin-bottom:26px; }
+.ayuda-bloque h4 { font-size:14px;font-weight:700;margin:0 0 8px;color:var(--brand-navy); }
+.ayuda-bloque p { font-size:13px;line-height:1.7;margin:0 0 8px;color:var(--text); }
+.ayuda-ejemplo { background:var(--bg);border-left:3px solid var(--primary);border-radius:0 8px 8px 0;padding:10px 14px;margin:8px 0;font-size:12px;color:var(--text);line-height:1.6; }
+.ayuda-ejemplo strong { color:var(--primary); }
+.ayuda-tip { background:#fef9ec;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;margin:8px 0;font-size:12px;line-height:1.6; }
+.ayuda-tip::before { content:'💡 '; font-weight:700; }
+.ayuda-steps { counter-reset:step;list-style:none;padding:0;margin:8px 0; }
+.ayuda-steps li { counter-increment:step;display:flex;gap:10px;font-size:13px;margin-bottom:8px;line-height:1.6; }
+.ayuda-steps li::before { content:counter(step);display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;background:var(--primary);color:#fff;border-radius:50%;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px; }
+@media(max-width:680px){.ayuda-panel{width:100%;}.ayuda-nav{width:52px;}.ayuda-nav-item span:not(.ai){display:none;}.ayuda-nav-item{padding:12px;justify-content:center;}.ayuda-content{padding:20px 16px;}}
+
 /* ── LOGIN ── */
 #loginScreen { position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;background:var(--brand-navy); }
 .login-box { background:var(--card);border-radius:18px;padding:40px 36px;width:360px;max-width:92vw;box-shadow:0 24px 64px rgba(0,0,0,0.35); }
@@ -535,6 +566,7 @@ tr:hover td { background: #fafbfc; }
     <span id="sidebarEmpresa" style="opacity:0.7"></span>
   </div>
   <button class="logout-btn" id="logoutBtn" style="display:none" onclick="doLogout()">🚪 Cerrar sesión</button>
+  <button class="logout-btn" onclick="openAyuda()" style="display:flex">❓ Ayuda</button>
   <div class="sidebar-footer">
     <span class="sync-badge sync-offline" id="syncStatus"><span>☁️</span> Conectando…</span>
     <div class="data-btns">
@@ -996,6 +1028,324 @@ tr:hover td { background: #fafbfc; }
   </div>
   <button class="fab-btn" id="fabBtn" onclick="toggleQuickPanel()" title="Registro rápido">+</button>
 </div>
+
+<!-- ── AYUDA OVERLAY ─────────────────────────────────────────── -->
+<div id="ayudaOverlay" onclick="closeAyuda(event)">
+  <div class="ayuda-panel" onclick="event.stopPropagation()">
+    <div class="ayuda-header">
+      <h2>❓ Centro de Ayuda — Norte</h2>
+      <button class="ayuda-close" onclick="closeAyuda()">✕</button>
+    </div>
+    <div class="ayuda-body">
+
+      <!-- Nav izquierda -->
+      <nav class="ayuda-nav">
+        <div class="ayuda-nav-item active" onclick="ayudaGo('inicio')"><span class="ai">🏠</span><span>Inicio</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('dashboard')"><span class="ai">📊</span><span>Dashboard</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('transacciones')"><span class="ai">📋</span><span>Transacciones</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('tarjetas')"><span class="ai">💳</span><span>Tarjetas TC</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('presupuesto')"><span class="ai">🎯</span><span>Presupuesto</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('analisis')"><span class="ai">🔎</span><span>Análisis</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('reportes')"><span class="ai">📈</span><span>Reportes</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('consultas')"><span class="ai">🤖</span><span>Consultas IA</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('admin')"><span class="ai">⚙️</span><span>Admin</span></div>
+      </nav>
+
+      <!-- Contenido -->
+      <div class="ayuda-content">
+
+        <!-- INICIO -->
+        <div class="ayuda-section active" id="ayuda-inicio">
+          <h3>🏠 Bienvenido a Norte</h3>
+          <p class="subtitulo">Tu herramienta de gestión financiera personal y empresarial</p>
+          <div class="ayuda-bloque">
+            <p>Norte te permite registrar ingresos y gastos, importar resúmenes de tarjetas de crédito, establecer presupuestos, analizar tus finanzas con reportes detallados y consultar tus datos en lenguaje natural con inteligencia artificial.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>¿Por dónde empezar?</h4>
+            <ol class="ayuda-steps">
+              <li>Cargá tus <strong>ingresos del mes</strong> — sueldo, honorarios, cobros de clientes</li>
+              <li>Registrá tus <strong>gastos fijos</strong> — alquiler, servicios, cuotas</li>
+              <li>Importá el <strong>resumen de tu tarjeta</strong> de crédito en formato XLSX</li>
+              <li>Definí un <strong>presupuesto por rubro</strong> para controlar tus límites</li>
+              <li>Revisá el <strong>Dashboard</strong> para ver el estado de tu mes de un vistazo</li>
+            </ol>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Navegación del mes</h4>
+            <p>Las flechas <strong>‹ ›</strong> en la barra superior cambian el mes que estás viendo. Todos los reportes y la pantalla de transacciones respetan el mes seleccionado. Los Reportes muestran el año completo.</p>
+          </div>
+          <div class="ayuda-tip">Podés usar Norte en varios dispositivos a la vez — los datos se sincronizan automáticamente en la nube a través de Firebase.</div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div class="ayuda-section" id="ayuda-dashboard">
+          <h3>📊 Dashboard</h3>
+          <p class="subtitulo">Vista rápida del estado financiero del mes seleccionado</p>
+          <div class="ayuda-bloque">
+            <h4>Tarjetas de resumen</h4>
+            <p>Las 4 tarjetas superiores muestran los totales del mes:</p>
+            <div class="ayuda-ejemplo"><strong>Ingresos:</strong> todo lo que entraron — sueldos, cobros a clientes, ventas<br><strong>Gastos:</strong> todo lo que salió — facturas, compras, cuotas<br><strong>Balance:</strong> Ingresos − Gastos. En verde si es positivo, rojo si gastaste más de lo que entraste<br><strong>Pendiente:</strong> suma de gastos que aún no pagaste (saldo &gt; $0)</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Gráfico — Gastos por rubro</h4>
+            <p>El donut muestra cómo se distribuyen tus gastos del mes entre las distintas categorías. Debajo aparece la tabla detallada con importe y porcentaje de cada rubro.</p>
+            <div class="ayuda-ejemplo"><strong>Ejemplo:</strong> Si en Mayo gastaste $200.000 en Supermercado y $80.000 en Auto, el gráfico lo representa visualmente y te dice que Supermercado es el 35% del total.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Últimas transacciones</h4>
+            <p>Las 6 movimientos más recientes del mes. Hacé click en cualquiera para editarlo.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Semáforo y alertas</h4>
+            <p>Norte analiza automáticamente tu situación y muestra alertas en naranja o rojo cuando detecta gastos sin importe, presupuestos superados o balance negativo.</p>
+            <div class="ayuda-tip">Si ves una alerta de gastos fijos con importe $0, significa que clonaste el mes anterior pero todavía no actualizaste los importes. Entrá a Transacciones para completarlos.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Presupuesto del mes</h4>
+            <p>Muestra el avance vs. el límite definido en la sección Presupuesto. Hacé click en la card para ir directamente a configurarlo.</p>
+          </div>
+        </div>
+
+        <!-- TRANSACCIONES -->
+        <div class="ayuda-section" id="ayuda-transacciones">
+          <h3>📋 Transacciones</h3>
+          <p class="subtitulo">El corazón de Norte — aquí se registran todos los movimientos</p>
+          <div class="ayuda-bloque">
+            <h4>Agregar una transacción</h4>
+            <p>Usá el botón <strong>＋ Nueva</strong> o el botón flotante <strong>＋</strong> en la esquina inferior derecha (registro rápido). Completá:</p>
+            <div class="ayuda-ejemplo">
+              <strong>Tipo:</strong> Ingreso o Gasto<br>
+              <strong>Detalle:</strong> descripción breve — "Sueldo Enero", "Alquiler Palermo", "Netflix"<br>
+              <strong>Rubro:</strong> categoría — Supermercado, Auto, Salud, Freelance/Consultoría…<br>
+              <strong>Tipo de gasto:</strong> Fijo (se repite todos los meses) o Variable (eventual)<br>
+              <strong>Importe $:</strong> monto en pesos<br>
+              <strong>Importe USD:</strong> si el gasto o cobro fue en dólares<br>
+              <strong>Pagado:</strong> cuánto ya abonaste (puede ser parcial)<br>
+              <strong>Vencimiento:</strong> fecha límite de pago
+            </div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Clonar mes anterior</h4>
+            <p>El botón <strong>📋 Clonar mes anterior</strong> crea automáticamente todos los gastos marcados como <em>Fijo</em> del mes previo, con importe $0 y vencimiento al último día del mes actual.</p>
+            <div class="ayuda-ejemplo"><strong>Ejemplo:</strong> Si en Junio tenías "Alquiler", "Expensas" y "Internet" como Fijo, al entrar a Julio y hacer Clonar te aparecen los 3 gastos listos para que solo actualices los importes cuando lleguen las facturas.</div>
+            <div class="ayuda-tip">Los gastos de tarjeta de crédito (TC) no se clonan — se importan por separado cada mes desde el archivo XLSX del banco.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Columna Saldo</h4>
+            <p>Muestra cuánto falta pagar de cada gasto:</p>
+            <div class="ayuda-ejemplo">
+              <strong>✓</strong> — pagado en su totalidad<br>
+              <strong>$45.000</strong> en naranja — falta pagar ese importe<br>
+              <strong>💳 $7.556</strong> en naranja — gasto de tarjeta pendiente de pago TC<br>
+              <strong>✓ TC</strong> en verde — gasto de tarjeta ya marcado como pagado
+            </div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Editar y eliminar</h4>
+            <p>Usá el ícono ✏️ para editar cualquier transacción o 🗑️ para eliminarla. También podés seleccionar varias con los checkboxes y eliminarlas en lote.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Filtros</h4>
+            <p>La barra de filtros te permite buscar por texto, filtrar por tipo (Ingreso/Gasto), por rubro o por tipo de gasto (Fijo/Variable).</p>
+          </div>
+        </div>
+
+        <!-- TARJETAS -->
+        <div class="ayuda-section" id="ayuda-tarjetas">
+          <h3>💳 Tarjetas de Crédito</h3>
+          <p class="subtitulo">Importá y gestioná tus resúmenes de TC en 3 pasos</p>
+          <div class="ayuda-bloque">
+            <h4>Paso 1 — Importar el archivo XLSX</h4>
+            <p>Descargá el resumen mensual de tu tarjeta desde el home banking en formato Excel (.xlsx). Luego en Transacciones hacé click en <strong>📂 Importar TC</strong> y elegí el archivo.</p>
+            <div class="ayuda-ejemplo">
+              <strong>Bancos soportados:</strong><br>
+              • Banco Provincia (BAPRO) — formato estándar<br>
+              • Santander — soporta titular y adicional en el mismo archivo
+            </div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Paso 2 — Revisar y clasificar</h4>
+            <p>Norte muestra una vista previa de todos los gastos detectados. Para cada uno podés:</p>
+            <div class="ayuda-ejemplo">
+              • Asignar o cambiar el <strong>Rubro</strong> (ej: MERPAGO*SHELLBOX → Auto)<br>
+              • Ver si es en <strong>pesos o dólares</strong><br>
+              • Ver el <strong>portador</strong> (Titular o Adicional)<br>
+              • Deseleccionar items que no querés importar
+            </div>
+            <p>Al confirmar, los gastos entran al mes seleccionado con estado <strong>Pendiente de pago</strong>.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Paso 3 — Pagar TC</h4>
+            <p>Cuando debitaron el resumen de tu tarjeta, usá el botón <strong>✅ Pagar TC</strong> en la barra de Transacciones. El sistema te muestra las combinaciones banco + moneda pendientes con el total de cada una:</p>
+            <div class="ayuda-ejemplo">
+              🏦 Banco Provincia — ARS · 18 ítems · $342.500 → Marcar pagado<br>
+              🏦 Santander — ARS · 12 ítems · $198.000 → Marcar pagado<br>
+              🏦 Santander — USD · 4 ítems · U$S 47,00 → Marcar pagado
+            </div>
+            <p>Al marcar cada combinación, todos los items correspondientes pasan de <em>💳 Pendiente</em> a <em>✓ TC</em> en la columna Saldo.</p>
+            <div class="ayuda-tip">Si tenés gastos en dólares en la TC, necesitás hacer el pago en USD por separado del pago en pesos — aunque sea el mismo banco.</div>
+          </div>
+        </div>
+
+        <!-- PRESUPUESTO -->
+        <div class="ayuda-section" id="ayuda-presupuesto">
+          <h3>🎯 Presupuesto</h3>
+          <p class="subtitulo">Definí límites de gasto y una meta de ahorro mensual</p>
+          <div class="ayuda-bloque">
+            <h4>Presupuesto por rubro</h4>
+            <p>Establecé cuánto querés gastar como máximo en cada categoría. Norte compara automáticamente lo presupuestado vs. lo real y te muestra una barra de progreso:</p>
+            <div class="ayuda-ejemplo">
+              <strong>Supermercado:</strong> $150.000 presupuestado — $112.000 gastado (75%) 🟡<br>
+              <strong>Entretenimiento:</strong> $40.000 presupuestado — $52.000 gastado (130%) 🔴 ¡Superado!<br>
+              <strong>Auto:</strong> $80.000 presupuestado — $31.000 gastado (39%) 🟢
+            </div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Meta de ahorro</h4>
+            <p>Definí un monto en pesos que querés ahorrar cada mes. Norte te muestra si estás en camino de alcanzarlo según el balance actual.</p>
+            <div class="ayuda-ejemplo"><strong>Ejemplo:</strong> Si tu meta es ahorrar $200.000 y tu balance del mes es $180.000, Norte te avisa que te faltan $20.000 para llegar a la meta.</div>
+          </div>
+          <div class="ayuda-tip">Los presupuestos se guardan por mes. Si querés el mismo presupuesto todos los meses, tenés que definirlo nuevamente o clonar desde el mes anterior.</div>
+        </div>
+
+        <!-- ANÁLISIS -->
+        <div class="ayuda-section" id="ayuda-analisis">
+          <h3>🔎 Análisis</h3>
+          <p class="subtitulo">Conclusiones automáticas sobre tu situación financiera del mes</p>
+          <div class="ayuda-bloque">
+            <h4>¿Qué hace?</h4>
+            <p>Norte analiza tus datos del mes y genera un informe automático con observaciones, alertas y sugerencias. No necesitás configurar nada — se actualiza solo cada vez que cargás movimientos.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>¿Qué analiza?</h4>
+            <div class="ayuda-ejemplo">
+              • <strong>Balance:</strong> si estás en positivo o negativo, y por cuánto<br>
+              • <strong>Rubros que más pesaron:</strong> los 3 mayores gastos del mes<br>
+              • <strong>Comparación con mes anterior:</strong> si gastaste más o menos<br>
+              • <strong>Presupuestos superados:</strong> lista de rubros que pasaron el límite<br>
+              • <strong>Pendientes de pago:</strong> lo que todavía no pagaste<br>
+              • <strong>Gastos inusuales:</strong> items significativamente más altos que tu promedio
+            </div>
+          </div>
+          <div class="ayuda-tip">El Análisis es más completo a medida que tenés más meses cargados — con solo 1 mes de datos, la comparación con meses anteriores no está disponible.</div>
+        </div>
+
+        <!-- REPORTES -->
+        <div class="ayuda-section" id="ayuda-reportes">
+          <h3>📈 Reportes</h3>
+          <p class="subtitulo">Análisis histórico del año completo en 5 vistas</p>
+          <div class="ayuda-bloque">
+            <h4>Filtro de moneda</h4>
+            <p>En la esquina superior derecha podés elegir ver los reportes en <strong>$ ARS</strong>, <strong>USD</strong> o <strong>Ambas</strong>. El modo Ambas muestra un eje Y doble en los gráficos (ARS a la izquierda, USD a la derecha).</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>📅 Evolución</h4>
+            <p>Vista anual con tres componentes:</p>
+            <div class="ayuda-ejemplo">
+              <strong>Resumen anual:</strong> tarjetas con total de ingresos, gastos, balance y tasa de ahorro del año<br>
+              <strong>Gráfico mensual:</strong> barras comparando ingresos vs. gastos mes a mes<br>
+              <strong>Tabla mes a mes:</strong> detalle numérico de cada mes con % de ahorro, fila de totales al pie
+            </div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>📊 Por Rubro</h4>
+            <p>Desglosa cómo se componen tus gastos:</p>
+            <div class="ayuda-ejemplo">
+              <strong>Selector de período:</strong> elegí un mes específico o el acumulado del año<br>
+              <strong>Donut + Ranking:</strong> cada rubro con importe total, porcentaje y barra visual<br>
+              <strong>Drill-down:</strong> hacé click en cualquier rubro del ranking para ver el listado completo de transacciones individuales, con columnas separadas para ARS y USD<br>
+              <strong>Evolución apilada:</strong> gráfico de barras con todos los rubros apilados mes a mes<br>
+              <strong>Tabla rubro × mes:</strong> grilla cruzada con totales
+            </div>
+            <div class="ayuda-tip">El drill-down siempre muestra TODOS los importes en su moneda real — aunque el filtro esté en ARS, los gastos en USD aparecen en su columna correspondiente.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>📈 Promedios</h4>
+            <p>Calcula el promedio mensual de cada rubro basado en los meses con datos. Útil para estimar cuánto gastarás en un rubro el próximo mes.</p>
+            <div class="ayuda-ejemplo"><strong>Ejemplo:</strong> Si en Supermercado gastaste $100k en Enero, $120k en Febrero y $110k en Marzo, el promedio es $110k/mes.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>💚 Ingresos</h4>
+            <p>Análisis detallado de tus ingresos: ranking por cliente/fuente, donut por rubro y tabla de detalle con cada cobro.</p>
+            <div class="ayuda-ejemplo"><strong>Ejemplo:</strong> Si facturaste a 3 clientes distintos, el ranking muestra cuál representa mayor volumen de facturación en el año.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>💳 Tarjetas</h4>
+            <p>Vista específica para gastos de tarjeta de crédito con filtros por banco, rubro y mes:</p>
+            <div class="ayuda-ejemplo">
+              • Total gastado por banco (BAPRO vs. Santander)<br>
+              • Gráfico de distribución por rubro<br>
+              • Evolución mensual del gasto en TC<br>
+              • Detalle de cada transacción importada
+            </div>
+          </div>
+        </div>
+
+        <!-- CONSULTAS IA -->
+        <div class="ayuda-section" id="ayuda-consultas">
+          <h3>🤖 Consultas IA</h3>
+          <p class="subtitulo">Hacé preguntas en lenguaje natural sobre tus finanzas</p>
+          <div class="ayuda-bloque">
+            <h4>¿Cómo funciona?</h4>
+            <p>Norte analiza todos tus datos financieros y responde preguntas en lenguaje natural. No necesitás saber nada de contabilidad ni buscar en tablas — simplemente preguntás como si le hablaras a un contador.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Ejemplos de preguntas</h4>
+            <div class="ayuda-ejemplo">
+              "¿Cuánto gasté en supermercado en lo que va del año?"<br>
+              "¿En qué mes tuve el mayor gasto en Auto?"<br>
+              "¿Cuánto facturé en total a Empresa XYZ?"<br>
+              "Mostrame los gastos de entretenimiento de los últimos 3 meses"<br>
+              "¿Cuál fue mi rubro de mayor gasto en Abril?"<br>
+              "¿Cuánto me falta pagar de gastos pendientes este mes?"<br>
+              "¿Cuál es mi promedio mensual de gasto en servicios?"
+            </div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Sugerencias rápidas</h4>
+            <p>La pantalla muestra botones de preguntas frecuentes para que puedas arrancar sin tener que escribir nada. Hacé click en cualquiera y se ejecuta automáticamente.</p>
+          </div>
+          <div class="ayuda-tip">Las respuestas de la IA se basan en tus datos reales — cuantos más meses tengas cargados, más completas y precisas serán las respuestas.</div>
+        </div>
+
+        <!-- ADMIN -->
+        <div class="ayuda-section" id="ayuda-admin">
+          <h3>⚙️ Administración</h3>
+          <p class="subtitulo">Gestión de usuarios y empresas — visible solo para administradores</p>
+          <div class="ayuda-bloque">
+            <h4>Empresas</h4>
+            <p>Cada empresa tiene sus propios datos completamente aislados. Los usuarios solo ven la información de las empresas a las que tienen acceso.</p>
+            <div class="ayuda-ejemplo">
+              <strong>Crear empresa:</strong> botón "+ Nueva empresa" → nombre + ID (sin espacios)<br>
+              <strong>Ejemplo:</strong> Nombre: "JLL Consultoría" · ID: "JLL"
+            </div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Usuarios</h4>
+            <p>Podés crear usuarios con distintos niveles de acceso:</p>
+            <div class="ayuda-ejemplo">
+              <strong>Admin global:</strong> puede acceder a todas las empresas y crear/eliminar usuarios<br>
+              <strong>Admin de empresa:</strong> gestión completa dentro de esa empresa<br>
+              <strong>Editor:</strong> puede cargar y editar transacciones<br>
+              <strong>Viewer:</strong> solo lectura — ve los datos pero no puede modificar nada
+            </div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Gestión de contraseñas</h4>
+            <p>Usá el ícono 🔑 junto a cualquier usuario para resetear su contraseña. El usuario deberá usar la nueva contraseña en su próximo ingreso. Las contraseñas se guardan encriptadas — nadie puede verlas, ni el administrador.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Login</h4>
+            <p>Al abrir la app, el sistema pide <strong>Empresa + Usuario + Contraseña</strong>. La sesión se mantiene activa hasta que el usuario hace click en "Cerrar sesión" en el pie del menú lateral.</p>
+          </div>
+          <div class="ayuda-tip">Si olvidás tu contraseña, pedile al administrador que la resetee desde el panel Admin → Usuarios → 🔑.</div>
+        </div>
+
+      </div><!-- /ayuda-content -->
+    </div><!-- /ayuda-body -->
+  </div><!-- /ayuda-panel -->
+</div><!-- /ayudaOverlay -->
 
 <!-- ADMIN PAGE -->
 <div id="page-admin" class="page">
@@ -4948,6 +5298,30 @@ function addChatMsg(html,role) {
   msgs.appendChild(div);
   msgs.scrollTop=msgs.scrollHeight;
 }
+
+// ── AYUDA ────────────────────────────────────────────────────
+function openAyuda(seccion) {
+  document.getElementById('ayudaOverlay').classList.add('show');
+  if (seccion) ayudaGo(seccion);
+}
+function closeAyuda(e) {
+  if (e && e.target !== document.getElementById('ayudaOverlay')) return;
+  document.getElementById('ayudaOverlay').classList.remove('show');
+}
+function ayudaGo(id) {
+  document.querySelectorAll('.ayuda-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.ayuda-nav-item').forEach(n => n.classList.remove('active'));
+  const sec = document.getElementById('ayuda-' + id);
+  if (sec) sec.classList.add('active');
+  const items = document.querySelectorAll('.ayuda-nav-item');
+  const order = ['inicio','dashboard','transacciones','tarjetas','presupuesto','analisis','reportes','consultas','admin'];
+  const idx = order.indexOf(id);
+  if (idx >= 0 && items[idx]) items[idx].classList.add('active');
+  // scroll al tope del contenido
+  const content = document.querySelector('.ayuda-content');
+  if (content) content.scrollTop = 0;
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAyuda(); });
 
 // ── INIT ─────────────────────────────────────────────────────
 (async () => {
