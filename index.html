@@ -1340,6 +1340,37 @@ tr:hover td { background: #fafbfc; }
             <p>Al abrir la app, el sistema pide <strong>Empresa + Usuario + Contraseña</strong>. La sesión se mantiene activa hasta que el usuario hace click en "Cerrar sesión" en el pie del menú lateral.</p>
           </div>
           <div class="ayuda-tip">Si olvidás tu contraseña, pedile al administrador que la resetee desde el panel Admin → Usuarios → 🔑.</div>
+          <div class="ayuda-bloque">
+            <h4>💳 Bancos / Tarjetas</h4>
+            <p>Configurá formatos de importación personalizados para cualquier banco o tarjeta, scoped a tu empresa. Esto te permite importar resúmenes XLSX de bancos que Norte no reconoce automáticamente (además de BAPRO y Santander que ya vienen incluidos).</p>
+            <div class="ayuda-ejemplo">
+              <strong>Cómo configurar un banco nuevo:</strong><br>
+              1. Admin → Bancos/Tarjetas → <strong>+ Nuevo banco</strong><br>
+              2. Completá País, Banco y Tarjeta/Cuenta<br>
+              3. Subí un XLSX de muestra de ese banco (solo se usa para configurar, no se importa ningún dato)<br>
+              4. Norte detecta automáticamente las columnas. Revisá y ajustá si algo quedó mal<br>
+              5. Configurá los patrones a ignorar (ej: "PAGO EN PESOS" para no incluir pagos anteriores)<br>
+              6. Hacé click en <strong>Vista previa</strong> para confirmar que los movimientos se detectan bien<br>
+              7. <strong>Guardar</strong> — a partir de ahora ese banco aparece en el menú de Importar TC
+            </div>
+            <div class="ayuda-ejemplo">
+              <strong>Columnas que podés mapear:</strong><br>
+              • <strong>Fecha</strong> — fecha del movimiento<br>
+              • <strong>Descripción / Concepto</strong> — nombre del comercio o detalle<br>
+              • <strong>Importe ARS ($)</strong> — monto en pesos<br>
+              • <strong>Importe USD (U$S)</strong> — monto en dólares (si el banco tiene columna separada)<br>
+              • <strong>Moneda (ARS/USD)</strong> — columna que indica la divisa<br>
+              • <strong>Cuota actual / Cuota total</strong> — para cuotas en columnas separadas (ej: "3" y "12")<br>
+              • <strong>Cuota combinada</strong> — si viene en una sola columna como "3/12"<br>
+              • <strong>Portador / Titular</strong> — nombre del tarjetahabiente (para tarjetas adicionales)
+            </div>
+            <div class="ayuda-ejemplo">
+              <strong>Importar con un banco configurado:</strong><br>
+              Transacciones → 💳 Importar TC → el banco aparece bajo "Mis bancos configurados" → seleccionarlo y continuar normalmente
+            </div>
+            <p>Cada empresa tiene sus propias configuraciones de bancos — no se comparten entre empresas ni se mezclan.</p>
+          </div>
+          <div class="ayuda-tip">Podés editar la configuración de un banco en cualquier momento (ícono ✏️) sin perder las transacciones ya importadas con ese banco.</div>
         </div>
 
       </div><!-- /ayuda-content -->
