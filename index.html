@@ -614,6 +614,92 @@ tr:hover td { background: #fafbfc; }
 .sidebar-user strong { color:rgba(255,255,255,0.85);display:block; }
 .logout-btn { width:100%;text-align:left;background:none;border:none;color:rgba(255,255,255,0.5);font-size:12px;padding:6px 20px 14px;cursor:pointer;display:flex;align-items:center;gap:6px; }
 .logout-btn:hover { color:#fff; }
+
+/* ── ONBOARDING WIZARD ─────────────────────────────────────── */
+#onboardingOverlay {
+  position:fixed;inset:0;z-index:3000;
+  background:rgba(8,18,30,0.88);
+  backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+#onboardingOverlay.hidden { display:none; }
+.ob-card {
+  background:var(--card);border-radius:24px;
+  width:100%;max-width:500px;
+  box-shadow:0 40px 100px rgba(0,0,0,0.55),0 0 0 1px rgba(255,255,255,0.06);
+  overflow:hidden;
+}
+.ob-header {
+  background:linear-gradient(135deg,#0c1c2b 0%,#1a3c4e 100%);
+  padding:28px 36px 22px;
+}
+.ob-steps { display:flex;gap:6px;margin-bottom:20px; }
+.ob-step-dot {
+  height:4px;border-radius:2px;flex:1;
+  background:rgba(255,255,255,0.18);transition:background 0.3s;
+}
+.ob-step-dot.active { background:var(--primary); }
+.ob-step-dot.done   { background:rgba(255,138,92,0.45); }
+.ob-step-ico   { font-size:34px;margin-bottom:8px; }
+.ob-step-title { font-size:21px;font-weight:700;color:#fff;letter-spacing:-0.4px;margin-bottom:5px; }
+.ob-step-sub   { font-size:13px;color:rgba(255,255,255,0.58);line-height:1.5; }
+.ob-body { padding:26px 36px 30px; }
+.ob-actions { display:flex;gap:8px;justify-content:flex-end;margin-top:22px; }
+.ob-btn-skip {
+  background:none;border:none;color:var(--muted);
+  font-size:13px;cursor:pointer;padding:10px 12px;border-radius:8px;
+}
+.ob-btn-skip:hover { color:var(--text);background:var(--bg); }
+.ob-btn-next {
+  background:var(--primary);color:#fff;border:none;
+  border-radius:10px;padding:11px 26px;
+  font-size:14px;font-weight:600;cursor:pointer;transition:opacity 0.2s;
+}
+.ob-btn-next:hover { opacity:0.86; }
+.ob-field { margin-bottom:15px; }
+.ob-label {
+  display:block;font-size:10.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1px;
+  color:var(--muted);margin-bottom:6px;
+}
+.ob-input {
+  width:100%;box-sizing:border-box;
+  border:1.5px solid var(--border);border-radius:10px;
+  padding:10px 14px;font-size:15px;
+  background:var(--bg);color:var(--text);
+  transition:border-color 0.2s;font-family:inherit;
+}
+.ob-input:focus { outline:none;border-color:var(--primary); }
+.ob-tipo-row { display:flex;gap:8px;margin-bottom:14px; }
+.ob-tipo-btn {
+  flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);
+  background:none;cursor:pointer;font-size:13px;font-weight:600;
+  color:var(--muted);transition:all 0.2s;font-family:inherit;
+}
+.ob-tipo-btn.sel-ingreso { border-color:#10b981;color:#10b981;background:rgba(16,185,129,0.07); }
+.ob-tipo-btn.sel-gasto   { border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,0.07); }
+.ob-info-box {
+  background:rgba(255,138,92,0.055);
+  border:1px solid rgba(255,138,92,0.20);
+  border-radius:12px;padding:16px 18px;margin-bottom:6px;
+}
+.ob-info-step { display:flex;gap:12px;align-items:flex-start;margin-bottom:12px; }
+.ob-info-step:last-child { margin-bottom:0; }
+.ob-info-num {
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;
+  background:var(--primary);color:#fff;
+  font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.ob-info-text { font-size:13px;color:var(--text);line-height:1.5; }
+.ob-success-ico { text-align:center;font-size:50px;margin-bottom:14px; }
+.ob-success-checks { list-style:none;padding:0;margin:0 0 4px; }
+.ob-success-checks li {
+  padding:9px 0;border-bottom:1px solid var(--border);
+  font-size:14px;color:var(--text);display:flex;align-items:center;gap:10px;
+}
+.ob-success-checks li:last-child { border-bottom:none; }
+.ob-success-checks li .ck { color:#10b981;font-weight:700;font-size:15px; }
 </style>
 </head>
 <body>
@@ -856,7 +942,10 @@ tr:hover td { background: #fafbfc; }
     <div class="nav-item" id="navAdmin" style="display:none" onclick="showPage('admin')"><span class="ico">⚙️</span> Admin</div>
   </div>
   <div class="sidebar-user" id="sidebarUser" style="display:none">
-    <strong id="sidebarUsername">—</strong>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <strong id="sidebarUsername">—</strong>
+      <button onclick="openCambiarPwd()" title="Cambiar contraseña" style="background:none;border:none;cursor:pointer;font-size:13px;opacity:0.6;padding:0 2px" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">🔑</button>
+    </div>
     <span id="sidebarEmpresa" style="opacity:0.7"></span>
   </div>
   <button class="logout-btn" id="logoutBtn" style="display:none" onclick="doLogout()">🚪 Cerrar sesión</button>
@@ -2310,6 +2399,201 @@ function bootApp() {
   curYear  = new Date().getFullYear();
   updateMonthDisplay();
   renderDash();
+
+  // Show onboarding if first time
+  maybeShowOnboarding();
+}
+
+// ── ONBOARDING WIZARD ────────────────────────────────────────
+const OB_STEPS = [
+  { ico:'🧭', title:'Bienvenido a Norte',            sub:'En pocos pasos configurás tu espacio para gestionar las finanzas de tu hogar.' },
+  { ico:'📝', title:'Registrá tu primer movimiento', sub:'Cargá un ingreso o gasto de prueba para ver cómo funciona el sistema.' },
+  { ico:'🏦', title:'Importación de extractos',      sub:'Norte puede leer tus extractos de banco o tarjeta automáticamente.' },
+  { ico:'🎉', title:'¡Estás listo!',                 sub:'Tu espacio Norte está configurado. Empezá a registrar las finanzas de tu hogar.' }
+];
+let obCurrentStep = 0;
+
+function maybeShowOnboarding() {
+  const sess = getSession();
+  if (!sess) return;
+  if (localStorage.getItem('fin_onboarding_done_' + sess.userId)) return;
+  obCurrentStep = 0;
+  document.getElementById('onboardingOverlay').classList.remove('hidden');
+  renderObStep();
+}
+
+function obMarkDone() {
+  const sess = getSession();
+  if (sess) localStorage.setItem('fin_onboarding_done_' + sess.userId, '1');
+  document.getElementById('onboardingOverlay').classList.add('hidden');
+}
+
+function obNext() {
+  if (obCurrentStep === 0) {
+    // Save hogar name
+    const name = (document.getElementById('obHogarName')?.value || '').trim();
+    if (name) {
+      const empresas = getEmpresas();
+      const idx = empresas.findIndex(e => e.id === curEmpresa());
+      if (idx >= 0) { empresas[idx].nombre = name; saveEmpresas(empresas); }
+      const sess = getSession(); if (sess) { sess.empresaNombre = name; setSession(sess); }
+      const emEl = document.getElementById('sidebarEmpresa');
+      if (emEl) emEl.textContent = name;
+    }
+  } else if (obCurrentStep === 1) {
+    // Save first transaction (if amount provided)
+    const imp = parseFloat(document.getElementById('obImporte')?.value || '0');
+    if (imp > 0) {
+      const tipo  = document.getElementById('obTipo')?.value || 'Ingreso';
+      const rubro = document.getElementById('obRubro')?.value || '';
+      const desc  = (document.getElementById('obDesc')?.value || '').trim();
+      const key   = curKey();
+      const allData = getData();
+      allData.push({
+        id: uid(), mes: key, tipo, rubro,
+        descripcion: desc || rubro,
+        importe: imp, impPesos: imp,
+        moneda: 'ARS',
+        fecha: new Date().toISOString().slice(0,10)
+      });
+      saveData(allData);
+    }
+  } else if (obCurrentStep === 3) {
+    obMarkDone();
+    renderDash();
+    return;
+  }
+  obCurrentStep = Math.min(obCurrentStep + 1, OB_STEPS.length - 1);
+  renderObStep();
+}
+
+function renderObStep() {
+  const step = OB_STEPS[obCurrentStep];
+  document.getElementById('obStepIco').textContent   = step.ico;
+  document.getElementById('obStepTitle').textContent = step.title;
+  document.getElementById('obStepSub').textContent   = step.sub;
+  document.querySelectorAll('.ob-step-dot').forEach((d, i) => {
+    d.className = 'ob-step-dot' +
+      (i < obCurrentStep ? ' done' : i === obCurrentStep ? ' active' : '');
+  });
+  const renders = [renderObS1, renderObS2, renderObS3, renderObS4];
+  renders[obCurrentStep]();
+}
+
+function renderObS1() {
+  const emp = getEmpresas().find(e => e.id === curEmpresa());
+  const defaultName = (emp?.nombre && emp.nombre !== 'JLL') ? emp.nombre : '';
+  const sess = getSession();
+  document.getElementById('obBody').innerHTML = `
+    <div class="ob-field">
+      <div style="font-size:15px;color:var(--text);padding:4px 0 14px">
+        Hola, <strong>${esc(sess?.username || '')}</strong> 👋
+      </div>
+    </div>
+    <div class="ob-field">
+      <label class="ob-label" for="obHogarName">Nombre de tu hogar o perfil</label>
+      <input class="ob-input" id="obHogarName" type="text"
+        placeholder="Ej: Casa García, Mi Hogar, Familia López…"
+        value="${esc(defaultName)}">
+      <div style="font-size:12px;color:var(--muted);margin-top:7px">
+        Este nombre aparece en el menú lateral y en los reportes.
+      </div>
+    </div>
+    <div class="ob-actions">
+      <button class="ob-btn-skip" onclick="obMarkDone()">Omitir configuración</button>
+      <button class="ob-btn-next" onclick="obNext()">Siguiente →</button>
+    </div>`;
+}
+
+function renderObS2() {
+  const rubrosI = RUBROS.Ingreso.filter(r => r !== 'Personalizado...');
+  const rubrosG = RUBROS.Gasto.filter(r => r !== 'Personalizado...');
+  document.getElementById('obBody').innerHTML = `
+    <div id="obTipoRow" class="ob-tipo-row">
+      <button class="ob-tipo-btn sel-ingreso" onclick="obSetTipo('Ingreso')">💰 Ingreso</button>
+      <button class="ob-tipo-btn"             onclick="obSetTipo('Gasto')">💸 Gasto</button>
+    </div>
+    <input type="hidden" id="obTipo" value="Ingreso">
+    <div class="ob-field">
+      <label class="ob-label">Rubro</label>
+      <select class="ob-input" id="obRubro">
+        ${rubrosI.map(r=>`<option>${esc(r)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="ob-field">
+      <label class="ob-label">Importe ($)</label>
+      <input class="ob-input" id="obImporte" type="number" placeholder="0" min="0" step="any">
+    </div>
+    <div class="ob-field">
+      <label class="ob-label">Descripción (opcional)</label>
+      <input class="ob-input" id="obDesc" type="text" placeholder="Ej: Sueldo julio…">
+    </div>
+    <div class="ob-actions">
+      <button class="ob-btn-skip" onclick="obCurrentStep=2;renderObStep()">Saltar este paso</button>
+      <button class="ob-btn-next" onclick="obNext()">Guardar y continuar</button>
+    </div>`;
+}
+
+function obSetTipo(tipo) {
+  document.getElementById('obTipo').value = tipo;
+  const btns = document.querySelectorAll('.ob-tipo-btn');
+  btns[0].className = 'ob-tipo-btn' + (tipo==='Ingreso' ? ' sel-ingreso' : '');
+  btns[1].className = 'ob-tipo-btn' + (tipo==='Gasto'   ? ' sel-gasto'   : '');
+  const rubros = tipo === 'Ingreso'
+    ? RUBROS.Ingreso.filter(r=>r!=='Personalizado...')
+    : RUBROS.Gasto.filter(r=>r!=='Personalizado...');
+  document.getElementById('obRubro').innerHTML = rubros.map(r=>`<option>${esc(r)}</option>`).join('');
+}
+
+function renderObS3() {
+  document.getElementById('obBody').innerHTML = `
+    <div class="ob-info-box">
+      <div class="ob-info-step">
+        <div class="ob-info-num">1</div>
+        <div class="ob-info-text">
+          <strong>Primera vez:</strong> en Admin → Bancos y Tarjetas, subís un extracto de muestra
+          para que Norte aprenda la estructura de tu banco o tarjeta.
+        </div>
+      </div>
+      <div class="ob-info-step">
+        <div class="ob-info-num">2</div>
+        <div class="ob-info-text">
+          <strong>Configurado para siempre:</strong> a partir de ahí, cada extracto del mismo
+          banco se importa automáticamente sin volver a mapear columnas.
+        </div>
+      </div>
+      <div class="ob-info-step">
+        <div class="ob-info-num">3</div>
+        <div class="ob-info-text">
+          <strong>Cualquier banco o tarjeta:</strong> podés configurar todos los que uses,
+          cada uno con su propio formato.
+        </div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:12px">
+      También podés cargar movimientos de forma manual en cualquier momento desde el ícono + o la sección Transacciones.
+    </p>
+    <div class="ob-actions">
+      <button class="ob-btn-skip" onclick="obCurrentStep=3;renderObStep()">Saltar</button>
+      <button class="ob-btn-next" onclick="obNext()">Entendido</button>
+    </div>`;
+}
+
+function renderObS4() {
+  const emp   = getEmpresas().find(e => e.id === curEmpresa());
+  const hogar = emp?.nombre || curEmpresa();
+  document.getElementById('obBody').innerHTML = `
+    <div class="ob-success-ico">🎉</div>
+    <ul class="ob-success-checks">
+      <li><span class="ck">✓</span> Hogar configurado: <strong>${esc(hogar)}</strong></li>
+      <li><span class="ck">✓</span> Dashboard y reportes listos</li>
+      <li><span class="ck">✓</span> Importación bancaria disponible en Admin</li>
+      <li><span class="ck">✓</span> Gamificación y metas de ahorro activadas</li>
+    </ul>
+    <div class="ob-actions" style="justify-content:center;margin-top:26px">
+      <button class="ob-btn-next" style="padding:13px 44px;font-size:15px"
+        onclick="obNext()">🧭 Ir al dashboard</button>
+    </div>`;
 }
 
 // ── ADMIN PANEL ──────────────────────────────────────────────
@@ -2386,13 +2670,84 @@ async function saveAdminUser() {
 
 
 
-async function resetUserPwd(userId) {
-  const newPwd = prompt('Nueva contraseña para el usuario:');
-  if (!newPwd) return;
-  const pwdHash = await hashPwd(newPwd);
-  const users = getUsers().map(u => u.id === userId ? {...u, pwdHash} : u);
+function openCambiarPwd() {
+  document.getElementById('pwdActual').value = '';
+  document.getElementById('pwdNueva').value = '';
+  document.getElementById('pwdConfirm').value = '';
+  document.getElementById('cambiarPwdError').style.display = 'none';
+  document.getElementById('cambiarPwdOverlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('pwdActual').focus(), 100);
+}
+
+function closeCambiarPwd() {
+  document.getElementById('cambiarPwdOverlay').style.display = 'none';
+}
+
+async function confirmarCambiarPwd() {
+  const actual  = document.getElementById('pwdActual').value;
+  const nueva   = document.getElementById('pwdNueva').value;
+  const confirm = document.getElementById('pwdConfirm').value;
+  const errEl   = document.getElementById('cambiarPwdError');
+
+  const showErr = msg => { errEl.textContent = msg; errEl.style.display = 'block'; };
+  errEl.style.display = 'none';
+
+  if (!actual)         { showErr('Ingresá tu contraseña actual.'); return; }
+  if (!nueva)          { showErr('Ingresá la nueva contraseña.'); return; }
+  if (nueva.length < 6){ showErr('La nueva contraseña debe tener al menos 6 caracteres.'); return; }
+  if (nueva !== confirm){ showErr('Las contraseñas no coinciden.'); return; }
+
+  const session = getSession();
+  const users   = getUsers();
+  const user    = users.find(u => u.id === session.userId);
+  if (!user) { showErr('No se encontró tu usuario.'); return; }
+
+  const hashActual = await hashPwd(actual);
+  if (hashActual !== user.pwdHash) { showErr('La contraseña actual es incorrecta.'); return; }
+
+  const hashNueva = await hashPwd(nueva);
+  const updated   = users.map(u => u.id === user.id ? {...u, pwdHash: hashNueva} : u);
+  saveUsers(updated);
+  closeCambiarPwd();
+  alert('✅ Contraseña actualizada correctamente.');
+}
+
+let _resetPwdUserId = null;
+
+function resetUserPwd(userId) {
+  const user = getUsers().find(u => u.id === userId);
+  if (!user) return;
+  _resetPwdUserId = userId;
+  document.getElementById('resetPwdUsername').textContent = user.username;
+  document.getElementById('resetPwdNueva').value = '';
+  document.getElementById('resetPwdConfirm').value = '';
+  document.getElementById('resetPwdError').style.display = 'none';
+  document.getElementById('resetPwdOverlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('resetPwdNueva').focus(), 100);
+}
+
+function closeResetPwd() {
+  document.getElementById('resetPwdOverlay').style.display = 'none';
+  _resetPwdUserId = null;
+}
+
+async function confirmarResetPwd() {
+  const nueva   = document.getElementById('resetPwdNueva').value;
+  const confirm = document.getElementById('resetPwdConfirm').value;
+  const errEl   = document.getElementById('resetPwdError');
+
+  const showErr = msg => { errEl.textContent = msg; errEl.style.display = 'block'; };
+  errEl.style.display = 'none';
+
+  if (!nueva)          { showErr('Ingresá la nueva contraseña.'); return; }
+  if (nueva.length < 6){ showErr('La contraseña debe tener al menos 6 caracteres.'); return; }
+  if (nueva !== confirm){ showErr('Las contraseñas no coinciden.'); return; }
+
+  const pwdHash = await hashPwd(nueva);
+  const users   = getUsers().map(u => u.id === _resetPwdUserId ? {...u, pwdHash} : u);
   saveUsers(users);
-  alert('Contraseña actualizada.');
+  closeResetPwd();
+  alert('✅ Contraseña actualizada correctamente.');
 }
 
 function deleteUser(userId) {
@@ -3833,6 +4188,36 @@ function renderAlertas() {
     title: `${fijosPend.length} gasto${fijosPend.length===1?'':'s'} fijo${fijosPend.length===1?'':'s'} sin completar este mes`,
     sub: `${fijosPend.slice(0,4).map(t=>esc(t.detalle)).join(' · ')}${fijosPend.length>4 ? ` y ${fijosPend.length-4} más` : ''} — completá el importe a medida que te lleguen`
   });
+
+  // Alertas de presupuesto superado o cerca del límite
+  const monthBudgets = getBudgets()[key] || {};
+  if (Object.keys(monthBudgets).length) {
+    const gastoMap = {};
+    allData.filter(t => t.mes === key && t.tipo === 'Gasto')
+      .forEach(t => { gastoMap[t.rubro] = (gastoMap[t.rubro] || 0) + (Number(t.impPesos) || 0); });
+
+    const superados = [], cercanos = [];
+    Object.entries(monthBudgets).forEach(([rubro, limite]) => {
+      const lim = Number(limite);
+      if (!lim) return;
+      const gastado = gastoMap[rubro] || 0;
+      const pct = Math.round(gastado / lim * 100);
+      if (pct >= 100) superados.push({ rubro, gastado, lim, pct });
+      else if (pct >= 80) cercanos.push({ rubro, gastado, lim, pct });
+    });
+
+    if (superados.length) alertas.push({
+      cls: 'danger', ico: '🚨',
+      title: `Presupuesto superado en ${superados.length} rubro${superados.length > 1 ? 's' : ''}`,
+      sub: superados.map(x => `${x.rubro}: ${fmtP(x.gastado)} de ${fmtP(x.lim)} (${x.pct}%)`).join(' · ')
+    });
+
+    if (cercanos.length) alertas.push({
+      cls: 'warn', ico: '🔶',
+      title: `${cercanos.length} rubro${cercanos.length > 1 ? 's' : ''} cerca del límite de presupuesto`,
+      sub: cercanos.map(x => `${x.rubro}: ${x.pct}% usado — te quedan ${fmtP(x.lim - x.gastado)}`).join(' · ')
+    });
+  }
 
   document.getElementById('alertasWrap').innerHTML = alertas.map(a=>`
     <div class="alerta-item alerta-${a.cls}">
@@ -6245,11 +6630,112 @@ function ayudaGo(id) {
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAyuda(); });
 
+// ── SYNC GLOBAL USERS (cuentas creadas desde la landing) ─────
+async function syncGlobalUsers() {
+  try {
+    if (typeof firebase === 'undefined') return;
+    if (!firebase.apps?.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Traer usuarios globales creados por la Cloud Function
+    const usersSnap = await db.ref('norteSync/globalUsers').once('value');
+    const globalUsersObj = usersSnap.val();
+    if (globalUsersObj) {
+      const local = getUsers();
+      const localIds = new Set(local.map(u => u.id));
+      Object.values(globalUsersObj).forEach(gu => {
+        if (!localIds.has(gu.id)) local.push(gu);
+      });
+      saveUsers(local);
+    }
+
+    // Traer empresas globales
+    const empresasSnap = await db.ref('norteSync/globalEmpresas').once('value');
+    const globalEmpresasObj = empresasSnap.val();
+    if (globalEmpresasObj) {
+      const local = getEmpresas();
+      const localIds = new Set(local.map(e => e.id));
+      Object.values(globalEmpresasObj).forEach(ge => {
+        if (!localIds.has(ge.id)) local.push(ge);
+      });
+      saveEmpresas(local);
+    }
+  } catch (e) {
+    // No bloquear el arranque si Firebase no está disponible
+    console.warn('syncGlobalUsers:', e.message);
+  }
+}
+
 // ── INIT ─────────────────────────────────────────────────────
 (async () => {
-  await runMigration();   // no-op si ya corrió; migra datos planos → JLL la primera vez
-  bootApp();              // si hay sesión activa, entra directo; si no, muestra login
+  await runMigration();      // no-op si ya corrió; migra datos planos → JLL la primera vez
+  await syncGlobalUsers();   // trae cuentas creadas desde la landing (nuevos usuarios)
+  bootApp();                 // si hay sesión activa, entra directo; si no, muestra login
 })();
 </script>
+
+<!-- ── MODAL: CAMBIAR CONTRASEÑA ─────────────────────────────── -->
+<div id="cambiarPwdOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:32px;max-width:380px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
+    <h3 style="margin:0 0 6px;font-size:17px">Cambiar contraseña</h3>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 24px">Ingresá tu contraseña actual y la nueva.</p>
+    <div id="cambiarPwdError" style="display:none;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px"></div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">Contraseña actual</label>
+      <input id="pwdActual" type="password" placeholder="••••••••" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:14px;box-sizing:border-box">
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">Nueva contraseña</label>
+      <input id="pwdNueva" type="password" placeholder="••••••••" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:14px;box-sizing:border-box">
+    </div>
+    <div style="margin-bottom:24px">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">Confirmar nueva contraseña</label>
+      <input id="pwdConfirm" type="password" placeholder="••••••••" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:14px;box-sizing:border-box">
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="closeCambiarPwd()" style="flex:1;padding:11px;border:1px solid var(--border);border-radius:10px;background:none;color:var(--text);cursor:pointer;font-size:14px">Cancelar</button>
+      <button onclick="confirmarCambiarPwd()" style="flex:1;padding:11px;border:none;border-radius:10px;background:var(--primary);color:white;cursor:pointer;font-size:14px;font-weight:600">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: RESET CONTRASEÑA (ADMIN) ───────────────────────── -->
+<div id="resetPwdOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:32px;max-width:380px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
+    <h3 style="margin:0 0 6px;font-size:17px">Resetear contraseña</h3>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 24px">Ingresá la nueva contraseña para <strong id="resetPwdUsername"></strong>.</p>
+    <div id="resetPwdError" style="display:none;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px"></div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">Nueva contraseña</label>
+      <input id="resetPwdNueva" type="password" placeholder="••••••••" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:14px;box-sizing:border-box">
+    </div>
+    <div style="margin-bottom:24px">
+      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">Confirmar contraseña</label>
+      <input id="resetPwdConfirm" type="password" placeholder="••••••••" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:14px;box-sizing:border-box">
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="closeResetPwd()" style="flex:1;padding:11px;border:1px solid var(--border);border-radius:10px;background:none;color:var(--text);cursor:pointer;font-size:14px">Cancelar</button>
+      <button onclick="confirmarResetPwd()" style="flex:1;padding:11px;border:none;border-radius:10px;background:var(--primary);color:white;cursor:pointer;font-size:14px;font-weight:600">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ONBOARDING WIZARD ────────────────────────────────────── -->
+<div id="onboardingOverlay" class="hidden">
+  <div class="ob-card">
+    <div class="ob-header">
+      <div class="ob-steps" id="obStepDots">
+        <div class="ob-step-dot active"></div>
+        <div class="ob-step-dot"></div>
+        <div class="ob-step-dot"></div>
+        <div class="ob-step-dot"></div>
+      </div>
+      <div id="obStepIco" class="ob-step-ico">🧭</div>
+      <div id="obStepTitle" class="ob-step-title">Bienvenido a Norte</div>
+      <div id="obStepSub" class="ob-step-sub">En pocos pasos configurás tu espacio para gestionar las finanzas de tu hogar.</div>
+    </div>
+    <div class="ob-body" id="obBody"></div>
+  </div>
+</div>
 </body>
 </html>
