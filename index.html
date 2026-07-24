@@ -2675,12 +2675,12 @@ function openCambiarPwd() {
   document.getElementById('pwdNueva').value = '';
   document.getElementById('pwdConfirm').value = '';
   document.getElementById('cambiarPwdError').style.display = 'none';
-  document.getElementById('cambiarPwdOverlay').style.display = 'flex';
+  document.getElementById('cambiarPwdOverlay').classList.add('open');
   setTimeout(() => document.getElementById('pwdActual').focus(), 100);
 }
 
 function closeCambiarPwd() {
-  document.getElementById('cambiarPwdOverlay').style.display = 'none';
+  document.getElementById('cambiarPwdOverlay').classList.remove('open');
 }
 
 async function confirmarCambiarPwd() {
@@ -2722,12 +2722,12 @@ function resetUserPwd(userId) {
   document.getElementById('resetPwdNueva').value = '';
   document.getElementById('resetPwdConfirm').value = '';
   document.getElementById('resetPwdError').style.display = 'none';
-  document.getElementById('resetPwdOverlay').style.display = 'flex';
+  document.getElementById('resetPwdOverlay').classList.add('open');
   setTimeout(() => document.getElementById('resetPwdNueva').focus(), 100);
 }
 
 function closeResetPwd() {
-  document.getElementById('resetPwdOverlay').style.display = 'none';
+  document.getElementById('resetPwdOverlay').classList.remove('open');
   _resetPwdUserId = null;
 }
 
@@ -6675,21 +6675,21 @@ async function syncGlobalUsers() {
 </script>
 
 <!-- ── MODAL: CAMBIAR CONTRASEÑA ─────────────────────────────── -->
-<div id="cambiarPwdOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:center;justify-content:center">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:32px;max-width:380px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
-    <h3 style="margin:0 0 6px;font-size:17px">Cambiar contraseña</h3>
-    <p style="font-size:13px;color:var(--muted);margin:0 0 24px">Ingresá tu contraseña actual y la nueva.</p>
+<div id="cambiarPwdOverlay" class="import-overlay">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:32px;max-width:380px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
+    <h3 style="margin:0 0 6px;font-size:17px;color:var(--text)">Cambiar contraseña</h3>
+    <p style="font-size:13px;color:var(--text-2);margin:0 0 24px">Ingresá tu contraseña actual y la nueva.</p>
     <div id="cambiarPwdError" style="display:none;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px"></div>
     <div style="margin-bottom:14px">
-      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">Contraseña actual</label>
+      <label style="font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px">Contraseña actual</label>
       <input id="pwdActual" type="password" placeholder="••••••••" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:14px;box-sizing:border-box">
     </div>
     <div style="margin-bottom:14px">
-      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">Nueva contraseña</label>
+      <label style="font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px">Nueva contraseña</label>
       <input id="pwdNueva" type="password" placeholder="••••••••" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:14px;box-sizing:border-box">
     </div>
     <div style="margin-bottom:24px">
-      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">Confirmar nueva contraseña</label>
+      <label style="font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px">Confirmar nueva contraseña</label>
       <input id="pwdConfirm" type="password" placeholder="••••••••" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:14px;box-sizing:border-box">
     </div>
     <div style="display:flex;gap:10px">
@@ -6700,17 +6700,17 @@ async function syncGlobalUsers() {
 </div>
 
 <!-- ── MODAL: RESET CONTRASEÑA (ADMIN) ───────────────────────── -->
-<div id="resetPwdOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;align-items:center;justify-content:center">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:32px;max-width:380px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
-    <h3 style="margin:0 0 6px;font-size:17px">Resetear contraseña</h3>
-    <p style="font-size:13px;color:var(--muted);margin:0 0 24px">Ingresá la nueva contraseña para <strong id="resetPwdUsername"></strong>.</p>
+<div id="resetPwdOverlay" class="import-overlay">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:32px;max-width:380px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
+    <h3 style="margin:0 0 6px;font-size:17px;color:var(--text)">Resetear contraseña</h3>
+    <p style="font-size:13px;color:var(--text-2);margin:0 0 24px">Ingresá la nueva contraseña para <strong id="resetPwdUsername"></strong>.</p>
     <div id="resetPwdError" style="display:none;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px"></div>
     <div style="margin-bottom:14px">
-      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">Nueva contraseña</label>
+      <label style="font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px">Nueva contraseña</label>
       <input id="resetPwdNueva" type="password" placeholder="••••••••" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:14px;box-sizing:border-box">
     </div>
     <div style="margin-bottom:24px">
-      <label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">Confirmar contraseña</label>
+      <label style="font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px">Confirmar contraseña</label>
       <input id="resetPwdConfirm" type="password" placeholder="••••••••" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:14px;box-sizing:border-box">
     </div>
     <div style="display:flex;gap:10px">
