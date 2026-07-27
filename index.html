@@ -937,6 +937,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v2.0</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -3281,7 +3282,16 @@ const curKey   = () => monthKey(curYear, curMonth);
 // Helpers TC (soportan formato nuevo {origen:'TARJETA',banco:'BAPRO'} y viejo {origen:'TC-BAPRO'})
 const isTCOrigen   = t => t.origen === 'TARJETA' || (t.origen && t.origen.startsWith('TC'));
 const getBanco     = t => t.banco || (t.origen?.replace('TC-','') || '');
-const getBancoLabel= t => ({ BAPRO:'Banco Provincia', SANTANDER:'Santander' }[getBanco(t)] || getBanco(t));
+const getBancoLabel= t => {
+  const b = getBanco(t);
+  if (b === 'BAPRO') return 'Banco Provincia';
+  if (b === 'SANTANDER') return 'Santander';
+  // Formato nuevo (sin prefijo): ID directo del config
+  // Formato viejo (con prefijo): CUSTOM:id
+  const cfgId = b.startsWith('CUSTOM:') ? b.replace('CUSTOM:', '') : b;
+  const cfg = getBankConfigs().find(c => c.id === cfgId);
+  return cfg ? `${cfg.banco} · ${cfg.tarjeta}` : b;
+};
 const lastDayOfMonth = (y, m) => new Date(y, m + 1, 0).getDate();
 
 // ── PRESUPUESTO / META DE AHORRO ────────────────────────────
@@ -3776,7 +3786,7 @@ function confirmTCImport() {
       pagado:    isPaid ? (r.esUSD ? 0 : impP) : 0,
       saldo:     isPaid ? 0 : impP,
       origen:    'TARJETA',
-      banco:     tcBank,
+      banco:     tcBank.startsWith('CUSTOM:') ? tcBank.replace('CUSTOM:', '') : tcBank,
       tcPagado:  isPaid,   // débito: ya pagado; crédito: pendiente de pagar el resumen
     });
   });
