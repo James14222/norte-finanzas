@@ -1959,6 +1959,27 @@ tr:hover td { background: #fafbfc; }
           <input class="form-input" id="bankTarjeta" type="text" placeholder="Ej: Visa Gold">
         </div>
       </div>
+      <!-- Tipo de tarjeta -->
+      <div style="margin-bottom:16px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Tipo de tarjeta</div>
+        <div style="display:flex;gap:8px">
+          <label id="bankCardTypeCrediLabel" style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border:2px solid var(--primary);border-radius:8px;cursor:pointer;background:rgba(37,99,235,.06)">
+            <input type="radio" name="bankCardType" id="bankCardTypeCredi" value="credito" checked style="accent-color:var(--primary)">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--text)">💳 Crédito</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:1px">Se paga el resumen después. Los gastos quedan pendientes de pago.</div>
+            </div>
+          </label>
+          <label id="bankCardTypeDebiLabel" style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border:2px solid var(--border);border-radius:8px;cursor:pointer">
+            <input type="radio" name="bankCardType" id="bankCardTypeDebi" value="debito" style="accent-color:var(--primary)">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--text)">🏦 Débito</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:1px">El pago es inmediato. Los gastos se registran como pagados al importar.</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
       <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">
         Subí un archivo de muestra para configurar el formato
       </div>
@@ -2845,6 +2866,11 @@ function openBankModal(editId) {
   const cfg = editId ? getBankConfigs().find(c=>c.id===editId) : null;
   document.getElementById('bankModalTitle').textContent = cfg ? 'Editar banco/tarjeta' : 'Nueva configuración de banco';
   document.getElementById('bankPais').value    = cfg?.pais    || 'Argentina';
+  // Card type
+  const isDebit = cfg?.cardType === 'debito';
+  document.getElementById('bankCardTypeCredi').checked = !isDebit;
+  document.getElementById('bankCardTypeDebi').checked  = isDebit;
+  updateBankCardTypeUI();
   document.getElementById('bankNombre').value  = cfg?.banco   || '';
   document.getElementById('bankTarjeta').value = cfg?.tarjeta || '';
   document.getElementById('bankStep1Error').style.display = 'none';
@@ -2872,6 +2898,20 @@ function closeBankModal() {
   _bankSampleRaw = [];
   _bankEditId    = null;
 }
+
+function updateBankCardTypeUI() {
+  const isDebit = document.getElementById('bankCardTypeDebi').checked;
+  const crLabel = document.getElementById('bankCardTypeCrediLabel');
+  const dbLabel = document.getElementById('bankCardTypeDebiLabel');
+  crLabel.style.borderColor  = isDebit ? 'var(--border)' : 'var(--primary)';
+  crLabel.style.background   = isDebit ? '' : 'rgba(37,99,235,.06)';
+  dbLabel.style.borderColor  = isDebit ? 'var(--primary)' : 'var(--border)';
+  dbLabel.style.background   = isDebit ? 'rgba(37,99,235,.06)' : '';
+}
+// Wire up card type radios once DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('input[name="bankCardType"]').forEach(r => r.addEventListener('change', updateBankCardTypeUI));
+});
 
 function bankShowStep(n) {
   document.getElementById('bankStep1').style.display = n===1 ? 'block' : 'none';
@@ -3098,6 +3138,7 @@ function bankSaveConfig() {
   const skipRaw      = document.getElementById('bankSkipPatterns').value;
   const skipPats     = skipRaw.split(',').map(s=>s.trim()).filter(Boolean);
   const debitNegative = document.getElementById('bankDebitNegative').checked;
+  const cardType = document.getElementById('bankCardTypeDebi').checked ? 'debito' : 'credito';
   // Need at least desc column
   const hasDesc = Object.values(roles).includes('desc');
   if (!hasDesc && _bankSampleRaw.length) {
@@ -3110,9 +3151,9 @@ function bankSaveConfig() {
   const configs = getBankConfigs();
   if (_bankEditId) {
     const idx = configs.findIndex(c=>c.id===_bankEditId);
-    if (idx >= 0) configs[idx] = { ...configs[idx], pais, banco, tarjeta:tarj, parser:{ headerRow, colRoles:roles, skipPatterns:skipPats, debitNegative }, updatedAt:new Date().toISOString() };
+    if (idx >= 0) configs[idx] = { ...configs[idx], pais, banco, tarjeta:tarj, cardType, parser:{ headerRow, colRoles:roles, skipPatterns:skipPats, debitNegative }, updatedAt:new Date().toISOString() };
   } else {
-    configs.push({ id:uid(), pais, banco, tarjeta:tarj, parser:{ headerRow, colRoles:roles, skipPatterns:skipPats, debitNegative }, createdAt:new Date().toISOString() });
+    configs.push({ id:uid(), pais, banco, tarjeta:tarj, cardType, parser:{ headerRow, colRoles:roles, skipPatterns:skipPats, debitNegative }, createdAt:new Date().toISOString() });
   }
   saveBankConfigs(configs);
   closeBankModal();
@@ -3491,8 +3532,9 @@ function tcMapCols(headerRow) {
 
 let tcRows      = [];   // filas parseadas en curso
 let tcPendFile  = null; // archivo pendiente hasta que se confirme config
-let tcBank      = '';   // 'BAPRO' | 'SANTANDER'
+let tcBank      = '';   // 'BAPRO' | 'SANTANDER' | 'CUSTOM:<id>'
 let tcTargetMes = '';   // monthKey del mes de impacto
+let tcIsDebit   = false; // true si la tarjeta seleccionada es débito
 
 function handleTCImport(input) {
   const file = input.files[0];
@@ -3526,6 +3568,13 @@ function tcSelectBank(el, val) {
   document.querySelectorAll('#bankSelector .tc-option').forEach(e => e.classList.remove('selected'));
   el.classList.add('selected');
   tcBank = val;
+  // Determine if this is a debit card (only custom-configured banks can be débito)
+  if (val.startsWith('CUSTOM:')) {
+    const cfg = getBankConfigs().find(c => c.id === val.replace('CUSTOM:', ''));
+    tcIsDebit = cfg?.cardType === 'debito';
+  } else {
+    tcIsDebit = false; // BAPRO, SANTANDER are always credit cards
+  }
   tcCheckConfig();
 }
 
@@ -3622,10 +3671,13 @@ function renderImportPreview(filename) {
   const bankLabel = tcBank === 'BAPRO' ? 'Banco Provincia'
     : tcBank === 'SANTANDER' ? 'Santander'
     : (() => { const c = getBankConfigs().find(c => c.id === tcBank.slice(7)); return c ? `${c.banco} ${c.tarjeta}` : 'Banco'; })();
+  const debitBadge = tcIsDebit
+    ? ` · <span style="background:#d1fae5;color:#065f46;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700">🏦 DÉBITO — se registran como pagados</span>`
+    : '';
   document.getElementById('importInfo').innerHTML =
-    `<b>💳 ${bankLabel}</b> · <b>${tcRows.length}</b> movimientos detectados · Impacto en <b>${mesLabel}</b>`;
+    `<b>💳 ${bankLabel}</b> · <b>${tcRows.length}</b> movimientos detectados · Impacto en <b>${mesLabel}</b>${debitBadge}`;
 
-  const rubroOpts = RUBROS.Gasto.filter(r => r !== 'Personalizado...')
+  const rubroOpts = getAllRubros('Gasto').filter(r => r !== 'Personalizado...')
     .map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('');
 
   const hasTitular = tcRows.some(r => r.titular);
@@ -3703,8 +3755,12 @@ function confirmTCImport() {
   if (!sel.length) { alert('No hay movimientos seleccionados.'); return; }
   const data = getData();
   const mes  = tcTargetMes || curKey();
+  const today = new Date().toISOString().slice(0, 10);
   sel.forEach(r => {
     const impP = r.esUSD ? 0 : r.monto;
+    const impU = r.esUSD ? r.monto : 0;
+    // Débito: el pago ya fue debitado de la cuenta — se registra como pagado inmediatamente
+    const isPaid = tcIsDebit;
     data.push({
       id:        r.id,
       mes,
@@ -3714,13 +3770,13 @@ function confirmTCImport() {
       detalle:   r.desc + (r.cuota ? ` [${r.cuota}]` : '') + (r.titular ? ` · ${r.titular}` : ''),
       cliente:   '',
       impPesos:  impP,
-      impUSD:    r.esUSD ? r.monto : 0,
+      impUSD:    impU,
       venc:      '',
-      pagado:    0,
-      saldo:     impP,
+      pagado:    isPaid ? (r.esUSD ? 0 : impP) : 0,
+      saldo:     isPaid ? 0 : impP,
       origen:    'TARJETA',
       banco:     tcBank,
-      tcPagado:  false,
+      tcPagado:  isPaid,   // débito: ya pagado; crédito: pendiente de pagar el resumen
     });
   });
   saveData(data);
@@ -3740,11 +3796,11 @@ function openImportModal()  {
   document.getElementById('importConfig').style.display   = 'none';
   document.getElementById('importBody').style.display     = 'none';
   document.getElementById('importFooter').style.display   = 'none';
-  tcRows = []; tcPendFile = null; tcBank = ''; tcTargetMes = '';
+  tcRows = []; tcPendFile = null; tcBank = ''; tcTargetMes = ''; tcIsDebit = false;
 }
 function closeImport() {
   document.getElementById('importOverlay').classList.remove('open');
-  tcRows = []; tcPendFile = null; tcBank = ''; tcTargetMes = '';
+  tcRows = []; tcPendFile = null; tcBank = ''; tcTargetMes = ''; tcIsDebit = false;
 }
 
 // ── PAGAR TC ─────────────────────────────────────────────────
@@ -6207,7 +6263,7 @@ function setQpTipoGasto(tg) {
 
 function populateQpRubros(tipo) {
   const dl = document.getElementById('qpRubroList');
-  dl.innerHTML = RUBROS[tipo].filter(r => r !== 'Personalizado...').map(r => `<option value="${esc(r)}">`).join('');
+  dl.innerHTML = getAllRubros(tipo).filter(r => r !== 'Personalizado...').map(r => `<option value="${esc(r)}">`).join('');
 }
 
 function resetQpForm() {
