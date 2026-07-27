@@ -2006,6 +2006,16 @@ tr:hover td { background: #fafbfc; }
         <div style="font-size:11px;color:var(--muted);margin-top:4px">Estas filas se omitirán durante la importación</div>
       </div>
 
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+          <input type="checkbox" id="bankDebitNegative" style="width:16px;height:16px;accent-color:var(--accent)">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text)">Los gastos/débitos son negativos en el archivo</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Activá para extractos de cuenta (ej: Mercado Pago) donde los pagos aparecen con signo negativo. Dejá desactivado para resúmenes de TC donde los cargos son positivos (ej: Santander, Banco Provincia).</div>
+          </div>
+        </label>
+      </div>
+
       <div id="bankStep2Error" style="color:#ef4444;font-size:12px;margin-bottom:8px;display:none"></div>
       <div style="display:flex;justify-content:space-between;gap:8px;margin-top:4px">
         <button class="btn btn-secondary" onclick="bankGoStep1()">← Volver</button>
@@ -2841,8 +2851,9 @@ function openBankModal(editId) {
   document.getElementById('bankStep1Next').disabled = !cfg;
   // If editing and has parser, populate step-2 fields
   if (cfg?.parser) {
-    document.getElementById('bankSkipPatterns').value = (cfg.parser.skipPatterns||[]).join(', ');
-    document.getElementById('bankHeaderRow').value    = String(cfg.parser.headerRow||0);
+    document.getElementById('bankSkipPatterns').value  = (cfg.parser.skipPatterns||[]).join(', ');
+    document.getElementById('bankHeaderRow').value     = String(cfg.parser.headerRow||0);
+    document.getElementById('bankDebitNegative').checked = !!(cfg.parser.debitNegative);
     // Show existing column mapping if no sample loaded yet
     const roles = cfg.parser.colRoles || {};
     const nMapped = Object.values(roles).filter(r=>r!=='skip').length;
@@ -3083,9 +3094,10 @@ function bankSaveConfig() {
   const liveRoles = bankGetCurrentRoles();
   const stored    = _bankEditId ? (getBankConfigs().find(c=>c.id===_bankEditId)?.parser?.colRoles || {}) : {};
   const roles     = Object.keys(liveRoles).length ? liveRoles : stored;
-  const headerRow = parseInt(document.getElementById('bankHeaderRow').value) || 0;
-  const skipRaw   = document.getElementById('bankSkipPatterns').value;
-  const skipPats  = skipRaw.split(',').map(s=>s.trim()).filter(Boolean);
+  const headerRow    = parseInt(document.getElementById('bankHeaderRow').value) || 0;
+  const skipRaw      = document.getElementById('bankSkipPatterns').value;
+  const skipPats     = skipRaw.split(',').map(s=>s.trim()).filter(Boolean);
+  const debitNegative = document.getElementById('bankDebitNegative').checked;
   // Need at least desc column
   const hasDesc = Object.values(roles).includes('desc');
   if (!hasDesc && _bankSampleRaw.length) {
@@ -3098,9 +3110,9 @@ function bankSaveConfig() {
   const configs = getBankConfigs();
   if (_bankEditId) {
     const idx = configs.findIndex(c=>c.id===_bankEditId);
-    if (idx >= 0) configs[idx] = { ...configs[idx], pais, banco, tarjeta:tarj, parser:{ headerRow, colRoles:roles, skipPatterns:skipPats }, updatedAt:new Date().toISOString() };
+    if (idx >= 0) configs[idx] = { ...configs[idx], pais, banco, tarjeta:tarj, parser:{ headerRow, colRoles:roles, skipPatterns:skipPats, debitNegative }, updatedAt:new Date().toISOString() };
   } else {
-    configs.push({ id:uid(), pais, banco, tarjeta:tarj, parser:{ headerRow, colRoles:roles, skipPatterns:skipPats }, createdAt:new Date().toISOString() });
+    configs.push({ id:uid(), pais, banco, tarjeta:tarj, parser:{ headerRow, colRoles:roles, skipPatterns:skipPats, debitNegative }, createdAt:new Date().toISOString() });
   }
   saveBankConfigs(configs);
   closeBankModal();
@@ -3158,16 +3170,25 @@ function parseWithBankConfig(raw, cfg) {
       const mon = String(row[colByRole.moneda]||'').trim().toUpperCase();
       esUSD = mon === 'USD' || mon === 'U$S' || mon === 'DOLARES' || mon === 'DÓLARES';
     }
-    // Importe
+    // Importe — use parseArgAmount to handle Argentine thousands separator (period)
+    // and support negative amounts (e.g. Mercado Pago where debits are negative)
     let monto = 0;
     if (!esUSD && colByRole.importeARS !== undefined) {
-      monto = parseFloat(String(row[colByRole.importeARS]||'0').replace(/[^\d,.\-]/g,'').replace(',','.')) || 0;
+      monto = parseArgAmount(row[colByRole.importeARS]);
     } else if (esUSD && colByRole.importeUSD !== undefined) {
-      monto = parseFloat(String(row[colByRole.importeUSD]||'0').replace(/[^\d,.\-]/g,'').replace(',','.')) || 0;
+      monto = parseArgAmount(row[colByRole.importeUSD]);
     } else if (colByRole.importeARS !== undefined) {
-      monto = parseFloat(String(row[colByRole.importeARS]||'0').replace(/[^\d,.\-]/g,'').replace(',','.')) || 0;
+      monto = parseArgAmount(row[colByRole.importeARS]);
     }
-    if (monto <= 0) continue;
+    // Sign convention depends on bank config:
+    // debitNegative=true  → account statement (e.g. Mercado Pago): expenses are negative, credits positive → skip positives
+    // debitNegative=false → CC statement (e.g. Santander, BAPRO): charges are positive, credits/reversals negative → skip non-positives
+    if (p.debitNegative) {
+      if (monto >= 0) continue;   // skip income/credits
+      monto = Math.abs(monto);
+    } else {
+      if (monto <= 0) continue;   // skip credits/reversals
+    }
     // Cuota
     let cuota = '';
     if (colByRole.cuotaA !== undefined && colByRole.cuotaT !== undefined) {
