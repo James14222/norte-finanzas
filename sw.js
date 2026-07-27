@@ -56,13 +56,26 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Para todo lo demás: cache-first con fallback a red
+  // index.html y navegación → network-first (siempre trae la versión más reciente)
+  if (event.request.mode === 'navigate' || url.pathname === BASE + '/index.html' || url.pathname === BASE + '/') {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          return response;
+        })
+        .catch(() => caches.match(BASE + '/index.html'))
+    );
+    return;
+  }
+
+  // Todo lo demás (íconos, manifest, etc.): cache-first con fallback a red
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
 
       return fetch(event.request).then(response => {
-        // Solo cachear respuestas exitosas y estáticas
         if (
           response.ok &&
           event.request.method === 'GET' &&
@@ -74,12 +87,7 @@ self.addEventListener('fetch', event => {
           });
         }
         return response;
-      }).catch(() => {
-        // Sin red y sin cache: para navegación, servir index.html offline
-        if (event.request.mode === 'navigate') {
-          return caches.match(BASE + '/index.html');
-        }
-      });
+      }).catch(() => {});
     })
   );
 });
