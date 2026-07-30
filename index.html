@@ -889,7 +889,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v3.0</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v4.0</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -937,7 +937,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v3.0</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v4.0</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -6426,46 +6426,138 @@ function clonarMesAnterior() {
 }
 
 // ── REPLICAR GASTOS FIJOS (esqueleto recurrente) ─────────────
+
+function _normDet(s) {
+  return String(s || '').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
+
+// 'strong' = contenido uno en el otro → saltar automáticamente
+// 'fuzzy'  = palabras significativas en común → pedir confirmación
+// 'none'   = sin relación → replicar
+function _matchStrength(fixedDet, existDet) {
+  const a = _normDet(fixedDet);
+  const b = _normDet(existDet);
+  if (!a || !b) return 'none';
+  if (a === b) return 'strong';
+  if (b.includes(a) || a.includes(b)) return 'strong';
+  // Word overlap: palabras de más de 2 chars
+  const wa = a.split(' ').filter(w => w.length > 2);
+  const sb = new Set(b.split(' ').filter(w => w.length > 2));
+  const shared = wa.filter(w => sb.has(w));
+  if (shared.length >= 1 && shared.length / Math.min(wa.length, sb.size) >= 0.5) return 'fuzzy';
+  return 'none';
+}
+
+function _bestMatch(fijo, curTxs) {
+  let best = { strength: 'none', match: null };
+  for (const tx of curTxs) {
+    const s = _matchStrength(fijo.detalle, tx.detalle);
+    if (s === 'strong') return { strength: 'strong', match: tx };
+    if (s === 'fuzzy' && best.strength !== 'strong') best = { strength: 'fuzzy', match: tx };
+  }
+  return best;
+}
+
 function replicarGastosFijos() {
-  const prevM = curMonth === 0 ? 11 : curMonth - 1;
-  const prevY = curMonth === 0 ? curYear - 1 : curYear;
+  const prevM   = curMonth === 0 ? 11 : curMonth - 1;
+  const prevY   = curMonth === 0 ? curYear - 1 : curYear;
   const prevKey = monthKey(prevY, prevM);
   const allData = getData();
   const prevFijos = allData.filter(t => t.mes === prevKey && t.tipo === 'Gasto' && t.tipoGasto === 'Fijo');
 
   if (!prevFijos.length) {
-    alert(`No encontré gastos marcados como "Fijo" en ${MESES[prevM]} ${prevY}.\n\nMarcá tus gastos recurrentes con Tipo de gasto = Fijo (al cargarlos o editarlos) para poder generar el esqueleto del próximo mes.`);
+    alert(`No encontré gastos marcados como "Fijo" en ${MESES[prevM]} ${prevY}.\n\nMarcá tus gastos recurrentes con Tipo de gasto = Fijo para generar el esqueleto del próximo mes.`);
     return;
   }
 
-  // Evitar duplicar los que ya existen este mes (por detalle)
-  const currDetalles = new Set(allData.filter(t => t.mes === curKey() && t.tipo === 'Gasto').map(t => t.detalle));
-  const aReplicar = prevFijos.filter(t => !currDetalles.has(t.detalle));
+  const curTxs  = allData.filter(t => t.mes === curKey() && t.tipo === 'Gasto');
+  const skipList = [], fuzzyList = [], addList = [];
 
-  if (!aReplicar.length) {
-    alert(`Los ${prevFijos.length} gastos fijos de ${MESES[prevM]} ${prevY} ya están presentes en ${MESES[curMonth]} ${curYear}. No hay nada nuevo para replicar.`);
+  prevFijos.forEach(fijo => {
+    const { strength, match } = _bestMatch(fijo, curTxs);
+    if (strength === 'strong') skipList.push({ fijo, match });
+    else if (strength === 'fuzzy') fuzzyList.push({ fijo, match });
+    else addList.push(fijo);
+  });
+
+  if (fuzzyList.length) {
+    _showFuzzyModal({ skipList, fuzzyList, addList, prevM, prevY });
+  } else {
+    _confirmarReplicar({ skipList, addList, prevM, prevY });
+  }
+}
+
+function _showFuzzyModal({ skipList, fuzzyList, addList, prevM, prevY }) {
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay show';
+  overlay.style.zIndex = '2100';
+  overlay.innerHTML = `
+    <div class="modal" style="max-width:560px;max-height:85vh;overflow-y:auto">
+      <div class="modal-header">
+        <div class="modal-title">🔍 Revisá estas coincidencias</div>
+        <button class="modal-close" onclick="this.closest('.overlay').remove()">×</button>
+      </div>
+      <div style="padding:16px 24px">
+        <p style="font-size:13px;color:var(--muted);margin:0 0 16px">
+          Encontré gastos fijos del mes anterior con registros similares ya cargados este mes (posiblemente desde la TC). Indicá si son el mismo gasto para no duplicar.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${fuzzyList.map(({ fijo, match }, i) => `
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:14px">
+              <div style="flex:1;min-width:0">
+                <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">Gasto fijo</div>
+                <div style="font-size:13px;font-weight:700">${esc(fijo.detalle)}</div>
+                <div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:2px">Ya existe en este mes</div>
+                <div style="font-size:12px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:3px 8px;display:inline-block">${esc(match.detalle)}</div>
+              </div>
+              <label style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;font-size:11px;color:var(--muted)">
+                <input type="checkbox" id="fz_${i}" checked style="width:16px;height:16px;accent-color:var(--primary)">
+                Es el mismo,<br>omitir
+              </label>
+            </div>`).join('')}
+        </div>
+        <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
+          <button class="btn btn-secondary" onclick="this.closest('.overlay').remove()">Cancelar</button>
+          <button class="btn btn-primary" onclick="_applyFuzzy(${fuzzyList.length})">Continuar →</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  window._replicarCtx = { skipList, fuzzyList, addList, prevM, prevY };
+}
+
+function _applyFuzzy(count) {
+  const { skipList, fuzzyList, addList, prevM, prevY } = window._replicarCtx;
+  const overlay = document.querySelector('.overlay[style*="2100"]');
+  const extraSkip = [], extraAdd = [];
+  for (let i = 0; i < count; i++) {
+    const cb = document.getElementById(`fz_${i}`);
+    if (cb?.checked) extraSkip.push(fuzzyList[i]);
+    else extraAdd.push(fuzzyList[i].fijo);
+  }
+  overlay?.remove();
+  window._replicarCtx = null;
+  _confirmarReplicar({ skipList: [...skipList, ...extraSkip], addList: [...addList, ...extraAdd], prevM, prevY });
+}
+
+function _confirmarReplicar({ skipList, addList, prevM, prevY }) {
+  if (!addList.length) {
+    alert(`Todos los gastos fijos de ${MESES[prevM]} ${prevY} ya están cubiertos este mes. No hay nada nuevo para replicar.`);
     return;
   }
-
-  const omitidos = prevFijos.length - aReplicar.length;
-  const msg = `Esto va a crear ${aReplicar.length} gasto${aReplicar.length===1?'':'s'} fijo${aReplicar.length===1?'':'s'} en ${MESES[curMonth]} ${curYear}, como esqueleto SIN importe (quedan en $0 con un aviso para completarlos a lo largo del mes).`
-    + (omitidos ? `\n\n(${omitidos} ya estaban cargados este mes y se omiten para no duplicar)` : '')
+  const omitidos = skipList.length;
+  const msg = `Esto va a crear ${addList.length} gasto${addList.length===1?'':'s'} fijo${addList.length===1?'':'s'} en ${MESES[curMonth]} ${curYear}, con importe $0 para completar cuando lleguen los vencimientos.`
+    + (omitidos ? `\n\n(${omitidos} ya cubierto${omitidos===1?'':'s'} este mes — se omiten)` : '')
     + `\n\n¿Continuar?`;
   if (!confirm(msg)) return;
-
-  const skeleton = aReplicar.map(t => ({
-    ...t,
-    id: uid(),
-    mes: curKey(),
-    impPesos: 0,
-    impUSD: 0,
-    venc: '',
-    pagado: 0,
-    saldo: 0
-  }));
+  const allData = getData();
+  const skeleton = addList.map(t => ({ ...t, id: uid(), mes: curKey(), impPesos: 0, impUSD: 0, venc: '', pagado: 0, saldo: 0 }));
   saveData([...allData, ...skeleton]);
   render();
-  alert(`Listo: se creó el esqueleto de ${skeleton.length} gasto${skeleton.length===1?'':'s'} fijo${skeleton.length===1?'':'s'} para ${MESES[curMonth]}.\n\n⚠️ Quedaron con importe $0 — completalos a medida que te lleguen los vencimientos. Vas a ver un aviso en el Dashboard mientras tengas pendientes.`);
+  alert(`Listo: ${skeleton.length} gasto${skeleton.length===1?'':'s'} fijo${skeleton.length===1?'':'s'} creado${skeleton.length===1?'':'s'} para ${MESES[curMonth]}.\n\n⚠️ Quedan con importe $0 — completalos cuando lleguen los vencimientos.`);
 }
 
 // ── CONSULTAS IA (Idea 9) ────────────────────────────────────
