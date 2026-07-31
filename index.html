@@ -285,6 +285,11 @@ tr:hover td { background: #fafbfc; }
 .chat-msg.user .chat-bubble { background:var(--primary); color:white; border-bottom-right-radius:4px; }
 .chat-msg.bot  .chat-bubble { background:var(--card); border:1px solid var(--border); border-bottom-left-radius:4px; color:var(--text); }
 .chat-input-row { display:flex; gap:10px; padding-top:14px; border-top:1px solid var(--border); margin-top:4px; }
+.typing-dots { display:inline-flex; gap:4px; align-items:center; }
+.typing-dots span { width:7px; height:7px; border-radius:50%; background:var(--muted); animation:typingBounce 1.2s infinite; }
+.typing-dots span:nth-child(2) { animation-delay:.2s; }
+.typing-dots span:nth-child(3) { animation-delay:.4s; }
+@keyframes typingBounce { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-6px);opacity:1} }
 .chat-input { flex:1; padding:10px 14px; border:1px solid var(--border); border-radius:10px; font-size:13.5px; outline:none; background:var(--bg); transition:border-color 0.15s; }
 .chat-input:focus { border-color:var(--primary); background:white; }
 
@@ -889,7 +894,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v4.0</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v5.0</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -937,7 +942,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v4.0</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v5.0</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -1313,8 +1318,6 @@ tr:hover td { background: #fafbfc; }
               <div class="report-title" style="margin:0">💳 Gastos con Tarjeta</div>
               <select class="rep-select" id="tcBancoFilter" onchange="renderRepTarjetas()">
                 <option value="">Todos los bancos</option>
-                <option value="BAPRO">Banco Provincia</option>
-                <option value="SANTANDER">Santander</option>
               </select>
               <select class="rep-select" id="tcRubroFilter" onchange="renderRepTarjetas()">
                 <option value="">Todos los rubros</option>
@@ -1361,7 +1364,7 @@ tr:hover td { background: #fafbfc; }
         </div>
         <div class="chat-input-row">
           <input class="chat-input" id="chatInput" type="text" placeholder="Preguntá sobre tus finanzas..." onkeydown="if(event.key==='Enter')submitQuery()">
-          <button class="btn btn-primary" onclick="submitQuery()">Enviar</button>
+          <button class="btn btn-primary" id="chatSendBtn" onclick="submitQuery()">Enviar</button>
         </div>
       </div>
     </div>
@@ -1873,6 +1876,24 @@ tr:hover td { background: #fafbfc; }
       <div id="adminBancosBody">
         <div style="color:var(--muted);font-size:13px;padding:12px 0">Cargando...</div>
       </div>
+    </div>
+
+    <!-- IA / Gemini API Key -->
+    <div id="adminGeminiSection" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-top:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span style="font-size:20px">🤖</span>
+        <div class="section-title" style="margin:0">Consultas IA — Gemini</div>
+      </div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
+        Ingresá tu API key de Google Gemini para habilitar conversación libre sobre tus finanzas. La key se guarda solo en este navegador, nunca se envía a servidores de Norte.<br>
+        <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--primary);font-size:12px;margin-top:4px;display:inline-block">→ Obtener API key gratis en Google AI Studio</a>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <input type="password" id="geminiKeyInput" placeholder="AIza..." style="flex:1;font-size:13px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:monospace">
+        <button class="btn btn-primary" onclick="saveGeminiKey()" style="font-size:13px;white-space:nowrap">Guardar</button>
+        <button class="btn btn-secondary" onclick="clearGeminiKey()" style="font-size:13px;white-space:nowrap">Borrar</button>
+      </div>
+      <div id="geminiKeyStatus" style="font-size:12px;color:var(--muted)"></div>
     </div>
 
   </div>
@@ -2675,6 +2696,17 @@ function renderAdmin() {
 
   // Bank configs section (scoped to current empresa)
   renderAdminBancos();
+
+  // Gemini API key section
+  const geminiKey = localStorage.getItem('norte_gemini_key') || '';
+  const geminiSection = document.getElementById('adminGeminiSection');
+  if (geminiSection) {
+    document.getElementById('geminiKeyInput').value = geminiKey;
+    document.getElementById('geminiKeyStatus').textContent = geminiKey
+      ? '✅ API key configurada'
+      : '⚠️ Sin API key — las Consultas IA usan el modo básico';
+    document.getElementById('geminiKeyStatus').style.color = geminiKey ? 'var(--success)' : 'var(--warning, #f59e0b)';
+  }
 }
 
 function openCreateUser() {
@@ -3284,6 +3316,7 @@ const isTCOrigen   = t => t.origen === 'TARJETA' || (t.origen && t.origen.starts
 const getBanco     = t => t.banco || (t.origen?.replace('TC-','') || '');
 const getBancoLabel= t => {
   const b = getBanco(t);
+  if (!b || b === 'TARJETA') return 'Sin banco asignado';
   if (b === 'BAPRO') return 'Banco Provincia';
   if (b === 'SANTANDER') return 'Santander';
   // Formato nuevo (sin prefijo): ID directo del config
@@ -5426,6 +5459,14 @@ function renderRepTarjetas() {
       return `<option value="${k}" ${k===prevMes?'selected':''}>${MESES[parseInt(m)-1]}</option>`;
     }).join('');
 
+  // Banco filter: construido dinámicamente desde los datos reales
+  const allBancosYear = [...new Set(yearTC.map(t => getBanco(t)))].sort();
+  bancoFilt.innerHTML = '<option value="">Todos los bancos</option>' +
+    allBancosYear.map(b => {
+      const label = getBancoLabel({banco: b});
+      return `<option value="${esc(b)}" ${b===prevBanco?'selected':''}>${esc(label)}</option>`;
+    }).join('');
+
   // Aplicar filtros (banco filter por campo banco, con compat formato viejo)
   const filtered = yearTC.filter(t =>
     (!prevBanco || getBanco(t) === prevBanco) &&
@@ -5433,11 +5474,11 @@ function renderRepTarjetas() {
     (!prevMes   || t.mes   === prevMes)
   );
 
-  // Totales por banco
-  const bancos = ['BAPRO','SANTANDER'];
-  const summaryCards = bancos.map(b => {
+  // Totales por banco — dinámico: detecta todos los bancos en filtered
+  const bancosEnFiltered = [...new Set(filtered.map(t => getBanco(t)))].sort();
+  const summaryCards = bancosEnFiltered.map(b => {
     const items = filtered.filter(t => getBanco(t) === b);
-    if (!items.length && prevBanco && prevBanco !== b) return '';
+    if (!items.length) return '';
     const totalARS = items.reduce((s,t)=>s+(Number(t.impPesos)||0),0);
     const totalUSD = items.reduce((s,t)=>s+(Number(t.impUSD)||0),0);
     const topRubro = (() => {
@@ -5445,9 +5486,10 @@ function renderRepTarjetas() {
       const top = Object.entries(rm).sort((a,b)=>b[1]-a[1])[0];
       return top ? top[0] : '—';
     })();
-    const bLabel = { BAPRO:'🏦 Banco Provincia', SANTANDER:'🏦 Santander' }[b] || b;
-    return `<div class="tc-bank-card">
-      <div class="tc-bank-title">${bLabel}</div>
+    const isOrphan = !b || b === 'TARJETA';
+    const bLabel = isOrphan ? '⚠️ Sin banco asignado' : `🏦 ${getBancoLabel({banco: b})}`;
+    return `<div class="tc-bank-card" ${isOrphan?'style="border-color:#f59e0b"':''}>
+      <div class="tc-bank-title" ${isOrphan?'style="color:#92400e"':''}>${bLabel}</div>
       <div class="tc-bank-row"><span>${items.length} transacciones</span></div>
       <div class="tc-bank-row"><span>Principal rubro</span><span style="font-weight:600">${esc(topRubro)}</span></div>
       <div class="tc-bank-total">${fmtP(totalARS)}${totalUSD?` + U$S ${totalUSD.toFixed(2)}`:''}</div>
@@ -6777,22 +6819,153 @@ function qAyuda() {
 • "¿Cómo voy a terminar el año?"`;
 }
 
-function submitQuery() {
-  const inp=document.getElementById('chatInput');
-  const text=inp.value.trim();
-  if(!text) return;
-  inp.value='';
-  addChatMsg(esc(text),'user');
-  setTimeout(()=>{ addChatMsg(parseQuery(text),'bot'); },380);
+// ── GEMINI KEY MANAGEMENT ────────────────────────────────────
+function saveGeminiKey() {
+  const key = document.getElementById('geminiKeyInput').value.trim();
+  if (!key) { alert('Ingresá una API key.'); return; }
+  localStorage.setItem('norte_gemini_key', key);
+  renderAdmin();
+  alert('✅ API key guardada. Ya podés usar las Consultas IA con Gemini.');
 }
-function sendSug(text) { document.getElementById('chatInput').value=text; submitQuery(); }
-function addChatMsg(html,role) {
-  const msgs=document.getElementById('chatMessages');
-  const div=document.createElement('div');
-  div.className=`chat-msg ${role}`;
-  div.innerHTML=`<div class="chat-bubble">${html}</div>`;
+function clearGeminiKey() {
+  localStorage.removeItem('norte_gemini_key');
+  renderAdmin();
+}
+function getGeminiKey() { return localStorage.getItem('norte_gemini_key') || ''; }
+
+// ── GEMINI CONTEXT BUILDER ────────────────────────────────────
+function buildFinancialContext() {
+  const all = getData();
+  const year = curYear;
+
+  // Resumen anual por mes
+  const months = [...new Set(all.filter(t => t.mes.startsWith(String(year))).map(t => t.mes))].sort();
+  const resumen = months.map(k => {
+    const d = all.filter(t => t.mes === k);
+    const [, m] = k.split('-');
+    const ing  = d.filter(t => t.tipo === 'Ingreso').reduce((s, t) => s + (Number(t.impPesos) || 0), 0);
+    const gas  = d.filter(t => t.tipo === 'Gasto').reduce((s, t) => s + (Number(t.impPesos) || 0), 0);
+    const pend = d.reduce((s, t) => s + (Number(t.saldo) || 0), 0);
+    return `${MESES[parseInt(m)-1]} ${year}: Ingresos=$${ing.toLocaleString('es-AR')} Gastos=$${gas.toLocaleString('es-AR')} Balance=$${(ing-gas).toLocaleString('es-AR')} Pendiente=$${pend.toLocaleString('es-AR')}`;
+  }).join('\n');
+
+  // Detalle completo de todos los registros del año (compacto)
+  const detalle = all
+    .filter(t => t.mes.startsWith(String(year)))
+    .sort((a, b) => a.mes.localeCompare(b.mes))
+    .map(t => {
+      const [, m] = t.mes.split('-');
+      const imp = t.impUSD > 0 ? `U$S${t.impUSD}` : `$${Number(t.impPesos || 0).toLocaleString('es-AR')}`;
+      const saldo = Number(t.saldo || 0) > 0 ? ` [pendiente $${Number(t.saldo).toLocaleString('es-AR')}]` : '';
+      const banco = t.banco ? ` [${getBancoLabel(t)}]` : '';
+      return `${MESES[parseInt(m)-1]}: ${t.tipo} | ${t.rubro || '—'} | ${t.detalle}${banco} | ${imp}${saldo}`;
+    }).join('\n');
+
+  return `DATOS FINANCIEROS DEL USUARIO — ${year}
+
+RESUMEN MENSUAL:
+${resumen || 'Sin datos'}
+
+DETALLE DE TRANSACCIONES:
+${detalle || 'Sin transacciones'}`;
+}
+
+// ── CHAT HISTORY ──────────────────────────────────────────────
+let _chatHistory = [];  // { role: 'user'|'model', parts: [{text}] }
+
+function resetChatHistory() { _chatHistory = []; }
+
+// ── GEMINI API CALL ───────────────────────────────────────────
+async function callGemini(userText) {
+  const key = getGeminiKey();
+  const systemCtx = buildFinancialContext();
+
+  // Add user message to history
+  _chatHistory.push({ role: 'user', parts: [{ text: userText }] });
+
+  const body = {
+    system_instruction: {
+      parts: [{ text: `Sos el asistente financiero de Norte, una app de finanzas personales argentina.
+Tenés acceso completo a los datos del usuario para ${curYear}.
+Respondé siempre en español, de forma clara y concisa.
+Cuando te pidan detalle de gastos, mostrá una lista completa con cada ítem, rubro e importe.
+Cuando detectes discrepancias o diferencias, ayudá a identificar la causa.
+Usá pesos argentinos ($) y formato numérico argentino (punto = miles, coma = decimal).
+No inventes datos — solo usá lo que está en el contexto proporcionado.
+
+${systemCtx}` }]
+    },
+    contents: _chatHistory,
+    generationConfig: { temperature: 0.2, maxOutputTokens: 2048 }
+  };
+
+  const resp = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+  );
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `Error ${resp.status}`);
+  }
+
+  const data = await resp.json();
+  const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No obtuve respuesta.';
+
+  // Add model reply to history
+  _chatHistory.push({ role: 'model', parts: [{ text: reply }] });
+
+  return reply;
+}
+
+// ── CHAT UI ───────────────────────────────────────────────────
+async function submitQuery() {
+  const inp  = document.getElementById('chatInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  inp.disabled = true;
+  document.getElementById('chatSendBtn').disabled = true;
+
+  addChatMsg(esc(text), 'user');
+
+  const key = getGeminiKey();
+  if (!key) {
+    // Fallback al modo básico
+    setTimeout(() => {
+      addChatMsg(parseQuery(text), 'bot');
+      inp.disabled = false;
+      document.getElementById('chatSendBtn').disabled = false;
+      inp.focus();
+    }, 380);
+    return;
+  }
+
+  // Gemini mode
+  const loadingDiv = addChatMsg('<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>', 'bot', true);
+  try {
+    const reply = await callGemini(text);
+    loadingDiv.querySelector('.chat-bubble').innerHTML = reply.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+  } catch (e) {
+    loadingDiv.querySelector('.chat-bubble').innerHTML = `❌ Error al llamar a Gemini: ${esc(e.message)}<br><small>Verificá tu API key en Admin → IA / Gemini.</small>`;
+  }
+
+  inp.disabled = false;
+  document.getElementById('chatSendBtn').disabled = false;
+  inp.focus();
+  document.getElementById('chatMessages').scrollTop = 9999;
+}
+
+function sendSug(text) { document.getElementById('chatInput').value = text; submitQuery(); }
+
+function addChatMsg(html, role, returnEl) {
+  const msgs = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.className = `chat-msg ${role}`;
+  div.innerHTML = `<div class="chat-bubble">${html}</div>`;
   msgs.appendChild(div);
-  msgs.scrollTop=msgs.scrollHeight;
+  msgs.scrollTop = msgs.scrollHeight;
+  if (returnEl) return div;
 }
 
 // ── AYUDA ────────────────────────────────────────────────────
