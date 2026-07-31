@@ -3325,6 +3325,39 @@ const getBancoLabel= t => {
   const cfg = getBankConfigs().find(c => c.id === cfgId);
   return cfg ? `${cfg.banco} · ${cfg.tarjeta}` : b;
 };
+// Devuelve <option> tags para todos los bancos conocidos (builtin + custom)
+function getBancosOptions(selectedVal='') {
+  const opts = [
+    { value:'BAPRO',     label:'Banco Provincia' },
+    { value:'SANTANDER', label:'Santander' },
+    ...getBankConfigs().map(c => ({ value:c.id, label:`${c.banco} · ${c.tarjeta}` }))
+  ];
+  return opts.map(o=>`<option value="${esc(o.value)}" ${o.value===selectedVal?'selected':''}>${esc(o.label)}</option>`).join('');
+}
+
+// Asigna banco a todas las transacciones TC sin banco (getBanco = 'TARJETA')
+function assignBancoToOrphans(banco) {
+  if (!banco) { alert('Seleccioná un banco primero.'); return; }
+  const data = getData();
+  let count = 0;
+  data.forEach(t => {
+    if (isTCOrigen(t) && getBanco(t) === 'TARJETA') {
+      t.banco = banco;
+      count++;
+    }
+  });
+  if (!count) { alert('No hay transacciones sin banco para asignar.'); return; }
+  saveData(data);
+  render();
+  if (typeof renderRepTarjetas === 'function') renderRepTarjetas();
+  const label = getBancoLabel({banco});
+  const msg = document.createElement('div');
+  msg.textContent = `✅ ${count} transacción${count!==1?'es':''} asignada${count!==1?'s':''} a ${label}`;
+  Object.assign(msg.style, {position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:'var(--success)',color:'#fff',padding:'10px 20px',borderRadius:'999px',fontSize:'14px',fontWeight:'600',zIndex:'9999',boxShadow:'0 4px 16px rgba(0,0,0,.2)',pointerEvents:'none'});
+  document.body.appendChild(msg);
+  setTimeout(()=>msg.remove(), 3000);
+}
+
 const lastDayOfMonth = (y, m) => new Date(y, m + 1, 0).getDate();
 
 // ── PRESUPUESTO / META DE AHORRO ────────────────────────────
@@ -5488,11 +5521,23 @@ function renderRepTarjetas() {
     })();
     const isOrphan = !b || b === 'TARJETA';
     const bLabel = isOrphan ? '⚠️ Sin banco asignado' : `🏦 ${getBancoLabel({banco: b})}`;
+    const assignUI = isOrphan ? `
+      <div style="margin-top:12px;border-top:1px dashed #f59e0b;padding-top:10px">
+        <div style="font-size:11px;font-weight:600;color:#92400e;margin-bottom:6px">Asignar banco a estos registros:</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <select id="orphanBancoSel" style="flex:1;font-size:12px;padding:4px 6px;border:1px solid #d97706;border-radius:6px">
+            <option value="">Seleccionar banco...</option>
+            ${getBancosOptions()}
+          </select>
+          <button onclick="assignBancoToOrphans(document.getElementById('orphanBancoSel').value)" style="background:#d97706;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer">✓ Asignar</button>
+        </div>
+      </div>` : '';
     return `<div class="tc-bank-card" ${isOrphan?'style="border-color:#f59e0b"':''}>
       <div class="tc-bank-title" ${isOrphan?'style="color:#92400e"':''}>${bLabel}</div>
       <div class="tc-bank-row"><span>${items.length} transacciones</span></div>
       <div class="tc-bank-row"><span>Principal rubro</span><span style="font-weight:600">${esc(topRubro)}</span></div>
       <div class="tc-bank-total">${fmtP(totalARS)}${totalUSD?` + U$S ${totalUSD.toFixed(2)}`:''}</div>
+      ${assignUI}
     </div>`;
   }).filter(Boolean);
 
@@ -5971,7 +6016,16 @@ function saveTx(e) {
   const data = getData();
   if (id) {
     const i = data.findIndex(x => x.id === id);
-    if (i >= 0) data[i] = tx;
+    if (i >= 0) {
+      const prev = data[i];
+      // Preservar campos TC que no son editables en el modal
+      if (isTCOrigen(prev)) {
+        tx.origen   = prev.origen;
+        tx.banco    = prev.banco;
+        tx.tcPagado = prev.tcPagado;
+      }
+      data[i] = tx;
+    }
   } else {
     data.push(tx);
   }
