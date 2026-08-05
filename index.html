@@ -894,7 +894,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v5.12</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v5.13</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -942,7 +942,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v5.12</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v5.13</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -3286,8 +3286,12 @@ const getData  = () => {
   const raw = JSON.parse(localStorage.getItem(`fin_data_${curEmpresa()}`) || '[]');
   // Normalizar rubros on-the-fly (cubre datos viejos y snapshots remotos de Firebase)
   return raw.map(t => {
-    const norm = RUBRO_NORMALIZE[t.rubro];
-    return norm ? { ...t, rubro: norm } : t;
+    let r = t;
+    const norm = RUBRO_NORMALIZE[r.rubro];
+    if (norm) r = { ...r, rubro: norm };
+    // TC nunca puede ser Fijo: se importa vía resumen cada mes
+    if (isTCOrigen(r) && r.tipoGasto === 'Fijo') r = { ...r, tipoGasto: 'Variable' };
+    return r;
   });
 };
 const saveData = d  => localStorage.setItem(`fin_data_${curEmpresa()}`, JSON.stringify(d));
@@ -6022,9 +6026,10 @@ function saveTx(e) {
       const prev = data[i];
       // Preservar campos TC que no son editables en el modal
       if (isTCOrigen(prev)) {
-        tx.origen   = prev.origen;
-        tx.banco    = prev.banco;
-        tx.tcPagado = prev.tcPagado;
+        tx.origen    = prev.origen;
+        tx.banco     = prev.banco;
+        tx.tcPagado  = prev.tcPagado;
+        tx.tipoGasto = 'Variable'; // TC nunca puede ser Fijo — se importa vía resumen cada mes
       }
       data[i] = tx;
     }
