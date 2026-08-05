@@ -894,7 +894,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v5.1</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v5.11</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -942,7 +942,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v5.1</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v5.11</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -6562,10 +6562,17 @@ function replicarGastosFijos() {
   const prevY   = curMonth === 0 ? curYear - 1 : curYear;
   const prevKey = monthKey(prevY, prevM);
   const allData = getData();
-  const prevFijos = allData.filter(t => t.mes === prevKey && t.tipo === 'Gasto' && t.tipoGasto === 'Fijo');
+  const prevFijosAll = allData.filter(t => t.mes === prevKey && t.tipo === 'Gasto' && t.tipoGasto === 'Fijo');
+  // Excluir TC: se traen vía importación de resumen, no deben replicarse como esqueleto
+  const prevFijosTc = prevFijosAll.filter(t => isTCOrigen(t));
+  const prevFijos   = prevFijosAll.filter(t => !isTCOrigen(t));
 
-  if (!prevFijos.length) {
+  if (!prevFijosAll.length) {
     alert(`No encontré gastos marcados como "Fijo" en ${MESES[prevM]} ${prevY}.\n\nMarcá tus gastos recurrentes con Tipo de gasto = Fijo para generar el esqueleto del próximo mes.`);
+    return;
+  }
+  if (!prevFijos.length) {
+    alert(`Los únicos gastos fijos de ${MESES[prevM]} ${prevY} son de Tarjeta de Crédito (${prevFijosTc.length}). Se traen automáticamente cuando importás el resumen — no hay nada que replicar manualmente.`);
     return;
   }
 
@@ -6578,6 +6585,8 @@ function replicarGastosFijos() {
     else if (strength === 'fuzzy') fuzzyList.push({ fijo, match });
     else addList.push(fijo);
   });
+
+  window._replicarTcCount = prevFijosTc.length;
 
   if (fuzzyList.length) {
     _showFuzzyModal({ skipList, fuzzyList, addList, prevM, prevY });
@@ -6645,13 +6654,16 @@ function _confirmarReplicar({ skipList, addList, prevM, prevY }) {
     return;
   }
   const omitidos = skipList.length;
+  const tcExcluidos = (window._replicarTcCount || 0);
   const msg = `Esto va a crear ${addList.length} gasto${addList.length===1?'':'s'} fijo${addList.length===1?'':'s'} en ${MESES[curMonth]} ${curYear}, con importe $0 para completar cuando lleguen los vencimientos.`
-    + (omitidos ? `\n\n(${omitidos} ya cubierto${omitidos===1?'':'s'} este mes — se omiten)` : '')
+    + (omitidos   ? `\n\n(${omitidos} ya cubierto${omitidos===1?'':'s'} este mes — se omiten)` : '')
+    + (tcExcluidos ? `\n\n💳 ${tcExcluidos} gasto${tcExcluidos===1?'':'s'} fijo${tcExcluidos===1?'':'s'} de TC no se replica${tcExcluidos===1?'':'n'} — se trae${tcExcluidos===1?'':'n'} vía importación de resumen.` : '')
     + `\n\n¿Continuar?`;
   if (!confirm(msg)) return;
   const allData = getData();
   const skeleton = addList.map(t => ({ ...t, id: uid(), mes: curKey(), impPesos: 0, impUSD: 0, venc: '', pagado: 0, saldo: 0 }));
   saveData([...allData, ...skeleton]);
+  window._replicarTcCount = 0;
   render();
   alert(`Listo: ${skeleton.length} gasto${skeleton.length===1?'':'s'} fijo${skeleton.length===1?'':'s'} creado${skeleton.length===1?'':'s'} para ${MESES[curMonth]}.\n\n⚠️ Quedan con importe $0 — completalos cuando lleguen los vencimientos.`);
 }
