@@ -894,7 +894,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v5.11</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v5.12</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -942,7 +942,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v5.11</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v5.12</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -4508,11 +4508,13 @@ function renderTx() {
       <td>${fmtD(t.venc)}</td>
       <td>${fmtP(t.pagado)}</td>
       <td>${
-        tcPendiente
-          ? `<span class="saldo-pend" style="font-size:11px">💳 ${(Number(t.impUSD)||0) > 0 && !(Number(t.impPesos)||0) ? 'U$S '+((Number(t.impUSD)||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})) : fmtP(Number(t.impPesos)||0)}</span>`
-          : (isTCTx && t.tcPagado === true)
-            ? '<span class="saldo-ok">✓ TC</span>'
-            : saldo<=0 ? '<span class="saldo-ok">✓</span>' : '<span class="saldo-pend">'+fmtP(saldo)+'</span>'
+        pendiente
+          ? '<span style="color:var(--muted)">—</span>'
+          : tcPendiente
+            ? `<span class="saldo-pend" style="font-size:11px">💳 ${(Number(t.impUSD)||0) > 0 && !(Number(t.impPesos)||0) ? 'U$S '+((Number(t.impUSD)||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})) : fmtP(Number(t.impPesos)||0)}</span>`
+            : (isTCTx && t.tcPagado === true)
+              ? '<span class="saldo-ok">✓ TC</span>'
+              : saldo<=0 ? '<span class="saldo-ok">✓</span>' : '<span class="saldo-pend">'+fmtP(saldo)+'</span>'
       }</td>
       <td>
         <button class="act-btn" onclick="openModal('${t.id}')" title="Editar">✏️</button>
