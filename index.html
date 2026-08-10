@@ -1803,6 +1803,22 @@ tr:hover td { background: #fafbfc; }
       <div style="font-size:13px;color:var(--muted);margin-top:4px">Panel de configuración del sistema — visible solo para administradores</div>
     </div>
 
+    <!-- ── CLIENTES (solo admin global) ── -->
+    <div class="admin-group-label" id="adminClientesLabel" style="display:none">Clientes</div>
+
+    <div class="card admin-section" id="adminClientesSection" style="display:none;margin-bottom:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text)">🧭 Clientes activos</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px">Usuarios creados a través del flujo de compra</div>
+        </div>
+        <button class="btn" style="font-size:12px;padding:6px 14px;border:1px solid var(--border)" onclick="cargarClientes()">↺ Actualizar</button>
+      </div>
+      <div id="adminClientesBody">
+        <div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando clientes…</div>
+      </div>
+    </div>
+
     <!-- ── GESTIÓN DE ACCESO ── -->
     <div class="admin-group-label">Gestión de acceso</div>
 
@@ -2710,6 +2726,15 @@ function renderAdmin() {
       }).join('')
     : '<tr><td colspan="4" style="color:var(--muted)">Sin usuarios</td></tr>';
 
+  // Sección clientes — solo para el admin global
+  const clientesSection = document.getElementById('adminClientesSection');
+  const clientesLabel   = document.getElementById('adminClientesLabel');
+  if (isAdmin()) {
+    clientesSection.style.display = 'block';
+    clientesLabel.style.display   = 'block';
+    cargarClientes();
+  }
+
   // Bank configs section (scoped to current empresa)
   renderAdminBancos();
 
@@ -2722,6 +2747,54 @@ function renderAdmin() {
       ? '✅ API key configurada'
       : '⚠️ Sin API key — las Consultas IA usan el modo básico';
     document.getElementById('geminiKeyStatus').style.color = geminiKey ? 'var(--success)' : 'var(--warning, #f59e0b)';
+  }
+}
+
+async function cargarClientes() {
+  const body = document.getElementById('adminClientesBody');
+  if (!body) return;
+  body.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando…</div>';
+
+  try {
+    const db = firebase.database();
+    const [usersSnap, empSnap] = await Promise.all([
+      db.ref('norteSync/globalUsers').once('value'),
+      db.ref('norteSync/globalEmpresas').once('value')
+    ]);
+    const usersObj  = usersSnap.val()  || {};
+    const empresasObj = empSnap.val()  || {};
+
+    const clientes = Object.values(usersObj)
+      .filter(u => u.id !== getSession().userId)   // excluir al propio admin
+      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+    if (!clientes.length) {
+      body.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0">Todavía no hay clientes registrados.</div>';
+      return;
+    }
+
+    const rows = clientes.map(u => {
+      const empId    = u.empresas?.[0]?.id || '—';
+      const empNombre = empresasObj[empId]?.nombre || empId;
+      const fecha    = u.createdAt ? new Date(u.createdAt).toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+      return `<tr>
+        <td><strong style="color:var(--text)">${esc(u.nombre || u.email)}</strong></td>
+        <td style="color:var(--muted);font-size:12px">${esc(u.email)}</td>
+        <td style="color:var(--muted);font-size:12px">${esc(empNombre)}</td>
+        <td style="color:var(--muted);font-size:12px">${fecha}</td>
+      </tr>`;
+    }).join('');
+
+    body.innerHTML = `
+      <table class="admin-table" style="width:100%">
+        <thead><tr>
+          <th>Nombre</th><th>Email</th><th>Empresa</th><th>Alta</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="font-size:11px;color:var(--muted);margin-top:10px">${clientes.length} cliente${clientes.length !== 1 ? 's' : ''}</div>`;
+  } catch (e) {
+    body.innerHTML = `<div style="font-size:13px;color:#ef4444;padding:12px 0">Error al cargar clientes: ${e.message}</div>`;
   }
 }
 
