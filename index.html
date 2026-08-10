@@ -2726,10 +2726,11 @@ function renderAdmin() {
       }).join('')
     : '<tr><td colspan="4" style="color:var(--muted)">Sin usuarios</td></tr>';
 
-  // Sección clientes — solo para el admin global
+  // Sección clientes — solo para el super-admin (Jaime)
+  const SUPER_ADMIN_UID = 'RUO9uxaH26QZDC1eMVuA0kjMYkw2';
   const clientesSection = document.getElementById('adminClientesSection');
   const clientesLabel   = document.getElementById('adminClientesLabel');
-  if (isAdmin()) {
+  if (getSession()?.userId === SUPER_ADMIN_UID) {
     clientesSection.style.display = 'block';
     clientesLabel.style.display   = 'block';
     cargarClientes();
