@@ -16,6 +16,7 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -915,18 +916,14 @@ tr:hover td { background: #fafbfc; }
     </div>
     <form onsubmit="doLogin(event)">
       <div class="login-field">
-        <label>Empresa</label>
-        <select id="loginEmpresa"></select>
-      </div>
-      <div class="login-field">
-        <label>Usuario</label>
-        <input id="loginUser" type="text" autocomplete="username" placeholder="usuario">
+        <label>Email</label>
+        <input id="loginEmail" type="email" autocomplete="email" placeholder="tu@email.com">
       </div>
       <div class="login-field" style="margin-bottom:18px">
         <label>Contraseña</label>
         <input id="loginPwd" type="password" autocomplete="current-password" placeholder="••••••••">
       </div>
-      <div id="loginError">Usuario, contraseña o empresa incorrectos</div>
+      <div id="loginError">Email o contraseña incorrectos</div>
       <button type="submit" class="login-btn">Ingresar →</button>
     </form>
   </div>
@@ -2395,75 +2392,94 @@ async function runMigration() {
 // Login
 async function doLogin(e) {
   e.preventDefault();
-  const empresaId = document.getElementById('loginEmpresa').value;
-  const username  = document.getElementById('loginUser').value.trim().toLowerCase();
-  const pwd       = document.getElementById('loginPwd').value;
-  const errEl     = document.getElementById('loginError');
+  const email  = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pwd    = document.getElementById('loginPwd').value;
+  const errEl  = document.getElementById('loginError');
   errEl.style.display = 'none';
 
-  const pwdHash = await hashPwd(pwd);
-  const users   = getUsers();
-  const user    = users.find(u => u.username.toLowerCase() === username && u.pwdHash === pwdHash);
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.disabled = true;
+  btn.textContent = 'Ingresando…';
 
-  if (!user) { errEl.style.display = 'block'; return; }
-
-  // Check access to this empresa
-  const empAccess = user.empresas?.find(e => e.id === empresaId);
-  if (!empAccess && user.role !== 'admin') { errEl.style.display = 'block'; return; }
-
-  const empresa = getEmpresas().find(e => e.id === empresaId);
-  setSession({
-    userId:      user.id,
-    username:    user.username,
-    role:        user.role,
-    empresaId,
-    empresaRole: empAccess?.role || (user.role === 'admin' ? 'admin' : 'viewer'),
-    empresaNombre: empresa?.nombre || empresaId,
-  });
-
-  bootApp();
+  try {
+    await firebase.auth().signInWithEmailAndPassword(email, pwd);
+    // onAuthStateChanged toma el control a partir de acá
+  } catch (err) {
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Ingresar →';
+  }
 }
 
 function doLogout() {
   clearSession();
-  location.reload();
+  firebase.auth().signOut().then(() => location.reload());
 }
 
-function populateLoginEmpresas() {
-  const sel = document.getElementById('loginEmpresa');
-  const empresas = getEmpresas();
-  sel.innerHTML = empresas.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
-}
+async function bootApp(firebaseUser) {
+  // Si no hay usuario autenticado, mostrar login
+  if (!firebaseUser) {
+    document.getElementById('loginScreen').style.display = 'flex';
+    const btn = document.querySelector('.login-btn');
+    if (btn) { btn.disabled = false; btn.textContent = 'Ingresar →'; }
+    return;
+  }
 
-function bootApp() {
-  const sess = getSession();
-  if (!sess) { document.getElementById('loginScreen').style.display = 'flex'; populateLoginEmpresas(); return; }
+  // Cargar perfil del usuario desde Firebase
+  const db       = firebase.database();
+  const uid      = firebaseUser.uid;
+  const userSnap = await db.ref(`norteSync/globalUsers/${uid}`).once('value');
+  const userData = userSnap.val();
 
-  // Hide login
+  let empresaId, empresaRole, empresaNombre;
+
+  if (userData && userData.empresas?.length) {
+    // Usuario normal: toma su primera (y única) empresa
+    empresaId   = userData.empresas[0].id;
+    empresaRole = userData.empresas[0].role;
+    const empSnap = await db.ref(`norteSync/globalEmpresas/${empresaId}`).once('value');
+    empresaNombre = empSnap.val()?.nombre || empresaId;
+  } else {
+    // Fallback para el admin original (JLL) — empresa hardcodeada
+    empresaId   = 'JLL';
+    empresaRole = 'admin';
+    empresaNombre = 'JLL — Hogar';
+  }
+
+  setSession({
+    userId:       uid,
+    username:     firebaseUser.email,
+    role:         userData?.role || 'admin',
+    empresaId,
+    empresaRole,
+    empresaNombre,
+  });
+
+  // Ocultar login
   document.getElementById('loginScreen').style.display = 'none';
 
-  // Show session info in sidebar
+  // Mostrar info de sesión en sidebar
   const userEl = document.getElementById('sidebarUser');
   const unEl   = document.getElementById('sidebarUsername');
   const emEl   = document.getElementById('sidebarEmpresa');
   userEl.style.display = 'block';
   document.getElementById('logoutBtn').style.display = 'block';
-  unEl.textContent = sess.username;
-  emEl.textContent = sess.empresaNombre || sess.empresaId;
+  unEl.textContent = firebaseUser.displayName || firebaseUser.email;
+  emEl.textContent = empresaNombre;
 
-  // Show Admin nav if admin
+  // Mostrar Admin nav si corresponde
   if (isAdmin()) document.getElementById('navAdmin').style.display = 'flex';
 
-  // Update Firebase sync path to empresa scope
+  // Inicializar sync con la empresa del usuario
   reinitSync();
 
-  // Render app
+  // Renderizar app
   curMonth = new Date().getMonth();
   curYear  = new Date().getFullYear();
   updateMonthDisplay();
   renderDash();
 
-  // Show onboarding if first time
+  // Onboarding si es primera vez
   maybeShowOnboarding();
 }
 
@@ -2766,24 +2782,26 @@ async function confirmarCambiarPwd() {
   const showErr = msg => { errEl.textContent = msg; errEl.style.display = 'block'; };
   errEl.style.display = 'none';
 
-  if (!actual)         { showErr('Ingresá tu contraseña actual.'); return; }
-  if (!nueva)          { showErr('Ingresá la nueva contraseña.'); return; }
-  if (nueva.length < 6){ showErr('La nueva contraseña debe tener al menos 6 caracteres.'); return; }
-  if (nueva !== confirm){ showErr('Las contraseñas no coinciden.'); return; }
+  if (!actual)          { showErr('Ingresá tu contraseña actual.'); return; }
+  if (!nueva)           { showErr('Ingresá la nueva contraseña.'); return; }
+  if (nueva.length < 6) { showErr('La nueva contraseña debe tener al menos 6 caracteres.'); return; }
+  if (nueva !== confirm) { showErr('Las contraseñas no coinciden.'); return; }
 
-  const session = getSession();
-  const users   = getUsers();
-  const user    = users.find(u => u.id === session.userId);
-  if (!user) { showErr('No se encontró tu usuario.'); return; }
-
-  const hashActual = await hashPwd(actual);
-  if (hashActual !== user.pwdHash) { showErr('La contraseña actual es incorrecta.'); return; }
-
-  const hashNueva = await hashPwd(nueva);
-  const updated   = users.map(u => u.id === user.id ? {...u, pwdHash: hashNueva} : u);
-  saveUsers(updated);
-  closeCambiarPwd();
-  alert('✅ Contraseña actualizada correctamente.');
+  try {
+    const user = firebase.auth().currentUser;
+    // Re-autenticar con la contraseña actual antes de cambiarla
+    const credential = firebase.auth.EmailAuthProvider.credential(user.email, actual);
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(nueva);
+    closeCambiarPwd();
+    alert('✅ Contraseña actualizada correctamente.');
+  } catch (err) {
+    if (err.code === 'auth/wrong-password') {
+      showErr('La contraseña actual es incorrecta.');
+    } else {
+      showErr('Error al actualizar: ' + err.message);
+    }
+  }
 }
 
 let _resetPwdUserId = null;
@@ -7065,47 +7083,19 @@ function ayudaGo(id) {
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAyuda(); });
 
-// ── SYNC GLOBAL USERS (cuentas creadas desde la landing) ─────
-async function syncGlobalUsers() {
-  try {
-    if (typeof firebase === 'undefined') return;
-    if (!firebase.apps?.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // Traer usuarios globales creados por la Cloud Function
-    const usersSnap = await db.ref('norteSync/globalUsers').once('value');
-    const globalUsersObj = usersSnap.val();
-    if (globalUsersObj) {
-      const local = getUsers();
-      const localIds = new Set(local.map(u => u.id));
-      Object.values(globalUsersObj).forEach(gu => {
-        if (!localIds.has(gu.id)) local.push(gu);
-      });
-      saveUsers(local);
-    }
-
-    // Traer empresas globales
-    const empresasSnap = await db.ref('norteSync/globalEmpresas').once('value');
-    const globalEmpresasObj = empresasSnap.val();
-    if (globalEmpresasObj) {
-      const local = getEmpresas();
-      const localIds = new Set(local.map(e => e.id));
-      Object.values(globalEmpresasObj).forEach(ge => {
-        if (!localIds.has(ge.id)) local.push(ge);
-      });
-      saveEmpresas(local);
-    }
-  } catch (e) {
-    // No bloquear el arranque si Firebase no está disponible
-    console.warn('syncGlobalUsers:', e.message);
-  }
-}
 
 // ── INIT ─────────────────────────────────────────────────────
 (async () => {
-  await runMigration();      // no-op si ya corrió; migra datos planos → JLL la primera vez
-  await syncGlobalUsers();   // trae cuentas creadas desde la landing (nuevos usuarios)
-  bootApp();                 // si hay sesión activa, entra directo; si no, muestra login
+  await runMigration(); // no-op si ya corrió; migra datos planos → JLL la primera vez
+
+  // Inicializar Firebase y esperar estado de autenticación
+  if (typeof firebase !== 'undefined') {
+    if (!firebase.apps?.length) firebase.initializeApp(firebaseConfig);
+    firebase.auth().onAuthStateChanged(user => bootApp(user));
+  } else {
+    // Sin Firebase: mostrar login vacío
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
 })();
 </script>
 
