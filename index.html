@@ -4437,7 +4437,7 @@ function renderAlertas() {
   detectAusentes(allData, key).forEach(a => alertas.push({
     cls: 'info', ico: '🔔',
     title: `"${a.detalle}" no registrado este mes`,
-    sub: `Presente en ${a.months} de los últimos 3 meses · Rubro: ${a.rubro}`
+    sub: `Era fijo el mes anterior · Rubro: ${a.rubro}`
   }));
 
   const fijosPend = detectFijosPendientes(allData, key);
@@ -4535,28 +4535,24 @@ function detectFijosPendientes(allData, key) {
 }
 
 function detectAusentes(allData, key) {
+  // Solo alerta si el concepto fue registrado como FIJO en el mes inmediatamente anterior
   const [y, m] = key.split('-').map(Number);
-  const pastKeys = [];
-  for (let i = 1; i <= 3; i++) {
-    let pm = m - i, py = y;
-    if (pm <= 0) { pm += 12; py--; }
-    pastKeys.push(`${py}-${String(pm).padStart(2,'0')}`);
-  }
-  const countMap = {};
-  pastKeys.forEach(pk => {
-    const seen = new Set();
-    allData.filter(t => t.mes===pk && t.tipo==='Gasto' && t.detalle).forEach(t => {
-      if (!seen.has(t.detalle)) {
-        seen.add(t.detalle);
-        if (!countMap[t.detalle]) countMap[t.detalle] = { count:0, rubro:t.rubro };
-        countMap[t.detalle].count++;
-      }
-    });
-  });
-  const currDetalle = new Set(allData.filter(t => t.mes===key && t.tipo==='Gasto').map(t=>t.detalle));
-  return Object.entries(countMap)
-    .filter(([d, v]) => v.count >= 2 && !currDetalle.has(d))
-    .map(([d, v]) => ({ detalle: d, rubro: v.rubro, months: v.count }))
+  let pm = m - 1, py = y;
+  if (pm <= 0) { pm += 12; py--; }
+  const prevKey = `${py}-${String(pm).padStart(2,'0')}`;
+
+  // Conceptos fijos del mes anterior (únicos, excluye TC)
+  const fijosPrevMes = {};
+  allData
+    .filter(t => t.mes === prevKey && t.tipo === 'Gasto' && t.tipoGasto === 'Fijo' && t.detalle)
+    .forEach(t => { fijosPrevMes[t.detalle] = t.rubro; });
+
+  // Conceptos ya registrados este mes (cualquier tipo)
+  const currDetalle = new Set(allData.filter(t => t.mes === key && t.tipo === 'Gasto').map(t => t.detalle));
+
+  return Object.entries(fijosPrevMes)
+    .filter(([d]) => !currDetalle.has(d))
+    .map(([d, rubro]) => ({ detalle: d, rubro, months: 1 }))
     .slice(0, 5);
 }
 
