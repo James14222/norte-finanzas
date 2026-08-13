@@ -3,8 +3,8 @@
  * Estrategia: Cache-first para el app shell, network-first para Firebase/APIs.
  */
 
-const CACHE_NAME = 'norte-v4';
-const BASE = '/norte-finanzas';
+const CACHE_NAME = 'norte-v6';
+const BASE = '';
 
 // Recursos del app shell que se cachean en la instalación
 const APP_SHELL = [
