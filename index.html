@@ -572,6 +572,14 @@ tr:hover td { background: #fafbfc; }
 .login-btn:hover{opacity:0.88;transform:translateY(-1px);}
 .login-btn:active{transform:translateY(0);}
 #loginError{color:#ef4444;font-size:12px;text-align:center;margin-bottom:10px;display:none;}
+.login-msg-err{color:#ef4444;font-size:12px;text-align:center;margin-bottom:10px;display:none;}
+.login-msg-ok{color:#16a34a;font-size:12px;text-align:center;margin-bottom:10px;display:none;line-height:1.5;}
+.login-forgot-link{text-align:right;margin-top:-8px;margin-bottom:16px;}
+.login-forgot-link a{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;}
+.login-forgot-link a:hover{color:var(--primary);}
+.login-back-link{text-align:center;margin-top:14px;}
+.login-back-link a{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;}
+.login-back-link a:hover{color:var(--primary);}
 /* Responsive */
 @media(max-width:820px){
   .lsc-sep{display:none;}
@@ -911,21 +919,64 @@ tr:hover td { background: #fafbfc; }
       </svg>
       <div>
         <div class="lsc-form-name">Norte</div>
-        <div class="lsc-form-sub">Iniciá sesión para continuar</div>
+        <div class="lsc-form-sub" id="lscFormSub">Iniciá sesión para continuar</div>
       </div>
     </div>
-    <form onsubmit="doLogin(event)">
-      <div class="login-field">
-        <label>Email</label>
-        <input id="loginEmail" type="email" autocomplete="email" placeholder="tu@email.com">
-      </div>
-      <div class="login-field" style="margin-bottom:18px">
-        <label>Contraseña</label>
-        <input id="loginPwd" type="password" autocomplete="current-password" placeholder="••••••••">
-      </div>
-      <div id="loginError">Email o contraseña incorrectos</div>
-      <button type="submit" class="login-btn">Ingresar →</button>
-    </form>
+
+    <!-- ── Bloque: LOGIN ── -->
+    <div id="loginFormBlock">
+      <form onsubmit="doLogin(event)">
+        <div class="login-field">
+          <label>Email</label>
+          <input id="loginEmail" type="email" autocomplete="email" placeholder="tu@email.com">
+        </div>
+        <div class="login-field" style="margin-bottom:8px">
+          <label>Contraseña</label>
+          <input id="loginPwd" type="password" autocomplete="current-password" placeholder="••••••••">
+        </div>
+        <div class="login-forgot-link"><a onclick="showLoginState('forgot');return false;">¿Olvidaste tu contraseña?</a></div>
+        <div id="loginError">Email o contraseña incorrectos</div>
+        <button type="submit" class="login-btn">Ingresar →</button>
+      </form>
+    </div>
+
+    <!-- ── Bloque: OLVIDÉ MI CONTRASEÑA ── -->
+    <div id="forgotPwdBlock" style="display:none">
+      <p style="font-size:12.5px;color:var(--text-2);margin:0 0 16px;line-height:1.5">
+        Ingresá tu email y te mandamos un link para elegir una contraseña nueva.
+      </p>
+      <form onsubmit="doForgotPwd(event)">
+        <div class="login-field" style="margin-bottom:14px">
+          <label>Email</label>
+          <input id="forgotEmail" type="email" autocomplete="email" placeholder="tu@email.com">
+        </div>
+        <div id="forgotPwdErr" class="login-msg-err"></div>
+        <div id="forgotPwdOk" class="login-msg-ok"></div>
+        <button type="submit" class="login-btn" id="forgotPwdBtn">Enviar link →</button>
+      </form>
+      <div class="login-back-link"><a onclick="showLoginState('login');return false;">← Volver a iniciar sesión</a></div>
+    </div>
+
+    <!-- ── Bloque: ELEGIR CONTRASEÑA NUEVA (desde el link del mail) ── -->
+    <div id="resetPwdBlock" style="display:none">
+      <p style="font-size:12.5px;color:var(--text-2);margin:0 0 16px;line-height:1.5" id="resetPwdIntro">
+        Elegí tu contraseña nueva.
+      </p>
+      <form onsubmit="doSetNewPwd(event)">
+        <div class="login-field">
+          <label>Contraseña nueva</label>
+          <input id="resetPwdNew" type="password" autocomplete="new-password" placeholder="••••••••">
+        </div>
+        <div class="login-field" style="margin-bottom:14px">
+          <label>Confirmar contraseña</label>
+          <input id="resetPwdConfirm2" type="password" autocomplete="new-password" placeholder="••••••••">
+        </div>
+        <div id="resetPwdErr" class="login-msg-err"></div>
+        <button type="submit" class="login-btn" id="resetPwdBtn">Guardar contraseña →</button>
+      </form>
+      <div class="login-back-link"><a onclick="showLoginState('login');return false;">← Volver a iniciar sesión</a></div>
+    </div>
+
   </div>
 
 </div>
@@ -2430,6 +2481,135 @@ async function doLogin(e) {
 function doLogout() {
   clearSession();
   firebase.auth().signOut().then(() => location.reload());
+}
+
+// ── Recuperación de contraseña ──
+let _resetOobCode = null;
+let _resetEmail   = null;
+
+function showLoginState(state) {
+  const blocks = {
+    login:  document.getElementById('loginFormBlock'),
+    forgot: document.getElementById('forgotPwdBlock'),
+    reset:  document.getElementById('resetPwdBlock'),
+  };
+  const subs = {
+    login:  'Iniciá sesión para continuar',
+    forgot: 'Recuperar contraseña',
+    reset:  'Nueva contraseña',
+  };
+  Object.keys(blocks).forEach(k => blocks[k].style.display = (k === state ? 'block' : 'none'));
+  const subEl = document.getElementById('lscFormSub');
+  if (subEl) subEl.textContent = subs[state] || subs.login;
+
+  if (state === 'forgot') {
+    document.getElementById('forgotEmail').value = '';
+    document.getElementById('forgotPwdErr').style.display = 'none';
+    document.getElementById('forgotPwdOk').style.display = 'none';
+    setTimeout(() => document.getElementById('forgotEmail').focus(), 60);
+  }
+  if (state === 'login') {
+    const errEl = document.getElementById('loginError');
+    if (errEl) errEl.style.display = 'none';
+  }
+}
+
+async function doForgotPwd(e) {
+  e.preventDefault();
+  const email  = document.getElementById('forgotEmail').value.trim().toLowerCase();
+  const errEl  = document.getElementById('forgotPwdErr');
+  const okEl   = document.getElementById('forgotPwdOk');
+  const btn    = document.getElementById('forgotPwdBtn');
+  errEl.style.display = 'none';
+  okEl.style.display  = 'none';
+
+  if (!email) { errEl.textContent = 'Ingresá tu email.'; errEl.style.display = 'block'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+
+  const actionCodeSettings = { url: location.origin + location.pathname };
+
+  try {
+    await firebase.auth().sendPasswordResetEmail(email, actionCodeSettings);
+  } catch (err) {
+    // No revelamos si el mail existe o no (evita enumeración de usuarios) —
+    // solo mostramos error real si el formato de email es inválido.
+    if (err.code === 'auth/invalid-email') {
+      errEl.textContent = 'Ese email no parece válido.';
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Enviar link →';
+      return;
+    }
+  }
+
+  okEl.textContent = 'Si ese email está registrado, te llegó un link para elegir una contraseña nueva. Revisá también spam.';
+  okEl.style.display = 'block';
+  btn.disabled = false;
+  btn.textContent = 'Enviar link →';
+}
+
+async function doSetNewPwd(e) {
+  e.preventDefault();
+  const nueva   = document.getElementById('resetPwdNew').value;
+  const confirm = document.getElementById('resetPwdConfirm2').value;
+  const errEl   = document.getElementById('resetPwdErr');
+  const btn     = document.getElementById('resetPwdBtn');
+  errEl.style.display = 'none';
+
+  if (!nueva)            { errEl.textContent = 'Ingresá la contraseña nueva.'; errEl.style.display = 'block'; return; }
+  if (nueva.length < 6)  { errEl.textContent = 'La contraseña debe tener al menos 6 caracteres.'; errEl.style.display = 'block'; return; }
+  if (nueva !== confirm) { errEl.textContent = 'Las contraseñas no coinciden.'; errEl.style.display = 'block'; return; }
+  if (!_resetOobCode)    { errEl.textContent = 'El link venció o no es válido. Pedí uno nuevo.'; errEl.style.display = 'block'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Guardando…';
+
+  try {
+    await firebase.auth().confirmPasswordReset(_resetOobCode, nueva);
+    // Login automático con la contraseña nueva
+    await firebase.auth().signInWithEmailAndPassword(_resetEmail, nueva);
+    _resetOobCode = null; _resetEmail = null;
+    // onAuthStateChanged toma el control a partir de acá
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Guardar contraseña →';
+    if (err.code === 'auth/expired-action-code' || err.code === 'auth/invalid-action-code') {
+      errEl.textContent = 'El link venció o ya fue usado. Pedí uno nuevo desde "¿Olvidaste tu contraseña?".';
+    } else if (err.code === 'auth/weak-password') {
+      errEl.textContent = 'Elegí una contraseña un poco más segura.';
+    } else {
+      errEl.textContent = 'No pudimos guardar la contraseña. Intentá de nuevo.';
+    }
+    errEl.style.display = 'block';
+  }
+}
+
+// Detecta si la URL trae un link de reseteo de contraseña (?mode=resetPassword&oobCode=...)
+function checkPasswordResetLink() {
+  const params = new URLSearchParams(location.search);
+  if (params.get('mode') !== 'resetPassword' || !params.get('oobCode')) return false;
+
+  const oobCode = params.get('oobCode');
+  history.replaceState({}, '', location.pathname); // limpiar la URL
+
+  document.getElementById('loginScreen').style.display = 'flex';
+  showLoginState('forgot');
+  document.getElementById('forgotPwdOk').textContent = 'Verificando el link…';
+  document.getElementById('forgotPwdOk').style.display = 'block';
+
+  firebase.auth().verifyPasswordResetCode(oobCode).then(email => {
+    _resetOobCode = oobCode;
+    _resetEmail   = email;
+    document.getElementById('resetPwdIntro').textContent = `Elegí la contraseña nueva para ${email}.`;
+    showLoginState('reset');
+  }).catch(() => {
+    showLoginState('forgot');
+    document.getElementById('forgotPwdErr').textContent = 'El link venció o no es válido. Pedí uno nuevo.';
+    document.getElementById('forgotPwdErr').style.display = 'block';
+  });
+  return true;
 }
 
 async function bootApp(firebaseUser) {
@@ -6945,6 +7125,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAyuda()
   // Inicializar Firebase y esperar estado de autenticación
   if (typeof firebase !== 'undefined') {
     if (!firebase.apps?.length) firebase.initializeApp(firebaseConfig);
+    checkPasswordResetLink();
     firebase.auth().onAuthStateChanged(user => bootApp(user));
   } else {
     // Sin Firebase: mostrar login vacío
