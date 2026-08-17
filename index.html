@@ -19,6 +19,83 @@
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- NortIA — Firebase AI Logic (SDK modular, requiere carga separada del resto que es compat/global) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+  import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app-check.js";
+  import { getAI, getGenerativeModel, AgentPlatformBackend } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-ai.js";
+
+  const nortiaFirebaseConfig = {
+    apiKey: "AIzaSyBzVYZiKluXuAcPdfzCtrjDcxLZ8Sfa-ws",
+    authDomain: "norte-finanzas.firebaseapp.com",
+    databaseURL: "https://norte-finanzas-default-rtdb.firebaseio.com",
+    projectId: "norte-finanzas",
+    storageBucket: "norte-finanzas.firebasestorage.app",
+    messagingSenderId: "770320644005",
+    appId: "1:770320644005:web:07473cb04562bc6951da4c"
+  };
+
+  const HALLAZGOS_SCHEMA = {
+    type: "object",
+    properties: {
+      hallazgos: {
+        type: "array",
+        maxItems: 3,
+        items: {
+          type: "object",
+          properties: {
+            id:               { type: "string" },
+            categoria:        { type: "string", enum: ["calidad_datos","anomalia","proyeccion","presupuesto","compromisos","gasto_hormiga","comparativa_hogar"] },
+            observado:        { type: "string" },
+            evidencia:        { type: "string" },
+            por_que_importa:  { type: "string" },
+            pregunta:         { type: "string" },
+            accion_sugerida:  { type: "string" },
+            monto_estimado:   { type: "number", nullable: true },
+            confianza:        { type: "string", enum: ["alta","media","baja"] }
+          },
+          required: ["id","categoria","observado","evidencia","por_que_importa","pregunta","accion_sugerida","confianza"]
+        }
+      }
+    },
+    required: ["hallazgos"]
+  };
+
+  try {
+    const nortiaApp = initializeApp(nortiaFirebaseConfig, "nortia");
+    initializeAppCheck(nortiaApp, {
+      provider: new ReCaptchaV3Provider("6LcY5oktAAAAAKK-E8mYfsPTWB0W3z7CbIIZrOK2"),
+      isTokenAutoRefreshEnabled: true
+    });
+    const ai = getAI(nortiaApp, { backend: new AgentPlatformBackend() });
+    const model = getGenerativeModel(ai, {
+      model: "gemini-3.7-flash",
+      generationConfig: { responseMimeType: "application/json", responseSchema: HALLAZGOS_SCHEMA, temperature: 0.3 }
+    });
+
+    // Puente hacia el resto de la app (scripts clásicos, no-módulo)
+    window.nortiaGenerarHallazgos = async function (resumenCalculado) {
+      const prompt = `Sos NortIA, el motor de análisis financiero de Norte, una app argentina de finanzas del hogar.
+Tu trabajo es interpretar el siguiente resumen YA CALCULADO de la situación financiera del usuario y generar como máximo 3 hallazgos.
+NUNCA inventes ni recalcules números — usá exclusivamente los valores que aparecen en el resumen.
+Cada hallazgo sigue el formato de 5 partes: qué observaste, la evidencia numérica exacta, por qué importa, una pregunta para que el usuario se la haga, y una acción concreta (cuantificada en pesos si aplica).
+No des consejos de inversión ni de cómo generar más ingresos — solo ayudá a organizar y optimizar gastos ya registrados.
+Priorizá lo más relevante: si hay muchas señales, elegí las 3 que más importan, no las primeras 3.
+Tono: cercano, claro, nunca alarmista ni moralizante. Español rioplatense.
+
+RESUMEN CALCULADO:
+${resumenCalculado}`;
+      const result = await model.generateContent(prompt);
+      return JSON.parse(result.response.text());
+    };
+    window.nortiaReady = true;
+  } catch (e) {
+    console.error("NortIA init error:", e);
+    window.nortiaReady = false;
+  }
+</script>
+
 <style>
 :root {
   --primary: #FF8A5C; --primary-dark: #E8714A;
@@ -207,6 +284,29 @@ tr:hover td { background: #fafbfc; }
 .alerta-ico  { font-size:18px; flex-shrink:0; padding-top:1px; }
 .alerta-at   { font-weight:600; font-size:13.5px; }
 .alerta-as   { font-size:12px; color:var(--muted); margin-top:2px; }
+
+/* NortIA — tarjetas de hallazgos */
+.nortia-head { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.nortia-head .nico { font-size:22px; }
+.nortia-head h3 { margin:0; font-size:16px; }
+.nortia-head .nsub { font-size:12.5px; color:var(--muted); margin-top:2px; }
+.nortia-wrap { display:flex; flex-direction:column; gap:12px; margin-bottom:24px; }
+.hallazgo-card { background:var(--card); border:1px solid var(--border); border-left:4px solid #8b7cf6; border-radius:12px; padding:16px 18px; }
+.hallazgo-top { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.hallazgo-badge { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:2px 8px; border-radius:6px; background:#efeafd; color:#6d4fe0; }
+.hallazgo-conf { font-size:10.5px; color:var(--muted); margin-left:auto; }
+.hallazgo-obs { font-weight:600; font-size:14.5px; margin-bottom:4px; }
+.hallazgo-ev { font-size:12.5px; color:var(--muted); margin-bottom:8px; }
+.hallazgo-importa { font-size:13px; margin-bottom:10px; }
+.hallazgo-pregunta { font-size:13px; font-style:italic; color:#6d4fe0; background:#faf9ff; border-radius:8px; padding:8px 12px; margin-bottom:10px; }
+.hallazgo-accion { font-size:13px; display:flex; gap:8px; align-items:flex-start; }
+.hallazgo-accion .aico { flex-shrink:0; }
+.nortia-loading, .nortia-empty, .nortia-error, .nortia-cap { text-align:center; padding:28px 16px; color:var(--muted); font-size:13.5px; }
+.nortia-loading .dots span { animation: nortiaBlink 1.4s infinite; }
+.nortia-loading .dots span:nth-child(2) { animation-delay:.2s; }
+.nortia-loading .dots span:nth-child(3) { animation-delay:.4s; }
+@keyframes nortiaBlink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+.nortia-refresh { font-size:12px; color:var(--primary); cursor:pointer; margin-left:auto; }
 
 /* REP TABS */
 .rep-tabs { display:flex; gap:4px; margin-bottom:18px; background:var(--card); border-radius:12px; padding:5px; border:1px solid var(--border); width:fit-content; }
@@ -1005,7 +1105,7 @@ tr:hover td { background: #fafbfc; }
     <div class="nav-item" onclick="showPage('analisis')"><span class="ico">🔎</span> Análisis</div>
     <div class="nav-item" onclick="showPage('progreso')"><span class="ico">🏆</span> Progreso</div>
     <div class="nav-item" onclick="showPage('reportes')"><span class="ico">📈</span> Reportes</div>
-    <div class="nav-item disabled"><span class="ico">🤖</span> Módulo NortIA <span class="badge-soon">Próximamente</span></div>
+    <div class="nav-item disabled" id="navNortia"><span class="ico">🤖</span> Módulo NortIA <span class="badge-soon" id="navNortiaBadge">Próximamente</span></div>
     <div class="nav-item" id="navAdmin" style="display:none" onclick="showPage('admin')"><span class="ico">⚙️</span> Admin</div>
   </div>
   <div class="sidebar-user" id="sidebarUser" style="display:none">
@@ -1399,6 +1499,14 @@ tr:hover td { background: #fafbfc; }
     <!-- CONSULTAS IA -->
     <div id="page-consultas" class="page">
       <div class="consultas-layout">
+        <div class="nortia-head">
+          <div class="nico">🧭</div>
+          <div>
+            <h3>NortIA</h3>
+            <div class="nsub">Análisis de tus propios datos — no de inversión ni de ingresos</div>
+          </div>
+        </div>
+        <div id="nortiaHallazgosWrap" class="nortia-wrap"></div>
         <div class="chat-sugs">
           <button class="chat-sug" onclick="sendSug('¿Cuánto tengo pendiente?')">💰 Pendientes</button>
           <button class="chat-sug" onclick="sendSug('Resumen del mes actual')">📋 Resumen del mes</button>
@@ -2668,6 +2776,14 @@ async function bootApp(firebaseUser) {
 
   // Mostrar Admin nav si corresponde
   if (isAdmin()) document.getElementById('navAdmin').style.display = 'flex';
+
+  // NortIA en beta cerrada: solo para cuentas de prueba, mientras se valida antes del lanzamiento general
+  if (nortiaBetaHabilitado()) {
+    const navN = document.getElementById('navNortia');
+    navN.classList.remove('disabled');
+    navN.onclick = () => showPage('consultas');
+    document.getElementById('navNortiaBadge').textContent = 'Beta';
+  }
 
   // Inicializar sync con la empresa del usuario
   reinitSync();
@@ -4406,9 +4522,10 @@ function showPage(p) {
   toggleSidebar(false);
   const navIdx = ['dashboard','transacciones','presupuesto','analisis','progreso','reportes','consultas'].indexOf(p);
   if (navIdx >= 0) document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
-  document.getElementById('pageTitle').textContent = {dashboard:'Dashboard',transacciones:'Transacciones',presupuesto:'Presupuesto',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',consultas:'Consultas IA',admin:'Administración'}[p] || p;
+  document.getElementById('pageTitle').textContent = {dashboard:'Dashboard',transacciones:'Transacciones',presupuesto:'Presupuesto',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',consultas:'NortIA',admin:'Administración'}[p] || p;
   curPage = p;
   render();
+  if (p === 'consultas') renderNortiaHallazgos();
 }
 
 function changeMonth(d) {
@@ -7003,7 +7120,155 @@ let _chatHistory = [];  // { role: 'user'|'model', parts: [{text}] }
 
 function resetChatHistory() { _chatHistory = []; }
 
-// ── GEMINI API CALL ───────────────────────────────────────────
+// ── NortIA — resumen calculado + hallazgos (Firebase AI Logic) ──
+const NORTIA_CAP_MENSUAL = 30; // llamadas por hogar por mes, plan gratis con tope
+
+function nortiaBetaHabilitado() {
+  return ['JLL', 'DEMO_GARCIA'].includes(curEmpresa());
+}
+
+// Arma un resumen COMPACTO Y CALCULADO (nunca transacciones crudas) para enviarle a NortIA.
+function buildResumenCalculado() {
+  const all = getData();
+  const key = curKey();
+  const [y, m] = key.split('-').map(Number);
+
+  const delMes = t => t.mes === key;
+  const gastosMes = all.filter(t => delMes(t) && t.tipo === 'Gasto');
+  const ingresosMes = all.filter(t => delMes(t) && t.tipo === 'Ingreso');
+  const totalGastos = gastosMes.reduce((s,t)=>s+(Number(t.impPesos)||0),0);
+  const totalIngresos = ingresosMes.reduce((s,t)=>s+(Number(t.impPesos)||0),0);
+  const pendiente = all.filter(delMes).reduce((s,t)=>s+(Number(t.saldo)||0),0);
+
+  // Calidad de datos: sin clasificar
+  const sinRubro = gastosMes.filter(t => !t.rubro || t.rubro === '\u2014').length;
+  const pctSinRubro = gastosMes.length ? Math.round(sinRubro / gastosMes.length * 100) : 0;
+
+  // Desv\u00edos por rubro vs. promedio hist\u00f3rico (reutiliza la l\u00f3gica ya existente en el dashboard)
+  const desvios = detectDesvios(all, key);
+
+  // Gastos chicos acumulados (< $8.000, suman igual)
+  const chicos = gastosMes.filter(t => (Number(t.impPesos)||0) > 0 && (Number(t.impPesos)||0) < 8000);
+  const totalChicos = chicos.reduce((s,t)=>s+(Number(t.impPesos)||0),0);
+  const pctChicos = totalGastos ? Math.round(totalChicos / totalGastos * 100) : 0;
+
+  // Compromisos fijos del mes
+  const fijos = gastosMes.filter(t => t.tipoGasto === 'Fijo');
+  const totalFijos = fijos.reduce((s,t)=>s+(Number(t.impPesos)||0),0);
+  const pctComprometido = totalIngresos ? Math.round(totalFijos / totalIngresos * 100) : null;
+
+  // Promedio hist\u00f3rico general (\u00faltimos 3 meses con datos)
+  const mesesPrevios = [];
+  for (let i=1;i<=3;i++){ let pm=m-i,py=y; if(pm<=0){pm+=12;py--;} mesesPrevios.push(`${py}-${String(pm).padStart(2,'0')}`); }
+  const promMensual = mesesPrevios.map(pk => all.filter(t=>t.mes===pk && t.tipo==='Gasto').reduce((s,t)=>s+(Number(t.impPesos)||0),0)).filter(v=>v>0);
+  const promedioGastoMensual = promMensual.length ? Math.round(promMensual.reduce((a,b)=>a+b,0)/promMensual.length) : null;
+
+  const lines = [];
+  lines.push(`Per\u00edodo: ${MESES[m-1]} ${y}`);
+  lines.push(`Ingresos del mes: $${totalIngresos.toLocaleString('es-AR')}`);
+  lines.push(`Gastos del mes: $${totalGastos.toLocaleString('es-AR')}`);
+  lines.push(`Saldo pendiente por pagar: $${pendiente.toLocaleString('es-AR')}`);
+  if (promedioGastoMensual) lines.push(`Promedio de gastos de los \u00faltimos meses: $${promedioGastoMensual.toLocaleString('es-AR')}`);
+  if (pctComprometido !== null) lines.push(`% de ingresos ya comprometido en gastos fijos: ${pctComprometido}%`);
+  lines.push(`Transacciones sin rubro clasificado este mes: ${sinRubro} (${pctSinRubro}% del total)`);
+  lines.push(`Gastos chicos (menores a $8.000): ${chicos.length} movimientos, suman $${totalChicos.toLocaleString('es-AR')} (${pctChicos}% de los gastos del mes)`);
+  if (desvios.length) {
+    lines.push(`Rubros con desv\u00edo significativo vs. promedio hist\u00f3rico:`);
+    desvios.forEach(d => lines.push(`  - ${d.rubro}: $${Math.round(d.actual).toLocaleString('es-AR')} este mes vs. promedio $${Math.round(d.avg).toLocaleString('es-AR')} (+${d.pct}%)`));
+  } else {
+    lines.push(`Sin desv\u00edos significativos detectados vs. promedio hist\u00f3rico.`);
+  }
+  return lines.join('\n');
+}
+
+// Firma barata de los datos actuales, para saber si hay que regenerar el cach\u00e9
+function nortiaDataSignature() {
+  const all = getData().filter(t => t.mes === curKey());
+  return `${all.length}:${all.reduce((s,t)=>s+(Number(t.impPesos)||0)+(Number(t.saldo)||0),0)}`;
+}
+
+async function nortiaCheckYRegistrarUso() {
+  const db = firebase.database();
+  const ym = curKey();
+  const ref = db.ref(`norteSync/empresas/${curEmpresa()}/nortia/usage/${ym}`);
+  const snap = await ref.once('value');
+  const usados = snap.val() || 0;
+  if (usados >= NORTIA_CAP_MENSUAL) return false;
+  await ref.set(usados + 1);
+  return true;
+}
+
+async function renderNortiaHallazgos(forzarRegenerar = false) {
+  const wrap = document.getElementById('nortiaHallazgosWrap');
+  if (!wrap) return;
+
+  if (!nortiaBetaHabilitado()) {
+    wrap.innerHTML = `<div class="nortia-empty">NortIA todav\u00eda no est\u00e1 disponible para tu cuenta.</div>`;
+    return;
+  }
+
+  const db = firebase.database();
+  const key = curKey();
+  const cacheRef = db.ref(`norteSync/empresas/${curEmpresa()}/nortia/diagnostico/${key}`);
+  const sig = nortiaDataSignature();
+
+  wrap.innerHTML = `<div class="nortia-loading">Analizando tus datos<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>`;
+
+  try {
+    if (!forzarRegenerar) {
+      const cached = (await cacheRef.once('value')).val();
+      if (cached && cached.sig === sig && Array.isArray(cached.hallazgos)) {
+        return nortiaPintarHallazgos(cached.hallazgos, true);
+      }
+    }
+
+    if (!window.nortiaReady) {
+      wrap.innerHTML = `<div class="nortia-error">NortIA no se pudo inicializar. Recarg\u00e1 la p\u00e1gina o prob\u00e1 m\u00e1s tarde.</div>`;
+      return;
+    }
+
+    const puedeUsar = await nortiaCheckYRegistrarUso();
+    if (!puedeUsar) {
+      wrap.innerHTML = `<div class="nortia-cap">Llegaste al l\u00edmite de an\u00e1lisis de NortIA de este mes. Vuelve a estar disponible el pr\u00f3ximo mes.</div>`;
+      return;
+    }
+
+    const resumen = buildResumenCalculado();
+    const data = await window.nortiaGenerarHallazgos(resumen);
+    const hallazgos = Array.isArray(data?.hallazgos) ? data.hallazgos.slice(0,3) : [];
+
+    await cacheRef.set({ hallazgos, sig, generatedAt: Date.now() });
+    nortiaPintarHallazgos(hallazgos, false);
+  } catch (e) {
+    console.error('NortIA error:', e);
+    wrap.innerHTML = `<div class="nortia-error">No pudimos generar el an\u00e1lisis en este momento. Prob\u00e1 de nuevo en unos minutos.</div>`;
+  }
+}
+
+const NORTIA_CAT_ICO = { calidad_datos:'\ud83e\uddf9', anomalia:'\ud83d\udcc8', proyeccion:'\ud83d\udd2e', presupuesto:'\ud83c\udfaf', compromisos:'\ud83d\udccc', gasto_hormiga:'\ud83d\udc1c', comparativa_hogar:'\ud83d\udc65' };
+
+function nortiaPintarHallazgos(hallazgos, deCache) {
+  const wrap = document.getElementById('nortiaHallazgosWrap');
+  if (!hallazgos.length) {
+    wrap.innerHTML = `<div class="nortia-empty">Todav\u00eda no hay suficientes datos este mes para un an\u00e1lisis confiable. Registr\u00e1 m\u00e1s movimientos y volv\u00e9 a intentarlo.</div>`;
+    return;
+  }
+  const header = `<div style="display:flex;align-items:center;margin-bottom:2px"><span style="font-size:11px;color:var(--muted)">${deCache ? 'An\u00e1lisis de este mes' : 'An\u00e1lisis reci\u00e9n generado'}</span><span class="nortia-refresh" onclick="renderNortiaHallazgos(true)">\u21bb Actualizar</span></div>`;
+  wrap.innerHTML = header + hallazgos.map(h => `
+    <div class="hallazgo-card">
+      <div class="hallazgo-top">
+        <span class="hallazgo-badge">${esc(NORTIA_CAT_ICO[h.categoria]||'\ud83d\udca1')} ${esc((h.categoria||'').replace('_',' '))}</span>
+        <span class="hallazgo-conf">confianza ${esc(h.confianza||'media')}</span>
+      </div>
+      <div class="hallazgo-obs">${esc(h.observado||'')}</div>
+      <div class="hallazgo-ev">${esc(h.evidencia||'')}</div>
+      <div class="hallazgo-importa">${esc(h.por_que_importa||'')}</div>
+      <div class="hallazgo-pregunta">\u00bf${esc((h.pregunta||'').replace(/^\u00bf|\?$/g,''))}?</div>
+      <div class="hallazgo-accion"><span class="aico">\u2705</span><span>${esc(h.accion_sugerida||'')}${h.monto_estimado ? ` <strong>($${Math.round(h.monto_estimado).toLocaleString('es-AR')})</strong>` : ''}</span></div>
+    </div>`).join('');
+}
+
+// \u2500\u2500 GEMINI API CALL \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 async function callGemini(userText) {
   const key = getGeminiKey();
   const systemCtx = buildFinancialContext();
