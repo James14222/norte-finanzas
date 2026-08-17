@@ -398,6 +398,7 @@ tr:hover td { background: #fafbfc; }
 .chat-bubble { padding:12px 16px; border-radius:16px; font-size:13.5px; line-height:1.6; }
 .chat-msg.user .chat-bubble { background:var(--primary); color:white; border-bottom-right-radius:4px; }
 .chat-msg.bot  .chat-bubble { background:var(--card); border:1px solid var(--border); border-bottom-left-radius:4px; color:var(--text); }
+.chat-usage-counter { font-size:11px; color:var(--muted); text-align:right; padding-top:6px; }
 .chat-input-row { display:flex; gap:10px; padding-top:14px; border-top:1px solid var(--border); margin-top:4px; }
 .typing-dots { display:inline-flex; gap:4px; align-items:center; }
 .typing-dots span { width:7px; height:7px; border-radius:50%; background:var(--muted); animation:typingBounce 1.2s infinite; }
@@ -1532,6 +1533,7 @@ tr:hover td { background: #fafbfc; }
             <div class="chat-bubble">Hola! Soy tu asistente de finanzas 👋 Podés preguntarme sobre tus ingresos, gastos, clientes o cualquier período. Usá los atajos de arriba o escribí tu pregunta.</div>
           </div>
         </div>
+        <div class="chat-usage-counter" id="nortiaChatCounter"></div>
         <div class="chat-input-row">
           <input class="chat-input" id="chatInput" type="text" placeholder="Preguntá sobre tus finanzas..." onkeydown="if(event.key==='Enter')submitQuery()">
           <button class="btn btn-primary" id="chatSendBtn" onclick="submitQuery()">Enviar</button>
@@ -4520,6 +4522,7 @@ function showPage(p) {
   const fabEl = document.querySelector('.fab');
   if (fabEl) fabEl.style.display = (p === 'consultas') ? 'none' : '';
   render();
+  if (p === 'consultas') actualizarNortiaChatCounter();
 }
 
 let _nortiaHallazgosLoaded = false;
@@ -7211,6 +7214,39 @@ async function nortiaCheckYRegistrarUso() {
   return true;
 }
 
+// ── NortIA CHAT — tope de uso mensual (separado del de hallazgos) ──
+const NORTIA_CHAT_CAP_MENSUAL = 60; // mensajes de chat por hogar por mes
+const NORTIA_CHAT_HISTORIAL_MAX = 8; // intercambios recientes que se envían como contexto al modelo
+
+function nortiaChatMesActual() {
+  return new Date().toISOString().slice(0, 7); // yyyy-mm real (no el mes navegado en el dashboard)
+}
+
+async function nortiaChatLeerUso() {
+  const db = firebase.database();
+  const ref = db.ref(`norteSync/empresas/${curEmpresa()}/nortia/usageChat/${nortiaChatMesActual()}`);
+  const snap = await ref.once('value');
+  return snap.val() || 0;
+}
+
+async function nortiaChatCheckYRegistrarUso() {
+  const db = firebase.database();
+  const ref = db.ref(`norteSync/empresas/${curEmpresa()}/nortia/usageChat/${nortiaChatMesActual()}`);
+  const snap = await ref.once('value');
+  const usados = snap.val() || 0;
+  if (usados >= NORTIA_CHAT_CAP_MENSUAL) return { ok: false, usados };
+  await ref.set(usados + 1);
+  return { ok: true, usados: usados + 1 };
+}
+
+async function actualizarNortiaChatCounter(usadosConocido) {
+  const el = document.getElementById('nortiaChatCounter');
+  if (!el) return;
+  if (!nortiaBetaHabilitado()) { el.textContent = ''; return; }
+  const usados = (usadosConocido !== undefined) ? usadosConocido : await nortiaChatLeerUso();
+  el.textContent = `${usados} / ${NORTIA_CHAT_CAP_MENSUAL} mensajes este mes`;
+}
+
 async function renderNortiaHallazgos(forzarRegenerar = false) {
   const wrap = document.getElementById('nortiaHallazgosWrap');
   if (!wrap) return;
@@ -7284,7 +7320,10 @@ function nortiaPintarHallazgos(hallazgos, deCache) {
 // \u2500\u2500 GEMINI API CALL \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 async function callNortiaChat(userText) {
   const systemCtx = buildFinancialContext();
-  const historyTexto = _chatHistory.map(m => `${m.role === 'user' ? 'Usuario' : 'Asistente'}: ${m.parts[0].text}`).join('\n');
+  // Solo se envían al modelo los últimos intercambios como contexto — la conversación
+  // completa sigue visible en pantalla, esto solo limita lo que "recuerda" el modelo.
+  const historialReciente = _chatHistory.slice(-NORTIA_CHAT_HISTORIAL_MAX * 2);
+  const historyTexto = historialReciente.map(m => `${m.role === 'user' ? 'Usuario' : 'Asistente'}: ${m.parts[0].text}`).join('\n');
 
   _chatHistory.push({ role: 'user', parts: [{ text: userText }] });
 
@@ -7325,6 +7364,16 @@ async function submitQuery() {
       document.getElementById('chatSendBtn').disabled = false;
       inp.focus();
     }, 380);
+    return;
+  }
+
+  const uso = await nortiaChatCheckYRegistrarUso();
+  actualizarNortiaChatCounter(uso.usados);
+  if (!uso.ok) {
+    addChatMsg('Llegaste al límite de mensajes de NortIA de este mes. Vuelve a estar disponible el próximo mes.', 'bot');
+    inp.disabled = false;
+    document.getElementById('chatSendBtn').disabled = false;
+    inp.focus();
     return;
   }
 
