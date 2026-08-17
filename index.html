@@ -75,7 +75,7 @@
     });
     const modelChat = getGenerativeModel(ai, {
       model: "gemini-3.7-flash",
-      generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
+      generationConfig: { temperature: 0.3, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 0 } }
     });
 
     // Puente hacia el resto de la app (scripts clásicos, no-módulo)
