@@ -73,6 +73,10 @@
       model: "gemini-3.7-flash",
       generationConfig: { responseMimeType: "application/json", responseSchema: HALLAZGOS_SCHEMA, temperature: 0.3 }
     });
+    const modelChat = getGenerativeModel(ai, {
+      model: "gemini-3.7-flash",
+      generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
+    });
 
     // Puente hacia el resto de la app (scripts clásicos, no-módulo)
     window.nortiaGenerarHallazgos = async function (resumenCalculado) {
@@ -88,6 +92,11 @@ RESUMEN CALCULADO:
 ${resumenCalculado}`;
       const result = await model.generateContent(prompt);
       return JSON.parse(result.response.text());
+    };
+
+    window.nortiaChatEnviar = async function (promptCompleto) {
+      const result = await modelChat.generateContent(promptCompleto);
+      return result.response.text();
     };
     window.nortiaReady = true;
   } catch (e) {
@@ -2053,22 +2062,15 @@ tr:hover td { background: #fafbfc; }
       </div>
     </div>
 
-    <!-- IA / Gemini API Key -->
+    <!-- IA / NortIA -->
     <div id="adminGeminiSection" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-top:20px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-        <span style="font-size:20px">🤖</span>
-        <div class="section-title" style="margin:0">Consultas IA — Gemini</div>
+        <span style="font-size:20px">🧭</span>
+        <div class="section-title" style="margin:0">NortIA</div>
       </div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
-        Ingresá tu API key de Google Gemini para habilitar conversación libre sobre tus finanzas. La key se guarda solo en este navegador, nunca se envía a servidores de Norte.<br>
-        <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--primary);font-size:12px;margin-top:4px;display:inline-block">→ Obtener API key gratis en Google AI Studio</a>
+      <div style="font-size:13px;color:var(--muted)">
+        NortIA (diagnóstico y consultas conversacionales) funciona automáticamente para las cuentas habilitadas — no hace falta configurar ninguna API key. Está en beta cerrada mientras se valida antes del lanzamiento general.
       </div>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
-        <input type="password" id="geminiKeyInput" placeholder="AIza..." style="flex:1;font-size:13px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:monospace">
-        <button class="btn btn-primary" onclick="saveGeminiKey()" style="font-size:13px;white-space:nowrap">Guardar</button>
-        <button class="btn btn-secondary" onclick="clearGeminiKey()" style="font-size:13px;white-space:nowrap">Borrar</button>
-      </div>
-      <div id="geminiKeyStatus" style="font-size:12px;color:var(--muted)"></div>
     </div>
 
   </div>
@@ -3037,17 +3039,6 @@ function renderAdmin() {
 
   // Bank configs section (scoped to current empresa)
   renderAdminBancos();
-
-  // Gemini API key section
-  const geminiKey = localStorage.getItem('norte_gemini_key') || '';
-  const geminiSection = document.getElementById('adminGeminiSection');
-  if (geminiSection) {
-    document.getElementById('geminiKeyInput').value = geminiKey;
-    document.getElementById('geminiKeyStatus').textContent = geminiKey
-      ? '✅ API key configurada'
-      : '⚠️ Sin API key — las Consultas IA usan el modo básico';
-    document.getElementById('geminiKeyStatus').style.color = geminiKey ? 'var(--success)' : 'var(--warning, #f59e0b)';
-  }
 }
 
 async function cargarClientes() {
@@ -7269,49 +7260,31 @@ function nortiaPintarHallazgos(hallazgos, deCache) {
 }
 
 // \u2500\u2500 GEMINI API CALL \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-async function callGemini(userText) {
-  const key = getGeminiKey();
+async function callNortiaChat(userText) {
   const systemCtx = buildFinancialContext();
+  const historyTexto = _chatHistory.map(m => `${m.role === 'user' ? 'Usuario' : 'Asistente'}: ${m.parts[0].text}`).join('\n');
 
-  // Add user message to history
   _chatHistory.push({ role: 'user', parts: [{ text: userText }] });
 
-  const body = {
-    system_instruction: {
-      parts: [{ text: `Sos el asistente financiero de Norte, una app de finanzas personales argentina.
+  const prompt = `Sos NortIA, el asistente financiero de Norte, una app argentina de finanzas del hogar.
 Tenés acceso completo a los datos del usuario para ${curYear}.
-Respondé siempre en español, de forma clara y concisa.
-Cuando te pidan detalle de gastos, mostrá una lista completa con cada ítem, rubro e importe.
+Respondé siempre en español, de forma clara, concisa y conversacional — como un asesor cercano, no como un buscador de comandos.
+Cuando te pidan detalle de gastos, mostrá una lista con cada ítem, rubro e importe.
 Cuando detectes discrepancias o diferencias, ayudá a identificar la causa.
 Usá pesos argentinos ($) y formato numérico argentino (punto = miles, coma = decimal).
-No inventes datos — solo usá lo que está en el contexto proporcionado.
+No inventes datos — solo usá lo que está en el contexto proporcionado. Si algo no está en los datos, decilo con naturalidad.
+No des consejos de inversión ni de cómo generar más ingresos — solo ayudá a organizar y entender gastos ya registrados.
 
-${systemCtx}` }]
-    },
-    contents: _chatHistory,
-    generationConfig: { temperature: 0.2, maxOutputTokens: 2048 }
-  };
+${systemCtx}
+${historyTexto ? `\nCONVERSACIÓN PREVIA:\n${historyTexto}\n` : ''}
+Usuario: ${userText}`;
 
-  const resp = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
-    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-  );
-
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `Error ${resp.status}`);
-  }
-
-  const data = await resp.json();
-  const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No obtuve respuesta.';
-
-  // Add model reply to history
+  const reply = await window.nortiaChatEnviar(prompt);
   _chatHistory.push({ role: 'model', parts: [{ text: reply }] });
-
   return reply;
 }
 
-// ── CHAT UI ───────────────────────────────────────────────────
+// ---- CHAT UI ----
 async function submitQuery() {
   const inp  = document.getElementById('chatInput');
   const text = inp.value.trim();
@@ -7322,9 +7295,8 @@ async function submitQuery() {
 
   addChatMsg(esc(text), 'user');
 
-  const key = getGeminiKey();
-  if (!key) {
-    // Fallback al modo básico
+  if (!window.nortiaReady) {
+    // Fallback al modo básico si NortIA no está disponible
     setTimeout(() => {
       addChatMsg(parseQuery(text), 'bot');
       inp.disabled = false;
@@ -7334,19 +7306,17 @@ async function submitQuery() {
     return;
   }
 
-  // Gemini mode
   const loadingDiv = addChatMsg('<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>', 'bot', true);
   try {
-    const reply = await callGemini(text);
+    const reply = await callNortiaChat(text);
     loadingDiv.querySelector('.chat-bubble').innerHTML = reply.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
   } catch (e) {
-    loadingDiv.querySelector('.chat-bubble').innerHTML = `❌ Error al llamar a Gemini: ${esc(e.message)}<br><small>Verificá tu API key en Admin → IA / Gemini.</small>`;
+    loadingDiv.querySelector('.chat-bubble').innerHTML = `❌ No pudimos responder en este momento. Probá de nuevo en unos minutos.`;
   }
 
   inp.disabled = false;
   document.getElementById('chatSendBtn').disabled = false;
   inp.focus();
-  document.getElementById('chatMessages').scrollTop = 9999;
 }
 
 function sendSug(text) { document.getElementById('chatInput').value = text; submitQuery(); }
