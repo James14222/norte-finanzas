@@ -23,7 +23,7 @@
 <!-- NortIA — Firebase AI Logic (SDK modular, requiere carga separada del resto que es compat/global) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-  import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app-check.js";
+  import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app-check.js";
   import { getAI, getGenerativeModel, AgentPlatformBackend } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-ai.js";
 
   const nortiaFirebaseConfig = {
@@ -65,7 +65,7 @@
   try {
     const nortiaApp = initializeApp(nortiaFirebaseConfig, "nortia");
     initializeAppCheck(nortiaApp, {
-      provider: new ReCaptchaV3Provider("6LcY5oktAAAAAKK-E8mYfsPTWB0W3z7CbIIZrOK2"),
+      provider: new ReCaptchaEnterpriseProvider("6Le3BYotAAAAAKeb0NXmX8dW00uHcDEfy91P2xi6"),
       isTokenAutoRefreshEnabled: true
     });
     const ai = getAI(nortiaApp, { backend: new AgentPlatformBackend() });
