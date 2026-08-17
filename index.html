@@ -4517,6 +4517,8 @@ function showPage(p) {
   if (navIdx >= 0) document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
   document.getElementById('pageTitle').textContent = {dashboard:'Dashboard',transacciones:'Transacciones',presupuesto:'Presupuesto',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',consultas:'NortIA',admin:'Administración'}[p] || p;
   curPage = p;
+  const fabEl = document.querySelector('.fab');
+  if (fabEl) fabEl.style.display = (p === 'consultas') ? 'none' : '';
   render();
 }
 
