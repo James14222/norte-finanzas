@@ -295,11 +295,12 @@ tr:hover td { background: #fafbfc; }
 .alerta-as   { font-size:12px; color:var(--muted); margin-top:2px; }
 
 /* NortIA — tarjetas de hallazgos */
-.nortia-head { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.nortia-head { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-shrink:0; }
 .nortia-head .nico { font-size:22px; }
 .nortia-head h3 { margin:0; font-size:16px; }
 .nortia-head .nsub { font-size:12.5px; color:var(--muted); margin-top:2px; }
-.nortia-wrap { display:flex; flex-direction:column; gap:12px; margin-bottom:24px; }
+.nortia-toggle-btn { margin-left:auto; font-size:12.5px; white-space:nowrap; }
+.nortia-wrap { display:flex; flex-direction:column; gap:12px; margin-bottom:16px; flex-shrink:0; max-height:40vh; overflow-y:auto; padding-right:2px; }
 .hallazgo-card { background:var(--card); border:1px solid var(--border); border-left:4px solid #8b7cf6; border-radius:12px; padding:16px 18px; }
 .hallazgo-top { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
 .hallazgo-badge { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:2px 8px; border-radius:6px; background:#efeafd; color:#6d4fe0; }
@@ -390,7 +391,7 @@ tr:hover td { background: #fafbfc; }
 .chat-sugs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
 .chat-sug { padding:6px 14px; border-radius:20px; border:1px solid var(--border); background:var(--card); font-size:12.5px; cursor:pointer; transition:all 0.15s; color:var(--muted); }
 .chat-sug:hover { border-color:var(--primary); color:var(--primary); background:#eff6ff; }
-.chat-messages { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding-bottom:8px; }
+.chat-messages { flex:1; min-height:160px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding-bottom:8px; }
 .chat-msg { max-width:82%; }
 .chat-msg.user { align-self:flex-end; }
 .chat-msg.bot  { align-self:flex-start; }
@@ -1514,8 +1515,9 @@ tr:hover td { background: #fafbfc; }
             <h3>NortIA</h3>
             <div class="nsub">Análisis de tus propios datos — no de inversión ni de ingresos</div>
           </div>
+          <button class="btn btn-secondary nortia-toggle-btn" id="nortiaHallazgosToggle" onclick="toggleNortiaHallazgos()">📊 Ver hallazgos del mes</button>
         </div>
-        <div id="nortiaHallazgosWrap" class="nortia-wrap"></div>
+        <div id="nortiaHallazgosWrap" class="nortia-wrap" style="display:none"></div>
         <div class="chat-sugs">
           <button class="chat-sug" onclick="sendSug('¿Cuánto tengo pendiente?')">💰 Pendientes</button>
           <button class="chat-sug" onclick="sendSug('Resumen del mes actual')">📋 Resumen del mes</button>
@@ -4516,7 +4518,25 @@ function showPage(p) {
   document.getElementById('pageTitle').textContent = {dashboard:'Dashboard',transacciones:'Transacciones',presupuesto:'Presupuesto',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',consultas:'NortIA',admin:'Administración'}[p] || p;
   curPage = p;
   render();
-  if (p === 'consultas') renderNortiaHallazgos();
+}
+
+let _nortiaHallazgosLoaded = false;
+function toggleNortiaHallazgos() {
+  const wrap = document.getElementById('nortiaHallazgosWrap');
+  const btn = document.getElementById('nortiaHallazgosToggle');
+  if (!wrap || !btn) return;
+  const abierto = wrap.style.display !== 'none';
+  if (abierto) {
+    wrap.style.display = 'none';
+    btn.textContent = '📊 Ver hallazgos del mes';
+  } else {
+    wrap.style.display = 'flex';
+    btn.textContent = '✕ Ocultar hallazgos';
+    if (!_nortiaHallazgosLoaded) {
+      _nortiaHallazgosLoaded = true;
+      renderNortiaHallazgos();
+    }
+  }
 }
 
 function changeMonth(d) {
