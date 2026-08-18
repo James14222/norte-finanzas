@@ -1034,7 +1034,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v5.20</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v5.21</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -1121,7 +1121,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v5.20</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v5.21</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -1634,7 +1634,7 @@ tr:hover td { background: #fafbfc; }
         <div class="ayuda-nav-item" onclick="ayudaGo('presupuesto')"><span class="ai">🎯</span><span>Presupuesto</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('analisis')"><span class="ai">🔎</span><span>Análisis</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('reportes')"><span class="ai">📈</span><span>Reportes</span></div>
-        <div class="ayuda-nav-item" onclick="ayudaGo('consultas')"><span class="ai">🤖</span><span>NortIA</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('consultas')"><span class="ai" style="display:inline-block;width:16px;height:16px;background-image:var(--nortia-icon-url);background-size:contain;background-repeat:no-repeat;background-position:center"></span><span>NortIA</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('admin')"><span class="ai">⚙️</span><span>Admin</span></div>
       </nav>
 
@@ -1871,11 +1871,23 @@ tr:hover td { background: #fafbfc; }
 
         <!-- CONSULTAS IA -->
         <div class="ayuda-section" id="ayuda-consultas">
-          <h3>🤖 NortIA</h3>
-          <p class="subtitulo">Hacé preguntas en lenguaje natural sobre tus finanzas</p>
+          <h3 style="display:flex;align-items:center;gap:10px"><span style="display:inline-block;width:28px;height:28px;background-image:var(--nortia-pointing-url);background-size:contain;background-repeat:no-repeat;background-position:center;flex-shrink:0"></span>NortIA</h3>
+          <p class="subtitulo">Tu asistente financiero personal — entendé, proyectá y mejorá tus hábitos hablando en lenguaje natural</p>
+          <div class="ayuda-bloque">
+            <h4>¿Qué es NortIA?</h4>
+            <p>NortIA es el asistente de Norte que te ayuda a <strong>entender</strong> tu situación financiera actual, <strong>proyectar</strong> cómo vas a terminar el mes o el año si seguís el mismo ritmo, <strong>aprender</strong> de tus propios patrones de gasto y <strong>adquirir hábitos</strong> más saludables de control del hogar. Todo conversando, sin fórmulas ni planillas.</p>
+          </div>
           <div class="ayuda-bloque">
             <h4>¿Cómo funciona?</h4>
-            <p>NortIA analiza todos tus datos financieros y responde preguntas en lenguaje natural. No necesitás saber nada de contabilidad ni buscar en tablas — simplemente preguntás como si le hablaras a un contador.</p>
+            <p>NortIA analiza todos tus datos financieros y responde preguntas en lenguaje natural. No necesitás saber nada de contabilidad ni buscar en tablas — simplemente preguntás como si le hablaras a un asesor que ya conoce tu hogar.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Por qué es distinta a un chatbot genérico</h4>
+            <div class="ayuda-ejemplo">
+              <strong>Personalizada</strong> — analiza tus propios movimientos, categorías y hábitos, no promedios genéricos de internet.<br>
+              <strong>Confidencial</strong> — tus datos no salen de tu cuenta. No opina sobre inversiones ni ingresos personales, solo analiza lo que vos le mostrás.<br>
+              <strong>Profesional</strong> — conclusiones claras y accionables, como las daría un asesor, no respuestas genéricas de chatbot.
+            </div>
           </div>
           <div class="ayuda-bloque">
             <h4>Ejemplos de preguntas</h4>
@@ -1886,7 +1898,9 @@ tr:hover td { background: #fafbfc; }
               "Mostrame los gastos de entretenimiento de los últimos 3 meses"<br>
               "¿Cuál fue mi rubro de mayor gasto en Abril?"<br>
               "¿Cuánto me falta pagar de gastos pendientes este mes?"<br>
-              "¿Cuál es mi promedio mensual de gasto en servicios?"
+              "¿Cuál es mi promedio mensual de gasto en servicios?"<br>
+              "¿Cómo voy a terminar el mes si sigo gastando a este ritmo?"<br>
+              "¿Qué hábito de gasto me conviene cambiar para ahorrar más?"
             </div>
           </div>
           <div class="ayuda-bloque">
