@@ -2620,6 +2620,7 @@ const curEmpresa     = ()  => getSession()?.empresaId || 'JLL';
 const curEmpresaRole = ()  => getSession()?.empresaRole || 'viewer';
 const isAdmin        = ()  => getSession()?.role === 'admin' || curEmpresaRole() === 'admin';
 
+const curUserId       = () => getSession()?.userId || 'desconocido';
 // Migration: runs once to move flat data → empresa-scoped data
 async function runMigration() {
   if (localStorage.getItem('fin_migrated_v2')) return;
@@ -3758,7 +3759,17 @@ const getData  = () => {
     return r;
   });
 };
-const saveData = d  => localStorage.setItem(`fin_data_${curEmpresa()}`, JSON.stringify(d));
+// creadoPor: quién cargó cada gasto/ingreso. Backfill único de datos viejos con 'legacy',
+// de ahí en más cualquier registro nuevo (sin el campo) se atribuye al usuario activo.
+const saveData = d => {
+  const eid = curEmpresa();
+  const migKey = `fin_migrated_creadopor_${eid}`;
+  const yaMigrado = localStorage.getItem(migKey);
+  const autor = curUserId();
+  const conAutor = d.map(t => (t && t.creadoPor) ? t : Object.assign({}, t, { creadoPor: yaMigrado ? autor : 'legacy' }));
+  if (!yaMigrado) localStorage.setItem(migKey, '1');
+  localStorage.setItem(`fin_data_${eid}`, JSON.stringify(conAutor));
+};
 const getCustomRubros  = () => JSON.parse(localStorage.getItem(`fin_rubros_custom_${curEmpresa()}`) || '{"Gasto":[],"Ingreso":[]}');
 const saveCustomRubros = r  => localStorage.setItem(`fin_rubros_custom_${curEmpresa()}`, JSON.stringify(r));
 // Devuelve la lista completa (base + custom) para un tipo
