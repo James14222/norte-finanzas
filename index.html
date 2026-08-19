@@ -78,6 +78,24 @@
       generationConfig: { temperature: 0.3, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 0 } }
     });
 
+        const GASTO_EXTRACT_SCHEMA = {
+      type: "object",
+      properties: {
+        detectado:  { type: "boolean" },
+        tipo:       { type: "string", enum: ["Ingreso", "Gasto"] },
+        detalle:    { type: "string" },
+        rubro:      { type: "string" },
+        impPesos:   { type: "number" },
+        impUSD:     { type: "number" },
+        confianza:  { type: "string", enum: ["alta", "media", "baja"] },
+        nota:       { type: "string" }
+      },
+      required: ["detectado", "tipo", "detalle", "rubro", "impPesos"]
+    };
+    const modelGasto = getGenerativeModel(ai, {
+      model: "gemini-3.7-flash",
+      generationConfig: { responseMimeType: "application/json", responseSchema: GASTO_EXTRACT_SCHEMA, temperature: 0.1 }
+    });
     // Puente hacia el resto de la app (scripts clásicos, no-módulo)
     window.nortiaGenerarHallazgos = async function (resumenCalculado) {
       const prompt = `Sos NortIA, el motor de análisis financiero de Norte, una app argentina de finanzas del hogar.
@@ -97,6 +115,25 @@ ${resumenCalculado}`;
     window.nortiaChatEnviar = async function (promptCompleto) {
       const result = await modelChat.generateContent(promptCompleto);
       return result.response.text();
+    };
+    window.nortiaExtraerGasto = async function (base64Data, mimeType) {
+      const rubros = (window.RUBROS && (window.RUBROS.Gasto || []).concat(window.RUBROS.Ingreso || [])) || [];
+      const prompt = `Sos el extractor de gastos de Norte, una app argentina de finanzas del hogar.
+Se te va a mandar UNA imagen (foto de un ticket, recibo o resumen) O un audio corto donde alguien describe un gasto o ingreso en voz alta.
+Tu tarea es devolver los datos estructurados de ese único movimiento.
+
+Reglas:
+- Usá SOLO un rubro de esta lista, el que mejor calce: ${rubros.join(", ")}. Si ninguno calza bien, usá "Otros gastos" o "Otros ingresos" según corresponda.
+- Los montos van en pesos argentinos (impPesos) salvo que se indique explícitamente dólares o USD, en cuyo caso también completá impUSD.
+- "detalle" es una descripción corta (2-5 palabras), como "Supermercado Coto" o "Nafta YPF", nunca el texto completo del ticket.
+- Si la imagen o el audio no contiene información clara de un gasto o ingreso, respondé con detectado: false y dejá el resto de los campos en blanco o en 0.
+- Si hay algo ambiguo (por ejemplo el monto se lee mal, o no está claro el rubro), marcá confianza "baja" o "media" y explicá brevemente en "nota" qué generó la duda — nunca inventes un dato que no está.
+- Siempre devolvé el JSON con el formato pedido, aunque detectado sea false.`;
+      const result = await modelGasto.generateContent([
+        { inlineData: { mimeType, data: base64Data } },
+        prompt
+      ]);
+      return JSON.parse(result.response.text());
     };
     window.nortiaReady = true;
   } catch (e) {
@@ -2533,6 +2570,8 @@ const RUBROS = {
   Ingreso: ['Sueldo','Freelance / Consultoría','Alquiler cobrado','Inversiones / Dividendos','Bono / Extra','Otros ingresos','Personalizado...'],
   Gasto:   ['Alquiler / Vivienda','Supermercado / Alimentación','Farmacia / Perfumería','Servicios (luz, gas, agua)','Telefonía / Cable','Transporte','Auto','Salud / Médico','Educación','Entretenimiento / Ocio','Indumentaria','Seguros','Impuestos / Tasas','Tarjetas','Deudas / Cuotas','Banco','Abogado','Ahorro / Inversión','Freelance / Consultoría','Otros gastos','Personalizado...']
 };
+window.RUBROS = RUBROS; // expuesto para que el módulo de NortIA use la misma lista de rubros (foto/voz)
+
 // Normalización: variantes históricas → rubro canónico (se aplica una sola vez sobre datos guardados)
 const RUBRO_NORMALIZE = {
   'Impuestos':           'Impuestos / Tasas',
