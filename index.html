@@ -1298,6 +1298,11 @@ tr:hover td { background: #fafbfc; }
             <select class="f-select" id="rubroFilt" onchange="setRubroFilter(this.value)">
               <option value="">Todos los rubros</option>
             </select>
+            <div class="tgl-group" id="autorFilterGroup">
+              <button class="tgl-btn active" onclick="setAutorFilter('Todos',this)">Todos</button>
+              <button class="tgl-btn" onclick="setAutorFilter('yo',this)">Solo yo</button>
+            </div>
+            <div id="autorSummary" style="width:100%;font-size:12px;color:#6b7f93;margin-top:2px"></div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-secondary" onclick="clonarMesAnterior()" title="Copia todos los registros del mes anterior a este mes, con sus importes">📋 Clonar mes anterior</button>
@@ -2595,6 +2600,7 @@ let curYear  = new Date().getFullYear();
 let fTipo    = 'Todos';
 let fRubro   = '';
 let fSearch  = '';
+let fAutor    = 'Todos';
 let delIds   = null;
 let selectedTx = new Set();
 let charts   = {};
@@ -2621,6 +2627,7 @@ const curEmpresaRole = ()  => getSession()?.empresaRole || 'viewer';
 const isAdmin        = ()  => getSession()?.role === 'admin' || curEmpresaRole() === 'admin';
 
 const curUserId       = () => getSession()?.userId || 'desconocido';
+const curUserName     = () => getSession()?.username || 'Usuario';
 // Migration: runs once to move flat data → empresa-scoped data
 async function runMigration() {
   if (localStorage.getItem('fin_migrated_v2')) return;
@@ -3761,12 +3768,19 @@ const getData  = () => {
 };
 // creadoPor: quién cargó cada gasto/ingreso. Backfill único de datos viejos con 'legacy',
 // de ahí en más cualquier registro nuevo (sin el campo) se atribuye al usuario activo.
+// creadoPor/creadoPorNombre: quién cargó cada gasto/ingreso. Backfill único de datos
+// viejos con 'legacy'; de ahí en más, cualquier registro nuevo (sin el campo) se
+// atribuye al usuario activo.
 const saveData = d => {
   const eid = curEmpresa();
   const migKey = `fin_migrated_creadopor_${eid}`;
   const yaMigrado = localStorage.getItem(migKey);
   const autor = curUserId();
-  const conAutor = d.map(t => (t && t.creadoPor) ? t : Object.assign({}, t, { creadoPor: yaMigrado ? autor : 'legacy' }));
+  const autorNombre = curUserName();
+  const conAutor = d.map(t => (t && t.creadoPor) ? t : Object.assign({}, t, {
+    creadoPor: yaMigrado ? autor : 'legacy',
+    creadoPorNombre: yaMigrado ? autorNombre : 'Datos previos'
+  }));
   if (!yaMigrado) localStorage.setItem(migKey, '1');
   localStorage.setItem(`fin_data_${eid}`, JSON.stringify(conAutor));
 };
@@ -4976,6 +4990,8 @@ function renderTx() {
   if (fTipo !== 'Todos') rows = rows.filter(t => t.tipo === fTipo);
   if (fRubro) rows = rows.filter(t => t.rubro === fRubro);
   if (fSearch) rows = rows.filter(t => t.detalle.toLowerCase().includes(fSearch.toLowerCase()));
+  renderAutorSummary(all);
+  if (fAutor === 'yo') rows = rows.filter(t => t.creadoPor === curUserId());
 
   const tbody = document.getElementById('txTable');
   const empty = document.getElementById('txEmpty');
@@ -5028,6 +5044,20 @@ function renderTx() {
   updateBulkBar();
 }
 
+function renderAutorSummary(all) {
+  const el = document.getElementById('autorSummary');
+  if (!el) return;
+  const gastos = all.filter(t => t.tipo === 'Gasto');
+  if (!gastos.length) { el.textContent = ''; return; }
+  const porAutor = {};
+  gastos.forEach(t => {
+    const key = t.creadoPorNombre || t.creadoPor || 'Datos previos';
+    porAutor[key] = (porAutor[key] || 0) + (t.impPesos || 0);
+  });
+  const miNombre = curUserName();
+  const partes = Object.entries(porAutor).map(([k, v]) => (k === miNombre ? 'Vos' : k) + ': ' + fmtP(v));
+  el.textContent = 'Gastos del mes por integrante — ' + partes.join(' · ');
+}
 function setTipoFilter(v, btn) {
   fTipo = v;
   document.querySelectorAll('#tipoFilterGroup .tgl-btn').forEach(b => b.classList.remove('active'));
@@ -5036,6 +5066,12 @@ function setTipoFilter(v, btn) {
 }
 function setRubroFilter(v) { fRubro = v; renderTx(); }
 function setSearch(v) { fSearch = v; renderTx(); }
+function setAutorFilter(v, btn) {
+  fAutor = v;
+  document.querySelectorAll('#autorFilterGroup .tgl-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTx();
+}
 
 // ── PRESUPUESTO ──────────────────────────────────────────────
 function renderPresupuesto() {
