@@ -1615,6 +1615,12 @@ tr:hover td { background: #fafbfc; }
         <button class="qp-tipo-btn" id="qpBtnFijo" onclick="setQpTipoGasto('Fijo')">Fijo</button>
       </div>
     </div>
+        <div class="qp-field" id="qpIaRow" style="display:flex;gap:8px;margin-bottom:2px">
+      <button type="button" class="btn btn-secondary" style="flex:1" onclick="qpAbrirFoto()">📷 Foto</button>
+      <button type="button" class="btn btn-secondary" style="flex:1" id="qpBtnVoz" onclick="qpToggleVoz()">🎤 Voz</button>
+    </div>
+    <input type="file" id="qpFotoInput" accept="image/*" capture="environment" style="display:none" onchange="qpFotoSeleccionada(this)">
+    <div id="qpIaStatus" style="display:none;font-size:12px;color:#6b7f93;margin:-4px 0 6px;padding:6px 10px;border-radius:8px;background:rgba(255,138,92,0.08)"></div>
     <div class="qp-field ac-wrap">
       <div class="qp-label">Detalle</div>
       <input class="qp-input" id="qpDetalle" type="text" placeholder="Ej: OSDE, Sueldo..." autocomplete="off"
@@ -6706,6 +6712,109 @@ function highlightAc(items) {
 function closeAc() {
   document.getElementById('acDrop').classList.remove('show');
   acItems = []; acIdx = -1;
+}
+
+// ── Captura de gasto por foto o voz (NortIA) ──────────────────
+let qpMediaRecorder = null;
+let qpAudioChunks = [];
+let qpGrabandoVoz = false;
+
+function qpAbrirFoto() {
+  document.getElementById('qpFotoInput').click();
+}
+
+function qpFotoSeleccionada(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const base64 = reader.result.split(',')[1];
+    qpProcesarIA(base64, file.type || 'image/jpeg');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+async function qpToggleVoz() {
+  const btn = document.getElementById('qpBtnVoz');
+  if (!qpGrabandoVoz) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      qpAudioChunks = [];
+      qpMediaRecorder = new MediaRecorder(stream);
+      qpMediaRecorder.ondataavailable = e => { if (e.data.size > 0) qpAudioChunks.push(e.data); };
+      qpMediaRecorder.onstop = () => {
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(qpAudioChunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result.split(',')[1];
+          qpProcesarIA(base64, 'audio/webm');
+        };
+        reader.readAsDataURL(blob);
+      };
+      qpMediaRecorder.start();
+      qpGrabandoVoz = true;
+      btn.textContent = '⏹ Grabando… (tocá para terminar)';
+      btn.classList.add('active');
+    } catch (e) {
+      alert('No pudimos acceder al micrófono. Revisá los permisos del navegador.');
+    }
+  } else {
+    qpMediaRecorder.stop();
+    qpGrabandoVoz = false;
+    btn.textContent = '🎤 Voz';
+    btn.classList.remove('active');
+  }
+}
+
+function qpLimiteIaKey() {
+  return 'norte_ia_captura_' + curEmpresa() + '_' + curKey();
+}
+
+function qpLimiteIaAlcanzado() {
+  const usado = parseInt(localStorage.getItem(qpLimiteIaKey()) || '0', 10);
+  return usado >= 15; // cortesía del plan Free — ver norte-plan-proximas-funcionalidades.docx
+}
+
+function qpSumarUsoIa() {
+  const usado = parseInt(localStorage.getItem(qpLimiteIaKey()) || '0', 10);
+  localStorage.setItem(qpLimiteIaKey(), String(usado + 1));
+}
+
+async function qpProcesarIA(base64, mimeType) {
+  if (typeof window.nortiaExtraerGasto !== 'function') {
+    alert('La IA de Norte todavía se está iniciando, esperá un segundo e intentá de nuevo.');
+    return;
+  }
+  if (qpLimiteIaAlcanzado()) {
+    alert('Llegaste al límite de 15 capturas por foto/voz este mes. Podés seguir cargando manualmente.');
+    return;
+  }
+  const statusEl = document.getElementById('qpIaStatus');
+  statusEl.style.display = 'block';
+  statusEl.textContent = 'Norte está leyendo el gasto…';
+  try {
+    const datos = await window.nortiaExtraerGasto(base64, mimeType);
+    qpSumarUsoIa();
+    if (!datos || !datos.detectado) {
+      statusEl.textContent = 'No pudimos identificar un gasto ahí — completá los datos a mano.';
+      return;
+    }
+    setQpTipo(datos.tipo === 'Ingreso' ? 'Ingreso' : 'Gasto');
+    if (datos.tipo !== 'Ingreso') setQpTipoGasto('Variable');
+    document.getElementById('qpDetalle').value = datos.detalle || '';
+    document.getElementById('qpPesos').value = datos.impPesos || '';
+    document.getElementById('qpUSD').value = datos.impUSD || '';
+    document.getElementById('qpRubro').value = datos.rubro || '';
+    if (datos.confianza === 'baja' || datos.confianza === 'media') {
+      statusEl.textContent = '⚠️ Revisá los datos antes de guardar' + (datos.nota ? ': ' + datos.nota : ' — no estamos seguros de haber leído todo bien.');
+    } else {
+      statusEl.textContent = '✅ Norte completó los datos — revisá y guardá.';
+    }
+  } catch (e) {
+    statusEl.textContent = 'No pudimos procesar la foto/audio. Completá los datos a mano.';
+  }
 }
 
 function saveQuickTx() {
