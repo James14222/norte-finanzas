@@ -1184,6 +1184,7 @@ tr:hover td { background: #fafbfc; }
   <button class="logout-btn" id="logoutBtn" style="display:none" onclick="doLogout()">🚪 Cerrar sesión</button>
   <button class="logout-btn" onclick="openAyuda()" style="display:flex">❓ Ayuda</button>
   <button class="logout-btn" onclick="openPlanModal()" style="display:flex">💎 Mi plan</button>
+  <button class="logout-btn" onclick="openHogaresModal()" style="display:flex">🏠 Mis hogares</button>
   <div class="sidebar-footer">
     <span class="sync-badge sync-offline" id="syncStatus"><span>☁️</span> Conectando…</span>
     <div class="data-btns">
@@ -1668,6 +1669,23 @@ tr:hover td { background: #fafbfc; }
 
 <!-- ── AYUDA OVERLAY ─────────────────────────────────────────── -->
 <!-- MI PLAN OVERLAY -->
+<!-- MIS HOGARES OVERLAY -->
+<div id="hogaresOverlay" onclick="closeHogaresModal(event)" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:300;align-items:center;justify-content:center;padding:20px">
+  <div onclick="event.stopPropagation()" style="background:var(--card);border-radius:20px;max-width:520px;width:100%;max-height:85vh;overflow:auto;padding:32px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h2 style="font-size:20px;color:var(--brand-navy)">Mis hogares</h2>
+      <button onclick="closeHogaresModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted)">&times;</button>
+    </div>
+    <div id="listaHogares" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px"></div>
+    <button id="btnCrearHogar" style="width:100%;padding:10px;border-radius:10px;border:1px dashed var(--border);background:none;color:var(--primary);font-weight:700;cursor:pointer;margin-bottom:24px">+ Crear otro hogar</button>
+    <div style="border-top:1px solid var(--border);padding-top:20px">
+      <h3 style="font-size:15px;color:var(--brand-navy);margin-bottom:12px">Integrantes de este hogar</h3>
+      <div id="listaIntegrantes" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+      <button id="btnInvitarIntegrante" style="width:100%;padding:10px;border-radius:10px;border:1px dashed var(--border);background:none;color:var(--primary);font-weight:700;cursor:pointer">+ Invitar integrante</button>
+    </div>
+    <p id="hogaresLimiteTexto" style="font-size:12px;color:var(--muted);margin-top:16px"></p>
+  </div>
+</div>
 <div id="planOverlay" onclick="closePlanModal(event)" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:300;align-items:center;justify-content:center;padding:20px">
   <div onclick="event.stopPropagation()" style="background:var(--card);border-radius:20px;max-width:900px;width:100%;max-height:90vh;overflow:auto;padding:32px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
@@ -2902,6 +2920,7 @@ async function bootApp(firebaseUser) {
     empresaNombre,
   });
   iniciarListenerPlan();
+  window.__misEmpresas = (userData && userData.empresas) || [];
 
   // Ocultar login
   document.getElementById('loginScreen').style.display = 'none';
@@ -7774,6 +7793,122 @@ async function suscribirse(plan) {
     renderPlanUI();
   }
 }
+// ── AYUDA ───────────────────────────────────────────
+function openHogaresModal() {
+  document.getElementById('hogaresOverlay').style.display = 'flex';
+  renderListaHogares();
+  renderListaIntegrantes();
+}
+function closeHogaresModal(e) {
+  if (e && e.target !== document.getElementById('hogaresOverlay')) return;
+  document.getElementById('hogaresOverlay').style.display = 'none';
+}
+function renderListaHogares() {
+  const cont = document.getElementById('listaHogares');
+  if (!cont) return;
+  cont.innerHTML = '';
+  const misEmpresas = window.__misEmpresas || [];
+  const actual = curEmpresa();
+  misEmpresas.forEach(function(e) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid var(--border);border-radius:12px';
+    const label = document.createElement('span');
+    label.style.cssText = 'font-size:14px;font-weight:600;color:var(--text)';
+    label.textContent = (e.nombre || e.id) + (e.id === actual ? ' (actual)' : '');
+    row.appendChild(label);
+    if (e.id !== actual) {
+      const btn = document.createElement('button');
+      btn.textContent = 'Entrar';
+      btn.style.cssText = 'padding:6px 14px;border-radius:8px;border:none;background:var(--primary);color:white;font-weight:700;font-size:13px;cursor:pointer';
+      btn.onclick = function() { cambiarDeHogar(e.id, e.nombre, e.role); };
+      row.appendChild(btn);
+    }
+    cont.appendChild(row);
+  });
+  const limTxt = document.getElementById('hogaresLimiteTexto');
+  if (limTxt) {
+    const cap = miPlanActual === 'TOP' ? 'ilimitados' : (miPlanActual === 'PRO' ? 'hasta 3' : 'hasta 1');
+    limTxt.textContent = 'Tu plan (' + miPlanActual + ') permite ' + cap + ' hogar(es). Los integrantes por hogar dependen del plan de cada hogar.';
+  }
+}
+function cambiarDeHogar(empresaId, nombre, role) {
+  const s = getSession();
+  if (!s) return;
+  s.empresaId = empresaId;
+  s.empresaNombre = nombre || empresaId;
+  s.empresaRole = role || 'viewer';
+  setSession(s);
+  location.reload();
+}
+async function crearOtroHogarUI() {
+  const nombre = prompt('Como queres llamar al nuevo hogar (ej: Casa de mis padres):');
+  if (!nombre || !nombre.trim()) return;
+  const btn = document.getElementById('btnCrearHogar');
+  if (btn) { btn.disabled = true; btn.textContent = 'Creando...'; }
+  try {
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const res = await fetch('https://us-central1-norte-finanzas.cloudfunctions.net/crearHogarAdicional', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken: idToken, nombreHogar: nombre.trim() })
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'No pudimos crear el hogar.'); return; }
+    window.__misEmpresas = (window.__misEmpresas || []).concat([{ id: data.empresaId, role: 'admin', nombre: data.nombre }]);
+    renderListaHogares();
+    if (confirm('Hogar creado: ' + data.nombre + '. Queres entrar ahora?')) {
+      cambiarDeHogar(data.empresaId, data.nombre, 'admin');
+    }
+  } catch (e) {
+    alert('No se pudo conectar. Proba de nuevo.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '+ Crear otro hogar'; }
+  }
+}
+function renderListaIntegrantes() {
+  const cont = document.getElementById('listaIntegrantes');
+  if (!cont) return;
+  cont.innerHTML = 'Cargando...';
+  firebase.database().ref('norteSync/empresaMiembros/' + curEmpresa()).once('value').then(function(snap) {
+    cont.innerHTML = '';
+    const val = snap.val() || {};
+    const keys = Object.keys(val);
+    if (!keys.length) { cont.innerHTML = '<span style="font-size:13px;color:var(--muted)">Todavia no hay integrantes registrados.</span>'; return; }
+    keys.forEach(function(uid) {
+      const m = val[uid] || {};
+      const row = document.createElement('div');
+      row.style.cssText = 'font-size:14px;color:var(--text);padding:6px 0';
+      row.textContent = m.nombre || m.email || uid;
+      cont.appendChild(row);
+    });
+  });
+}
+async function invitarIntegranteUI() {
+  const nombre = prompt('Nombre del integrante que queres invitar:');
+  if (!nombre || !nombre.trim()) return;
+  const email = prompt('Email del integrante:');
+  if (!email || !email.trim()) return;
+  const btn = document.getElementById('btnInvitarIntegrante');
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando invitacion...'; }
+  try {
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const res = await fetch('https://us-central1-norte-finanzas.cloudfunctions.net/invitarIntegrante', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken: idToken, empresaId: curEmpresa(), nombre: nombre.trim(), email: email.trim() })
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'No pudimos enviar la invitacion.'); return; }
+    alert('Listo, le mandamos las credenciales por email a ' + email.trim());
+    renderListaIntegrantes();
+  } catch (e) {
+    alert('No se pudo conectar. Proba de nuevo.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '+ Invitar integrante'; }
+  }
+}
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.id === 'btnCrearHogar') crearOtroHogarUI();
+  if (e.target && e.target.id === 'btnInvitarIntegrante') invitarIntegranteUI();
+});
 // ── AYUDA ───────────────────────────────────────────
 function openAyuda(seccion) {
   document.getElementById('ayudaOverlay').classList.add('show');
