@@ -1677,11 +1677,37 @@ tr:hover td { background: #fafbfc; }
       <button onclick="closeHogaresModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted)">&times;</button>
     </div>
     <div id="listaHogares" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px"></div>
-    <button id="btnCrearHogar" style="width:100%;padding:10px;border-radius:10px;border:1px dashed var(--border);background:none;color:var(--primary);font-weight:700;cursor:pointer;margin-bottom:24px">+ Crear otro hogar</button>
+    <button id="btnCrearHogar" class="btn btn-secondary" style="width:100%;justify-content:center;margin-bottom:12px">+ Crear otro hogar</button>
+    <div id="formCrearHogar" style="display:none;margin-bottom:24px;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--bg)">
+      <div class="form-group">
+        <label>Nombre del hogar</label>
+        <input type="text" id="inputNombreHogar" placeholder="Ej: Casa de mis padres">
+      </div>
+      <div id="crearHogarError" style="display:none;font-size:12px;color:var(--danger);margin-bottom:10px"></div>
+      <div style="display:flex;gap:8px">
+        <button id="btnConfirmarCrearHogar" class="btn btn-primary" style="flex:1;justify-content:center">Crear hogar</button>
+        <button id="btnCancelarCrearHogar" class="btn btn-secondary" style="flex:1;justify-content:center">Cancelar</button>
+      </div>
+    </div>
     <div style="border-top:1px solid var(--border);padding-top:20px">
       <h3 style="font-size:15px;color:var(--brand-navy);margin-bottom:12px">Integrantes de este hogar</h3>
       <div id="listaIntegrantes" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
-      <button id="btnInvitarIntegrante" style="width:100%;padding:10px;border-radius:10px;border:1px dashed var(--border);background:none;color:var(--primary);font-weight:700;cursor:pointer">+ Invitar integrante</button>
+      <button id="btnInvitarIntegrante" class="btn btn-secondary" style="width:100%;justify-content:center">+ Invitar integrante</button>
+      <div id="formInvitarIntegrante" style="display:none;margin-top:12px;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--bg)">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" id="inputNombreIntegrante" placeholder="Ej: Maria">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="inputEmailIntegrante" placeholder="maria@email.com">
+        </div>
+        <div id="invitarError" style="display:none;font-size:12px;color:var(--danger);margin-bottom:10px"></div>
+        <div style="display:flex;gap:8px">
+          <button id="btnConfirmarInvitar" class="btn btn-primary" style="flex:1;justify-content:center">Enviar invitacion</button>
+          <button id="btnCancelarInvitar" class="btn btn-secondary" style="flex:1;justify-content:center">Cancelar</button>
+        </div>
+      </div>
     </div>
     <p id="hogaresLimiteTexto" style="font-size:12px;color:var(--muted);margin-top:16px"></p>
   </div>
@@ -7840,28 +7866,40 @@ function cambiarDeHogar(empresaId, nombre, role) {
   setSession(s);
   location.reload();
 }
-async function crearOtroHogarUI() {
-  const nombre = prompt('Como queres llamar al nuevo hogar (ej: Casa de mis padres):');
-  if (!nombre || !nombre.trim()) return;
-  const btn = document.getElementById('btnCrearHogar');
-  if (btn) { btn.disabled = true; btn.textContent = 'Creando...'; }
+function crearOtroHogarUI() {
+  const form = document.getElementById('formCrearHogar');
+  if (form) { form.style.display = 'block'; document.getElementById('inputNombreHogar').focus(); }
+}
+function cancelarCrearHogar() {
+  document.getElementById('formCrearHogar').style.display = 'none';
+  document.getElementById('inputNombreHogar').value = '';
+  document.getElementById('crearHogarError').style.display = 'none';
+}
+async function confirmarCrearHogar() {
+  const input = document.getElementById('inputNombreHogar');
+  const errEl = document.getElementById('crearHogarError');
+  const nombre = input.value.trim();
+  errEl.style.display = 'none';
+  if (!nombre) { errEl.textContent = 'Pone un nombre para el hogar.'; errEl.style.display = 'block'; return; }
+  const btn = document.getElementById('btnConfirmarCrearHogar');
+  btn.disabled = true; btn.textContent = 'Creando...';
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
     const res = await fetch('https://us-central1-norte-finanzas.cloudfunctions.net/crearHogarAdicional', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken: idToken, nombreHogar: nombre.trim() })
+      body: JSON.stringify({ idToken: idToken, nombreHogar: nombre })
     });
     const data = await res.json();
-    if (!res.ok) { alert(data.error || 'No pudimos crear el hogar.'); return; }
+    if (!res.ok) { errEl.textContent = data.error || 'No pudimos crear el hogar.'; errEl.style.display = 'block'; return; }
     window.__misEmpresas = (window.__misEmpresas || []).concat([{ id: data.empresaId, role: 'admin', nombre: data.nombre }]);
+    cancelarCrearHogar();
     renderListaHogares();
-    if (confirm('Hogar creado: ' + data.nombre + '. Queres entrar ahora?')) {
-      cambiarDeHogar(data.empresaId, data.nombre, 'admin');
-    }
+    cambiarDeHogar(data.empresaId, data.nombre, 'admin');
   } catch (e) {
-    alert('No se pudo conectar. Proba de nuevo.');
+    errEl.textContent = 'No se pudo conectar. Proba de nuevo.';
+    errEl.style.display = 'block';
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '+ Crear otro hogar'; }
+    btn.disabled = false; btn.textContent = 'Crear hogar';
   }
 }
 function renderListaIntegrantes() {
@@ -7884,32 +7922,50 @@ function renderListaIntegrantes() {
     cont.innerHTML = '<span style="font-size:13px;color:var(--muted)">No pudimos cargar los integrantes todavia.</span>';
   });
 }
-async function invitarIntegranteUI() {
-  const nombre = prompt('Nombre del integrante que queres invitar:');
-  if (!nombre || !nombre.trim()) return;
-  const email = prompt('Email del integrante:');
-  if (!email || !email.trim()) return;
-  const btn = document.getElementById('btnInvitarIntegrante');
-  if (btn) { btn.disabled = true; btn.textContent = 'Enviando invitacion...'; }
+function invitarIntegranteUI() {
+  const form = document.getElementById('formInvitarIntegrante');
+  if (form) { form.style.display = 'block'; document.getElementById('inputNombreIntegrante').focus(); }
+}
+function cancelarInvitarIntegrante() {
+  document.getElementById('formInvitarIntegrante').style.display = 'none';
+  document.getElementById('inputNombreIntegrante').value = '';
+  document.getElementById('inputEmailIntegrante').value = '';
+  document.getElementById('invitarError').style.display = 'none';
+}
+async function confirmarInvitarIntegrante() {
+  const nombre = document.getElementById('inputNombreIntegrante').value.trim();
+  const email = document.getElementById('inputEmailIntegrante').value.trim();
+  const errEl = document.getElementById('invitarError');
+  errEl.style.display = 'none';
+  if (!nombre) { errEl.textContent = 'Falta el nombre.'; errEl.style.display = 'block'; return; }
+  if (!email || !email.includes('@')) { errEl.textContent = 'Pone un email valido.'; errEl.style.display = 'block'; return; }
+  const btn = document.getElementById('btnConfirmarInvitar');
+  btn.disabled = true; btn.textContent = 'Enviando...';
   try {
     const idToken = await firebase.auth().currentUser.getIdToken();
     const res = await fetch('https://us-central1-norte-finanzas.cloudfunctions.net/invitarIntegrante', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken: idToken, empresaId: curEmpresa(), nombre: nombre.trim(), email: email.trim() })
+      body: JSON.stringify({ idToken: idToken, empresaId: curEmpresa(), nombre: nombre, email: email })
     });
     const data = await res.json();
-    if (!res.ok) { alert(data.error || 'No pudimos enviar la invitacion.'); return; }
-    alert('Listo, le mandamos las credenciales por email a ' + email.trim());
+    if (!res.ok) { errEl.textContent = data.error || 'No pudimos enviar la invitacion.'; errEl.style.display = 'block'; return; }
+    cancelarInvitarIntegrante();
     renderListaIntegrantes();
   } catch (e) {
-    alert('No se pudo conectar. Proba de nuevo.');
+    errEl.textContent = 'No se pudo conectar. Proba de nuevo.';
+    errEl.style.display = 'block';
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '+ Invitar integrante'; }
+    btn.disabled = false; btn.textContent = 'Enviar invitacion';
   }
 }
 document.addEventListener('click', function(e) {
-  if (e.target && e.target.id === 'btnCrearHogar') crearOtroHogarUI();
-  if (e.target && e.target.id === 'btnInvitarIntegrante') invitarIntegranteUI();
+  if (!e.target) return;
+  if (e.target.id === 'btnCrearHogar') crearOtroHogarUI();
+  if (e.target.id === 'btnCancelarCrearHogar') cancelarCrearHogar();
+  if (e.target.id === 'btnConfirmarCrearHogar') confirmarCrearHogar();
+  if (e.target.id === 'btnInvitarIntegrante') invitarIntegranteUI();
+  if (e.target.id === 'btnCancelarInvitar') cancelarInvitarIntegrante();
+  if (e.target.id === 'btnConfirmarInvitar') confirmarInvitarIntegrante();
 });
 // ── AYUDA ───────────────────────────────────────────
 function openAyuda(seccion) {
