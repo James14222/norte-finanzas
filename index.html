@@ -4743,8 +4743,8 @@ function showPage(p) {
   const navIdx = ['dashboard','transacciones','presupuesto','analisis','progreso','reportes','consultas'].indexOf(p);
   if (navIdx >= 0) document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
   document.getElementById('pageTitle').textContent = {dashboard:'Dashboard',transacciones:'Transacciones',presupuesto:'Presupuesto',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',consultas:'NortIA',admin:'Administración'}[p] || p;
-  cu  if (p === 'reportes') initReportesFiltros();
-rPage = p;
+  curPage = p;
+  if (p === 'reportes') initReportesFiltros();
   const fabEl = document.querySelector('.fab');
   if (fabEl) fabEl.style.display = (p === 'consultas') ? 'none' : '';
   render();
