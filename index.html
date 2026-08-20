@@ -1675,8 +1675,8 @@ tr:hover td { background: #fafbfc; }
     <div class="qp-row">
       <div class="qp-field">
         <div class="qp-label">Rubro</div>
-        <input class="qp-input" id="qpRubro" type="text" placeholder="Elegí o escribí uno nuevo" list="qpRubroList" autocomplete="off">
-        <datalist id="qpRubroList"></datalist>
+<select class="qp-input" id="qpRubro" onchange="handleQpRubroChange(this.value)"><option value="">Seleccionar rubro</option></select>
+          <div class="custom-rubro-wrap" id="qpCustomRubroWrap"><input type="text" class="qp-input" id="qpRubroCustom" placeholder="Escribí el rubro..." style="margin-top:6px"></div>
       </div>
       <div class="qp-field">
         <div class="qp-label">Pagado $</div>
@@ -6958,15 +6958,42 @@ function setQpTipoGasto(tg) {
 }
 
 function populateQpRubros(tipo) {
-  const dl = document.getElementById('qpRubroList');
-  dl.innerHTML = getAllRubros(tipo).filter(r => r !== 'Personalizado...').map(r => `<option value="${esc(r)}">`).join('');
-}
+        const sel = document.getElementById('qpRubro');
+        const custom = (getCustomRubros()[tipo] || []);
+        sel.innerHTML = '<option value="">Seleccionar rubro</option>' + getAllRubros(tipo).map(r => `<option value="${esc(r)}">${esc(r)}${custom.includes(r) && r !== 'Personalizado...' ? ' ★' : ''}</option>`).join('');
+      }
+
+      function handleQpRubroChange(v) {
+        const wrap = document.getElementById('qpCustomRubroWrap');
+        if (v === 'Personalizado...') {
+          wrap.classList.add('show');
+          document.getElementById('qpRubroCustom').focus();
+        } else {
+          wrap.classList.remove('show');
+        }
+      }
+
+      function qpSetRubroDetectado(rubroTexto) {
+        const sel = document.getElementById('qpRubro');
+        const norm = s => (s || '').trim().toLowerCase();
+        const match = [...sel.options].find(o => norm(o.value) === norm(rubroTexto) && o.value !== 'Personalizado...');
+        if (match) {
+          sel.value = match.value;
+        } else if (rubroTexto) {
+          sel.value = 'Personalizado...';
+          document.getElementById('qpRubroCustom').value = rubroTexto;
+        } else {
+          sel.value = '';
+        }
+        handleQpRubroChange(sel.value);
+      }
 
 function resetQpForm() {
   qpTipo = 'Gasto';
   qpTipoGasto = 'Variable';
   setQpTipo('Gasto');
-  ['qpDetalle','qpPesos','qpUSD','qpRubro','qpPagado'].forEach(id => document.getElementById(id).value = '');
+  ['qpDetalle','qpPesos','qpUSD','qpRubro','qpRubroCustom','qpPagado'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('qpCustomRubroWrap').classList.remove('show');
   document.getElementById('qpMes').value = curKey();
   closeAc();
 }
@@ -7005,7 +7032,7 @@ function selectAc(i) {
   document.getElementById('qpDetalle').value = t.detalle;
   document.getElementById('qpPesos').value   = t.impPesos || '';
   document.getElementById('qpUSD').value     = t.impUSD   || '';
-  document.getElementById('qpRubro').value   = t.rubro    || '';
+  qpSetRubroDetectado(t.rubro || '');
   document.getElementById('qpPagado').value  = t.impPesos || '';
   setQpTipo(t.tipo || 'Gasto');
   if (t.tipo === 'Gasto') setQpTipoGasto(t.tipoGasto || 'Variable');
@@ -7127,7 +7154,7 @@ async function qpProcesarIA(base64, mimeType) {
     document.getElementById('qpDetalle').value = datos.detalle || '';
     document.getElementById('qpPesos').value = datos.impPesos || '';
     document.getElementById('qpUSD').value = datos.impUSD || '';
-    document.getElementById('qpRubro').value = datos.rubro || '';
+    qpSetRubroDetectado(datos.rubro || '');
     if (datos.confianza === 'baja' || datos.confianza === 'media') {
       statusEl.textContent = '⚠️ Revisá los datos antes de guardar' + (datos.nota ? ': ' + datos.nota : ' — no estamos seguros de haber leído todo bien.');
     } else {
@@ -7142,7 +7169,11 @@ function saveQuickTx() {
   const detalle = document.getElementById('qpDetalle').value.trim();
   const pesos   = parseFloat(document.getElementById('qpPesos').value)  || 0;
   const usd     = parseFloat(document.getElementById('qpUSD').value)    || 0;
-  const rubro   = document.getElementById('qpRubro').value.trim();
+  let rubro = document.getElementById('qpRubro').value;
+  if (rubro === 'Personalizado...') {
+    rubro = document.getElementById('qpRubroCustom').value.trim() || 'Personalizado';
+    persistCustomRubro(qpTipo, rubro);
+  }
   const pagado  = parseFloat(document.getElementById('qpPagado').value) ?? pesos;
   if (!detalle || !pesos) { alert('Completá al menos Detalle e Importe $'); return; }
   const pagadoFinal = isNaN(parseFloat(document.getElementById('qpPagado').value)) ? pesos : pagado;
