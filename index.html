@@ -7880,6 +7880,8 @@ function renderListaIntegrantes() {
       row.textContent = m.nombre || m.email || uid;
       cont.appendChild(row);
     });
+  }).catch(function(e) {
+    cont.innerHTML = '<span style="font-size:13px;color:var(--muted)">No pudimos cargar los integrantes todavia.</span>';
   });
 }
 async function invitarIntegranteUI() {
