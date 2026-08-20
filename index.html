@@ -215,6 +215,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* TABLE CONTAINER */
 .table-wrap { background: var(--card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+    .tx-scroll { overflow-x: auto; }
 .table-head { padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); gap: 12px; flex-wrap: wrap; }
 .filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .tgl-group { display: flex; background: var(--bg); border-radius: 8px; padding: 3px; }
@@ -227,6 +228,16 @@ th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 600; co
 td { padding: 11px 14px; font-size: 13.5px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: #fafbfc; }
+
+    /* TRANSACCIONES: sin scroll horizontal + header fijo (solo desktop) */
+    @media (min-width: 881px) {
+      #page-transacciones .table-wrap { overflow: visible; }
+      #page-transacciones .tx-scroll { overflow-x: visible; overflow-y: visible; }
+      #page-transacciones table { table-layout: fixed; }
+      #page-transacciones th, #page-transacciones td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      #page-transacciones td:nth-child(2) { white-space: normal; }
+      #page-transacciones thead th { position: sticky; top: 61px; background: var(--card); z-index: 10; box-shadow: inset 0 -1px 0 var(--border); }
+    }
 
 /* BADGES */
 .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
@@ -1159,7 +1170,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v5.22</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.022</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -1322,8 +1333,11 @@ tr:hover td { background: #fafbfc; }
             <button class="btn btn-danger" onclick="askDeleteBulk()">🗑️ Eliminar seleccionados</button>
           </div>
         </div>
-        <div style="overflow-x:auto">
-          <table>
+        <div class="tx-scroll">
+        <table>
+        <colgroup>
+          <col style="width:36px"><col style="width:203px"><col style="width:91px"><col style="width:216px"><col style="width:110px"><col style="width:113px"><col style="width:112px"><col style="width:113px"><col style="width:109px"><col style="width:91px"><col style="width:70px">
+        </colgroup>
             <thead>
               <tr>
                 <th style="width:36px"><input type="checkbox" id="selectAllTx" onchange="toggleSelectAllTx(this.checked)" title="Seleccionar todo"></th>
@@ -1678,7 +1692,11 @@ tr:hover td { background: #fafbfc; }
 <select class="qp-input" id="qpRubro" onchange="handleQpRubroChange(this.value)"><option value="">Seleccionar rubro</option></select>
           <div class="custom-rubro-wrap" id="qpCustomRubroWrap"><input type="text" class="qp-input" id="qpRubroCustom" placeholder="Escribí el rubro..." style="margin-top:6px"></div>
       </div>
-      <div class="qp-field">
+              <div class="qp-field" id="qpDuenoField" style="display:none">
+          <div class="qp-label">Dueño del gasto</div>
+          <select class="qp-input" id="qpDueno"><option value="">Quien lo carga (vos)</option></select>
+        </div>
+<div class="qp-field">
         <div class="qp-label">Pagado $</div>
         <input class="qp-input" id="qpPagado" type="number" placeholder="= Importe" step="0.01" min="0">
       </div>
@@ -6928,19 +6946,58 @@ function esc(s) {
 let qpTipo = 'Gasto';
 let qpTipoGasto = 'Variable';
 let acItems = [];
-let acIdx   = -1;
+let acIdx    = -1;
+let qpMiembrosCache = null;
 
 function toggleQuickPanel() {
   const panel = document.getElementById('quickPanel');
   const btn   = document.getElementById('fabBtn');
   const open  = panel.classList.toggle('show');
   btn.classList.toggle('open', open);
-  if (open) { resetQpForm(); document.getElementById('qpDetalle').focus(); }
+  if (open) { resetQpForm(); document.getElementById('qpDetalle').focus(); loadQpMiembros(); }
 }
 function closeQuickPanel() {
   document.getElementById('quickPanel').classList.remove('show');
   document.getElementById('fabBtn').classList.remove('open');
 }
+async function loadQpMiembros() {
+  const eid = curEmpresa();
+  const sel = document.getElementById('qpDueno');
+  const field = document.getElementById('qpDuenoField');
+  if (!sel || !field) return;
+  if (!qpMiembrosCache) {
+    try {
+      const snap = await firebase.database().ref('norteSync/empresaMiembros/' + eid).once('value');
+      qpMiembrosCache = snap.val() || {};
+    } catch (e) { qpMiembrosCache = {}; }
+  }
+  const uids = Object.keys(qpMiembrosCache);
+  if (uids.length > 1) {
+    sel.innerHTML = '<option value="">Quien lo carga (vos)</option>' + uids.map(uid => `<option value="${uid}">${esc(qpMiembrosCache[uid].nombre || qpMiembrosCache[uid].email || 'Integrante')}</option>`).join('');
+    field.style.display = 'block';
+  } else {
+    field.style.display = 'none';
+  }
+}
+
+// Resuelve el dueño del gasto: lo elegido en el selector, o -si se deja en blanco- el primer
+// integrante identificable del hogar (fallback: quien está logueado).
+function qpDuenoResuelto() {
+  const sel = document.getElementById('qpDueno');
+  const val = sel ? sel.value : '';
+  if (val) {
+    const m = (qpMiembrosCache || {})[val] || {};
+    return { id: val, nombre: m.nombre || m.email || 'Integrante' };
+  }
+  const uids = Object.keys(qpMiembrosCache || {});
+  if (uids.length) {
+    const fid = uids[0];
+    const m = qpMiembrosCache[fid] || {};
+    return { id: fid, nombre: m.nombre || m.email || curUserName() };
+  }
+  return { id: curUserId(), nombre: curUserName() };
+}
+
 
 function setQpTipo(tipo) {
   qpTipo = tipo;
@@ -6992,7 +7049,8 @@ function resetQpForm() {
   qpTipo = 'Gasto';
   qpTipoGasto = 'Variable';
   setQpTipo('Gasto');
-  ['qpDetalle','qpPesos','qpUSD','qpRubro','qpRubroCustom','qpPagado'].forEach(id => document.getElementById(id).value = '');
+  ['qpDetalle','qpPesos','qpUSD','qpRubro','qpRubroCustom','qpPagado','qpDueno'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('qpDuenoField').style.display = 'none';
   document.getElementById('qpCustomRubroWrap').classList.remove('show');
   document.getElementById('qpMes').value = curKey();
   closeAc();
@@ -7179,10 +7237,12 @@ function saveQuickTx() {
   const pagadoFinal = isNaN(parseFloat(document.getElementById('qpPagado').value)) ? pesos : pagado;
   const qpMes = document.getElementById('qpMes').value || curKey();
   const tipoGasto = qpTipo === 'Gasto' ? (qpTipoGasto || 'Variable') : '';
+  const dueno = qpDuenoResuelto();
   const tx = {
     id: uid(), mes: qpMes, tipo: qpTipo, rubro, tipoGasto, detalle,
     cliente: '', impPesos: pesos, impUSD: usd, venc: '',
-    pagado: pagadoFinal, saldo: Math.max(0, pesos - pagadoFinal)
+    pagado: pagadoFinal, saldo: Math.max(0, pesos - pagadoFinal),
+    creadoPor: dueno.id, creadoPorNombre: dueno.nombre
   };
   saveData([...getData(), tx]);
   closeQuickPanel();
