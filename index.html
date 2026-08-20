@@ -1424,6 +1424,33 @@ tr:hover td { background: #fafbfc; }
 
     <!-- REPORTES -->
     <div id="page-reportes" class="page">
+      <div id="repFiltrosBar" style="display:none;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:12px">
+        <div id="repHogarWrap" style="display:none;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--muted);font-weight:600">Hogar:</span>
+          <select class="rep-select" id="repHogarSelect" onchange="onChangeRepHogar(this.value)"></select>
+        </div>
+        <div id="repIntegranteWrap" style="display:none;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--muted);font-weight:600">Ver:</span>
+          <select class="rep-select" id="repIntegranteSelect" onchange="onChangeRepIntegrante(this.value)"></select>
+        </div>
+        <div id="repHogarStatus" style="font-size:12px;color:var(--muted)"></div>
+      </div>
+
+      <div id="repComparativoPanel" style="display:none">
+        <div class="reports-grid">
+          <div class="report-card full">
+            <div class="report-title">👥 Comparativo entre integrantes — <span id="repCmpYear"></span></div>
+            <canvas id="repCmpChart" height="90"></canvas>
+          </div>
+          <div class="report-card full">
+            <div class="report-title">📋 Detalle por integrante</div>
+            <div style="overflow-x:auto"><table class="data-table" id="repCmpTable"></table></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="repTabsWrap">
+
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:2px">
         <div class="rep-tabs" style="margin-bottom:0">
           <button class="rep-tab active" onclick="setRepTab('evol',this)">📅 Evolución</button>
@@ -1567,6 +1594,7 @@ tr:hover td { background: #fafbfc; }
         </div>
       </div>
 
+      </div><!-- /repTabsWrap -->
     </div>
 
     <!-- CONSULTAS IA -->
@@ -4715,7 +4743,8 @@ function showPage(p) {
   const navIdx = ['dashboard','transacciones','presupuesto','analisis','progreso','reportes','consultas'].indexOf(p);
   if (navIdx >= 0) document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
   document.getElementById('pageTitle').textContent = {dashboard:'Dashboard',transacciones:'Transacciones',presupuesto:'Presupuesto',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',consultas:'NortIA',admin:'Administración'}[p] || p;
-  curPage = p;
+  cu  if (p === 'reportes') initReportesFiltros();
+rPage = p;
   const fabEl = document.querySelector('.fab');
   if (fabEl) fabEl.style.display = (p === 'consultas') ? 'none' : '';
   render();
@@ -5601,6 +5630,10 @@ function setMetaAhorro(v) {
 // ── REPORTES ─────────────────────────────────────────────────
 let curRepTab = 'evol';
 let repMoneda = 'ARS'; // 'ARS' | 'USD' | 'AMBAS'
+let curRepHogarId = null;      // null = hogar activo actual; si no, empresaId de otro hogar del usuario
+let curRepIntegrante = '';     // '' = todos los integrantes; uid = solo ese integrante; '__cmp__' = comparativo
+let repHogarDataCache = {};    // empresaId -> array de transacciones (cache de hogares no activos)
+let repMiembrosCache = {};     // empresaId -> {uid:{nombre,email}}
 
 // Ocultar/mostrar el selector de moneda según tab
 const TABS_CON_MONEDA = new Set(['evol','rubros','promedios','tarjetas']);
@@ -5631,6 +5664,148 @@ function renderReportes() {
   else if (curRepTab === 'tarjetas')  renderRepTarjetas();
 }
 
+// ── REPORTES: filtros de hogar e integrante ─────────────────
+function initReportesFiltros() {
+  const misEmpresas = window.__misEmpresas || [];
+  const bar = document.getElementById('repFiltrosBar');
+  const hogarWrap = document.getElementById('repHogarWrap');
+  if (!bar) return;
+
+  if (misEmpresas.length > 1) {
+    hogarWrap.style.display = 'flex';
+    const sel = document.getElementById('repHogarSelect');
+    const activo = curEmpresa();
+    sel.innerHTML = misEmpresas.map(e =>
+      `<option value="${e.id}" ${((curRepHogarId || activo) === e.id) ? 'selected' : ''}>${(e.nombre || e.id)}${e.id === activo ? ' (actual)' : ''}</option>`
+    ).join('');
+  } else {
+    hogarWrap.style.display = 'none';
+  }
+  bar.style.display = (misEmpresas.length > 1) ? 'flex' : 'none';
+
+  cargarMiembrosParaFiltro();
+}
+
+function empresaIdVistaEnReportes() {
+  return curRepHogarId || curEmpresa();
+}
+
+async function cargarMiembrosParaFiltro() {
+  const eid = empresaIdVistaEnReportes();
+  const integranteWrap = document.getElementById('repIntegranteWrap');
+  if (!repMiembrosCache[eid]) {
+    try {
+      const snap = await firebase.database().ref('norteSync/empresaMiembros/' + eid).once('value');
+      repMiembrosCache[eid] = snap.val() || {};
+    } catch (e) {
+      repMiembrosCache[eid] = {};
+    }
+  }
+  const miembros = repMiembrosCache[eid];
+  const uids = Object.keys(miembros);
+  const sel = document.getElementById('repIntegranteSelect');
+  if (uids.length > 1) {
+    integranteWrap.style.display = 'flex';
+    const prev = curRepIntegrante;
+    sel.innerHTML = '<option value="">Todos los integrantes</option>' +
+      uids.map(uid => `<option value="${uid}">${(miembros[uid].nombre || miembros[uid].email || uid)}</option>`).join('') +
+      '<option value="__cmp__">📊 Comparar integrantes</option>';
+    sel.value = (uids.includes(prev) || prev === '__cmp__') ? prev : '';
+    curRepIntegrante = sel.value;
+  } else {
+    integranteWrap.style.display = 'none';
+    curRepIntegrante = '';
+  }
+  toggleComparativoUI();
+  renderReportes();
+}
+
+async function onChangeRepHogar(empresaId) {
+  const activo = curEmpresa();
+  curRepHogarId = (empresaId === activo) ? null : empresaId;
+  const statusEl = document.getElementById('repHogarStatus');
+  const eid = empresaIdVistaEnReportes();
+  if (curRepHogarId && !repHogarDataCache[eid]) {
+    if (statusEl) statusEl.textContent = 'Cargando datos del hogar...';
+    try {
+      const snap = await firebase.database().ref('norteSync/empresas/' + eid).once('value');
+      const remote = snap.val() || {};
+      const raw = remote['fin_data_' + eid];
+      repHogarDataCache[eid] = raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      repHogarDataCache[eid] = [];
+      if (statusEl) statusEl.textContent = 'No pudimos cargar los datos de ese hogar.';
+    }
+  }
+  if (statusEl && statusEl.textContent === 'Cargando datos del hogar...') statusEl.textContent = '';
+  await cargarMiembrosParaFiltro();
+}
+
+function onChangeRepIntegrante(val) {
+  curRepIntegrante = val;
+  toggleComparativoUI();
+  renderReportes();
+}
+
+function toggleComparativoUI() {
+  const cmpPanel = document.getElementById('repComparativoPanel');
+  const tabsWrap = document.getElementById('repTabsWrap');
+  const esComparativo = curRepIntegrante === '__cmp__';
+  if (cmpPanel) cmpPanel.style.display = esComparativo ? 'block' : 'none';
+  if (tabsWrap) tabsWrap.style.display = esComparativo ? 'none' : 'block';
+  if (esComparativo) renderComparativoIntegrantes();
+}
+
+function getDataReportes() {
+  const eid = empresaIdVistaEnReportes();
+  let all = curRepHogarId ? (repHogarDataCache[eid] || []) : getData();
+  if (curRepIntegrante && curRepIntegrante !== '__cmp__') {
+    all = all.filter(t => (t.creadoPor || 'legacy') === curRepIntegrante);
+  }
+  return all;
+}
+
+function renderComparativoIntegrantes() {
+  const eid = empresaIdVistaEnReportes();
+  const miembros = repMiembrosCache[eid] || {};
+  const all = curRepHogarId ? (repHogarDataCache[eid] || []) : getData();
+  const yearEl = document.getElementById('repCmpYear');
+  if (yearEl) yearEl.textContent = curYear;
+
+  const items = all.filter(t => t.mes && t.mes.startsWith(String(curYear)));
+  const uids = [...new Set(items.map(t => t.creadoPor || 'legacy'))];
+  const nombreDe = u => (miembros[u] && (miembros[u].nombre || miembros[u].email)) || (u === 'legacy' ? 'Datos previos' : u);
+
+  const stats = uids.map(u => {
+    const propios = items.filter(t => (t.creadoPor || 'legacy') === u);
+    const gastos = propios.filter(t => t.tipo === 'Gasto').reduce((s,t) => s + (Number(t.impPesos)||0), 0);
+    const ingresos = propios.filter(t => t.tipo === 'Ingreso').reduce((s,t) => s + (Number(t.impPesos)||0), 0);
+    return { uid: u, nombre: nombreDe(u), gastos, ingresos, cant: propios.length };
+  }).sort((a,b) => b.gastos - a.gastos);
+
+  if (charts.repCmp) charts.repCmp.destroy();
+  const ctx = document.getElementById('repCmpChart');
+  if (ctx) {
+    charts.repCmp = new Chart(ctx.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: stats.map(s => s.nombre),
+        datasets: [
+          { label:'Gastos', data: stats.map(s => s.gastos), backgroundColor:'#ef444433', borderColor:'#ef4444', borderWidth:2, borderRadius:5 },
+          { label:'Ingresos', data: stats.map(s => s.ingresos), backgroundColor:'#10b98133', borderColor:'#10b981', borderWidth:2, borderRadius:5 }
+        ]
+      },
+      options: { responsive:true, plugins:{ legend:{ position:'top' } }, scales:{ y:{ ticks:{ callback: v => fmtShort(v) } } } }
+    });
+  }
+
+  const tbl = document.getElementById('repCmpTable');
+  if (tbl) {
+    tbl.innerHTML = `<thead><tr><th>Integrante</th><th>Gastos ${curYear}</th><th>Ingresos ${curYear}</th><th>Balance</th><th>Movimientos</th></tr></thead>` +
+      '<tbody>' + stats.map(s => `<tr><td>${s.nombre}</td><td>${fmtP(s.gastos)}</td><td>${fmtP(s.ingresos)}</td><td>${fmtP(s.ingresos - s.gastos)}</td><td>${s.cant}</td></tr>`).join('') + '</tbody>';
+  }
+}
+
 // Helpers moneda
 function getField(t) {
   // Devuelve el valor según la moneda seleccionada globalmente
@@ -5651,7 +5826,7 @@ const fmtShort = v => '$' + (v >= 1000000 ? (v/1000000).toFixed(1)+'M' : v >= 10
 
 // TAB 1 — EVOLUCIÓN
 function renderRepEvol() {
-  const all = getData();
+  const all = getDataReportes();
   document.getElementById('evolYear').textContent = curYear;
 
   const sumField = (arr, tipo) => {
@@ -5849,7 +6024,7 @@ function renderRepEvol() {
 
 // TAB 2 — POR RUBRO
 function renderRepRubros() {
-  const all = getData();
+  const all = getDataReportes();
   const monthsWithData = [];
   for (let m = 0; m < 12; m++) {
     const k = monthKey(curYear, m);
@@ -5942,7 +6117,7 @@ function renderRepRubros() {
 
 // TAB 3 — PROMEDIOS
 function renderRepPromedios() {
-  const all = getData();
+  const all = getDataReportes();
   const months = [];
   for (let m = 0; m < 12; m++) {
     const k = monthKey(curYear, m);
@@ -6029,7 +6204,7 @@ function renderRepPromedios() {
 
 // TAB 4 — INGRESOS
 function renderRepIngresos() {
-  const all = getData();
+  const all = getDataReportes();
   const yearIngs = all.filter(t => t.mes.startsWith(String(curYear)) && t.tipo==='Ingreso');
 
   // Populate mes filter
@@ -6096,7 +6271,7 @@ function renderRepIngresos() {
 
 // TAB 5 — TARJETAS
 function renderRepTarjetas() {
-  const all = getData();
+  const all = getDataReportes();
   const yearTC = all.filter(t =>
     t.mes.startsWith(String(curYear)) &&
     isTCOrigen(t)
@@ -6320,7 +6495,7 @@ function drawDoughnutCompact(id, entries) {
 let _desgloseRubroActivo = null; // rubro seleccionado para drill-down
 
 function renderDesgloseRubro() {
-  const all = getData();
+  const all = getDataReportes();
   const selectedPer = document.getElementById('desglosePerFilter')?.value || '';
 
   // Filtrar datos según período
@@ -6413,7 +6588,7 @@ function drillRubro(tr) {
 
 function renderDrillDown(gastos, rubro) {
   // Leer TODOS los datos directamente (sin filtrar por repMoneda)
-  const all = getData();
+  const all = getDataReportes();
   const selectedPer = document.getElementById('desglosePerFilter')?.value || '';
   const txsAll = all.filter(t => {
     if (t.tipo !== 'Gasto' || t.rubro !== rubro) return false;
