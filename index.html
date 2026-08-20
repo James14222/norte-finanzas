@@ -1183,6 +1183,7 @@ tr:hover td { background: #fafbfc; }
   </div>
   <button class="logout-btn" id="logoutBtn" style="display:none" onclick="doLogout()">🚪 Cerrar sesión</button>
   <button class="logout-btn" onclick="openAyuda()" style="display:flex">❓ Ayuda</button>
+  <button class="logout-btn" onclick="openPlanModal()" style="display:flex">💎 Mi plan</button>
   <div class="sidebar-footer">
     <span class="sync-badge sync-offline" id="syncStatus"><span>☁️</span> Conectando…</span>
     <div class="data-btns">
@@ -1666,6 +1667,53 @@ tr:hover td { background: #fafbfc; }
 </div>
 
 <!-- ── AYUDA OVERLAY ─────────────────────────────────────────── -->
+<!-- MI PLAN OVERLAY -->
+<div id="planOverlay" onclick="closePlanModal(event)" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:300;align-items:center;justify-content:center;padding:20px">
+  <div onclick="event.stopPropagation()" style="background:var(--card);border-radius:20px;max-width:900px;width:100%;max-height:90vh;overflow:auto;padding:32px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <h2 style="font-size:20px;color:var(--brand-navy)">Mi plan</h2>
+      <button onclick="closePlanModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted)">&times;</button>
+    </div>
+    <p id="planEstadoTexto" style="color:var(--muted);font-size:13px;margin-bottom:24px">Cargando tu plan...</p>
+    <div style="display:flex;flex-wrap:wrap;gap:16px" id="planCardsWrap">
+      <div class="plan-card-app" data-plan="FOCO" style="flex:1;min-width:220px;border:1px solid var(--border);border-radius:16px;padding:20px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">FOCO</div>
+        <div style="font-size:24px;font-weight:800;margin:6px 0 10px">Pago unico</div>
+        <ul style="font-size:13px;color:var(--text);line-height:1.9;padding-left:18px;margin-bottom:16px">
+          <li>1 hogar, hasta 2 integrantes</li>
+          <li>10 cargas por foto/voz al mes</li>
+          <li>60 consultas a NortIA al mes</li>
+          <li>Reportes basicos</li>
+        </ul>
+        <button disabled data-btn-plan="FOCO" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-weight:600">Incluido</button>
+      </div>
+      <div class="plan-card-app" data-plan="PRO" style="flex:1;min-width:220px;border:2px solid var(--primary);border-radius:16px;padding:20px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--primary)">PRO</div>
+        <div style="font-size:24px;font-weight:800;margin:6px 0 10px">$5.000<span style="font-size:13px;font-weight:500;color:var(--muted)">/mes</span></div>
+        <ul style="font-size:13px;color:var(--text);line-height:1.9;padding-left:18px;margin-bottom:16px">
+          <li>Hasta 3 hogares, integrantes ilimitados</li>
+          <li>100 cargas por foto/voz al mes</li>
+          <li>200 consultas a NortIA al mes</li>
+          <li>Reportes avanzados</li>
+        </ul>
+        <button data-btn-plan="PRO" data-plan-target="PRO" class="btn-suscribir" style="width:100%;padding:10px;border-radius:10px;border:none;background:var(--primary);color:white;font-weight:700;cursor:pointer">Suscribirme a PRO</button>
+      </div>
+      <div class="plan-card-app" data-plan="TOP" style="flex:1;min-width:220px;border:1px solid var(--border);border-radius:16px;padding:20px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">TOP</div>
+        <div style="font-size:24px;font-weight:800;margin:6px 0 10px">$9.000<span style="font-size:13px;font-weight:500;color:var(--muted)">/mes</span></div>
+        <ul style="font-size:13px;color:var(--text);line-height:1.9;padding-left:18px;margin-bottom:16px">
+          <li>Hogares e integrantes ilimitados</li>
+          <li>Cargas por foto/voz ilimitadas</li>
+          <li>Consultas a NortIA ilimitadas</li>
+          <li>Soporte prioritario</li>
+        </ul>
+        <button data-btn-plan="TOP" data-plan-target="TOP" class="btn-suscribir" style="width:100%;padding:10px;border-radius:10px;border:none;background:var(--brand-navy);color:white;font-weight:700;cursor:pointer">Suscribirme a TOP</button>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:20px">PRO y TOP son suscripciones mensuales opcionales, se pueden cancelar cuando quieras desde Mercado Pago. Lo que ya pagaste de FOCO no cambia nunca.</p>
+  </div>
+</div>
+<script>document.addEventListener("click", function(e){ var b = e.target.closest(".btn-suscribir"); if(b) suscribirse(b.getAttribute("data-plan-target")); });</script>
 <div id="ayudaOverlay" onclick="closeAyuda(event)">
   <div class="ayuda-panel" onclick="event.stopPropagation()">
     <div class="ayuda-header">
@@ -2853,6 +2901,7 @@ async function bootApp(firebaseUser) {
     empresaRole,
     empresaNombre,
   });
+  iniciarListenerPlan();
 
   // Ocultar login
   document.getElementById('loginScreen').style.display = 'none';
@@ -6819,9 +6868,14 @@ function qpLimiteIaKey() {
   return 'norte_ia_captura_' + curEmpresa() + '_' + curKey();
 }
 
+function qpLimiteIaCapActual() {
+  if (miPlanActual === 'TOP') return Infinity;
+  if (miPlanActual === 'PRO') return 100;
+  return 10; // FOCO
+}
 function qpLimiteIaAlcanzado() {
   const usado = parseInt(localStorage.getItem(qpLimiteIaKey()) || '0', 10);
-  return usado >= 15; // cortesía del plan Free — ver norte-plan-proximas-funcionalidades.docx
+  return usado >= qpLimiteIaCapActual();
 }
 
 function qpSumarUsoIa() {
@@ -6835,7 +6889,7 @@ async function qpProcesarIA(base64, mimeType) {
     return;
   }
   if (qpLimiteIaAlcanzado()) {
-    alert('Llegaste al límite de 15 capturas por foto/voz este mes. Podés seguir cargando manualmente.');
+    alert('Llegaste al limite de ' + qpLimiteIaCapActual() + ' capturas por foto/voz este mes con tu plan actual. Podes seguir cargando manualmente, o mejorar tu plan desde el boton Mi plan.');
     return;
   }
   const statusEl = document.getElementById('qpIaStatus');
@@ -7365,6 +7419,8 @@ let _chatHistory = [];  // { role: 'user'|'model', parts: [{text}] }
 function resetChatHistory() { _chatHistory = []; }
 
 // ── NortIA — resumen calculado + hallazgos (Firebase AI Logic) ──
+let miPlanActual = 'FOCO'; // se actualiza en vivo desde norteSync/billing/{empresaId}, ver iniciarListenerPlan()
+let miPlanEstado = 'active';
 const NORTIA_CAP_MENSUAL = 30; // llamadas por hogar por mes, plan gratis con tope
 
 function nortiaBetaHabilitado() {
@@ -7443,7 +7499,11 @@ async function nortiaCheckYRegistrarUso() {
 }
 
 // ── NortIA CHAT — tope de uso mensual (separado del de hallazgos) ──
-const NORTIA_CHAT_CAP_MENSUAL = 60; // mensajes de chat por hogar por mes
+function nortiaChatCapActual() {
+  if (miPlanActual === 'TOP') return Infinity;
+  if (miPlanActual === 'PRO') return 200;
+  return 60; // FOCO
+}
 const NORTIA_CHAT_HISTORIAL_MAX = 8; // intercambios recientes que se envían como contexto al modelo
 
 function nortiaChatMesActual() {
@@ -7462,7 +7522,7 @@ async function nortiaChatCheckYRegistrarUso() {
   const ref = db.ref(`norteSync/empresas/${curEmpresa()}/nortia/usageChat/${nortiaChatMesActual()}`);
   const snap = await ref.once('value');
   const usados = snap.val() || 0;
-  if (usados >= NORTIA_CHAT_CAP_MENSUAL) return { ok: false, usados };
+  if (usados >= nortiaChatCapActual()) return { ok: false, usados };
   await ref.set(usados + 1);
   return { ok: true, usados: usados + 1 };
 }
@@ -7472,7 +7532,8 @@ async function actualizarNortiaChatCounter(usadosConocido) {
   if (!el) return;
   if (!nortiaBetaHabilitado()) { el.textContent = ''; return; }
   const usados = (usadosConocido !== undefined) ? usadosConocido : await nortiaChatLeerUso();
-  el.textContent = `${usados} / ${NORTIA_CHAT_CAP_MENSUAL} mensajes este mes`;
+  const capNortiaChat = nortiaChatCapActual();
+  el.textContent = `${usados} / ${capNortiaChat === Infinity ? '∞' : capNortiaChat} mensajes este mes`;
 }
 
 async function renderNortiaHallazgos(forzarRegenerar = false) {
@@ -7636,6 +7697,84 @@ function addChatMsg(html, role, returnEl) {
 }
 
 // ── AYUDA ────────────────────────────────────────────────────
+function openPlanModal() {
+  document.getElementById('planOverlay').style.display = 'flex';
+  renderPlanUI();
+}
+function closePlanModal(e) {
+  if (e && e.target !== document.getElementById('planOverlay')) return;
+  document.getElementById('planOverlay').style.display = 'none';
+}
+function iniciarListenerPlan() {
+  const empresaId = curEmpresa();
+  firebase.database().ref('norteSync/billing/' + empresaId).on('value', snap => {
+    const v = snap.val();
+    miPlanActual = (v && v.tier) || 'FOCO';
+    miPlanEstado = (v && v.status) || 'active';
+    renderPlanUI();
+  });
+}
+function renderPlanUI() {
+  const txt = document.getElementById('planEstadoTexto');
+  if (txt) {
+    const nombres = { FOCO: 'FOCO', PRO: 'Norte PRO', TOP: 'Norte TOP' };
+    let estadoTxt = '';
+    if (miPlanEstado === 'past_due') estadoTxt = ' — hay un problema con el ultimo cobro, revisa tu medio de pago en Mercado Pago.';
+    if (miPlanEstado === 'pending') estadoTxt = ' — tu suscripcion esta pendiente de confirmacion.';
+    txt.textContent = 'Tu plan actual es ' + (nombres[miPlanActual] || 'FOCO') + estadoTxt;
+  }
+  document.querySelectorAll('.plan-card-app').forEach(card => {
+    const p = card.getAttribute('data-plan');
+    const btn = card.querySelector('[data-btn-plan]');
+    if (!btn) return;
+    if (p === miPlanActual) {
+      btn.disabled = true;
+      btn.textContent = 'Tu plan actual';
+      btn.style.background = 'var(--bg)';
+      btn.style.color = 'var(--muted)';
+      btn.style.border = '1px solid var(--border)';
+      btn.style.cursor = 'default';
+    } else {
+      btn.disabled = false;
+      btn.style.cursor = 'pointer';
+      if (p === 'FOCO') {
+        btn.textContent = 'Incluido';
+        btn.style.background = 'var(--bg)';
+        btn.style.color = 'var(--muted)';
+        btn.style.border = '1px solid var(--border)';
+      } else {
+        btn.textContent = 'Suscribirme a ' + p;
+        btn.style.background = p === 'PRO' ? 'var(--primary)' : 'var(--brand-navy)';
+        btn.style.color = 'white';
+        btn.style.border = 'none';
+      }
+    }
+  });
+}
+async function suscribirse(plan) {
+  const btn = document.querySelector('[data-btn-plan="' + plan + '"]');
+  const email = getSession()?.username;
+  if (!email) { alert('Necesitas haber iniciado sesion para suscribirte.'); return; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Generando link de pago...'; }
+  try {
+    const res = await fetch('https://us-central1-norte-finanzas.cloudfunctions.net/createSubscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ empresaId: curEmpresa(), plan, email })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.init_point) {
+      alert(data.error || 'No pudimos generar el link de pago. Proba de nuevo.');
+      renderPlanUI();
+      return;
+    }
+    window.location.href = data.init_point;
+  } catch (e) {
+    alert('No se pudo conectar con Mercado Pago. Revisa tu conexion e intenta de nuevo.');
+    renderPlanUI();
+  }
+}
+// ── AYUDA ───────────────────────────────────────────
 function openAyuda(seccion) {
   document.getElementById('ayudaOverlay').classList.add('show');
   if (seccion) ayudaGo(seccion);
