@@ -1757,7 +1757,7 @@ tr:hover td { background: #fafbfc; }
     <p style="font-size:12px;color:var(--muted);margin-top:20px">PRO y TOP son suscripciones mensuales opcionales, se pueden cancelar cuando quieras desde Mercado Pago. Lo que ya pagaste de FOCO no cambia nunca.</p>
   </div>
 </div>
-<script>document.addEventListener("click", function(e){ var b = e.target.closest(".btn-suscribir"); if(b) suscribirse(b.getAttribute("data-plan-target")); });</script>
+<script>document.querySelectorAll('.btn-suscribir').forEach(function(b){ b.addEventListener('click', function(){ suscribirse(b.getAttribute('data-plan-target')); }); });</script>
 <div id="ayudaOverlay" onclick="closeAyuda(event)">
   <div class="ayuda-panel" onclick="event.stopPropagation()">
     <div class="ayuda-header">
@@ -7958,14 +7958,17 @@ async function confirmarInvitarIntegrante() {
     btn.disabled = false; btn.textContent = 'Enviar invitacion';
   }
 }
-document.addEventListener('click', function(e) {
-  if (!e.target) return;
-  if (e.target.id === 'btnCrearHogar') crearOtroHogarUI();
-  if (e.target.id === 'btnCancelarCrearHogar') cancelarCrearHogar();
-  if (e.target.id === 'btnConfirmarCrearHogar') confirmarCrearHogar();
-  if (e.target.id === 'btnInvitarIntegrante') invitarIntegranteUI();
-  if (e.target.id === 'btnCancelarInvitar') cancelarInvitarIntegrante();
-  if (e.target.id === 'btnConfirmarInvitar') confirmarInvitarIntegrante();
+['btnCrearHogar','btnCancelarCrearHogar','btnConfirmarCrearHogar','btnInvitarIntegrante','btnCancelarInvitar','btnConfirmarInvitar'].forEach(function(id) {
+  var el2 = document.getElementById(id);
+  if (!el2) return;
+  el2.addEventListener('click', function() {
+    if (id === 'btnCrearHogar') crearOtroHogarUI();
+    if (id === 'btnCancelarCrearHogar') cancelarCrearHogar();
+    if (id === 'btnConfirmarCrearHogar') confirmarCrearHogar();
+    if (id === 'btnInvitarIntegrante') invitarIntegranteUI();
+    if (id === 'btnCancelarInvitar') cancelarInvitarIntegrante();
+    if (id === 'btnConfirmarInvitar') confirmarInvitarIntegrante();
+  });
 });
 // ── AYUDA ───────────────────────────────────────────
 function openAyuda(seccion) {
