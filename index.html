@@ -236,7 +236,7 @@ tr:hover td { background: #fafbfc; }
       #page-transacciones table { table-layout: fixed; }
       #page-transacciones th, #page-transacciones td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       #page-transacciones td:nth-child(2) { white-space: normal; }
-      #page-transacciones thead th { position: sticky; top: 61px; background: var(--card); z-index: 10; box-shadow: inset 0 -1px 0 var(--border); }
+      #page-transacciones thead th { position: sticky; top: 0; background: var(--card); z-index: 5; box-shadow: inset 0 -1px 0 var(--border); }
     }
 
 /* BADGES */
@@ -1170,7 +1170,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.022</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.023</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -2757,7 +2757,7 @@ const getEmpresas    = ()  => JSON.parse(localStorage.getItem('fin_empresas') ||
 const saveEmpresas   = e   => localStorage.setItem('fin_empresas', JSON.stringify(e));
 const getSession     = ()  => JSON.parse(localStorage.getItem('fin_session')  || 'null');
 const setSession     = s   => localStorage.setItem('fin_session',  JSON.stringify(s));
-const clearSession   = ()  => localStorage.removeItem('fin_session');
+const clearSession   = () => { Object.keys(localStorage).forEach(k => { if (!k.startsWith('firebase:')) localStorage.removeItem(k); }); };
 
 // Current context helpers
 const curEmpresa     = ()  => getSession()?.empresaId || 'JLL';
