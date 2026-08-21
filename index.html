@@ -1170,7 +1170,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.029</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.030</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -2587,7 +2587,7 @@ tr:hover td { background: #fafbfc; }
 <div class="import-overlay" id="importOverlay">
   <div class="import-modal">
     <div class="import-header">
-      <h2>💳 Importar resumen de Tarjeta de Crédito</h2>
+      <h2>💳 Importar resumen de <span id="importTipoTarjeta">tarjeta</span></h2>
       <button class="close-btn" onclick="closeImport()">✕</button>
     </div>
     <div id="importDropZone" style="display:block">
@@ -4371,7 +4371,7 @@ function tcProcesarArchivo() {
   reader.readAsArrayBuffer(file);
 }
 
-function tcSetTipo(i, tipo) { tcRows[i].tipoMov = tipo; tcRows[i].rubro = tcGuessRubro(tcRows[i].desc, tipo); renderImportPreview(window.__tcFile); } function renderImportPreview(filename) { window.__tcFile = filename;
+function tcSetTipo(i, tipo) { tcRows[i].tipoMov = tipo; tcRows[i].rubro = tcGuessRubro(tcRows[i].desc, tipo); renderImportPreview(window.__tcFile); } function renderImportPreview(filename) { window.__tcFile = filename; { const _tt = document.getElementById('importTipoTarjeta'); if (_tt) _tt.textContent = tcIsDebit ? 'Tarjeta de Débito' : 'Tarjeta de Crédito'; }
   document.getElementById('importDropZone').style.display = 'none';
   document.getElementById('importBody').style.display = 'block';
   document.getElementById('importFooter').style.display = 'flex';
@@ -4453,11 +4453,11 @@ function tcUpdateSummary() {
   const sel = tcRows.filter(r => r.selected);
   const totalARS = sel.filter(r => !r.esUSD).reduce((s, r) => s + r.monto, 0);
   const totalUSD = sel.filter(r =>  r.esUSD).reduce((s, r) => s + r.monto, 0);
-  let resumen = `<b>${sel.length}</b> de ${tcRows.length} movimientos`;
-  if (totalARS) resumen += ` · ARS: <b>${fmtP(totalARS)}</b>`;
-  if (totalUSD) resumen += ` · USD: <b>${fmtU(totalUSD)}</b>`;
+  const _g = sel.filter(r => r.tipoMov !== 'Ingreso'), _i = sel.filter(r => r.tipoMov === 'Ingreso'); const _sum = (a, u) => a.filter(r => u ? r.esUSD : !r.esUSD).reduce((s,r)=>s+r.monto,0); const _lin = (a, e) => { if (!a.length) return ''; const p = _sum(a,false), u = _sum(a,true); let t = ` · <b>${a.length}</b> ${e}${a.length!==1?'s':''}`; if (p) t += ` por <b>${fmtP(p)}</b>`; if (u) t += `${p?' y ':' por '}<b>${fmtU(u)}</b>`; return t; }; let resumen = `<b>${sel.length}</b> de ${tcRows.length} movimientos` + _lin(_g,'Gasto') + _lin(_i,'Ingreso');
+
+
   document.getElementById('importSummary').innerHTML = resumen;
-  document.getElementById('importConfirmBtn').textContent = `✓ Importar ${sel.length} gasto${sel.length!==1?'s':''}`;
+  document.getElementById('importConfirmBtn').textContent = `✓ Importar ${sel.length} movimiento${sel.length!==1?'s':''}`;
 }
 
 function confirmTCImport() {
@@ -4494,7 +4494,7 @@ function confirmTCImport() {
   closeImport();
   // Pequeño toast de confirmación
   const msg = document.createElement('div');
-  msg.textContent = `✓ ${sel.length} gasto${sel.length!==1?'s':''} importado${sel.length!==1?'s':''}`;
+  msg.textContent = `✓ ${sel.length} movimiento${sel.length!==1?'s':''} importado${sel.length!==1?'s':''}`;
   Object.assign(msg.style, {position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:'var(--success)',color:'#fff',padding:'10px 20px',borderRadius:'999px',fontSize:'14px',fontWeight:'600',zIndex:'9999',boxShadow:'0 4px 16px rgba(0,0,0,.2)',pointerEvents:'none'});
   document.body.appendChild(msg);
   setTimeout(() => msg.remove(), 3000);
@@ -5153,7 +5153,7 @@ function renderTx() {
     const tcPendiente = isTCTx && t.tcPagado === false;
     return `<tr${pendiente ? ' style="background:#fffbeb"' : ''}>
       <td><input type="checkbox" class="tx-check" data-id="${t.id}" ${selectedTx.has(t.id)?'checked':''} onchange="toggleSelectTx('${t.id}', this.checked)"></td>
-      <td><strong>${esc(t.detalle)}</strong>${pendiente ? ' <span title="Esqueleto de gasto fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de Crédito" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>` : ''}</td>
+      <td><strong>${esc(t.detalle)}</strong>${pendiente ? ' <span title="Esqueleto de gasto fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de ${tcLabel(t)==='TD'?'Débito':'Crédito'}" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>` : ''}</td>
       <td><span class="badge badge-${t.tipo.toLowerCase()}">${t.tipo}</span></td>
       <td><span class="rubro-tag">${esc(t.rubro||'-')}</span>${t.tipo==='Gasto' && t.tipoGasto ? `<span style="display:inline-block;margin-left:5px;font-size:10.5px;font-weight:600;color:var(--muted)">· ${t.tipoGasto}</span>` : ''}</td>
       <td>${t.cliente ? `<span style="font-size:12px;font-weight:600;color:var(--primary)">${esc(t.cliente)}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
