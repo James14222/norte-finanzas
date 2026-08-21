@@ -1170,7 +1170,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.023</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.024</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -4650,14 +4650,14 @@ function setSyncStatus(state) {
 
 function syncSnapshot() {
   const snap = { _client: syncClientId, _ts: Date.now() };
-  getSyncKeys().forEach(k => { snap[k] = localStorage.getItem(k); });
+  SYNC_KEYS.forEach(k => { snap[k] = localStorage.getItem(k); });
   return snap;
 }
 
 function applyRemoteSnapshot(remote) {
   syncApplyingRemote = true;
   try {
-    getSyncKeys().forEach(k => {
+    SYNC_KEYS.forEach(k => {
       if (remote[k] != null) localStorage.setItem(k, remote[k]);
       else localStorage.removeItem(k);
     });
@@ -4667,10 +4667,10 @@ function applyRemoteSnapshot(remote) {
 }
 
 function schedulePush() {
-  if (syncApplyingRemote || !fbRef) return;
+  if (syncApplyingRemote || !fbRef) return; const myRef = fbRef;
   setSyncStatus('pending');
   clearTimeout(syncPushTimer);
-  syncPushTimer = setTimeout(() => {
+  syncPushTimer = setTimeout(() => { if (fbRef !== myRef) return;
     fbRef.set(syncSnapshot())
       .then(() => setSyncStatus('ok'))
       .catch(() => setSyncStatus('error'));
@@ -4686,12 +4686,12 @@ function reinitSync() {
   initSync();
 }
 
-function initSync() {
+function initSync() { let myRef;
   if (typeof firebase === 'undefined') { setSyncStatus('offline'); return; }
   try {
     // firebase.initializeApp only needs to run once
     if (!firebase.apps?.length) firebase.initializeApp(firebaseConfig);
-    fbRef = firebase.database().ref(SYNC_PATH);
+    fbRef = myRef = firebase.database().ref(SYNC_PATH);
   } catch (e) {
     console.warn('No se pudo inicializar Firebase:', e);
     setSyncStatus('offline');
@@ -4700,7 +4700,7 @@ function initSync() {
 
   setSyncStatus('pending');
 
-  fbRef.once('value').then(snap => {
+  fbRef.once('value').then(snap => { if (fbRef !== myRef) return;
     const remote = snap.val();
     if (!remote) {
       // No hay datos en la nube todavía: subimos lo que tenemos localmente (migración inicial)
@@ -4713,7 +4713,7 @@ function initSync() {
   }).then(() => {
     setSyncStatus('ok');
     // Escuchar cambios remotos en tiempo real (otros dispositivos)
-    fbRef.on('value', snap => {
+    fbRef.on('value', snap => { if (fbRef !== myRef) return;
       const remote = snap.val();
       if (!remote || remote._client === syncClientId) return;
       applyRemoteSnapshot(remote);
@@ -4729,7 +4729,7 @@ function initSync() {
   const origSetItem = localStorage.setItem.bind(localStorage);
   localStorage.setItem = function(key, value) {
     origSetItem(key, value);
-    if (getSyncKeys().includes(key)) schedulePush();
+    if (SYNC_KEYS.includes(key)) schedulePush();
   };
 
   window.addEventListener('online',  () => { setSyncStatus('pending'); schedulePush(); });
