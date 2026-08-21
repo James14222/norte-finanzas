@@ -1170,7 +1170,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.028</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.029</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -6404,16 +6404,16 @@ function renderRepTarjetas() {
   for (let m=0;m<12;m++) months12.push(monthKey(curYear,m));
   const sumBanco = (k, b) => filtered.filter(t=>t.mes===k&&getBanco(t)===b)
     .reduce((s,t)=>s+(repMoneda==='USD'?(Number(t.impUSD)||0):(Number(t.impPesos)||0)),0);
-  const bapro  = months12.map(k=>sumBanco(k,'BAPRO'));
-  const santan = months12.map(k=>sumBanco(k,'SANTANDER'));
+  const PALETA_TC = ['#3b82f6','#ef4444','#10b981','#f59e0b','#8b5cf6','#ec4899','#14b8a6','#f97316'];
+  const datasetsTC = bancosEnFiltered.map((b, i) => ({ label: getBancoLabel({banco: b}), data: months12.map(k => sumBanco(k, b)), backgroundColor: PALETA_TC[i % PALETA_TC.length] + '33', borderColor: PALETA_TC[i % PALETA_TC.length], borderWidth: 2, borderRadius: 4 }));
   if (charts['tcMensualChart']) charts['tcMensualChart'].destroy();
   charts['tcMensualChart'] = new Chart(document.getElementById('tcMensualChart').getContext('2d'), {
     type: 'bar',
     data: {
       labels: MESES.map(m=>m.slice(0,3)),
       datasets: [
-        { label:'BAPRO',     data:bapro,  backgroundColor:'#3b82f633', borderColor:'#3b82f6', borderWidth:2, borderRadius:4 },
-        { label:'Santander', data:santan, backgroundColor:'#ef444433', borderColor:'#ef4444', borderWidth:2, borderRadius:4 },
+        ...datasetsTC,
+
       ]
     },
     options: {
