@@ -1170,7 +1170,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.026</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.027</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -3998,7 +3998,7 @@ const getBudgets  = ()  => JSON.parse(localStorage.getItem(`fin_budgets_${curEmp
 const saveBudgets = b   => localStorage.setItem(`fin_budgets_${curEmpresa()}`, JSON.stringify(b));
 const getMetaAhorro  = () => Number(localStorage.getItem(`fin_meta_ahorro_${curEmpresa()}`) || 0);
 const saveMetaAhorro = v  => localStorage.setItem(`fin_meta_ahorro_${curEmpresa()}`, String(Number(v)||0));
-const getBankConfigs  = () => JSON.parse(localStorage.getItem(`fin_bankconfigs_${curEmpresa()}`) || '[]');
+const MP_PRESET = { id:'preset-mercadopago', pais:'Argentina', banco:'MercadoPago', tarjeta:'Débito', cardType:'debito', preset:true, parser:{ headerRow:3, colRoles:{'0':'fecha','1':'desc','2':'skip','3':'importeARS','4':'skip'}, skipPatterns:['PAGO EN PESOS','PAGO EN USD','ACREDITACION','NOTA DE CR','SU PAGO'], debitNegative:true } }; const getBankConfigs = () => { const eid = curEmpresa(); if (!eid) return []; const k = 'fin_bankconfigs_' + eid; let arr = []; try { arr = JSON.parse(localStorage.getItem(k) || '[]'); } catch (e) { arr = []; } const sk = 'fin_seedmp_' + eid; if (!localStorage.getItem(sk)) { localStorage.setItem(sk, '1'); const yaEsta = arr.some(c => String(c.banco || '').toLowerCase().split(' ').join('') === 'mercadopago'); if (!yaEsta) { arr = arr.concat([MP_PRESET]); localStorage.setItem(k, JSON.stringify(arr)); } } return arr; };
 const saveBankConfigs = c  => localStorage.setItem(`fin_bankconfigs_${curEmpresa()}`, JSON.stringify(c));
 
 function prevKey(key) {
