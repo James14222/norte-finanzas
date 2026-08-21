@@ -1170,7 +1170,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.025</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.026</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -1320,7 +1320,7 @@ tr:hover td { background: #fafbfc; }
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-secondary" onclick="clonarMesAnterior()" title="Copia todos los registros del mes anterior a este mes, con sus importes">📋 Clonar mes anterior</button>
             <button class="btn btn-secondary" onclick="replicarGastosFijos()" title="Crea el esqueleto de tus gastos fijos del mes anterior, sin importe, para no olvidarte de ninguno">🧩 Replicar gastos fijos</button>
-            <button class="btn btn-secondary" onclick="document.getElementById('tcFileInput').click()" title="Importar resumen de tarjeta de crédito (.xlsx)">💳 Importar TC</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('tcFileInput').click()" title="Importar resumen de tarjeta de crédito o débito (.xlsx)">💳 Importar TC / TD</button>
             <input type="file" id="tcFileInput" accept=".xlsx,.xls" style="display:none" onchange="handleTCImport(this)">
             <button class="btn btn-secondary" onclick="openPagarTC()" title="Registrar pago de resumen de tarjeta de crédito">✅ Pagar TC</button>
             <button class="btn btn-primary" onclick="openModal()">+ Agregar</button>
@@ -3946,7 +3946,7 @@ const monthKey = (y, m) => `${y}-${String(m+1).padStart(2,'0')}`;
 const curKey   = () => monthKey(curYear, curMonth);
 // Helpers TC (soportan formato nuevo {origen:'TARJETA',banco:'BAPRO'} y viejo {origen:'TC-BAPRO'})
 const isTCOrigen   = t => t.origen === 'TARJETA' || (t.origen && t.origen.startsWith('TC'));
-const getBanco     = t => t.banco || (t.origen?.replace('TC-','') || '');
+const tcLabel = t => { if (t.cardTipo === 'TD' || t.cardTipo === 'TC') return t.cardTipo; const b = getBanco(t); if (!b || b === 'BAPRO' || b === 'SANTANDER') return 'TC'; const cfgId = b.startsWith('CUSTOM:') ? b.replace('CUSTOM:', '') : b; const cfg = getBankConfigs().find(c => c.id === cfgId); return (cfg && cfg.cardType === 'debito') ? 'TD' : 'TC'; }; const getBanco     = t => t.banco || (t.origen?.replace('TC-','') || '');
 const getBancoLabel= t => {
   const b = getBanco(t);
   if (!b || b === 'TARJETA') return 'Sin banco asignado';
@@ -4486,7 +4486,7 @@ function confirmTCImport() {
       saldo:     isPaid ? 0 : impP,
       origen:    'TARJETA',
       banco:     tcBank.startsWith('CUSTOM:') ? tcBank.replace('CUSTOM:', '') : tcBank,
-      tcPagado:  isPaid,   // débito: ya pagado; crédito: pendiente de pagar el resumen
+      tcPagado:  isPaid, cardTipo: tcIsDebit ? 'TD' : 'TC',   // débito: ya pagado; crédito: pendiente de pagar el resumen
     });
   });
   saveData(data);
@@ -5167,7 +5167,7 @@ function renderTx() {
           : tcPendiente
             ? `<span class="saldo-pend" style="font-size:11px">💳 ${(Number(t.impUSD)||0) > 0 && !(Number(t.impPesos)||0) ? 'U$S '+((Number(t.impUSD)||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})) : fmtP(Number(t.impPesos)||0)}</span>`
             : (isTCTx && t.tcPagado === true)
-              ? '<span class="saldo-ok">✓ TC</span>'
+              ? '<span class="saldo-ok">✓ ' + tcLabel(t) + '</span>'
               : saldo<=0 ? '<span class="saldo-ok">✓</span>' : '<span class="saldo-pend">'+fmtP(saldo)+'</span>'
       }</td>
       <td>
