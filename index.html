@@ -1171,7 +1171,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.039</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.040</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -8364,6 +8364,72 @@ function subtituloRumbo() {
     return r;
   };
   setTimeout(montarItemSidebar, 2500);
+})();
+
+// ── Monogramas de banco en Reportes → Tarjetas ───────────────
+// Las tarjetas resumen y los títulos muestran el banco como chip de color
+// en vez de texto plano, para reconocerlo de un vistazo.
+(function () {
+  var MARCAS_REP = {
+    'santander': { ini: 'S', color: '#EC0000', nombre: 'Santander' },
+    'bapro': { ini: 'BP', color: '#1B75BB', nombre: 'BAPRO' },
+    'banco provincia': { ini: 'BP', color: '#1B75BB', nombre: 'Banco Provincia' },
+    'provincia': { ini: 'BP', color: '#1B75BB', nombre: 'Banco Provincia' },
+    'mercadopago': { ini: 'MP', color: '#00B1EA', nombre: 'Mercado Pago' },
+    'mercado pago': { ini: 'MP', color: '#00B1EA', nombre: 'Mercado Pago' },
+    'galicia': { ini: 'G', color: '#F26522', nombre: 'Galicia' },
+    'bbva': { ini: 'BB', color: '#004481', nombre: 'BBVA' },
+    'nación': { ini: 'BN', color: '#00693E', nombre: 'Banco Nación' },
+    'nacion': { ini: 'BN', color: '#00693E', nombre: 'Banco Nación' },
+    'macro': { ini: 'M', color: '#00539B', nombre: 'Macro' },
+    'brubank': { ini: 'B', color: '#6C2BD9', nombre: 'Brubank' },
+    'uala': { ini: 'U', color: '#F5325B', nombre: 'Ualá' },
+    'ualá': { ini: 'U', color: '#F5325B', nombre: 'Ualá' }
+  };
+
+  function chipInline(m, sufijo) {
+    return '<span style="display:inline-flex;align-items:center;gap:8px" title="' + esc(m.nombre + (sufijo ? ' · ' + sufijo : '')) + '">' +
+      '<span style="width:28px;height:28px;border-radius:50%;background:' + m.color + ';color:#fff;font-size:10.5px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:-.02em;box-shadow:0 1px 3px rgba(0,0,0,0.18)">' + m.ini + '</span>' +
+      '<span style="display:inline-flex;flex-direction:column;line-height:1.2;text-align:left">' +
+        '<span style="font-size:12.5px;font-weight:700;color:var(--text);letter-spacing:0">' + esc(m.nombre) + '</span>' +
+        (sufijo ? '<span style="font-size:10px;color:var(--muted);font-weight:500;letter-spacing:0">' + esc(sufijo) + '</span>' : '') +
+      '</span></span>';
+  }
+
+  var pintando = false;
+  function pintarTarjetasRep() {
+    if (pintando) return;
+    pintando = true;
+    try {
+      document.querySelectorAll('.tc-bank-title').forEach(function (el) {
+        if (el.dataset.chip) return;
+        var txt = (el.textContent || '').replace(/^[^A-Za-zÁÉÍÓÚÑáéíóúñ0-9]+/, '').trim();
+        var partes = txt.split('·');
+        var banco  = partes[0].trim();
+        var sufijo = partes.slice(1).join('·').trim();
+        var m = MARCAS_REP[banco.toLowerCase()];
+        if (!m) return;
+        el.dataset.chip = '1';
+        el.innerHTML = chipInline(m, sufijo);
+      });
+    } catch (e) {}
+    pintando = false;
+  }
+  window.pintarTarjetasRep = pintarTarjetasRep;
+
+  // Se redibuja al cambiar de pestaña, de filtro, de mes o de moneda:
+  // un observador liviano se encarga de reaplicarlo siempre.
+  function arrancar() {
+    var pr = document.getElementById('page-reportes');
+    if (!pr) { setTimeout(arrancar, 1000); return; }
+    pintarTarjetasRep();
+    var t = null;
+    new MutationObserver(function () {
+      clearTimeout(t);
+      t = setTimeout(pintarTarjetasRep, 60);
+    }).observe(pr, { childList: true, subtree: true });
+  }
+  setTimeout(arrancar, 1500);
 })();
 
 // ── PANEL DE SUPERADMIN — gestión de usuarios ────────────────
