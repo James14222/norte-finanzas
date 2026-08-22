@@ -1170,7 +1170,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.034</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.035</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -2110,37 +2110,6 @@ tr:hover td { background: #fafbfc; }
           <h3>⚙️ Administración</h3>
           <p class="subtitulo">Panel de configuración del sistema — visible solo para administradores</p>
 
-          <!-- BLOQUE: GESTIÓN DE ACCESO -->
-          <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin:20px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Gestión de acceso</div>
-
-          <div class="ayuda-bloque">
-            <h4>🏢 Empresas</h4>
-            <p>Cada empresa tiene sus propios datos completamente aislados. Los usuarios solo ven la información de las empresas a las que tienen acceso.</p>
-            <div class="ayuda-ejemplo">
-              <strong>Crear empresa:</strong> botón "+ Nueva empresa" → nombre + ID (sin espacios)<br>
-              <strong>Ejemplo:</strong> Nombre: "Hogar Pérez" · ID: "PEREZ"
-            </div>
-          </div>
-          <div class="ayuda-bloque">
-            <h4>👥 Usuarios</h4>
-            <p>Podés crear usuarios con distintos niveles de acceso:</p>
-            <div class="ayuda-ejemplo">
-              <strong>Admin global:</strong> puede acceder a todas las empresas y crear/eliminar usuarios<br>
-              <strong>Admin de empresa:</strong> gestión completa dentro de esa empresa<br>
-              <strong>Editor:</strong> puede cargar y editar transacciones<br>
-              <strong>Viewer:</strong> solo lectura — ve los datos pero no puede modificar nada
-            </div>
-          </div>
-          <div class="ayuda-bloque">
-            <h4>Gestión de contraseñas</h4>
-            <p>Usá el ícono 🔑 junto a cualquier usuario para resetear su contraseña. El usuario deberá usar la nueva contraseña en su próximo ingreso. Las contraseñas se guardan encriptadas — nadie puede verlas, ni el administrador.</p>
-          </div>
-          <div class="ayuda-bloque">
-            <h4>Login</h4>
-            <p>Al abrir la app, el sistema pide <strong>Empresa + Usuario + Contraseña</strong>. La sesión se mantiene activa hasta que el usuario hace click en "Cerrar sesión" en el pie del menú lateral.</p>
-          </div>
-          <div class="ayuda-tip">Si olvidás tu contraseña, pedile al administrador que la resetee desde el panel Admin → Usuarios → 🔑.</div>
-
           <!-- BLOQUE: IMPORTACIÓN -->
           <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin:24px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Importación de extractos bancarios</div>
 
@@ -2204,51 +2173,6 @@ tr:hover td { background: #fafbfc; }
       <div style="font-size:13px;color:var(--muted);margin-top:4px">Panel de configuración del sistema — visible solo para administradores</div>
     </div>
 
-    <!-- ── CLIENTES (solo admin global) ── -->
-    <div class="admin-group-label" id="adminClientesLabel" style="display:none">Clientes</div>
-
-    <div class="card admin-section" id="adminClientesSection" style="display:none;margin-bottom:8px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div>
-          <div style="font-size:15px;font-weight:700;color:var(--text)">🧭 Clientes activos</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:3px">Usuarios creados a través del flujo de compra</div>
-        </div>
-        <button class="btn" style="font-size:12px;padding:6px 14px;border:1px solid var(--border)" onclick="cargarClientes()">↺ Actualizar</button>
-      </div>
-      <div id="adminClientesBody">
-        <div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando clientes…</div>
-      </div>
-    </div>
-
-    <!-- ── GESTIÓN DE ACCESO ── -->
-    <div class="admin-group-label">Gestión de acceso</div>
-
-    <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:8px">
-
-      <div class="card admin-section">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div>
-            <div style="font-size:15px;font-weight:700;color:var(--text)">🏢 Empresas</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:3px">Unidades con datos completamente aislados entre sí</div>
-          </div>
-          <button class="btn btn-primary" style="font-size:13px;padding:7px 14px" onclick="openCreateEmpresa()">+ Nueva empresa</button>
-        </div>
-        <table class="admin-table" id="adminEmpresasTable"><tbody></tbody></table>
-      </div>
-
-      <div class="card admin-section">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div>
-            <div style="font-size:15px;font-weight:700;color:var(--text)">👥 Usuarios</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:3px">Acceso al sistema con roles diferenciados por empresa</div>
-          </div>
-          <button class="btn btn-primary" style="font-size:13px;padding:7px 14px" onclick="openCreateUser()">+ Nuevo usuario</button>
-        </div>
-        <table class="admin-table" id="adminUsersTable"><tbody></tbody></table>
-      </div>
-
-    </div>
-
     <!-- ── IMPORTACIÓN DE EXTRACTOS ── -->
     <div class="admin-group-label">Importación de extractos bancarios</div>
 
@@ -2303,65 +2227,6 @@ tr:hover td { background: #fafbfc; }
       </div>
     </div>
 
-  </div>
-</div>
-
-<!-- Modal: Nuevo usuario -->
-<div class="overlay" id="adminUserOverlay" style="display:none">
-  <div class="modal" style="max-width:420px">
-    <div class="modal-title" id="adminUserTitle">Nuevo usuario</div>
-    <div class="form-group">
-      <label>Usuario</label>
-      <input class="form-input" id="adminNewUsername" type="text" placeholder="nombre de usuario" autocomplete="off">
-    </div>
-    <div class="form-group">
-      <label>Contraseña</label>
-      <input class="form-input" id="adminNewPwd" type="password" placeholder="contraseña inicial">
-    </div>
-    <div class="form-group">
-      <label>Rol global</label>
-      <select class="form-input" id="adminNewRole">
-        <option value="viewer">Viewer</option>
-        <option value="admin">Admin</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Empresa a asignar</label>
-      <select class="form-input" id="adminNewEmpresa"></select>
-    </div>
-    <div class="form-group">
-      <label>Rol en esa empresa</label>
-      <select class="form-input" id="adminNewEmpresaRole">
-        <option value="viewer">Viewer (solo lectura)</option>
-        <option value="editor">Editor</option>
-        <option value="admin">Admin</option>
-      </select>
-    </div>
-    <div id="adminUserError" style="color:#ef4444;font-size:12px;margin-bottom:8px;display:none"></div>
-    <div style="display:flex;gap:10px;margin-top:8px">
-      <button class="btn btn-secondary" style="flex:1" onclick="closeAdminUserModal()">Cancelar</button>
-      <button class="btn btn-primary" style="flex:2" onclick="saveAdminUser()">Guardar</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Nueva empresa -->
-<div class="overlay" id="adminEmpresaOverlay" style="display:none">
-  <div class="modal" style="max-width:380px">
-    <div class="modal-title">Nueva empresa</div>
-    <div class="form-group">
-      <label>Nombre</label>
-      <input class="form-input" id="adminNewEmpresaNombre" type="text" placeholder="Nombre de la empresa">
-    </div>
-    <div class="form-group">
-      <label>ID (sin espacios)</label>
-      <input class="form-input" id="adminNewEmpresaId" type="text" placeholder="Ej: ACME" style="text-transform:uppercase">
-    </div>
-    <div id="adminEmpresaError" style="color:#ef4444;font-size:12px;margin-bottom:8px;display:none"></div>
-    <div style="display:flex;gap:10px;margin-top:8px">
-      <button class="btn btn-secondary" style="flex:1" onclick="document.getElementById('adminEmpresaOverlay').style.display='none'">Cancelar</button>
-      <button class="btn btn-primary" style="flex:2" onclick="saveAdminEmpresa()">Crear</button>
-    </div>
   </div>
 </div>
 
@@ -2751,15 +2616,7 @@ let selectedTx = new Set();
 let charts   = {};
 
 // ── STORAGE ─────────────────────────────────────────────────
-// ── AUTH / MULTI-EMPRESA ─────────────────────────────────────
-async function hashPwd(pwd) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('norte-salt:' + pwd));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
 // Storage
-const getUsers       = ()  => JSON.parse(localStorage.getItem('fin_users')    || '[]');
-const saveUsers      = u   => localStorage.setItem('fin_users',    JSON.stringify(u));
 const getEmpresas    = ()  => JSON.parse(localStorage.getItem('fin_empresas') || '[]');
 const saveEmpresas   = e   => localStorage.setItem('fin_empresas', JSON.stringify(e));
 const getSession     = ()  => JSON.parse(localStorage.getItem('fin_session')  || 'null');
@@ -2769,8 +2626,10 @@ const clearSession   = () => { Object.keys(localStorage).forEach(k => { if (!k.s
 // Current context helpers
 const curEmpresa     = ()  => getSession()?.empresaId || 'JLL';
 const curEmpresaRole = ()  => getSession()?.empresaRole || 'viewer';
-const isAdmin        = ()  => getSession()?.role === 'admin' || curEmpresaRole() === 'admin';
-
+// isAdmin() = es admin de SU PROPIO hogar (habilita Admin → Bancos/Tarjetas/NortIA de ese hogar).
+// Antes: `getSession()?.role === 'admin' || ...` — el campo `role` venía 'admin' por default
+// para cualquier cuenta sin ese dato en Firebase, lo que abría el panel global a cualquiera.
+const isAdmin        = ()  => curEmpresaRole() === 'admin';
 const curUserId       = () => getSession()?.userId || 'desconocido';
 const curUserName     = () => getSession()?.username || 'Usuario';
 // Migration: runs once to move flat data → empresa-scoped data
@@ -2782,19 +2641,7 @@ async function runMigration() {
     saveEmpresas([{ id:'JLL', nombre:'JLL', createdAt: new Date().toISOString() }]);
   }
 
-  // 2) Create admin user
-  if (!getUsers().length) {
-    const pwdHash = await hashPwd('norte2026');
-    saveUsers([{
-      id: uid(),
-      username: 'jaime',
-      pwdHash,
-      role: 'admin',
-      empresas: [{ id:'JLL', role:'admin' }]
-    }]);
-  }
-
-  // 3) Copy existing flat data → JLL namespace (non-destructive)
+    // 3) Copy existing flat data → JLL namespace (non-destructive)
   const keys = ['fin_data', 'fin_budgets', 'fin_meta_ahorro', 'fin_rubros_custom'];
   keys.forEach(k => {
     const v = localStorage.getItem(k);
@@ -3230,136 +3077,14 @@ function renderObS4() {
 }
 
 // ── ADMIN PANEL ──────────────────────────────────────────────
+// Nota: acá solo vive la configuración real por hogar (bancos/tarjetas).
+// El viejo panel de Empresas/Usuarios/Clientes (localStorage, desconectado
+// de Firebase, con una contraseña por default hardcodeada) se eliminó por
+// ser un riesgo de seguridad: cualquier cuenta veía y podía resetear la
+// contraseña de otras cuentas.
 function renderAdmin() {
-  const empresas = getEmpresas();
-  const users    = getUsers();
-
-  // Empresas table
-  const empBody = document.querySelector('#adminEmpresasTable tbody');
-  empBody.innerHTML = empresas.length
-    ? empresas.map(e => `<tr>
-        <td><strong>${esc(e.nombre)}</strong></td>
-        <td style="color:var(--muted);font-size:12px">${e.id}</td>
-        <td style="color:var(--muted);font-size:12px">${e.createdAt ? new Date(e.createdAt).toLocaleDateString('es-AR') : '—'}</td>
-      </tr>`).join('')
-    : '<tr><td colspan="3" style="color:var(--muted)">Sin empresas registradas</td></tr>';
-
-  // Users table
-  const usersBody = document.querySelector('#adminUsersTable tbody');
-  usersBody.innerHTML = users.length
-    ? users.map(u => {
-        const emps = (u.empresas||[]).map(ea => {
-          const en = empresas.find(e=>e.id===ea.id)?.nombre || ea.id;
-          return `<span class="empresa-chip">${esc(en)} <span style="opacity:0.6">${ea.role}</span></span>`;
-        }).join(' ');
-        return `<tr>
-          <td><strong>${esc(u.username)}</strong></td>
-          <td><span class="badge-role badge-${u.role}">${u.role}</span></td>
-          <td style="font-size:12px">${emps || '<span style="color:var(--muted)">Sin empresa</span>'}</td>
-          <td>
-            <button class="act-btn" onclick="resetUserPwd('${u.id}')" title="Resetear contraseña" style="font-size:12px">🔑</button>
-            ${u.username !== getSession()?.username ? `<button class="act-btn" onclick="deleteUser('${u.id}')" title="Eliminar usuario" style="font-size:12px">🗑️</button>` : ''}
-          </td>
-        </tr>`;
-      }).join('')
-    : '<tr><td colspan="4" style="color:var(--muted)">Sin usuarios</td></tr>';
-
-  // Sección clientes — solo para el super-admin (Jaime)
-  const SUPER_ADMIN_UID = 'RUO9uxaH26QZDC1eMVuA0kjMYkw2';
-  const clientesSection = document.getElementById('adminClientesSection');
-  const clientesLabel   = document.getElementById('adminClientesLabel');
-  if (getSession()?.userId === SUPER_ADMIN_UID) {
-    clientesSection.style.display = 'block';
-    clientesLabel.style.display   = 'block';
-    cargarClientes();
-  }
-
-  // Bank configs section (scoped to current empresa)
   renderAdminBancos();
 }
-
-async function cargarClientes() {
-  const body = document.getElementById('adminClientesBody');
-  if (!body) return;
-  body.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando…</div>';
-
-  try {
-    const db = firebase.database();
-    const [usersSnap, empSnap] = await Promise.all([
-      db.ref('norteSync/globalUsers').once('value'),
-      db.ref('norteSync/globalEmpresas').once('value')
-    ]);
-    const usersObj  = usersSnap.val()  || {};
-    const empresasObj = empSnap.val()  || {};
-
-    const clientes = Object.values(usersObj)
-      .filter(u => u.id !== getSession().userId)   // excluir al propio admin
-      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-
-    if (!clientes.length) {
-      body.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0">Todavía no hay clientes registrados.</div>';
-      return;
-    }
-
-    const rows = clientes.map(u => {
-      const empId    = u.empresas?.[0]?.id || '—';
-      const empNombre = empresasObj[empId]?.nombre || empId;
-      const fecha    = u.createdAt ? new Date(u.createdAt).toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'numeric' }) : '—';
-      return `<tr>
-        <td><strong style="color:var(--text)">${esc(u.nombre || u.email)}</strong></td>
-        <td style="color:var(--muted);font-size:12px">${esc(u.email)}</td>
-        <td style="color:var(--muted);font-size:12px">${esc(empNombre)}</td>
-        <td style="color:var(--muted);font-size:12px">${fecha}</td>
-      </tr>`;
-    }).join('');
-
-    body.innerHTML = `
-      <table class="admin-table" style="width:100%">
-        <thead><tr>
-          <th>Nombre</th><th>Email</th><th>Empresa</th><th>Alta</th>
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-      <div style="font-size:11px;color:var(--muted);margin-top:10px">${clientes.length} cliente${clientes.length !== 1 ? 's' : ''}</div>`;
-  } catch (e) {
-    body.innerHTML = `<div style="font-size:13px;color:#ef4444;padding:12px 0">Error al cargar clientes: ${e.message}</div>`;
-  }
-}
-
-function openCreateUser() {
-  // Populate empresa selector
-  const sel = document.getElementById('adminNewEmpresa');
-  sel.innerHTML = getEmpresas().map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('');
-  document.getElementById('adminNewUsername').value = '';
-  document.getElementById('adminNewPwd').value = '';
-  document.getElementById('adminNewRole').value = 'viewer';
-  document.getElementById('adminUserError').style.display = 'none';
-  document.getElementById('adminUserOverlay').style.display = 'flex';
-}
-function closeAdminUserModal() {
-  document.getElementById('adminUserOverlay').style.display = 'none';
-}
-
-async function saveAdminUser() {
-  const username    = document.getElementById('adminNewUsername').value.trim().toLowerCase();
-  const pwd         = document.getElementById('adminNewPwd').value;
-  const role        = document.getElementById('adminNewRole').value;
-  const empresaId   = document.getElementById('adminNewEmpresa').value;
-  const empresaRole = document.getElementById('adminNewEmpresaRole').value;
-  const errEl       = document.getElementById('adminUserError');
-
-  if (!username || !pwd) { errEl.textContent='Completá usuario y contraseña'; errEl.style.display='block'; return; }
-  if (getUsers().find(u=>u.username===username)) { errEl.textContent='Ese usuario ya existe'; errEl.style.display='block'; return; }
-
-  const pwdHash = await hashPwd(pwd);
-  const users = getUsers();
-  users.push({ id:uid(), username, pwdHash, role, empresas:[{id:empresaId, role:empresaRole}] });
-  saveUsers(users);
-  closeAdminUserModal();
-  renderAdmin();
-}
-
-
 
 function openCambiarPwd() {
   document.getElementById('pwdActual').value = '';
@@ -3404,71 +3129,6 @@ async function confirmarCambiarPwd() {
     }
   }
 }
-
-let _resetPwdUserId = null;
-
-function resetUserPwd(userId) {
-  const user = getUsers().find(u => u.id === userId);
-  if (!user) return;
-  _resetPwdUserId = userId;
-  document.getElementById('resetPwdUsername').textContent = user.username;
-  document.getElementById('resetPwdNueva').value = '';
-  document.getElementById('resetPwdConfirm').value = '';
-  document.getElementById('resetPwdError').style.display = 'none';
-  document.getElementById('resetPwdOverlay').classList.add('open');
-  setTimeout(() => document.getElementById('resetPwdNueva').focus(), 100);
-}
-
-function closeResetPwd() {
-  document.getElementById('resetPwdOverlay').classList.remove('open');
-  _resetPwdUserId = null;
-}
-
-async function confirmarResetPwd() {
-  const nueva   = document.getElementById('resetPwdNueva').value;
-  const confirm = document.getElementById('resetPwdConfirm').value;
-  const errEl   = document.getElementById('resetPwdError');
-
-  const showErr = msg => { errEl.textContent = msg; errEl.style.display = 'block'; };
-  errEl.style.display = 'none';
-
-  if (!nueva)          { showErr('Ingresá la nueva contraseña.'); return; }
-  if (nueva.length < 6){ showErr('La contraseña debe tener al menos 6 caracteres.'); return; }
-  if (nueva !== confirm){ showErr('Las contraseñas no coinciden.'); return; }
-
-  const pwdHash = await hashPwd(nueva);
-  const users   = getUsers().map(u => u.id === _resetPwdUserId ? {...u, pwdHash} : u);
-  saveUsers(users);
-  closeResetPwd();
-  alert('✅ Contraseña actualizada correctamente.');
-}
-
-function deleteUser(userId) {
-  if (!confirm('¿Eliminar este usuario?')) return;
-  saveUsers(getUsers().filter(u => u.id !== userId));
-  renderAdmin();
-}
-
-function openCreateEmpresa() {
-  document.getElementById('adminNewEmpresaNombre').value = '';
-  document.getElementById('adminNewEmpresaId').value = '';
-  document.getElementById('adminEmpresaError').style.display = 'none';
-  document.getElementById('adminEmpresaOverlay').style.display = 'flex';
-}
-
-function saveAdminEmpresa() {
-  const nombre  = document.getElementById('adminNewEmpresaNombre').value.trim();
-  const id      = document.getElementById('adminNewEmpresaId').value.trim().toUpperCase().replace(/\s+/g,'');
-  const errEl   = document.getElementById('adminEmpresaError');
-  if (!nombre || !id) { errEl.textContent='Completá nombre e ID'; errEl.style.display='block'; return; }
-  if (getEmpresas().find(e=>e.id===id)) { errEl.textContent='Ese ID ya existe'; errEl.style.display='block'; return; }
-  const emps = getEmpresas();
-  emps.push({ id, nombre, createdAt: new Date().toISOString() });
-  saveEmpresas(emps);
-  document.getElementById('adminEmpresaOverlay').style.display = 'none';
-  renderAdmin();
-}
-
 // ── BANCOS / TARJETAS CONFIG ─────────────────────────────────
 let _bankEditId   = null;   // null = new, string = editing
 let _bankSampleRaw = [];    // raw rows from sample XLSX
@@ -8330,27 +7990,6 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAyuda()
     <div style="display:flex;gap:10px">
       <button onclick="closeCambiarPwd()" style="flex:1;padding:11px;border:1px solid var(--border);border-radius:10px;background:none;color:var(--text);cursor:pointer;font-size:14px">Cancelar</button>
       <button onclick="confirmarCambiarPwd()" style="flex:1;padding:11px;border:none;border-radius:10px;background:var(--primary);color:white;cursor:pointer;font-size:14px;font-weight:600">Guardar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── MODAL: RESET CONTRASEÑA (ADMIN) ───────────────────────── -->
-<div id="resetPwdOverlay" class="import-overlay">
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;padding:32px;max-width:380px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,0.3)">
-    <h3 style="margin:0 0 6px;font-size:17px;color:var(--text)">Resetear contraseña</h3>
-    <p style="font-size:13px;color:var(--text-2);margin:0 0 24px">Ingresá la nueva contraseña para <strong id="resetPwdUsername"></strong>.</p>
-    <div id="resetPwdError" style="display:none;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px"></div>
-    <div style="margin-bottom:14px">
-      <label style="font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px">Nueva contraseña</label>
-      <input id="resetPwdNueva" type="password" placeholder="••••••••" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:14px;box-sizing:border-box">
-    </div>
-    <div style="margin-bottom:24px">
-      <label style="font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px">Confirmar contraseña</label>
-      <input id="resetPwdConfirm" type="password" placeholder="••••••••" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:14px;box-sizing:border-box">
-    </div>
-    <div style="display:flex;gap:10px">
-      <button onclick="closeResetPwd()" style="flex:1;padding:11px;border:1px solid var(--border);border-radius:10px;background:none;color:var(--text);cursor:pointer;font-size:14px">Cancelar</button>
-      <button onclick="confirmarResetPwd()" style="flex:1;padding:11px;border:none;border-radius:10px;background:var(--primary);color:white;cursor:pointer;font-size:14px;font-weight:600">Guardar</button>
     </div>
   </div>
 </div>
