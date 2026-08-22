@@ -18,6 +18,7 @@
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-analytics-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <!-- NortIA — Firebase AI Logic (SDK modular, requiere carga separada del resto que es compat/global) -->
@@ -1170,7 +1171,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.035</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.036</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -4280,7 +4281,8 @@ const firebaseConfig = {
   projectId: "norte-finanzas",
   storageBucket: "norte-finanzas.firebasestorage.app",
   messagingSenderId: "770320644005",
-  appId: "1:770320644005:web:07473cb04562bc6951da4c"
+    appId: "1:770320644005:web:07473cb04562bc6951da4c",
+  measurementId: "G-BELR4H5HW5"
 };
 // SYNC_KEYS y SYNC_PATH son dinámicos: dependen de la empresa logueada
 function getSyncKeys() {
@@ -7967,6 +7969,113 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAyuda()
     document.getElementById('loginScreen').style.display = 'flex';
   }
 })();
+// ── ANALYTICS (Google Analytics vía Firebase) ────────────────
+// Mide CÓMO se usa Norte para decidir qué mejorar y qué nadie usa.
+// Privacidad: NO se envían montos, rubros reales, descripciones,
+// nombres ni emails. Solo nombres de evento y contadores. El usuario
+// se identifica con su uid de Firebase (seudónimo, no es un dato personal).
+(function initAnalytics(intento) {
+  intento = intento || 0;
+  try {
+    if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length || !firebase.analytics) {
+      if (intento < 40) setTimeout(function () { initAnalytics(intento + 1); }, 250);
+      return;
+    }
+    var A = firebase.analytics();
+    window.track = function (ev, params) { try { A.logEvent(ev, params || {}); } catch (e) {} };
+
+    // Identidad seudónima + segmentación por plan/hogar
+    function identificar() {
+      try {
+        var s = (typeof getSession === 'function') ? getSession() : null;
+        if (s && s.userId) A.setUserId(s.userId);
+        var props = {};
+        if (s && s.empresaId)   props.hogar = String(s.empresaId);
+        if (s && s.empresaRole) props.rol   = String(s.empresaRole);
+        if (window.planActual)  props.plan  = String(window.planActual);
+        if (Object.keys(props).length) A.setUserProperties(props);
+      } catch (e) {}
+    }
+    identificar();
+
+    // Envuelve una función global sin alterar su comportamiento
+    function wrap(nombre, fn) {
+      var orig = window[nombre];
+      if (typeof orig !== 'function') return;
+      window[nombre] = function () {
+        try { fn.apply(null, arguments); } catch (e) {}
+        return orig.apply(this, arguments);
+      };
+    }
+
+    // Sesión
+    wrap('bootApp', function (u) { if (u && u.uid) { setTimeout(identificar, 500); track('login'); } });
+    wrap('doLogout', function () { track('logout'); });
+
+    // Navegación: qué pantallas se usan y cuáles no
+    wrap('showPage', function (p) { track('screen_view', { screen_name: String(p) }); });
+    wrap('openAyuda', function () { track('ayuda_abierta'); });
+    wrap('openCambiarPwd', function () { track('cambiar_pwd_abierto'); });
+
+    // Carga de gastos: manual vs foto vs voz
+    wrap('saveQuickTx',        function () { track('gasto_guardado', { metodo: 'carga_rapida' }); });
+    wrap('saveTx',             function () { track('gasto_guardado', { metodo: 'formulario' }); });
+    wrap('qpAbrirFoto',        function () { track('carga_foto_abierta'); });
+    wrap('qpFotoSeleccionada', function () { track('carga_foto_seleccionada'); });
+    wrap('qpToggleVoz',        function () { track('carga_voz_toggle'); });
+    wrap('qpProcesarIA',       function (b64, mime) { track('carga_ia_procesada', { tipo: String(mime || '').indexOf('audio') === 0 ? 'voz' : 'foto' }); });
+    wrap('doDelete',           function () { track('transaccion_eliminada'); });
+
+    // Operaciones del mes
+    wrap('clonarMesAnterior',   function () { track('clonar_mes_anterior'); });
+    wrap('replicarGastosFijos', function () { track('replicar_gastos_fijos'); });
+    wrap('openPagarTC',         function () { track('pagar_tc_abierto'); });
+    wrap('ejecutarPagoTC',      function () { track('pagar_tc_confirmado'); });
+
+    // Importación de resúmenes / bancos
+    wrap('openImportModal', function () { track('import_tc_abierto'); });
+    wrap('handleTCFile',    function () { track('import_tc_archivo'); });
+    wrap('confirmTCImport', function () { track('import_tc_confirmado'); });
+    wrap('openBankModal',   function (editId) { track('banco_modal', { modo: editId ? 'editar' : 'nuevo' }); });
+    wrap('bankLoadSample',  function () { track('banco_muestra_cargada'); });
+    wrap('bankPreview',     function () { track('banco_vista_previa'); });
+    wrap('bankSaveConfig',  function () { track('banco_configurado'); });
+    wrap('deleteBankConfig',function () { track('banco_eliminado'); });
+
+    // Presupuesto y metas
+    wrap('setBudget',                    function () { track('presupuesto_definido'); });
+    wrap('copiarPresupuestoMesAnterior', function () { track('presupuesto_copiado'); });
+    wrap('setMetaAhorro',                function () { track('meta_ahorro_definida'); });
+
+    // Rubros propios
+    wrap('addCustomRubroFromPanel', function () { track('rubro_custom_creado'); });
+    wrap('deleteCustomRubro',       function () { track('rubro_custom_eliminado'); });
+
+    // Reportes y análisis
+    wrap('setRepTab',    function (t) { track('reporte_tab', { tab: String(t) }); });
+    wrap('setRepMoneda', function (m) { track('reporte_moneda', { moneda: String(m) }); });
+    wrap('drillRubro',   function () { track('analisis_drill_rubro'); });
+    wrap('exportarDatos',function () { track('exportar_datos'); });
+    wrap('importarDatos',function () { track('importar_backup'); });
+
+    // NortIA
+    wrap('nortiaChatEnviar',      function () { track('nortia_consulta'); });
+    wrap('nortiaGenerarHallazgos',function () { track('nortia_hallazgos_generados'); });
+    wrap('nortiaExtraerGasto',    function () { track('nortia_extraer_gasto'); });
+
+    // Hogares y plan
+    wrap('openHogaresModal',    function () { track('hogares_abierto'); });
+    wrap('confirmarCrearHogar', function () { track('hogar_creado'); });
+    wrap('invitarIntegranteUI', function () { track('invitar_integrante'); });
+    wrap('cambiarDeHogar',      function () { track('cambio_de_hogar'); });
+    wrap('openPlanModal',       function () { track('plan_abierto'); });
+
+    // Onboarding: dónde abandona la gente
+    wrap('obNext',     function () { track('onboarding_paso', { paso: Number(window.obCurrentStep || 0) }); });
+    wrap('obMarkDone', function () { track('onboarding_completado'); });
+  } catch (e) {}
+})();
+
 </script>
 
 <!-- ── MODAL: CAMBIAR CONTRASEÑA ─────────────────────────────── -->
