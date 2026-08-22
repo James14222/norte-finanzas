@@ -1171,7 +1171,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.041</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.042</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -8272,13 +8272,28 @@ function subtituloRumbo() {
     'ualá':         { ini: 'U',  color: '#F5325B', nombre: 'Ualá' }
   };
 
+    // Logos oficiales (viven en el hosting de la landing, igual que el de Pioneros)
+  var LOGOS = {
+    'Santander': 'https://norteapp.ar/assets/bancos/santander.png',
+    'BAPRO': 'https://norteapp.ar/assets/bancos/bapro.png',
+    'Banco Provincia': 'https://norteapp.ar/assets/bancos/bapro.png',
+    'Provincia': 'https://norteapp.ar/assets/bancos/bapro.png',
+    'Mercado Pago': 'https://norteapp.ar/assets/bancos/mercadopago.png'
+  };
+
   function chipBanco(m) {
-    return '<span title="' + esc(m.nombre) + '" style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;vertical-align:middle;cursor:default">' +
-        '<span style="width:30px;height:30px;border-radius:50%;background:' + m.color + ';color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;letter-spacing:-.02em;box-shadow:0 1px 3px rgba(0,0,0,0.18)">' + m.ini + '</span>' +
+    var url = LOGOS[m.nombre];
+    var marca = url
+      ? '<span style="width:34px;height:34px;border-radius:9px;background:#fff;display:flex;align-items:center;justify-content:center;' +
+        'box-shadow:0 1px 3px rgba(0,0,0,0.16);padding:3px;box-sizing:border-box">' +
+        '<img src="' + url + '" alt="' + esc(m.nombre) + '" style="max-width:100%;max-height:100%;object-fit:contain;display:block"></span>'
+      : '<span style="width:30px;height:30px;border-radius:50%;background:' + m.color + ';color:#fff;font-size:11px;font-weight:800;' +
+        'display:flex;align-items:center;justify-content:center;letter-spacing:-.02em;box-shadow:0 1px 3px rgba(0,0,0,0.18)">' + m.ini + '</span>';
+    return '<span title="' + esc(m.nombre) + '" style="display:inline-flex;flex-direction:column;align-items:center;gap:4px;vertical-align:middle;cursor:default">' +
+        marca +
         '<span style="font-size:9.5px;color:var(--muted);line-height:1;white-space:nowrap">' + esc(m.nombre) + '</span>' +
       '</span>';
   }
-
   // Reemplaza el texto suelto de un banco por su chip, dentro de un contenedor
   window.pintarChipsBancos = function (cont) {
     if (!cont) return;
@@ -8387,15 +8402,28 @@ function subtituloRumbo() {
     'ualá': { ini: 'U', color: '#F5325B', nombre: 'Ualá' }
   };
 
+    var LOGOS_REP = {
+    'Santander': 'https://norteapp.ar/assets/bancos/santander.png',
+    'BAPRO': 'https://norteapp.ar/assets/bancos/bapro.png',
+    'Banco Provincia': 'https://norteapp.ar/assets/bancos/bapro.png',
+    'Mercado Pago': 'https://norteapp.ar/assets/bancos/mercadopago.png'
+  };
+
   function chipInline(m, sufijo) {
-    return '<span style="display:inline-flex;align-items:center;gap:8px" title="' + esc(m.nombre + (sufijo ? ' · ' + sufijo : '')) + '">' +
-      '<span style="width:28px;height:28px;border-radius:50%;background:' + m.color + ';color:#fff;font-size:10.5px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:-.02em;box-shadow:0 1px 3px rgba(0,0,0,0.18)">' + m.ini + '</span>' +
+    var url = LOGOS_REP[m.nombre];
+    var marca = url
+      ? '<span style="width:36px;height:36px;border-radius:9px;background:#fff;display:inline-flex;align-items:center;justify-content:center;' +
+        'box-shadow:0 1px 3px rgba(0,0,0,0.16);padding:4px;box-sizing:border-box;flex-shrink:0">' +
+        '<img src="' + url + '" alt="' + esc(m.nombre) + '" style="max-width:100%;max-height:100%;object-fit:contain;display:block"></span>'
+      : '<span style="width:28px;height:28px;border-radius:50%;background:' + m.color + ';color:#fff;font-size:10.5px;font-weight:800;' +
+        'display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:-.02em;box-shadow:0 1px 3px rgba(0,0,0,0.18)">' + m.ini + '</span>';
+    return '<span style="display:inline-flex;align-items:center;gap:9px" title="' + esc(m.nombre + (sufijo ? ' · ' + sufijo : '')) + '">' +
+      marca +
       '<span style="display:inline-flex;flex-direction:column;line-height:1.2;text-align:left">' +
         '<span style="font-size:12.5px;font-weight:700;color:var(--text);letter-spacing:0">' + esc(m.nombre) + '</span>' +
         (sufijo ? '<span style="font-size:10px;color:var(--muted);font-weight:500;letter-spacing:0">' + esc(sufijo) + '</span>' : '') +
       '</span></span>';
   }
-
   var pintando = false;
   function pintarTarjetasRep() {
     if (pintando) return;
@@ -8450,22 +8478,41 @@ function subtituloRumbo() {
   var money = function (v) { try { return fmtP(v); } catch (e) { return '$' + Math.round(v).toLocaleString('es-AR'); } };
 
   // 2) Salud financiera explicada en plata, con el puntaje como resumen al costado
-  function rehacerSalud() {
+    function rehacerSalud() {
     var card = $('healthCard');
-    if (!card || card.dataset.v3) return;
+    if (!card) return;
 
-    var ing  = num($('d-ing') && $('d-ing').textContent);
-    var gas  = num($('d-gas') && $('d-gas').textContent);
+    // La app sigue actualizando los elementos originales (hNum, hBars…),
+    // así que NO se destruyen: se guardan ocultos y se leen desde ahí.
+    if (!card.dataset.v3) {
+      var oculto = document.createElement('div');
+      oculto.id = 'healthOriginal';
+      oculto.style.display = 'none';
+      while (card.firstChild) oculto.appendChild(card.firstChild);
+      card.appendChild(oculto);
+      var vista = document.createElement('div');
+      vista.id = 'healthV3';
+      vista.style.cssText = 'display:flex;align-items:center;width:100%;flex-wrap:wrap;gap:14px 0';
+      card.appendChild(vista);
+      card.dataset.v3 = '1';
+    }
+    var destino = $('healthV3');
+    if (!destino) return;
+
+    var ing  = num($('d-ing')  && $('d-ing').textContent);
+    var gas  = num($('d-gas')  && $('d-gas').textContent);
     var pend = num($('d-pend') && $('d-pend').textContent);
-    var score = parseInt(($('hNum') && $('hNum').textContent) || '0', 10);
+    if (!ing && !gas) return;                       // todavía no calculó: se reintenta
+
+    var score  = parseInt(($('hNum') && $('hNum').textContent) || '0', 10);
     var estado = (($('hStatus') && $('hStatus').textContent) || '').trim();
+    var bars   = $('hBars') ? $('hBars').textContent : '';
 
-    var bars = $('hBars') ? $('hBars').textContent : '';
-    var tend = /Mejorando/i.test(bars) ? 'Venís mejor' : (/Empeorando/i.test(bars) ? 'Venís peor' : 'Venís parecido');
-    var tendSub = /Mejorando/i.test(bars) ? 'Seguí así' : (/Empeorando/i.test(bars) ? 'Ojo este mes' : 'Sin cambios grandes');
-    var tendCol = /Mejorando/i.test(bars) ? '#16a34a' : (/Empeorando/i.test(bars) ? '#ef4444' : '#64748b');
+    var mejor = /Mejorando/i.test(bars), peor = /Empeorando/i.test(bars);
+    var tend    = mejor ? 'Venís mejor' : (peor ? 'Venís peor' : 'Venís parecido');
+    var tendSub = mejor ? 'Seguí así'   : (peor ? 'Ojo este mes' : 'Sin cambios grandes');
+    var tendCol = mejor ? '#16a34a'     : (peor ? '#ef4444' : '#64748b');
 
-    // De cada $100 que entran, cuántos se van en gastos
     var gastaDe100 = ing > 0 ? Math.round(gas / ing * 100) : 0;
     var quedaDe100 = 100 - gastaDe100;
     var colGasto = gastaDe100 <= 80 ? '#16a34a' : (gastaDe100 <= 100 ? '#f59e0b' : '#ef4444');
@@ -8492,26 +8539,22 @@ function subtituloRumbo() {
     var anillo = '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;' +
       'padding-right:20px;border-right:1px solid var(--border);margin-right:20px">' +
       '<div style="width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;' +
-      'background:conic-gradient(' + colGasto + ' ' + (score*3.6) + 'deg, var(--border) 0);position:relative">' +
+      'background:conic-gradient(' + colGasto + ' ' + (score*3.6) + 'deg, var(--border) 0)">' +
         '<div style="width:48px;height:48px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;' +
         'font-size:19px;font-weight:800;color:var(--text)">' + (score || '—') + '</div>' +
       '</div>' +
-      '<div style="font-size:9.5px;color:var(--muted);text-align:center;line-height:1.25;max-width:76px">' + esc(estado) + '</div>' +
+      '<div style="font-size:9.5px;color:var(--muted);text-align:center;line-height:1.25;max-width:78px">' + esc(estado) + '</div>' +
     '</div>';
 
-    card.dataset.v3 = '1';
-    card.style.alignItems = 'stretch';
-    card.innerHTML = '<div style="display:flex;align-items:center;width:100%;flex-wrap:wrap;gap:14px 0">' +
-      anillo +
+    destino.innerHTML = anillo +
       '<div style="display:flex;gap:12px;flex:1;flex-wrap:wrap;min-width:260px">' +
         tarjeta('Cada $100 que entran', 'Gastás $' + gastaDe100, fraseGasto, colGasto) +
         tarjeta('Te falta pagar', money(pend), frasePend, colPend) +
         tarjeta('Contra el mes pasado', tend, tendSub, tendCol) +
-      '</div>' +
-    '</div>';
+      '</div>';
   }
 
-  // 3) Alertas agrupadas en Consumo · Presupuesto · Registro
+  // Alertas agrupadas en Consumo · Presupuesto · Registro
   var GRUPOS = [
     { id: 'consumo',     tit: 'Consumo',     ico: '📈', desc: 'Rubros que se dispararon contra tus meses anteriores',
       test: function (t) { return /promedio hist|sobre el promedio|m[aá]s que el mes/i.test(t); } },
@@ -8529,24 +8572,26 @@ function subtituloRumbo() {
 
   function rehacerAlertas() {
     var wrap = $('alertasWrap');
-    if (!wrap || wrap.dataset.v3) return;
-    var items = [...wrap.querySelectorAll('.alerta-item')];
+    if (!wrap) return;
+    // Se reagrupa cada vez que la app vuelve a dibujar las alertas originales.
+    var items = [].slice.call(wrap.querySelectorAll('.alerta-item'));
     if (!items.length) return;
 
     var buckets = { consumo: [], presupuesto: [], registro: [], otros: [] };
     items.forEach(function (it) {
       var tit = (it.querySelector('.alerta-at') || {}).textContent || '';
       var sub = (it.querySelector('.alerta-as') || {}).textContent || '';
-      var g = GRUPOS.find(function (x) { return x.test(tit); });
+      var g = null;
+      for (var i = 0; i < GRUPOS.length; i++) { if (GRUPOS[i].test(tit)) { g = GRUPOS[i]; break; } }
       buckets[g ? g.id : 'otros'].push({ tit: tit.trim(), sub: sub.trim() });
     });
 
     function fila(a, grupoId) {
       var extra = '';
       if (grupoId === 'presupuesto') {
-        // "(194%)" o "194%" dentro del detalle → barra de avance del tope
         var pcts = (a.sub + ' ' + a.tit).match(/(\d+)\s*%/g) || [];
-        var max = pcts.reduce(function (m, p) { return Math.max(m, parseInt(p, 10) || 0); }, 0);
+        var max = 0;
+        pcts.forEach(function (p) { max = Math.max(max, parseInt(p, 10) || 0); });
         if (max) extra = barra(max, max >= 100 ? '#ef4444' : (max >= 80 ? '#f59e0b' : '#16a34a'));
       }
       return '<div style="padding:11px 0;border-top:1px solid var(--border)">' +
@@ -8575,8 +8620,6 @@ function subtituloRumbo() {
         '<div style="font-size:14px;font-weight:800;color:var(--text)">Otros avisos</div>' +
         buckets.otros.map(function (a) { return fila(a, 'otros'); }).join('') + '</div>';
     }
-
-    wrap.dataset.v3 = '1';
     wrap.innerHTML = html;
   }
 
