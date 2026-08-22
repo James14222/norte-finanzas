@@ -185,7 +185,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* MAIN */
 .main { margin-left: var(--sw); flex: 1; display: flex; flex-direction: column; min-width:0; }
-.topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap:12px; flex-wrap:wrap; position: sticky; top: 0; z-index: 50; }
+.topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap:12px; flex-wrap:wrap; position: sticky; top: 0; z-index: 50; }.main:has(#page-dashboard.active) .topbar { display:none; }
 .page-title { font-size: 18px; font-weight: 700; }
 .month-nav { display: flex; align-items: center; gap: 10px; }
 .month-nav button { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; width: 32px; height: 32px; cursor: pointer; font-size: 17px; color: var(--text); display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
@@ -1170,7 +1170,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.031</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.032</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -1212,7 +1212,7 @@ tr:hover td { background: #fafbfc; }
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:12px">
       <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()" aria-label="Abrir menú">☰</button>
-      <div class="page-title" id="pageTitle">Dashboard</div>
+      <div class="page-title" id="pageTitle">Mi Rumbo</div>
     </div>
     <div class="month-nav">
       <button onclick="changeMonth(-1)">‹</button>
@@ -4809,7 +4809,7 @@ function updateMonthDisplay() {
   document.getElementById('sideYear').textContent = curYear;
 }
 
-function render() {
+function render() { if (curPage !== 'dashboard') { const _mn = document.querySelector('.month-nav'); const _tb = document.querySelector('.topbar'); if (_tb && _mn && !_tb.contains(_mn)) { _mn.querySelectorAll('button').forEach(b => { b.style.background=''; b.style.borderColor=''; b.style.color=''; }); const _md = document.getElementById('monthDisplay'); if (_md) { _md.style.color=''; _md.style.fontWeight=''; } _tb.appendChild(_mn); } }
   if      (curPage === 'dashboard')     renderDash();
   else if (curPage === 'transacciones') renderTx();
   else if (curPage === 'presupuesto')   renderPresupuesto();
@@ -4916,9 +4916,9 @@ function renderDash() {
 
   // Decoración Mi Rumbo (una sola vez)
     const rDeco = document.getElementById('rumboDeco');
-      if (rDeco && !rDeco.dataset.done) { rDeco.dataset.done = '1'; rDeco.outerHTML = `<div id="rumboDeco" aria-hidden="true" style="position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none;border-radius:16px;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2716%27 height=%2716%27%3E%3Ccircle cx=%272%27 cy=%272%27 r=%271%27 fill=%27%23E9E3D3%27/%3E%3C/svg%3E&quot;)"><svg width="760" height="760" viewBox="0 0 760 760" style="position:absolute;bottom:-160px;right:-160px;opacity:0.07"><circle cx="380" cy="380" r="335" fill="none" stroke="#8B5E34" stroke-width="3"></circle><circle cx="380" cy="380" r="264" fill="none" stroke="#8B5E34" stroke-width="2"></circle><line x1="380" y1="22" x2="380" y2="738" stroke="#8B5E34" stroke-width="2"></line><line x1="22" y1="380" x2="738" y2="380" stroke="#8B5E34" stroke-width="2"></line><line x1="123" y1="123" x2="637" y2="637" stroke="#8B5E34" stroke-width="1.4"></line><line x1="637" y1="123" x2="123" y2="637" stroke="#8B5E34" stroke-width="1.4"></line><polygon points="380,101 407,380 380,659 353,380" fill="#8B5E34"></polygon><polygon points="101,380 380,353 659,380 380,407" fill="#8B5E34"></polygon><text x="380" y="76" text-anchor="middle" font-size="28" fill="#8B5E34" font-family="Georgia,serif">N</text><text x="380" y="706" text-anchor="middle" font-size="28" fill="#8B5E34" font-family="Georgia,serif">S</text><text x="706" y="391" text-anchor="middle" font-size="28" fill="#8B5E34" font-family="Georgia,serif">E</text><text x="54" y="391" text-anchor="middle" font-size="28" fill="#8B5E34" font-family="Georgia,serif">O</text></svg><div style="position:absolute;top:10px;left:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div><div style="position:absolute;top:10px;right:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div><div style="position:absolute;bottom:10px;left:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div><div style="position:absolute;bottom:10px;right:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div></div>`; }
+      if (rDeco && !rDeco.dataset.done) { rDeco.dataset.done = '1'; rDeco.outerHTML = `<div id="rumboDeco" aria-hidden="true" style="position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none;border-radius:16px;"><svg width="760" height="760" viewBox="0 0 760 760" style="position:absolute;bottom:-160px;right:-160px;opacity:0.07"><circle cx="380" cy="380" r="335" fill="none" stroke="#8B5E34" stroke-width="3"></circle><circle cx="380" cy="380" r="264" fill="none" stroke="#8B5E34" stroke-width="2"></circle><line x1="380" y1="22" x2="380" y2="738" stroke="#8B5E34" stroke-width="2"></line><line x1="22" y1="380" x2="738" y2="380" stroke="#8B5E34" stroke-width="2"></line><line x1="123" y1="123" x2="637" y2="637" stroke="#8B5E34" stroke-width="1.4"></line><line x1="637" y1="123" x2="123" y2="637" stroke="#8B5E34" stroke-width="1.4"></line><polygon points="380,101 407,380 380,659 353,380" fill="#8B5E34"></polygon><polygon points="101,380 380,353 659,380 380,407" fill="#8B5E34"></polygon><text x="380" y="76" text-anchor="middle" font-size="28" fill="#8B5E34" font-family="Georgia,serif">N</text><text x="380" y="706" text-anchor="middle" font-size="28" fill="#8B5E34" font-family="Georgia,serif">S</text><text x="706" y="391" text-anchor="middle" font-size="28" fill="#8B5E34" font-family="Georgia,serif">E</text><text x="54" y="391" text-anchor="middle" font-size="28" fill="#8B5E34" font-family="Georgia,serif">O</text></svg><div style="position:absolute;top:10px;left:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div><div style="position:absolute;top:10px;right:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div><div style="position:absolute;bottom:10px;left:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div><div style="position:absolute;bottom:10px;right:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div></div>`; }
         const rHeader = document.getElementById('rumboHeader');
-          if (rHeader && !rHeader.dataset.done) { rHeader.dataset.done = '1'; rHeader.outerHTML = `<div id="rumboHeader" style="position:relative;z-index:1;background:#0c1c2b;border-radius:12px;padding:14px 18px;display:flex;align-items:baseline;gap:10px;margin-bottom:16px"><span style="color:#fff;font-size:23px;font-weight:700;letter-spacing:-0.3px">MI RUMBO</span><span style="color:#E3A67E;font-size:12px">el mes en un tablero</span></div>`; }
+          if (rHeader && !rHeader.dataset.done) { rHeader.dataset.done = '1'; rHeader.outerHTML = `<div id="rumboHeader" style="position:relative;z-index:1;background:#0c1c2b;border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px"><div style="display:flex;align-items:baseline;gap:10px"><button class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menu" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff">☰</button><span style="color:#fff;font-size:23px;font-weight:700;letter-spacing:-0.3px">MI RUMBO</span><span style="color:#E3A67E;font-size:12px">el mes en un tablero</span></div><div id="rumboHeaderRight" style="display:flex;align-items:center"></div></div>`; } const rHeaderRight = document.getElementById('rumboHeaderRight'); const monthNavEl = document.querySelector('.month-nav'); if (rHeaderRight && monthNavEl && !rHeaderRight.contains(monthNavEl)) { monthNavEl.querySelectorAll('button').forEach(b => { b.style.background = 'rgba(255,255,255,.12)'; b.style.borderColor = 'rgba(255,255,255,.3)'; b.style.color = '#fff'; }); const md = document.getElementById('monthDisplay'); if (md) { md.style.color = '#fff'; md.style.fontWeight = '600'; } rHeaderRight.appendChild(monthNavEl); }
           
             // Mini-resumen Meta de ahorro
               const metaDashCard = document.getElementById('metaAhorroDashCard');
