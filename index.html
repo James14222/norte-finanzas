@@ -1171,7 +1171,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.037</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.038</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -4580,7 +4580,7 @@ function renderDash() {
     const rDeco = document.getElementById('rumboDeco');
       if (rDeco && !rDeco.dataset.done) { rDeco.dataset.done = '1'; rDeco.outerHTML = `<div id="rumboDeco" data-done="1" aria-hidden="true" style="position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none;border-radius:16px;"><svg width="760" height="760" viewBox="0 0 760 760" style="position:absolute;bottom:-160px;right:-160px;opacity:0.07"><circle cx="380" cy="380" r="335" fill="none" stroke="#8B5E34" stroke-width="3"></circle><circle cx="380" cy="380" r="264" fill="none" stroke="#8B5E34" stroke-width="2"></circle><line x1="380" y1="22" x2="380" y2="738" stroke="#8B5E34" stroke-width="2"></line><line x1="22" y1="380" x2="738" y2="380" stroke="#8B5E34" stroke-width="2"></line><line x1="123" y1="123" x2="637" y2="637" stroke="#8B5E34" stroke-width="1.4"></line><line x1="637" y1="123" x2="123" y2="637" stroke="#8B5E34" stroke-width="1.4"></line><polygon points="380,101 407,380 380,659 353,380" fill="#8B5E34"></polygon><polygon points="101,380 380,353 659,380 380,407" fill="#8B5E34"></polygon><text x="380" y="76" text-anchor="middle" font-size="28" fill="#8B5E34" font-family="Georgia,serif">N</text><text x="380" y="706" text-anchor="middle" font-size="28" fill="#8B5E34" font-family="Georgia,serif">S</text><text x="706" y="391" text-anchor="middle" font-size="28" fill="#8B5E34" font-family="Georgia,serif">E</text><text x="54" y="391" text-anchor="middle" font-size="28" fill="#8B5E34" font-family="Georgia,serif">O</text></svg><div style="position:absolute;top:10px;left:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div><div style="position:absolute;top:10px;right:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div><div style="position:absolute;bottom:10px;left:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div><div style="position:absolute;bottom:10px;right:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div></div>`; }
         const rHeader = document.getElementById('rumboHeader');
-          if (rHeader && !rHeader.dataset.done) { rHeader.dataset.done = '1'; rHeader.outerHTML = `<div id="rumboHeader" data-done="1" style="position:relative;z-index:1;background:#0c1c2b;border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px"><div style="display:flex;align-items:baseline;gap:10px"><button class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menu" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff">☰</button><span style="color:#fff;font-size:23px;font-weight:700;letter-spacing:-0.3px">MI RUMBO</span><span style="color:#E3A67E;font-size:12px">el mes en un tablero</span></div><div id="rumboHeaderRight" style="display:flex;align-items:center"></div></div>`; } const rHeaderRight = document.getElementById('rumboHeaderRight'); const monthNavEl = document.querySelector('.month-nav'); if (rHeaderRight && monthNavEl && !rHeaderRight.contains(monthNavEl)) { monthNavEl.querySelectorAll('button').forEach(b => { b.style.background = 'rgba(255,255,255,.12)'; b.style.borderColor = 'rgba(255,255,255,.3)'; b.style.color = '#fff'; }); const md = document.getElementById('monthDisplay'); if (md) { md.style.color = '#fff'; md.style.fontWeight = '600'; } rHeaderRight.appendChild(monthNavEl); }
+          if (rHeader && !rHeader.dataset.done) { rHeader.dataset.done = '1'; rHeader.outerHTML = `<div id="rumboHeader" data-done="1" style="position:relative;z-index:1;background:#0c1c2b;border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px"><div style="display:flex;align-items:baseline;gap:10px"><button class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menu" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff">☰</button><span style="color:#fff;font-size:23px;font-weight:700;letter-spacing:-0.3px">MI RUMBO</span><span style="color:#E3A67E;font-size:12px">${subtituloRumbo()}</span></div><div id="rumboHeaderRight" style="display:flex;align-items:center"></div></div>`; } const rHeaderRight = document.getElementById('rumboHeaderRight'); const monthNavEl = document.querySelector('.month-nav'); if (rHeaderRight && monthNavEl && !rHeaderRight.contains(monthNavEl)) { monthNavEl.querySelectorAll('button').forEach(b => { b.style.background = 'rgba(255,255,255,.12)'; b.style.borderColor = 'rgba(255,255,255,.3)'; b.style.color = '#fff'; }); const md = document.getElementById('monthDisplay'); if (md) { md.style.color = '#fff'; md.style.fontWeight = '600'; } rHeaderRight.appendChild(monthNavEl); }
           
             // Mini-resumen Meta de ahorro
               const metaDashCard = document.getElementById('metaAhorroDashCard');
@@ -8075,6 +8075,28 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAyuda()
     wrap('obMarkDone', function () { track('onboarding_completado'); });
   } catch (e) {}
 })();
+
+// ── Subtítulo de la cabecera de Mi Rumbo ─────────────────────
+// Toma el nombre de pila del usuario para personalizar el tablero.
+function nombrePilaUsuario() {
+  try {
+    var u = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+    var n = (u && u.displayName ? String(u.displayName) : '').trim();
+    if (!n) {
+      var s = getSession() || {};
+      n = String(s.username || '').split('@')[0].replace(/[._\-]+/g, ' ').trim();
+    }
+    if (!n) return '';
+    var primera = n.split(/\s+/)[0];
+    return primera.charAt(0).toUpperCase() + primera.slice(1).toLowerCase();
+  } catch (e) { return ''; }
+}
+
+function subtituloRumbo() {
+  var n = nombrePilaUsuario();
+  if (!n) return 'el mes en un tablero';
+  return 'el mes en el Tablero de: <span style="font-family:Georgia,\'Times New Roman\',serif;font-style:italic;font-weight:700;font-size:15px;color:#fff;letter-spacing:.01em;margin-left:2px">' + esc(n) + '</span>';
+}
 
 // ── PANEL DE SUPERADMIN — gestión de usuarios ────────────────
 // Visible SOLO para el superadmin. Importante: esconder esta sección es
