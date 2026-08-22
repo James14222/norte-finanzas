@@ -1171,7 +1171,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.038</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.039</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -8097,6 +8097,274 @@ function subtituloRumbo() {
   if (!n) return 'el mes en un tablero';
   return 'el mes en el Tablero de: <span style="font-family:Georgia,\'Times New Roman\',serif;font-style:italic;font-weight:700;font-size:15px;color:#fff;letter-spacing:.01em;margin-left:2px">' + esc(n) + '</span>';
 }
+
+// ── MI PERFIL + MONOGRAMAS DE BANCOS ─────────────────────────
+(function () {
+  var FN = 'https://us-central1-norte-finanzas.cloudfunctions.net';
+
+  var PROVINCIAS = ['Buenos Aires','CABA','Catamarca','Chaco','Chubut','Córdoba','Corrientes','Entre Ríos','Formosa','Jujuy','La Pampa','La Rioja','Mendoza','Misiones','Neuquén','Río Negro','Salta','San Juan','San Luis','Santa Cruz','Santa Fe','Santiago del Estero','Tierra del Fuego','Tucumán'];
+
+  window._perfilCache = null;
+
+  async function perfilLlamar(endpoint, datos) {
+    var idToken = await firebase.auth().currentUser.getIdToken();
+    var r = await fetch(FN + '/' + endpoint, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.assign({ idToken: idToken }, datos || {}))
+    });
+    var j = await r.json().catch(function () { return {}; });
+    if (!r.ok) throw new Error(j.error || 'Error inesperado.');
+    return j;
+  }
+
+  // Los usuarios viejos tienen "Juan Pérez" en un solo campo: lo partimos.
+  function partirNombre(p) {
+    var n = String(p.nombre || '').trim();
+    var a = String(p.apellido || '').trim();
+    if (!a && n.indexOf(' ') > 0) {
+      var partes = n.split(/\s+/);
+      n = partes.shift();
+      a = partes.join(' ');
+    }
+    return { nombre: n, apellido: a };
+  }
+
+  function campo(id, etiqueta, valor, placeholder) {
+    return '<div class="form-group"><label>' + etiqueta + '</label>' +
+      '<input class="form-input" id="' + id + '" type="text" autocomplete="off" placeholder="' + (placeholder || '') + '" value="' + esc(valor || '') + '"></div>';
+  }
+
+  window.openMiPerfil = async function () {
+    var ov = document.getElementById('perfilOverlay');
+    if (!ov) {
+      ov = document.createElement('div');
+      ov.id = 'perfilOverlay';
+      ov.className = 'overlay';
+      ov.style.display = 'none';
+      document.body.appendChild(ov);
+    }
+    ov.innerHTML = '<div class="modal" style="max-width:480px"><div class="modal-title">Mi perfil</div>' +
+      '<div style="padding:24px 0;color:var(--muted);font-size:13px">Cargando…</div></div>';
+    ov.style.display = 'flex';
+
+    var p;
+    try { p = (await perfilLlamar('miPerfil')).perfil; }
+    catch (e) {
+      ov.innerHTML = '<div class="modal" style="max-width:480px"><div class="modal-title">Mi perfil</div>' +
+        '<div style="color:#ef4444;font-size:13px;padding:12px 0">No pudimos cargar tus datos: ' + esc(e.message) + '</div>' +
+        '<div style="display:flex;gap:10px;margin-top:8px"><button class="btn btn-secondary" style="flex:1" onclick="document.getElementById(\'perfilOverlay\').style.display=\'none\'">Cerrar</button></div></div>';
+      return;
+    }
+    window._perfilCache = p;
+    var np = partirNombre(p);
+
+    ov.innerHTML = '<div class="modal" style="max-width:480px">' +
+      '<div class="modal-title">Mi perfil</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px">' +
+        campo('pfNombre', 'Nombre', np.nombre, 'Juan') +
+        campo('pfApellido', 'Apellido', np.apellido, 'Pérez') +
+      '</div>' +
+      '<div class="form-group"><label>Email</label>' +
+        '<input class="form-input" type="text" value="' + esc(p.email || '') + '" disabled style="opacity:0.6;cursor:not-allowed">' +
+        '<div style="font-size:11px;color:var(--muted);margin-top:4px">El email no se puede cambiar desde acá. Escribinos a hola@norteapp.ar si lo necesitás.</div>' +
+      '</div>' +
+      '<div class="form-group"><label>Contraseña</label>' +
+        '<button class="btn btn-secondary" style="width:100%;font-size:13px" onclick="document.getElementById(\'perfilOverlay\').style.display=\'none\';openCambiarPwd()">🔒 Cambiar mi contraseña</button>' +
+      '</div>' +
+      '<div class="form-group"><label>Provincia</label>' +
+        '<select class="form-input" id="pfProvincia"><option value="">— Elegir —</option>' +
+          PROVINCIAS.map(function (x) { return '<option value="' + x + '"' + (p.provincia === x ? ' selected' : '') + '>' + x + '</option>'; }).join('') +
+        '</select>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px">' +
+        campo('pfCiudad', 'Ciudad', p.ciudad, 'La Plata') +
+        campo('pfBarrio', 'Barrio', p.barrio, 'Centro') +
+      '</div>' +
+      '<div id="pfError" style="color:#ef4444;font-size:12px;margin-bottom:8px;display:none"></div>' +
+      '<div style="display:flex;gap:10px;margin-top:8px">' +
+        '<button class="btn btn-secondary" style="flex:1" onclick="document.getElementById(\'perfilOverlay\').style.display=\'none\'">Cancelar</button>' +
+        '<button class="btn btn-primary" style="flex:2" id="pfBtn" onclick="guardarMiPerfil()">Guardar</button>' +
+      '</div>' +
+    '</div>';
+  };
+
+  window.guardarMiPerfil = async function () {
+    var err = document.getElementById('pfError');
+    var btn = document.getElementById('pfBtn');
+    err.style.display = 'none';
+    var datos = {
+      nombre:    document.getElementById('pfNombre').value.trim(),
+      apellido:  document.getElementById('pfApellido').value.trim(),
+      provincia: document.getElementById('pfProvincia').value,
+      ciudad:    document.getElementById('pfCiudad').value.trim(),
+      barrio:    document.getElementById('pfBarrio').value.trim()
+    };
+    if (!datos.nombre) { err.textContent = 'El nombre no puede quedar vacío.'; err.style.display = 'block'; return; }
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      var r = await perfilLlamar('actualizarMiPerfil', datos);
+      try { await firebase.auth().currentUser.reload(); } catch (e) {}
+      var un = document.getElementById('sidebarUsername');
+      if (un && r.displayName) un.textContent = r.displayName;
+      document.getElementById('perfilOverlay').style.display = 'none';
+      var aviso = document.getElementById('avisoPerfil');
+      if (aviso) aviso.remove();
+      if (typeof renderDash === 'function' && curPage === 'dashboard') renderDash();
+      alert('✅ Listo, tus datos quedaron guardados.');
+    } catch (e) {
+      err.textContent = e.message; err.style.display = 'block';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Guardar';
+    }
+  };
+
+  // Ítem "Mi perfil" en el menú lateral, junto a Mi plan / Mis hogares
+  function montarItemSidebar() {
+    if (document.getElementById('navMiPerfil')) return;
+    var plan = document.querySelector('[onclick*="openPlanModal"]');
+    if (!plan) return;
+    var a = document.createElement('div');
+    a.id = 'navMiPerfil';
+    a.className = plan.className;
+    a.setAttribute('style', plan.getAttribute('style') || '');
+    a.innerHTML = '👤 Mi perfil';
+    a.onclick = function () { openMiPerfil(); };
+    plan.parentElement.insertBefore(a, plan);
+  }
+
+  // Aviso suave, una vez por sesión, para cuentas sin perfil completo
+  async function avisoPerfilIncompleto() {
+    try {
+      if (sessionStorage.getItem('norte_aviso_perfil')) return;
+      var p = (await perfilLlamar('miPerfil')).perfil;
+      if (p.completo) return;
+      sessionStorage.setItem('norte_aviso_perfil', '1');
+      var cont = document.querySelector('#page-dashboard') || document.body;
+      var d = document.createElement('div');
+      d.id = 'avisoPerfil';
+      d.style.cssText = 'background:rgba(255,138,92,0.10);border:1px solid rgba(255,138,92,0.30);border-radius:12px;padding:12px 16px;margin:0 0 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap';
+      d.innerHTML = '<div style="font-size:13px;color:var(--text)">👤 Completá tu perfil para que Norte sea más tuyo: nombre, apellido y dónde vivís.</div>' +
+        '<div style="display:flex;gap:8px">' +
+          '<button class="btn btn-primary" style="font-size:12px;padding:6px 14px" onclick="openMiPerfil()">Completar</button>' +
+          '<button class="btn" style="font-size:12px;padding:6px 12px;border:1px solid var(--border)" onclick="document.getElementById(\'avisoPerfil\').remove()">Ahora no</button>' +
+        '</div>';
+      cont.insertBefore(d, cont.firstChild);
+    } catch (e) {}
+  }
+
+  // ── Monogramas de bancos ───────────────────────────────────
+  // Chip con la inicial y el color de cada marca, con el nombre debajo
+  // y el nombre completo al pasar el mouse. Más fácil de reconocer de un vistazo.
+  var MARCAS = {
+    'santander':    { ini: 'S',  color: '#EC0000', nombre: 'Santander' },
+    'bapro':        { ini: 'BP', color: '#1B75BB', nombre: 'BAPRO' },
+    'banco provincia': { ini: 'BP', color: '#1B75BB', nombre: 'Banco Provincia' },
+    'provincia':    { ini: 'BP', color: '#1B75BB', nombre: 'Provincia' },
+    'mercadopago':  { ini: 'MP', color: '#00B1EA', nombre: 'Mercado Pago' },
+    'mercado pago': { ini: 'MP', color: '#00B1EA', nombre: 'Mercado Pago' },
+    'galicia':      { ini: 'G',  color: '#F26522', nombre: 'Galicia' },
+    'bbva':         { ini: 'BB', color: '#004481', nombre: 'BBVA' },
+    'nación':       { ini: 'BN', color: '#00693E', nombre: 'Banco Nación' },
+    'nacion':       { ini: 'BN', color: '#00693E', nombre: 'Banco Nación' },
+    'macro':        { ini: 'M',  color: '#00539B', nombre: 'Macro' },
+    'brubank':      { ini: 'B',  color: '#6C2BD9', nombre: 'Brubank' },
+    'uala':         { ini: 'U',  color: '#F5325B', nombre: 'Ualá' },
+    'ualá':         { ini: 'U',  color: '#F5325B', nombre: 'Ualá' }
+  };
+
+  function chipBanco(m) {
+    return '<span title="' + esc(m.nombre) + '" style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;vertical-align:middle;cursor:default">' +
+        '<span style="width:30px;height:30px;border-radius:50%;background:' + m.color + ';color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;letter-spacing:-.02em;box-shadow:0 1px 3px rgba(0,0,0,0.18)">' + m.ini + '</span>' +
+        '<span style="font-size:9.5px;color:var(--muted);line-height:1;white-space:nowrap">' + esc(m.nombre) + '</span>' +
+      '</span>';
+  }
+
+  // Reemplaza el texto suelto de un banco por su chip, dentro de un contenedor
+  window.pintarChipsBancos = function (cont) {
+    if (!cont) return;
+    try {
+      var celdas = cont.querySelectorAll('td, .banco-nombre');
+      celdas.forEach(function (td) {
+        if (td.dataset.chip) return;
+        var txt = (td.textContent || '').trim();
+        var m = MARCAS[txt.toLowerCase()];
+        if (!m) return;
+        td.dataset.chip = '1';
+        td.innerHTML = chipBanco(m);
+      });
+    } catch (e) {}
+  };
+
+  // Se aplica cada vez que se redibuja la lista de bancos o se abre Importar
+  var _origRAB = window.renderAdminBancos;
+  window.renderAdminBancos = function () {
+    var r = (typeof _origRAB === 'function') ? _origRAB.apply(this, arguments) : undefined;
+    setTimeout(function () { pintarChipsBancos(document.getElementById('adminBancosBody')); }, 30);
+    return r;
+  };
+
+  var _origOIM = window.openImportModal;
+  window.openImportModal = function () {
+    var r = (typeof _origOIM === 'function') ? _origOIM.apply(this, arguments) : undefined;
+    setTimeout(function () { pintarChipsBancos(document.getElementById('importOverlay') || document.body); }, 60);
+    return r;
+  };
+
+  // Campos de ubicación (opcionales) en el primer paso del onboarding
+  var _origObS1 = window.renderObS1;
+  window.renderObS1 = function () {
+    var r = (typeof _origObS1 === 'function') ? _origObS1.apply(this, arguments) : undefined;
+    try {
+      var body = document.getElementById('obBody');
+      if (body && !document.getElementById('obProvincia')) {
+        var extra = document.createElement('div');
+        extra.innerHTML =
+          '<div style="font-size:12px;color:var(--muted);margin:14px 0 8px">¿Dónde vivís? <span style="opacity:.7">(opcional, lo podés completar después)</span></div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+            '<select class="form-input" id="obProvincia"><option value="">Provincia</option>' +
+              PROVINCIAS.map(function (x) { return '<option value="' + x + '">' + x + '</option>'; }).join('') +
+            '</select>' +
+            '<input class="form-input" id="obCiudad" type="text" placeholder="Ciudad" autocomplete="off">' +
+          '</div>' +
+          '<input class="form-input" id="obBarrio" type="text" placeholder="Barrio" autocomplete="off" style="margin-top:8px">';
+        var acciones = body.querySelector('.ob-actions');
+        if (acciones) body.insertBefore(extra, acciones); else body.appendChild(extra);
+      }
+    } catch (e) {}
+    return r;
+  };
+
+  var _origObNext = window.obNext;
+  window.obNext = function () {
+    try {
+      if (typeof obCurrentStep !== 'undefined' && obCurrentStep === 0) {
+        var prov = document.getElementById('obProvincia');
+        if (prov) {
+          var datos = {
+            nombre:    nombrePilaUsuario() || (getSession() || {}).username || 'Usuario',
+            apellido:  (window._perfilCache && window._perfilCache.apellido) || '',
+            provincia: prov.value,
+            ciudad:    (document.getElementById('obCiudad') || {}).value || '',
+            barrio:    (document.getElementById('obBarrio') || {}).value || ''
+          };
+          if (datos.provincia || datos.ciudad || datos.barrio) {
+            perfilLlamar('actualizarMiPerfil', datos).catch(function () {});
+          }
+        }
+      }
+    } catch (e) {}
+    return (typeof _origObNext === 'function') ? _origObNext.apply(this, arguments) : undefined;
+  };
+
+  // Enganche al arranque de sesión
+  var _origBoot = window.bootApp;
+  window.bootApp = function (u) {
+    var r = (typeof _origBoot === 'function') ? _origBoot.apply(this, arguments) : undefined;
+    if (u) setTimeout(function () { montarItemSidebar(); avisoPerfilIncompleto(); }, 1200);
+    return r;
+  };
+  setTimeout(montarItemSidebar, 2500);
+})();
 
 // ── PANEL DE SUPERADMIN — gestión de usuarios ────────────────
 // Visible SOLO para el superadmin. Importante: esconder esta sección es
