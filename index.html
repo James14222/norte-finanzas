@@ -1171,7 +1171,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.042</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.043</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -8633,6 +8633,80 @@ function subtituloRumbo() {
     return r;
   };
   setTimeout(aplicar, 1800);
+})();
+
+// ── No volver a pedir los datos que el usuario ya cargó ──────
+// El "ya completó el onboarding" se guardaba solo en este navegador, así que
+// al entrar desde otro dispositivo (o tras limpiar datos) se volvía a pedir
+// todo. Ahora se consulta el perfil real en Firebase: si ya tiene su
+// ubicación cargada, no se le pregunta nunca más.
+(function () {
+  var FN = 'https://us-central1-norte-finanzas.cloudfunctions.net';
+  var cache = null;
+
+  async function traerPerfil() {
+    if (cache) return cache;
+    var idToken = await firebase.auth().currentUser.getIdToken();
+    var r = await fetch(FN + '/miPerfil', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken: idToken })
+    });
+    var j = await r.json();
+    cache = j.perfil || {};
+    return cache;
+  }
+
+  function yaCargoUbicacion(p) {
+    return !!(p && (String(p.provincia || '').trim() || String(p.ciudad || '').trim() || String(p.barrio || '').trim()));
+  }
+
+  function marcarHecho() {
+    try {
+      var s = getSession();
+      if (s && s.userId) localStorage.setItem('fin_onboarding_done_' + s.userId, '1');
+    } catch (e) {}
+  }
+
+  // Antes de mostrar el asistente inicial, se chequea si ya cargó sus datos
+  var _origMaybe = window.maybeShowOnboarding;
+  window.maybeShowOnboarding = function () {
+    var args = arguments, self = this;
+    (async function () {
+      try {
+        var p = await traerPerfil();
+        if (yaCargoUbicacion(p)) { marcarHecho(); return; }   // ya los tiene: no molestar
+      } catch (e) {}
+      if (typeof _origMaybe === 'function') _origMaybe.apply(self, args);
+    })();
+  };
+
+  // Al guardar la ubicación en el asistente, queda marcado como hecho
+  var _origObNext = window.obNext;
+  window.obNext = function () {
+    try {
+      var prov = document.getElementById('obProvincia');
+      if (prov && (prov.value || (document.getElementById('obCiudad') || {}).value || (document.getElementById('obBarrio') || {}).value)) {
+        cache = null;
+        marcarHecho();
+      }
+    } catch (e) {}
+    return (typeof _origObNext === 'function') ? _origObNext.apply(this, arguments) : undefined;
+  };
+
+  // Si el aviso de "completá tu perfil" aparece pero la ubicación ya está, se retira
+  setInterval(function () {
+    var av = document.getElementById('avisoPerfil');
+    if (!av) return;
+    traerPerfil().then(function (p) { if (yaCargoUbicacion(p)) av.remove(); }).catch(function () {});
+  }, 2500);
+
+  // Tras guardar desde "Mi perfil", se refresca la copia en memoria
+  var _origGuardar = window.guardarMiPerfil;
+  window.guardarMiPerfil = function () {
+    cache = null;
+    marcarHecho();
+    return (typeof _origGuardar === 'function') ? _origGuardar.apply(this, arguments) : undefined;
+  };
 })();
 
 // ── PANEL DE SUPERADMIN — gestión de usuarios ────────────────
