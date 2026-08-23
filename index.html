@@ -1171,7 +1171,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.047</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.048</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -8918,6 +8918,120 @@ function subtituloRumbo() {
     }, 60);
     return r;
   };
+})();
+
+// ── Indicador de escucha activa al cargar por voz ────────────
+// Antes el botón quedaba estático y no se sabía si estaba grabando.
+// Ahora late, y unas ondas se mueven con tu propia voz: si te escucha,
+// se mueven; si no, quedan quietas. Se toca de nuevo y se frena.
+(function () {
+  var streamActivo = null, audioCtx = null, analyser = null, datos = null, raf = null;
+
+  // Se toma prestado el micrófono que pide la app, para medir el volumen real
+  try {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      var origGUM = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+      navigator.mediaDevices.getUserMedia = function (c) {
+        return origGUM(c).then(function (s) {
+          if (c && c.audio) streamActivo = s;
+          return s;
+        });
+      };
+    }
+  } catch (e) {}
+
+  var estilos = document.createElement('style');
+  estilos.textContent =
+    '@keyframes norteLatido{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.55)}70%{box-shadow:0 0 0 12px rgba(239,68,68,0)}}' +
+    '@keyframes norteOnda{0%,100%{height:22%}50%{height:100%}}' +
+    '#qpBtnVoz.active{animation:norteLatido 1.5s infinite;border-color:#ef4444!important;color:#ef4444!important}' +
+    '#qpOndas{display:none;align-items:center;gap:9px;margin-top:10px;padding:9px 14px;border-radius:12px;' +
+      'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.28)}' +
+    '#qpOndas.on{display:flex}' +
+    '#qpOndas .bars{display:flex;align-items:center;gap:3px;height:26px}' +
+    '#qpOndas .bars i{width:4px;height:22%;border-radius:99px;background:#ef4444;display:block;' +
+      'animation:norteOnda 1s ease-in-out infinite}' +
+    '#qpOndas .txt{font-size:12.5px;font-weight:700;color:#ef4444;letter-spacing:.01em}' +
+    '#qpOndas .hint{font-size:11.5px;color:var(--muted);margin-left:auto}';
+  document.head.appendChild(estilos);
+
+  function montarOndas() {
+    var btn = document.getElementById('qpBtnVoz');
+    if (!btn || document.getElementById('qpOndas')) return document.getElementById('qpOndas');
+    var d = document.createElement('div');
+    d.id = 'qpOndas';
+    var barras = '';
+    for (var i = 0; i < 7; i++) barras += '<i style="animation-delay:' + (i * 0.09) + 's"></i>';
+    d.innerHTML = '<span class="bars">' + barras + '</span>' +
+      '<span class="txt">Escuchando…</span>' +
+      '<span class="hint">Tocá de nuevo para terminar</span>';
+    (btn.parentElement || document.body).insertBefore(d, btn.nextSibling);
+    return d;
+  }
+
+  function animarConVoz() {
+    var ondas = document.getElementById('qpOndas');
+    if (!ondas || !analyser) return;
+    analyser.getByteFrequencyData(datos);
+    var barras = ondas.querySelectorAll('.bars i');
+    var porBarra = Math.floor(datos.length / barras.length);
+    for (var i = 0; i < barras.length; i++) {
+      var suma = 0;
+      for (var j = 0; j < porBarra; j++) suma += datos[i * porBarra + j];
+      var nivel = (suma / porBarra) / 255;                 // 0..1
+      var alto = Math.max(18, Math.min(100, nivel * 260)); // % de alto
+      barras[i].style.animation = 'none';                  // manda el volumen real
+      barras[i].style.height = alto + '%';
+    }
+    raf = requestAnimationFrame(animarConVoz);
+  }
+
+  function arrancarMedicion() {
+    try {
+      if (!streamActivo) return;   // sin permiso todavía: quedan las ondas animadas por CSS
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      audioCtx = new AC();
+      var fuente = audioCtx.createMediaStreamSource(streamActivo);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 128;
+      datos = new Uint8Array(analyser.frequencyBinCount);
+      fuente.connect(analyser);
+      raf = requestAnimationFrame(animarConVoz);
+    } catch (e) {}
+  }
+
+  function frenarMedicion() {
+    if (raf) { cancelAnimationFrame(raf); raf = null; }
+    try { if (audioCtx) audioCtx.close(); } catch (e) {}
+    audioCtx = null; analyser = null; datos = null;
+    var ondas = document.getElementById('qpOndas');
+    if (ondas) ondas.querySelectorAll('.bars i').forEach(function (b, i) {
+      b.style.animation = 'norteOnda 1s ease-in-out infinite';
+      b.style.animationDelay = (i * 0.09) + 's';
+      b.style.height = '';
+    });
+  }
+
+  var grabando = false;
+  function revisarEstado() {
+    var btn = document.getElementById('qpBtnVoz');
+    if (!btn) return;
+    var ondas = montarOndas();
+    var activo = btn.classList.contains('active');
+    if (activo === grabando) return;
+    grabando = activo;
+    if (ondas) ondas.classList.toggle('on', activo);
+    if (activo) setTimeout(arrancarMedicion, 250); else frenarMedicion();
+  }
+
+  // El botón lo dibuja la app al abrir la carga rápida: se observa todo el body
+  try {
+    new MutationObserver(revisarEstado).observe(document.body, {
+      subtree: true, childList: true, attributes: true, attributeFilter: ['class']
+    });
+  } catch (e) {}
+  setInterval(revisarEstado, 400);
 })();
 
 // ── PANEL DE SUPERADMIN — gestión de usuarios ────────────────
