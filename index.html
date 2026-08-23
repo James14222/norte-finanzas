@@ -1171,7 +1171,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.043</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.044</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -8707,6 +8707,64 @@ function subtituloRumbo() {
     marcarHecho();
     return (typeof _origGuardar === 'function') ? _origGuardar.apply(this, arguments) : undefined;
   };
+})();
+
+// ── Arreglos de usabilidad: cabecera fija y carga de presupuesto ──
+(function () {
+
+  // 1) Cabecera de tablas siempre visible al scrollear.
+  //    Ya era sticky, pero se pegaba en top:0 y quedaba escondida detrás de
+  //    la barra superior (que también es sticky y va por encima). Ahora se
+  //    pega justo debajo de ella, midiendo su alto real.
+  function ajustarCabeceras() {
+    var tb = document.querySelector('.topbar');
+    var alto = tb ? Math.round(tb.getBoundingClientRect().height) : 61;
+    document.documentElement.style.setProperty('--topbar-h', alto + 'px');
+    var st = document.getElementById('stickyHeadFix');
+    if (!st) {
+      st = document.createElement('style');
+      st.id = 'stickyHeadFix';
+      document.head.appendChild(st);
+    }
+    st.textContent =
+      'table thead th{position:sticky;top:var(--topbar-h,61px);z-index:5;' +
+      'background:var(--card,#fff);box-shadow:0 1px 0 var(--border,#e5e7eb)}';
+  }
+  ajustarCabeceras();
+  window.addEventListener('resize', ajustarCabeceras);
+  setTimeout(ajustarCabeceras, 1500);
+
+  // 2) Presupuesto: se podía escribir un solo dígito y el campo perdía el foco.
+  //    Pasaba porque cada tecla guardaba Y redibujaba toda la lista, destruyendo
+  //    el input. Ahora, mientras el campo está en foco no se redibuja: el valor
+  //    se guarda igual, y el refresco (barras y avisos) ocurre al salir del campo.
+  var pendiente = false;
+  var _origRP = window.renderPresupuesto;
+  window.renderPresupuesto = function () {
+    var a = document.activeElement;
+    if (a && a.classList && a.classList.contains('budget-input')) { pendiente = true; return; }
+    pendiente = false;
+    return (typeof _origRP === 'function') ? _origRP.apply(this, arguments) : undefined;
+  };
+
+  document.addEventListener('focusout', function (e) {
+    var t = e.target;
+    if (!t || !t.classList || !t.classList.contains('budget-input')) return;
+    setTimeout(function () {
+      if (!pendiente) return;
+      pendiente = false;
+      try { renderPresupuesto(); } catch (err) {}
+    }, 80);
+  }, true);
+
+  // Enter confirma y sale del campo, como se espera en un formulario
+  document.addEventListener('keydown', function (e) {
+    var t = e.target;
+    if (e.key === 'Enter' && t && t.classList && t.classList.contains('budget-input')) {
+      e.preventDefault();
+      t.blur();
+    }
+  }, true);
 })();
 
 // ── PANEL DE SUPERADMIN — gestión de usuarios ────────────────
