@@ -1171,7 +1171,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.045</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.046</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -8716,7 +8716,7 @@ function subtituloRumbo() {
   //    Ya era sticky, pero se pegaba en top:0 y quedaba escondida detrás de
   //    la barra superior (que también es sticky y va por encima). Ahora se
   //    pega justo debajo de ella, midiendo su alto real.
-    function altoTopbar() {
+      function altoTopbar() {
     var tb = document.querySelector('.topbar');
     var h = tb ? Math.round(tb.getBoundingClientRect().height) : 0;
     // En la pantalla de login la barra está oculta y mide 0: en ese caso
@@ -8724,25 +8724,53 @@ function subtituloRumbo() {
     return h > 10 ? h : 61;
   }
 
+  // ¿La tabla scrollea dentro de su propio contenedor (modal, panel) o con la página?
+  function tieneScrollPropio(tabla) {
+    var n = tabla.parentElement;
+    while (n && n !== document.body) {
+      var o = getComputedStyle(n).overflowY;
+      if (o === 'auto' || o === 'scroll') return true;
+      n = n.parentElement;
+    }
+    return false;
+  }
+
   function ajustarCabeceras() {
-    document.documentElement.style.setProperty('--topbar-h', altoTopbar() + 'px');
+    var offset = altoTopbar() + 'px';
     var st = document.getElementById('stickyHeadFix');
     if (!st) {
       st = document.createElement('style');
       st.id = 'stickyHeadFix';
       document.head.appendChild(st);
+      // Base para todas: pegada al tope de su propio contenedor.
       st.textContent =
-        'table thead th{position:sticky!important;top:var(--topbar-h,61px)!important;z-index:5;' +
+        'table thead th{position:sticky;top:0;z-index:5;' +
         'background:var(--card,#fff);box-shadow:0 1px 0 var(--border,#e5e7eb)}';
     }
+    // Solo las tablas que scrollean con la página necesitan bajar el ancla,
+    // para no quedar tapadas por la barra superior. Las de modales van en 0,
+    // si no la cabecera se superpone con la primera fila.
+    document.querySelectorAll('table').forEach(function (t) {
+      var th = t.querySelector('thead th');
+      if (!th) return;
+      var propio = tieneScrollPropio(t);
+      t.querySelectorAll('thead th').forEach(function (c) {
+        c.style.top = propio ? '0px' : offset;
+      });
+    });
   }
   ajustarCabeceras();
   window.addEventListener('resize', ajustarCabeceras);
-  // La barra recién aparece después de iniciar sesión, así que se vuelve a medir
+  // La barra recién aparece tras iniciar sesión, y los modales se crean al vuelo
   [600, 1500, 3000, 6000].forEach(function (ms) { setTimeout(ajustarCabeceras, ms); });
   try {
     var tb0 = document.querySelector('.topbar');
     if (tb0 && window.ResizeObserver) new ResizeObserver(ajustarCabeceras).observe(tb0);
+    var deb = null;
+    new MutationObserver(function () {
+      clearTimeout(deb);
+      deb = setTimeout(ajustarCabeceras, 120);
+    }).observe(document.body, { childList: true, subtree: true });
   } catch (e) {}
 
   // 2) Presupuesto: se podía escribir un solo dígito y el campo perdía el foco.
