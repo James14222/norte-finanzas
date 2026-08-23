@@ -1171,7 +1171,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.044</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.045</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -8716,23 +8716,34 @@ function subtituloRumbo() {
   //    Ya era sticky, pero se pegaba en top:0 y quedaba escondida detrás de
   //    la barra superior (que también es sticky y va por encima). Ahora se
   //    pega justo debajo de ella, midiendo su alto real.
-  function ajustarCabeceras() {
+    function altoTopbar() {
     var tb = document.querySelector('.topbar');
-    var alto = tb ? Math.round(tb.getBoundingClientRect().height) : 61;
-    document.documentElement.style.setProperty('--topbar-h', alto + 'px');
+    var h = tb ? Math.round(tb.getBoundingClientRect().height) : 0;
+    // En la pantalla de login la barra está oculta y mide 0: en ese caso
+    // se usa su alto real conocido, para no dejar el desfase en cero.
+    return h > 10 ? h : 61;
+  }
+
+  function ajustarCabeceras() {
+    document.documentElement.style.setProperty('--topbar-h', altoTopbar() + 'px');
     var st = document.getElementById('stickyHeadFix');
     if (!st) {
       st = document.createElement('style');
       st.id = 'stickyHeadFix';
       document.head.appendChild(st);
+      st.textContent =
+        'table thead th{position:sticky!important;top:var(--topbar-h,61px)!important;z-index:5;' +
+        'background:var(--card,#fff);box-shadow:0 1px 0 var(--border,#e5e7eb)}';
     }
-    st.textContent =
-      'table thead th{position:sticky;top:var(--topbar-h,61px);z-index:5;' +
-      'background:var(--card,#fff);box-shadow:0 1px 0 var(--border,#e5e7eb)}';
   }
   ajustarCabeceras();
   window.addEventListener('resize', ajustarCabeceras);
-  setTimeout(ajustarCabeceras, 1500);
+  // La barra recién aparece después de iniciar sesión, así que se vuelve a medir
+  [600, 1500, 3000, 6000].forEach(function (ms) { setTimeout(ajustarCabeceras, ms); });
+  try {
+    var tb0 = document.querySelector('.topbar');
+    if (tb0 && window.ResizeObserver) new ResizeObserver(ajustarCabeceras).observe(tb0);
+  } catch (e) {}
 
   // 2) Presupuesto: se podía escribir un solo dígito y el campo perdía el foco.
   //    Pasaba porque cada tecla guardaba Y redibujaba toda la lista, destruyendo
