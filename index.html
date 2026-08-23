@@ -1171,7 +1171,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.048</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.049</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -8955,9 +8955,11 @@ function subtituloRumbo() {
     '#qpOndas .hint{font-size:11.5px;color:var(--muted);margin-left:auto}';
   document.head.appendChild(estilos);
 
-  function montarOndas() {
+    function montarOndas() {
     var btn = document.getElementById('qpBtnVoz');
-    if (!btn || document.getElementById('qpOndas')) return document.getElementById('qpOndas');
+    if (!btn) return null;
+    var yaEsta = document.getElementById('qpOndas');
+    if (yaEsta) return yaEsta;
     var d = document.createElement('div');
     d.id = 'qpOndas';
     var barras = '';
@@ -8965,7 +8967,11 @@ function subtituloRumbo() {
     d.innerHTML = '<span class="bars">' + barras + '</span>' +
       '<span class="txt">Escuchando…</span>' +
       '<span class="hint">Tocá de nuevo para terminar</span>';
-    (btn.parentElement || document.body).insertBefore(d, btn.nextSibling);
+    // Los botones Foto/Voz viven en una fila flex: el indicador va DEBAJO de
+    // esa fila, ocupando todo el ancho, para que no quede cortado al costado.
+    var fila = btn.parentElement;
+    if (fila && fila.parentElement) fila.parentElement.insertBefore(d, fila.nextSibling);
+    else (fila || document.body).appendChild(d);
     return d;
   }
 
