@@ -1171,7 +1171,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.046</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.047</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -8804,6 +8804,120 @@ function subtituloRumbo() {
       t.blur();
     }
   }, true);
+})();
+
+// ── Memoria de clasificación de conceptos ────────────────────
+// Cuando importás un resumen y asignás un rubro a un concepto, Norte lo
+// recuerda. El mes siguiente, si aparece el mismo comercio, ya viene
+// propuesto con ese rubro. Cada importación deja menos para pensar.
+(function () {
+
+  // Los resúmenes traen basura variable en cada renglón (números de
+  // operación, cuotas, sucursal). Se normaliza para que "PERSONAL 1002247"
+  // y "PERSONAL 3391822" se reconozcan como el mismo comercio.
+  function claveConcepto(txt) {
+    var s = String(txt || '').toUpperCase();
+    try { s = s.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (e) {}
+    s = s.replace(/[^A-Z0-9 ]+/g, ' ');        // *, ., -, / → espacio
+    s = s.replace(/\S*\d\S*/g, ' ');           // saca lo que tenga dígitos
+    s = s.replace(/\s+/g, ' ').trim();
+    var palabras = s.split(' ').filter(function (w) { return w.length >= 3; });
+    return palabras.slice(0, 3).join(' ');
+  }
+
+  function claveMemoria() {
+    try { return 'fin_rubromem_' + curEmpresa(); } catch (e) { return 'fin_rubromem'; }
+  }
+
+  function leerMemoria() {
+    try { return JSON.parse(localStorage.getItem(claveMemoria()) || '{}'); }
+    catch (e) { return {}; }
+  }
+
+  function guardarMemoria(m) {
+    try { localStorage.setItem(claveMemoria(), JSON.stringify(m)); } catch (e) {}
+    // Espejo en la nube, para que la memoria siga al hogar entre dispositivos
+    try {
+      if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+        firebase.database().ref('norteSync/empresas/' + curEmpresa() + '/rubroMemoria').set(m);
+      }
+    } catch (e) {}
+  }
+
+  // Al entrar, se trae lo aprendido desde la nube (si hay más que localmente)
+  function sincronizarMemoria() {
+    try {
+      if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) return;
+      firebase.database().ref('norteSync/empresas/' + curEmpresa() + '/rubroMemoria')
+        .once('value').then(function (snap) {
+          var remoto = snap.val() || {};
+          var local = leerMemoria();
+          var fusion = Object.assign({}, remoto, local);   // lo local pisa: es lo más reciente
+          localStorage.setItem(claveMemoria(), JSON.stringify(fusion));
+        }).catch(function () {});
+    } catch (e) {}
+  }
+  setTimeout(sincronizarMemoria, 2500);
+
+  window.recordarRubro = function (desc, rubro) {
+    var k = claveConcepto(desc);
+    if (!k || !rubro) return;
+    var m = leerMemoria();
+    if (m[k] === rubro) return;
+    m[k] = rubro;
+    guardarMemoria(m);
+  };
+
+  window.rubroRecordado = function (desc) {
+    var k = claveConcepto(desc);
+    return k ? (leerMemoria()[k] || '') : '';
+  };
+
+  // 1) Al proponer rubro, lo aprendido tiene prioridad sobre la regla genérica:
+  //    es la decisión que el propio usuario tomó para ese comercio.
+  var _origGuess = window.tcGuessRubro;
+  window.tcGuessRubro = function (desc, tipo) {
+    var recordado = rubroRecordado(desc);
+    if (recordado) return recordado;
+    return (typeof _origGuess === 'function') ? _origGuess.apply(this, arguments) : '';
+  };
+
+  // 2) Al confirmar la importación se guarda lo que el usuario dejó en cada fila
+  var _origConfirm = window.confirmTCImport;
+  window.confirmTCImport = function () {
+    try {
+      var filas = (typeof tcRows !== 'undefined' && tcRows) ? tcRows : [];
+      var m = leerMemoria(), cambios = 0;
+      filas.forEach(function (r) {
+        if (!r || !r.selected || !r.rubro) return;
+        var k = claveConcepto(r.desc);
+        if (!k) return;
+        if (m[k] !== r.rubro) { m[k] = r.rubro; cambios++; }
+      });
+      if (cambios) guardarMemoria(m);
+    } catch (e) {}
+    return (typeof _origConfirm === 'function') ? _origConfirm.apply(this, arguments) : undefined;
+  };
+
+  // 3) La etiqueta distingue lo aprendido de la detección genérica
+  var _origRender = window.renderImportPreview;
+  window.renderImportPreview = function () {
+    var r = (typeof _origRender === 'function') ? _origRender.apply(this, arguments) : undefined;
+    setTimeout(function () {
+      try {
+        var filas = (typeof tcRows !== 'undefined' && tcRows) ? tcRows : [];
+        document.querySelectorAll('.rubro-auto').forEach(function (el, i) {
+          var fila = filas[i];
+          if (!fila) return;
+          if (rubroRecordado(fila.desc)) {
+            el.textContent = '✓ como lo clasificaste antes';
+            el.style.color = '#16a34a';
+          }
+        });
+      } catch (e) {}
+    }, 60);
+    return r;
+  };
 })();
 
 // ── PANEL DE SUPERADMIN — gestión de usuarios ────────────────
