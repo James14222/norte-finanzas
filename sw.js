@@ -3,7 +3,7 @@
  * Estrategia: Cache-first para el app shell, network-first para Firebase/APIs.
  */
 
-const CACHE_NAME = 'norte-v6';
+const CACHE_NAME = 'norte-v7';
 const BASE = '';
 
 // Recursos del app shell que se cachean en la instalación
@@ -59,7 +59,7 @@ self.addEventListener('fetch', event => {
   // index.html y navegación → network-first (siempre trae la versión más reciente)
   if (event.request.mode === 'navigate' || url.pathname === BASE + '/index.html' || url.pathname === BASE + '/') {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, {cache:'no-store'})
         .then(response => {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
