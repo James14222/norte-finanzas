@@ -89,7 +89,8 @@
         impPesos:   { type: "number" },
         impUSD:     { type: "number" },
         confianza:  { type: "string", enum: ["alta", "media", "baja"] },
-        nota:       { type: "string" }
+        nota:       { type: "string" },
+      transcripcionAudio: { type: "string" }
       },
       required: ["detectado", "tipo", "detalle", "rubro", "impPesos"]
     };
@@ -128,7 +129,7 @@ Reglas:
 - Los montos van en pesos argentinos (impPesos) salvo que se indique explícitamente dólares o USD, en cuyo caso también completá impUSD.
 - "detalle" es una descripción corta (2-5 palabras), como "Supermercado Coto" o "Nafta YPF", nunca el texto completo del ticket.
 - Si la imagen o el audio no contiene información clara de un gasto o ingreso, respondé con detectado: false y dejá el resto de los campos en blanco o en 0.
-– Si es un audio: si hay silencio total, ruido sin voz, o no se entiende lo que dice la persona, es OBLIGATORIO devolver detectado: false. NUNCA inventes ni supongas un gasto plausible (como "nafta", "supermercado" o cualquier otro) solo porque suena razonable. Preferimos que digas que no entendiste antes que inventar un dato falso.
+– Si es un audio: si hay silencio total, ruido sin voz, o no se entiende lo que dice la persona, es OBLIGATORIO devolver detectado: false. NUNCA inventes ni supongas un gasto plausible (como "nafta", "supermercado" o cualquier otro) solo porque suena razonable. Preferimos que digas que no entendiste antes que inventar un dato falso. Además, en "transcripcionAudio" transcribí literalmente lo que se llega a escuchar; si hay silencio, ruido o no se entiende nada, dejá "transcripcionAudio" vacío ("") y detectado en false — nunca completes ese campo con un gasto inventado.
 - Si hay algo ambiguo (por ejemplo el monto se lee mal, o no está claro el rubro), marcá confianza "baja" o "media" y explicá brevemente en "nota" qué generó la duda — nunca inventes un dato que no está.
 - Siempre devolvé el JSON con el formato pedido, aunque detectado sea false.`;
       const result = await modelGasto.generateContent([
@@ -6899,7 +6900,7 @@ async function qpProcesarIA(base64, mimeType) {
   statusEl.style.display = 'block';
   statusEl.textContent = mimeType && mimeType.startsWith('audio/') ? 'Norte está escuchando el audio…' : 'Norte está leyendo el gasto…';
   try {
-    const datos = await window.nortiaExtraerGasto(base64, mimeType);
+    const datos = await window.nortiaExtraerGasto(base64, mimeType); if (datos && mimeType && mimeType.startsWith('audio/')) { const _tr = (datos.transcripcionAudio || '').trim(); if (_tr.length < 3) datos.detectado = false; }
     qpSumarUsoIa();
     if (!datos || !datos.detectado) {
       statusEl.textContent = mimeType && mimeType.startsWith('audio/') ? 'No entendimos la información. Por favor, volvé a compartirla o cargalo a mano.' : 'No pudimos identificar un gasto ahí — completá los datos a mano.';
