@@ -128,6 +128,7 @@ Reglas:
 - Los montos van en pesos argentinos (impPesos) salvo que se indique explícitamente dólares o USD, en cuyo caso también completá impUSD.
 - "detalle" es una descripción corta (2-5 palabras), como "Supermercado Coto" o "Nafta YPF", nunca el texto completo del ticket.
 - Si la imagen o el audio no contiene información clara de un gasto o ingreso, respondé con detectado: false y dejá el resto de los campos en blanco o en 0.
+– Si es un audio: si hay silencio total, ruido sin voz, o no se entiende lo que dice la persona, es OBLIGATORIO devolver detectado: false. NUNCA inventes ni supongas un gasto plausible (como "nafta", "supermercado" o cualquier otro) solo porque suena razonable. Preferimos que digas que no entendiste antes que inventar un dato falso.
 - Si hay algo ambiguo (por ejemplo el monto se lee mal, o no está claro el rubro), marcá confianza "baja" o "media" y explicá brevemente en "nota" qué generó la duda — nunca inventes un dato que no está.
 - Siempre devolvé el JSON con el formato pedido, aunque detectado sea false.`;
       const result = await modelGasto.generateContent([
@@ -6895,12 +6896,12 @@ async function qpProcesarIA(base64, mimeType) {
   }
   const statusEl = document.getElementById('qpIaStatus');
   statusEl.style.display = 'block';
-  statusEl.textContent = 'Norte está leyendo el gasto…';
+  statusEl.textContent = mimeType && mimeType.startsWith('audio/') ? 'Norte está escuchando el audio…' : 'Norte está leyendo el gasto…';
   try {
     const datos = await window.nortiaExtraerGasto(base64, mimeType);
     qpSumarUsoIa();
     if (!datos || !datos.detectado) {
-      statusEl.textContent = 'No pudimos identificar un gasto ahí — completá los datos a mano.';
+      statusEl.textContent = mimeType && mimeType.startsWith('audio/') ? 'No entendimos la información. Por favor, volvé a compartirla o cargalo a mano.' : 'No pudimos identificar un gasto ahí — completá los datos a mano.';
       return;
     }
     setQpTipo(datos.tipo === 'Ingreso' ? 'Ingreso' : 'Gasto');
