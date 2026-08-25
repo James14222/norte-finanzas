@@ -1084,7 +1084,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.051</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.052</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -1172,7 +1172,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.051</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.052</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -1778,10 +1778,10 @@ tr:hover td { background: #fafbfc; }
     <div style="display:flex;flex-wrap:wrap;gap:16px" id="planCardsWrap">
       <div class="plan-card-app" data-plan="FOCO" style="flex:1;min-width:220px;border:1px solid var(--border);border-radius:16px;padding:20px">
         <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">FOCO</div>
-        <div style="font-size:24px;font-weight:800;margin:6px 0 10px">Pago unico</div>
+        <div style="font-size:24px;font-weight:800;margin:6px 0 10px">Pago único</div>
         <ul style="font-size:13px;color:var(--text);line-height:1.9;padding-left:18px;margin-bottom:16px">
           <li>1 hogar, hasta 2 integrantes</li>
-          <li>10 cargas por foto/voz al mes</li>
+          <li>50 cargas por foto/voz al mes</li>
           <li>60 consultas a NortIA al mes</li>
           <li>Reportes basicos</li>
         </ul>
@@ -6873,7 +6873,7 @@ function qpLimiteIaKey() {
 function qpLimiteIaCapActual() {
   if (miPlanActual === 'TOP') return Infinity;
   if (miPlanActual === 'PRO') return 100;
-  return 10; // FOCO
+  return 50; // FOCO
 }
 function qpLimiteIaAlcanzado() {
   const usado = parseInt(localStorage.getItem(qpLimiteIaKey()) || '0', 10);
