@@ -6819,6 +6819,23 @@ let qpMediaRecorder = null;
 let qpAudioChunks = [];
 let qpGrabandoVoz = false;
 
+  async function qpEsAudioSilencioso(blob) {
+      try {
+            const arrayBuffer = await blob.arrayBuffer();
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            const ctx = new AudioCtx();
+            const audioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
+            const data = audioBuffer.getChannelData(0);
+            let peak = 0;
+            for (let i = 0; i < data.length; i++) { const v = Math.abs(data[i]); if (v > peak) peak = v; }
+            ctx.close();
+            return audioBuffer.duration < 0.4 || peak < 0.02;
+      } catch (e) {
+            console.error('qpEsAudioSilencioso error:', e);
+            return false;
+      }
+  }
+
 function qpAbrirFoto() {
   document.getElementById('qpFotoInput').click();
 }
@@ -6843,9 +6860,14 @@ async function qpToggleVoz() {
       qpAudioChunks = [];
       qpMediaRecorder = new MediaRecorder(stream);
       qpMediaRecorder.ondataavailable = e => { if (e.data.size > 0) qpAudioChunks.push(e.data); };
-      qpMediaRecorder.onstop = () => {
+      qpMediaRecorder.onstop = async () => {
         stream.getTracks().forEach(t => t.stop());
         const blob = new Blob(qpAudioChunks, { type: 'audio/webm' });
+        if (await qpEsAudioSilencioso(blob)) {
+          const statusEl = document.getElementById('qpIaStatus');
+          if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'No entendimos el audio. Por favor, volvé a intentar o cargalo a mano.'; }
+                                              return;
+        }
         const reader = new FileReader();
         reader.onload = () => {
           const base64 = reader.result.split(',')[1];
