@@ -913,22 +913,38 @@ tr:hover td { background: #fafbfc; }
 }
 .ob-success-checks li:last-child { border-bottom:none; }
 .ob-success-checks li .ck { color:#10b981;font-weight:700;font-size:15px; }
-/* ── Ajustes mobile 26/08/2026: cabecera Mi Rumbo, grafico Reportes, modal carga rapida ── */
+/* ── Ajustes mobile 26/08/2026 (v2): cabecera Mi Rumbo, grafico Reportes, modal carga rapida ── */
 @media (max-width: 880px) {
   /* 1) En Mi Rumbo la barra superior generica duplicaba el hamburguesa + titulo que
-     ya trae la cabecera oscura propia del tablero: se oculta solo en esa pantalla. */
+     ya trae la cabecera oscura propia del tablero: se oculta solo en esa pantalla.
+     Al ocultarla se perdia el espacio reservado para el status bar / notch del
+     celular (la app corre como PWA con status-bar-style black-translucent), asi
+     que se repone con env(safe-area-inset-top) y se agrega un poco de aire a la
+     izquierda para que las tarjetas no queden pegadas al borde. */
   .main:has(#page-dashboard.active) .topbar { display: none; }
+  .main:has(#page-dashboard.active) .content {
+    padding-top: calc(16px + env(safe-area-inset-top, 20px)) !important;
+    padding-left: 20px !important;
+  }
   /* Numeros largos ($X.XXX.XXX,XX) podian forzar el ancho de la tarjeta mas alla de
      su columna en el grid, quedando cortados contra el borde de la pantalla. */
   .cards-grid .card { min-width: 0; }
   .cards-grid .card-value { overflow-wrap: anywhere; }
 
   /* 2) El grafico de "Composicion de gastos" estaba centrado, lo que obligaba a
-     scrollear a la derecha para ver el resto de la info. Se alinea a la izquierda
-     y se angostan las tarjetas de Reportes. */
+     scrollear a la derecha para ver el resto de la info. Se alinea a la izquierda,
+     se angostan las tarjetas de Reportes y se contiene el ancho de la tabla de
+     ranking para que no siga generando scroll horizontal. */
   #desgloseRubroChart { margin: 0 !important; }
   .report-card { padding: 14px !important; }
+  #rep-rubros .report-card, #rep-rubros .reports-grid { max-width: 100%; overflow-x: hidden; box-sizing: border-box; }
+  #desgloseRubroTable table { table-layout: fixed; width: 100% !important; }
+  #desgloseRubroTable td { overflow-wrap: anywhere; }
 }
+
+/* 3) Grupos de alertas: tono de fondo levemente distinto para diferenciar la
+   tarjeta que totaliza (resumen colapsado) del resto de las tarjetas blancas.
+   El icono de agrupacion (🗂️) se agrega en rehacerAlertas() mas abajo. */
 
 /* 4) Modal de Registro rapido: el marco casi no se notaba contra el fondo claro,
    y los botones de Foto/Voz se confundian con el resto de los controles. */
@@ -1708,7 +1724,7 @@ tr:hover td { background: #fafbfc; }
         <div class="qp-field" id="qpIaRow" style="display:flex;gap:8px;margin-bottom:2px">
                 <button type="button" class="btn btn-secondary qp-media-btn" style="flex:1" onclick="qpAbrirFoto()">📷 Foto</button>
           <button type="button" class="btn btn-secondary qp-media-btn" style="flex:1" id="qpBtnVoz" onclick="qpToggleVoz()">🎤 Voz</button>
-div>
+          </div>
     <input type="file" id="qpFotoInput" accept="image/*" capture="environment" style="display:none" onchange="qpFotoSeleccionada(this)">
     <div id="qpIaStatus" style="display:none;font-size:12px;color:#6b7f93;margin:-4px 0 6px;padding:6px 10px;border-radius:8px;background:rgba(255,138,92,0.08)"></div>
     <div class="qp-field ac-wrap">
@@ -8657,13 +8673,14 @@ function subtituloRumbo() {
         extra + '</div>';
     }
 
-        var html = '';
+                var html = '';
     GRUPOS.forEach(function (g) {
       var arr = buckets[g.id];
       if (!arr.length) return;
       var gid = 'alertaGrupo-' + g.id;
-      html += '<div class="card" style="padding:16px 18px;margin-bottom:12px">' +
+      html += '<div class="card" style="padding:16px 18px;margin-bottom:12px;background:rgba(255,138,92,0.045);border:1px solid rgba(255,138,92,0.16)">' +
         '<div style="display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none" onclick="toggleAlertaGrupo(\'' + gid + '\')">' +
+          '<span style="font-size:13px;opacity:.6" title="Grupo de alertas">🗂️</span>' +
           '<span style="font-size:16px">' + g.ico + '</span>' +
           '<span style="font-size:14px;font-weight:800;color:var(--text);letter-spacing:-.2px">' + arr.length + ' alerta' + (arr.length === 1 ? '' : 's') + ' de ' + g.tit + '</span>' +
           '<span id="' + gid + '-chev" style="margin-left:auto;font-size:12px;color:var(--muted);transition:transform .15s;transform:rotate(0deg)">▸</span>' +
@@ -8676,8 +8693,9 @@ function subtituloRumbo() {
     });
     if (buckets.otros.length) {
       var gidO = 'alertaGrupo-otros';
-      html += '<div class="card" style="padding:16px 18px;margin-bottom:12px">' +
+      html += '<div class="card" style="padding:16px 18px;margin-bottom:12px;background:rgba(255,138,92,0.045);border:1px solid rgba(255,138,92,0.16)">' +
         '<div style="display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none" onclick="toggleAlertaGrupo(\'' + gidO + '\')">' +
+          '<span style="font-size:13px;opacity:.6" title="Grupo de alertas">🗂️</span>' +
           '<span style="font-size:14px;font-weight:800;color:var(--text)">' + buckets.otros.length + ' otro' + (buckets.otros.length === 1 ? '' : 's') + ' aviso' + (buckets.otros.length === 1 ? '' : 's') + '</span>' +
           '<span id="' + gidO + '-chev" style="margin-left:auto;font-size:12px;color:var(--muted);transition:transform .15s;transform:rotate(0deg)">▸</span>' +
         '</div>' +
