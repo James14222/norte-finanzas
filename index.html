@@ -7530,7 +7530,7 @@ let miPlanEstado = 'active';
 const NORTIA_CAP_MENSUAL = 30; // llamadas por hogar por mes, plan gratis con tope
 
 function nortiaBetaHabilitado() {
-  return ['JLL', 'DEMO_GARCIA'].includes(curEmpresa());
+    return true; // NortIA siempre activo (ya no es beta cerrada)
 }
 
 // Arma un resumen COMPACTO Y CALCULADO (nunca transacciones crudas) para enviarle a NortIA.
@@ -9449,6 +9449,7 @@ function subtituloRumbo() {
   var _gpsLoaded = false;
   var _gpsUltimoPrograma = null;
   var _gpsBadgeChecked = false;
+  var _gpsBadgeChecking = false;
 
   function gpsKeyVisto() { try { return 'gpsUltimoCapVisto_' + ((getSession() || {}).userId || 'anon'); } catch (e) { return 'gpsUltimoCapVisto_anon'; } }
   function gpsMaxDisponible(p) { var max = 0; [1, 2, 3, 4].forEach(function (n) { if ((p.capitulos[n] || {}).disponible) max = n; }); return max; }
@@ -9457,19 +9458,9 @@ function subtituloRumbo() {
     var badge = document.getElementById('gpsNavBadge');
     if (badge) badge.style.display = 'none';
   }
-  async function gpsSyncBadge() {
-    var badge = document.getElementById('gpsNavBadge');
-    if (!badge) return;
-    try {
-      var d = await gpsLlamar('obtenerProgramaGuiado');
-      if (!d.participa) { badge.style.display = 'none'; return; }
-      var maxDisp = gpsMaxDisponible(d.programa);
-      var visto = parseInt(localStorage.getItem(gpsKeyVisto()) || '0', 10);
-      badge.style.display = (maxDisp > visto) ? 'inline-flex' : 'none';
-    } catch (e) { /* sin sesión o sin red: no mostramos badge */ }
-  }
+  async function gpsSyncBadge() { var badge = document.getElementById('gpsNavBadge'); if (!badge) return; if (_gpsBadgeChecking) return; _gpsBadgeChecking = true; try { var d = await gpsLlamar('obtenerProgramaGuiado'); if (!d.participa) { badge.style.display = 'none'; _gpsBadgeChecked = true; return; } var maxDisp = gpsMaxDisponible(d.programa); var visto = parseInt(localStorage.getItem(gpsKeyVisto()) || '0', 10); badge.style.display = (maxDisp > visto) ? 'inline-flex' : 'none'; _gpsBadgeChecked = true; } catch (e) { } finally { _gpsBadgeChecking = false; } }if (!_gpsBadgeChecked) { _gpsBadgeChecked = true; gpsSyncBadge(); }
 
-  window.gpsRender = async function () {
+ window.gpsRender = async function () {
     var body = document.getElementById('gpsBody');
     if (!body) return;
     if (_gpsLoaded) return;
@@ -9598,7 +9589,7 @@ function subtituloRumbo() {
     var r = (typeof _origRenderGps === 'function') ? _origRenderGps.apply(this, arguments) : undefined;
     try {
       if (typeof curPage !== 'undefined' && curPage === 'tugps') gpsRender();
-      if (!_gpsBadgeChecked) { _gpsBadgeChecked = true; gpsSyncBadge(); }
+      if (!_gpsBadgeChecked) gpsSyncBadge();
     } catch (e) {}
     return r;
   };
