@@ -954,6 +954,8 @@ tr:hover td { background: #fafbfc; }
 /* 5) Tu GPS (Club Pioneros): header propio mas compacto, watermark de marca,
    barra de progreso mas grande y resaltado en el menu lateral. */
 .main:has(#page-tugps.active) .topbar { display: none; }
+.main:has(#page-tugps.active) .content { display: none; padding: 0; }
+.main:has(#page-admin.active) .content { display: none; padding: 0; }
 .gps-wrap { position: relative; overflow: visible; }
 .gps-wrap::before {
   content: '';
@@ -1259,7 +1261,7 @@ tr:hover td { background: #fafbfc; }
     <div class="nav-item" onclick="showPage('reportes')"><span class="ico">📈</span> Reportes</div>
     <div class="nav-item disabled nortia-item" id="navNortia"><span class="nortia-nav-icon" style="display:inline-block;background-image:var(--nortia-icon-url);background-size:72%;background-repeat:no-repeat;background-position:center;background-color:#fff;border-radius:6px;"></span> <strong>NortIA</strong> <span class="badge-soon" id="navNortiaBadge">Próximamente</span></div>
         <div class="nav-item gps-nav-item" id="navTuGps" onclick="showPage('tugps')"><span class="ico">GPS</span> Tu GPS<span id="gpsNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
- class="nav-item" id="navAdmin" style="display:none" onclick="showPage('admin')"><span class="ico">⚙️</span> Admin</div>
+     <div class="nav-item" id="navAdmin" style="display:none" onclick="showPage('admin')"><span class="ico">⚙️</span> Admin</div>
   </div>
   <div class="sidebar-user" id="sidebarUser" style="display:none">
     <div style="display:flex;align-items:center;justify-content:space-between">
@@ -2239,7 +2241,7 @@ tr:hover td { background: #fafbfc; }
   </div><!-- /ayuda-panel -->
 </div><!-- /ayudaOverlay -->
 
-<!-- TU GPS PAGE --><div id="page-tugps" class="page"><div class="gps-wrap" style="max-width:760px;margin:0 auto;padding:22px 24px 40px;display:flex;flex-direction:column"><div class="gps-header"><div class="gps-header-title">Tu GPS</div><div class="gps-header-sub">Club Pioneros de Norte</div></div><div id="gpsBody" style="margin-top:16px;position:relative;z-index:1"><div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando...</div></div></div></div>
+<!-- TU GPS PAGE --><div id="page-tugps" class="page"><div class="gps-wrap" style="max-width:760px;margin:0 auto;padding:8px 24px 40px;display:flex;flex-direction:column"><div class="gps-header"><div class="gps-header-title">Tu GPS</div><div class="gps-header-sub">Club Pioneros de Norte</div></div><div id="gpsBody" style="margin-top:16px;position:relative;z-index:1"><div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando...</div></div></div></div>
 <!-- ADMIN PAGE -->
 <div id="page-admin" class="page">
   <div style="max-width:880px;margin:0 auto;padding:28px 24px;display:flex;flex-direction:column">
