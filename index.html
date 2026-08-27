@@ -240,7 +240,7 @@ tr:hover td { background: #fafbfc; }
       #page-transacciones table { table-layout: fixed; width: 100%; }
       #page-transacciones th, #page-transacciones td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       #page-transacciones td:nth-child(2) { white-space: normal; }
-      #page-transacciones thead th { position: sticky; top: 0; background: var(--card); z-index: 5; box-shadow: inset 0 -1px 0 var(--border); }
+      #page-transacciones thead th { position: sticky; top: var(--tbh, 56px); background: #f8fafc; z-index: 30; box-shadow: inset 0 -1px 0 var(--border); }
     }
 
 /* BADGES */
@@ -619,6 +619,34 @@ tr:hover td { background: #fafbfc; }
   .cards-grid.budget-summary, .stat-cards { grid-template-columns: 1fr !important; }
   .month-display { min-width:96px; }
 }
+
+/* Transacciones mobile: compactar a 2 renglones por movimiento (acciones inline) */
+@media (max-width: 880px) {
+  #page-transacciones tbody tr { gap: 4px 8px !important; padding: 12px 14px 10px !important; margin-bottom: 10px !important; }
+  #page-transacciones tbody tr td:empty { display: none !important; }
+  #page-transacciones tbody tr td:nth-child(1) { order: 0 !important; flex: 0 0 auto !important; }
+  #page-transacciones tbody tr td:nth-child(2) { order: 0 !important; flex: 1 1 auto !important; min-width: 0 !important; font-size: 15px !important; }
+  #page-transacciones tbody tr td:nth-child(2) strong { font-size: 15px !important; }
+  #page-transacciones tbody tr td:nth-child(6) { order: 0 !important; flex: 0 0 auto !important; margin-left: auto !important; font-size: 18px !important; font-weight: 800 !important; }
+  #page-transacciones tbody tr td:nth-child(3),
+  #page-transacciones tbody tr td:nth-child(4),
+  #page-transacciones tbody tr td:nth-child(5),
+  #page-transacciones tbody tr td:nth-child(7),
+  #page-transacciones tbody tr td:nth-child(8),
+  #page-transacciones tbody tr td:nth-child(9),
+  #page-transacciones tbody tr td:nth-child(10) { order: 1 !important; flex: 0 0 auto !important; font-size: 12px !important; color: var(--muted) !important; text-align: left !important; margin-left: 0 !important; }
+  #page-transacciones tbody tr td:nth-child(9)::before { content: "Pagado " !important; font-size: 10.5px !important; }
+  #page-transacciones tbody tr td:nth-child(11) { order: 2 !important; flex: 0 0 auto !important; margin-left: auto !important; display: flex !important; gap: 10px !important; margin-top: 0 !important; padding-top: 0 !important; border-top: none !important; }
+  #page-transacciones tbody tr td:nth-child(11) button { font-size: 16px !important; padding: 2px 4px !important; }
+}
+
+/* Sidebar: que se pueda scrollear cuando no entra todo (Exportar / Importar) */
+.sidebar { overflow-y: auto; overscroll-behavior: contain; }
+.sidebar-nav { flex: 0 0 auto; }
+.sidebar-footer { flex-shrink: 0; }
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 3px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
 /* ── IMPORTADOR TC ─────────────────────────────────────────── */
 .import-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1100;display:none;align-items:center;justify-content:center;padding:16px; }
 .import-overlay.open { display:flex; }
@@ -1163,7 +1191,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.056</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.057</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -1251,7 +1279,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.056</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.057</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -9330,6 +9358,10 @@ function subtituloRumbo() {
           '<div class="form-group"><label>Email</label><input class="form-input" id="saEmail" type="email" placeholder="correo@ejemplo.com" autocomplete="off"></div>' +
           '<div class="form-group" id="saGrupoPlan"><label>Plan</label>' +
             '<select class="form-input" id="saPlanNuevo"><option value="FOCO">FOCO</option><option value="PRO">PRO</option><option value="TOP">TOP</option></select>' +
+            '<label id="saGrupoPionero" style="display:flex;align-items:flex-start;gap:8px;margin-top:12px;padding:10px 12px;border:1px solid rgba(37,99,235,0.25);background:rgba(37,99,235,0.06);border-radius:10px;cursor:pointer;font-weight:600">' +
+              '<input type="checkbox" id="saPionero" style="margin-top:2px">' +
+              '<span>Sumarlo al Club Pioneros<br><span style="font-weight:400;font-size:11.5px;color:var(--muted)">Entra por el mismo circuito que el formulario: plan FOCO, programa guiado de 4 semanas y mail de bienvenida de Pioneros.</span></span>' +
+            '</label>' +
           '</div>' +
           '<div class="form-group" id="saGrupoHogar" style="display:none"><label>Hogar al que se suma</label><select class="form-input" id="saHogar"></select></div>' +
           '<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Le va a llegar un mail para que defina su propia contraseña. Vos nunca la ves ni la elegís.</div>' +
@@ -9339,11 +9371,12 @@ function subtituloRumbo() {
             '<button class="btn btn-primary" style="flex:2" id="saCrearBtn" onclick="saCrear()">Crear usuario</button>' +
           '</div>' +
         '</div>';
-      document.body.appendChild(ov);
+    document.body.appendChild(ov);
     }
     document.getElementById('saNombre').value = '';
     document.getElementById('saEmail').value  = '';
     document.getElementById('saModo').value   = 'hogar_nuevo';
+    var _chkP = document.getElementById('saPionero'); if (_chkP) _chkP.checked = false;
     document.getElementById('saCrearError').style.display = 'none';
     document.getElementById('saHogar').innerHTML = _saHogares.map(function (h) {
       return '<option value="' + h.id + '">' + esc(h.nombre) + '</option>';
@@ -9367,7 +9400,8 @@ function subtituloRumbo() {
       nombre:    document.getElementById('saNombre').value.trim(),
       email:     document.getElementById('saEmail').value.trim(),
       plan:      document.getElementById('saPlanNuevo').value,
-      empresaId: document.getElementById('saHogar').value
+      empresaId: document.getElementById('saHogar').value,
+      esPionero: !!(document.getElementById('saPionero') || {}).checked
     };
     if (!datos.nombre || !datos.email) {
       err.textContent = 'Completá nombre y email.'; err.style.display = 'block'; return;
@@ -9683,6 +9717,23 @@ function subtituloRumbo() {
 
 /* FIX: paginas Admin y Tu GPS quedaron fuera de .main, causaba desborde/solapamiento */
 (function () { var m = document.querySelector('.main'); if (!m) return; ['page-tugps', 'page-admin'].forEach(function (id) { var el = document.getElementById(id); if (el && !m.contains(el)) m.appendChild(el); }); })();
+
+/* Altura real de la topbar -> para que el thead sticky de Transacciones se pegue justo debajo */
+(function () {
+  function medirTopbar() {
+    var tb = document.querySelector('.topbar');
+    var h = (tb && tb.offsetHeight) ? tb.offsetHeight : 56;
+    document.documentElement.style.setProperty('--tbh', h + 'px');
+  }
+  window.addEventListener('resize', medirTopbar);
+  window.addEventListener('load', medirTopbar);
+  document.addEventListener('DOMContentLoaded', medirTopbar);
+  setTimeout(medirTopbar, 300);
+  var _origShowPageTb = window.showPage;
+  if (typeof _origShowPageTb === 'function') {
+    window.showPage = function (p) { var r = _origShowPageTb.apply(this, arguments); setTimeout(medirTopbar, 0); return r; };
+  }
+})();
 
 </script>
 
