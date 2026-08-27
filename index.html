@@ -9458,7 +9458,7 @@ function subtituloRumbo() {
     var badge = document.getElementById('gpsNavBadge');
     if (badge) badge.style.display = 'none';
   }
-  async function gpsSyncBadge() { var badge = document.getElementById('gpsNavBadge'); if (!badge) return; if (_gpsBadgeChecking) return; _gpsBadgeChecking = true; try { var d = await gpsLlamar('obtenerProgramaGuiado'); if (!d.participa) { badge.style.display = 'none'; _gpsBadgeChecked = true; return; } var maxDisp = gpsMaxDisponible(d.programa); var visto = parseInt(localStorage.getItem(gpsKeyVisto()) || '0', 10); badge.style.display = (maxDisp > visto) ? 'inline-flex' : 'none'; _gpsBadgeChecked = true; } catch (e) { } finally { _gpsBadgeChecking = false; } }if (!_gpsBadgeChecked) { _gpsBadgeChecked = true; gpsSyncBadge(); }
+  async function gpsSyncBadge() { var badge = document.getElementById('gpsNavBadge'); if (!badge) return; if (_gpsBadgeChecking) return; _gpsBadgeChecking = true; try { var d = await gpsLlamar('obtenerProgramaGuiado'); if (!d.participa) { badge.style.display = 'none'; _gpsBadgeChecked = true; return; } var maxDisp = gpsMaxDisponible(d.programa); var visto = parseInt(localStorage.getItem(gpsKeyVisto()) || '0', 10); badge.style.display = (maxDisp > visto) ? 'inline-flex' : 'none'; _gpsBadgeChecked = true; } catch (e) { } finally { _gpsBadgeChecking = false; } }
 
  window.gpsRender = async function () {
     var body = document.getElementById('gpsBody');
