@@ -1163,7 +1163,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.054</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.055</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -1251,7 +1251,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.054</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.055</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -1757,6 +1757,7 @@ tr:hover td { background: #fafbfc; }
                 <button type="button" class="btn btn-secondary qp-media-btn" style="flex:1" onclick="qpAbrirFoto()">📷 Foto</button>
           <button type="button" class="btn btn-secondary qp-media-btn" style="flex:1" id="qpBtnVoz" onclick="qpToggleVoz()">🎤 Voz</button>
           </div>
+    <div id="qpIaContador" style="font-size:11.5px;color:#6b7f93;text-align:right;margin:2px 2px 6px"></div>
     <input type="file" id="qpFotoInput" accept="image/*" capture="environment" style="display:none" onchange="qpFotoSeleccionada(this)">
     <div id="qpIaStatus" style="display:none;font-size:12px;color:#6b7f93;margin:-4px 0 6px;padding:6px 10px;border-radius:8px;background:rgba(255,138,92,0.08)"></div>
     <div class="qp-field ac-wrap">
@@ -6830,6 +6831,7 @@ function resetQpForm() {
   document.getElementById('qpDuenoField').style.display = 'none';
   document.getElementById('qpCustomRubroWrap').classList.remove('show');
   document.getElementById('qpMes').value = curKey();
+  actualizarQpIaContador();
   closeAc();
 }
 
@@ -6972,6 +6974,19 @@ function qpSumarUsoIa() {
   localStorage.setItem(qpLimiteIaKey(), String(usado + 1));
 }
 
+function actualizarQpIaContador() {
+  const el = document.getElementById('qpIaContador');
+  if (!el) return;
+  const cap = qpLimiteIaCapActual();
+  if (cap === Infinity) { el.textContent = 'Cargas por foto/voz ilimitadas con tu plan'; el.style.color = '#6b7f93'; return; }
+  const usado = parseInt(localStorage.getItem(qpLimiteIaKey()) || '0', 10);
+  const quedan = Math.max(0, cap - usado);
+  el.textContent = quedan === 0
+    ? 'Usaste las ' + cap + ' cargas por foto/voz del mes'
+    : 'Te quedan ' + quedan + ' de ' + cap + ' cargas por foto/voz este mes';
+  el.style.color = quedan === 0 ? '#ef4444' : (quedan <= 5 ? 'var(--primary-dark)' : '#6b7f93');
+}
+
 async function qpProcesarIA(base64, mimeType) {
   if (typeof window.nortiaExtraerGasto !== 'function') {
     alert('La IA de Norte todavía se está iniciando, esperá un segundo e intentá de nuevo.');
@@ -6986,7 +7001,7 @@ async function qpProcesarIA(base64, mimeType) {
   statusEl.textContent = mimeType && mimeType.startsWith('audio/') ? 'Norte está escuchando el audio…' : 'Norte está leyendo el gasto…';
   try {
     const datos = await window.nortiaExtraerGasto(base64, mimeType); if (datos && mimeType && mimeType.startsWith('audio/')) { const _tr = (datos.transcripcionAudio || '').trim(); if (_tr.length < 6) datos.detectado = false; }
-    qpSumarUsoIa();
+    qpSumarUsoIa(); actualizarQpIaContador();
     if (!datos || !datos.detectado) {
       statusEl.textContent = mimeType && mimeType.startsWith('audio/') ? 'No entendimos la información. Por favor, volvé a compartirla o cargalo a mano.' : 'No pudimos identificar un gasto ahí — completá los datos a mano.';
       return;
