@@ -965,18 +965,22 @@ tr:hover td { background: #fafbfc; }
   opacity: 0.07; pointer-events: none; z-index: 0;
 }
 .gps-header { position: relative; z-index: 1; padding-top: 4px; }
-.gps-header-title { font-size: 26px; font-weight: 900; color: var(--text); letter-spacing: -0.5px; }
-.gps-header-sub { font-size: 13px; font-weight: 700; color: #2563EB; margin-top: 3px; letter-spacing: .2px; }
-.gps-progress-card { position: relative; z-index: 1; background: linear-gradient(135deg, rgba(37,99,235,0.08), rgba(111,224,204,0.10)); border: 1px solid rgba(37,99,235,0.18); border-radius: 16px; padding: 16px 20px; margin-bottom: 16px; }
-.gps-progress-bar-track { background: var(--bg); border-radius: 10px; height: 14px; overflow: hidden; margin-top: 8px; }
+.gps-header-title { font-size: 30px; font-weight: 900; color: var(--text); letter-spacing: -0.5px; }
+.gps-header-sub { font-size: 15px; font-weight: 700; color: #2563EB; margin-top: 4px; letter-spacing: .2px; }
+.gps-progress-card { position: relative; z-index: 1; background: linear-gradient(135deg, rgba(37,99,235,0.08), rgba(111,224,204,0.10)); border: 1px solid rgba(37,99,235,0.18); border-radius: 16px; padding: 18px 22px; margin-bottom: 18px; }
+.gps-progress-bar-track { background: var(--bg); border-radius: 10px; height: 16px; overflow: hidden; margin-top: 10px; }
 .gps-progress-bar-fill { background: linear-gradient(90deg,#2563EB,#6FE0CC); height: 100%; border-radius: 10px; transition: width .3s; }
 .gps-nav-item { background: rgba(37,99,235,0.08) !important; border-radius: 8px; }
 .gps-nav-item.active { background: rgba(37,99,235,0.18) !important; border-left-color: #2563EB !important; }
 .gps-nav-badge { margin-left: auto; background: #ef4444; color: #fff; font-size: 10.5px; font-weight: 800; min-width: 17px; height: 17px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; }
+.gps-confeti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: inherit; }
+.gps-confeti i { position: absolute; top: -16px; width: 8px; height: 14px; border-radius: 2px; opacity: .9; animation-name: gpsCaeConfeti; animation-timing-function: linear; animation-iteration-count: infinite; }
+@keyframes gpsCaeConfeti { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(620px) rotate(720deg); opacity: 0; } }
 @media (max-width: 880px) {
   .gps-wrap { padding: 16px 16px 32px !important; }
   .gps-wrap::before { width: 190px; height: 198px; top: -16px; right: -26px; opacity: 0.06; }
-  .gps-header-title { font-size: 21px; }
+  .gps-header-title { font-size: 24px; }
+  .gps-header-sub { font-size: 14px; }
 }
 
 </style>
@@ -9459,37 +9463,69 @@ function subtituloRumbo() {
     }
   };
 
+  function gpsFechaDesbloqueo(p, n) {
+    try {
+      var c = p.capitulos[n] || {};
+      if (c.fechaDisponible) { var fd = new Date(c.fechaDisponible); if (!isNaN(fd)) return fd; }
+      var ini = new Date(p.fechaInicio);
+      if (isNaN(ini)) return null;
+      var r = new Date(ini.getTime());
+      r.setDate(r.getDate() + 7 * (n - 1));
+      return r;
+    } catch (e) { return null; }
+  }
+  function gpsFechaCorta(f) {
+    var m = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    return f.getDate() + ' ' + m[f.getMonth()];
+  }
+
   function gpsPintar(d) {
     var body = document.getElementById('gpsBody');
-    if (!d.participa) { body.innerHTML = '<div class="card" style="padding:24px;text-align:center"><div style="font-size:15px;font-weight:700;margin-bottom:6px">Todavía no estás en el Club Pioneros</div><div style="font-size:13px;color:var(--muted)">Esta sección es para quienes están haciendo el mes de acompañamiento guiado.</div></div>'; return; }
+    if (!d.participa) { body.innerHTML = '<div class="card" style="padding:26px;text-align:center"><div style="font-size:17px;font-weight:700;margin-bottom:8px">Todavía no estás en el Club Pioneros</div><div style="font-size:14.5px;color:var(--muted)">Esta sección es para quienes están haciendo el mes de acompañamiento guiado.</div></div>'; return; }
     var p = d.programa;
     _gpsUltimoPrograma = p;
     gpsMarcarVisto(p);
     var pct = Math.min(100, Math.round((p.puntos || 0) / 40 * 100));
     var titulos = { 1: 'Metete adentro', 2: 'Cero fugas', 3: 'Ponete límites', 4: 'Sacale el jugo' };
+    var primerBloqueado = 0;
+    [1, 2, 3, 4].forEach(function (n) { var c = p.capitulos[n] || {}; if (!primerBloqueado && !c.disponible && !p.accesoPermanente) primerBloqueado = n; });
     var filas = [1, 2, 3, 4].map(function (n) {
       var c = p.capitulos[n] || {};
       var completo = p.accesoPermanente || c.quizEnviado;
       var estado, accion, clickAttr, cursorStyle;
       if (completo) {
-        estado = '<span style="color:#16a34a;font-size:12px;font-weight:700">✓ Completo</span>';
-        accion = '<button class="btn" style="font-size:12px;padding:6px 14px" onclick="event.stopPropagation();gpsVerCapitulo(' + n + ')">Repasar</button>';
+        estado = '<span style="color:#16a34a;font-size:13.5px;font-weight:700">✓ Completo</span>';
+        accion = '<button class="btn" style="font-size:13.5px;padding:8px 16px" onclick="event.stopPropagation();gpsVerCapitulo(' + n + ')">Repasar</button>';
         clickAttr = ' onclick="gpsVerCapitulo(' + n + ')"'; cursorStyle = 'cursor:pointer;';
       } else if (c.disponible) {
-        estado = '<span style="color:var(--primary);font-size:12px;font-weight:700">Disponible</span>';
-        accion = '<button class="btn btn-primary" style="font-size:12px;padding:6px 14px" onclick="event.stopPropagation();gpsVerCapitulo(' + n + ')">Ver capítulo</button>';
+        estado = '<span style="color:var(--primary);font-size:13.5px;font-weight:700">Disponible</span>';
+        accion = '<button class="btn btn-primary" style="font-size:13.5px;padding:8px 16px" onclick="event.stopPropagation();gpsVerCapitulo(' + n + ')">Ver capítulo</button>';
         clickAttr = ' onclick="gpsVerCapitulo(' + n + ')"'; cursorStyle = 'cursor:pointer;';
       } else {
-        estado = '<span style="color:var(--muted);font-size:12px">🔒 Bloqueado</span>';
+        estado = '<span style="color:var(--muted);font-size:13.5px">🔒 Bloqueado</span>';
+        if (n === primerBloqueado) {
+          var f = gpsFechaDesbloqueo(p, n);
+          if (f && f.getTime() > Date.now()) {
+            estado += '<div style="margin-top:7px;font-size:13.5px;font-weight:800;color:#2563EB">Fecha de desbloqueo: ' + gpsFechaCorta(f) + '</div>';
+            estado += '<div style="margin-top:3px;font-size:12.5px;color:var(--muted);line-height:1.5">Se abre a los 7 días y con el quiz del capítulo ' + (n - 1) + ' aprobado.</div>';
+          } else {
+            estado += '<div style="margin-top:7px;font-size:12.5px;color:var(--muted);line-height:1.5">Ya pasaron los 7 días — te falta aprobar el quiz del capítulo ' + (n - 1) + '.</div>';
+          }
+        }
         accion = ''; clickAttr = ''; cursorStyle = '';
       }
-      return '<div class="card"' + clickAttr + ' style="' + cursorStyle + 'padding:16px 18px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">' +
-        '<div><div style="font-size:14.5px;font-weight:800">Capítulo ' + n + ': ' + titulos[n] + '</div><div style="margin-top:5px">' + estado + '</div></div>' + accion + '</div>';
+      return '<div class="card"' + clickAttr + ' style="' + cursorStyle + 'padding:18px 20px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:12px">' +
+        '<div><div style="font-size:17px;font-weight:800">Capítulo ' + n + ': ' + titulos[n] + '</div><div style="margin-top:6px">' + estado + '</div></div>' + accion + '</div>';
     }).join('');
-    var banner = p.accesoPermanente ? '<div class="card" style="padding:16px;margin-bottom:16px;text-align:center;background:rgba(232,192,80,0.12);border:1px solid rgba(232,192,80,0.3)"><div style="font-size:15px;font-weight:700">Sos Pionero Vitalicio</div><div style="font-size:13px;color:var(--muted);margin-top:4px">Completaste el mes de acompañamiento. Tu acceso a Norte FOCO queda gratis para siempre.</div></div>' : '';
+    var vit = !!p.accesoPermanente;
+    var cardAcceso = '<div class="card" style="padding:18px 20px;margin-top:2px;display:flex;justify-content:space-between;align-items:center;gap:12px;' + (vit ? 'background:rgba(232,192,80,0.14);border:1px solid rgba(232,192,80,0.45)' : 'border:1px dashed var(--border);opacity:.85') + '">' +
+      '<div><div style="font-size:17px;font-weight:800">' + (vit ? '🏅 ' : '') + 'Acceso a Norte de forma permanente</div>' +
+      '<div style="margin-top:6px;font-size:13.5px;color:var(--muted);line-height:1.5">' + (vit ? 'Norte FOCO gratis para siempre — sos Pionero Vitalicio.' : 'Se desbloquea al completar los 4 capítulos (40 / 40 pts).') + '</div></div>' +
+      '<span style="font-size:13.5px;font-weight:800;white-space:nowrap;color:' + (vit ? '#B8860B' : 'var(--muted)') + '">' + (vit ? '✓ Desbloqueado' : '🔒 Bloqueado') + '</span></div>';
+    var banner = vit ? '<div class="card" style="padding:18px;margin-bottom:18px;text-align:center;background:rgba(232,192,80,0.12);border:1px solid rgba(232,192,80,0.3)"><div style="font-size:17px;font-weight:700">Sos Pionero Vitalicio</div><div style="font-size:14.5px;color:var(--muted);margin-top:5px">Completaste el mes de acompañamiento. Tu acceso a Norte FOCO queda gratis para siempre.</div></div>' : '';
     body.innerHTML = banner +
-      '<div class="gps-progress-card"><div style="display:flex;justify-content:space-between;font-size:13.5px;font-weight:700;margin-bottom:2px"><span>Tu progreso</span><span>' + (p.puntos || 0) + ' / 40 pts</span></div><div class="gps-progress-bar-track"><div class="gps-progress-bar-fill" style="width:' + pct + '%"></div></div></div>' +
-      filas;
+      '<div class="gps-progress-card"><div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;margin-bottom:2px"><span>Tu progreso</span><span>' + (p.puntos || 0) + ' / 40 pts</span></div><div class="gps-progress-bar-track"><div class="gps-progress-bar-fill" style="width:' + pct + '%"></div></div></div>' +
+      filas + cardAcceso;
   }
 
   window.gpsVerCapitulo = function (n) {
@@ -9558,16 +9594,41 @@ function subtituloRumbo() {
   };
 
   async function gpsQuizTerminar(capitulo) {
-    document.getElementById('gpsQuizBody').innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0">Guardando...</div>';
+    document.getElementById('gpsQuizBody').innerHTML = '<div style="font-size:14.5px;color:var(--muted);padding:12px 0">Guardando...</div>';
     try {
       await gpsLlamar('enviarQuizCapitulo', { capitulo: capitulo });
-      document.getElementById('gpsQuizBody').innerHTML = '<div style="font-size:14px;font-weight:700;color:#16a34a;margin-bottom:8px">Listo, sumaste 10 puntos.</div><div style="text-align:right"><button class="btn btn-primary" onclick="document.getElementById(\'gpsQuizOverlay\').style.display=\'none\'">Cerrar</button></div>';
+      document.getElementById('gpsQuizBody').innerHTML = '<div style="font-size:15.5px;font-weight:700;color:#16a34a;margin-bottom:10px">Listo, sumaste 10 puntos.</div><div style="text-align:right"><button class="btn btn-primary" style="font-size:14.5px;padding:9px 18px" onclick="document.getElementById(\'gpsQuizOverlay\').style.display=\'none\'">Cerrar</button></div>';
       _gpsLoaded = false;
       gpsRender();
+      if (capitulo === 4) { setTimeout(function () { var q = document.getElementById('gpsQuizOverlay'); if (q) q.style.display = 'none'; gpsCelebrar(); }, 900); }
     } catch (e) {
-      document.getElementById('gpsQuizBody').innerHTML = '<div style="font-size:13px;color:#ef4444">No pudimos guardar: ' + esc(e.message) + '</div>';
+      document.getElementById('gpsQuizBody').innerHTML = '<div style="font-size:14.5px;color:#ef4444">No pudimos guardar: ' + esc(e.message) + '</div>';
     }
   }
+
+  window.gpsCelebrar = function () {
+    var ov = document.getElementById('gpsCeleOverlay');
+    if (!ov) { ov = document.createElement('div'); ov.id = 'gpsCeleOverlay'; ov.className = 'overlay'; document.body.appendChild(ov); }
+    var colores = ['#2563EB', '#6FE0CC', '#FF8A5C', '#E8C050', '#16a34a'];
+    var conf = '';
+    for (var i = 0; i < 70; i++) {
+      conf += '<i style="left:' + Math.round(Math.random() * 100) + '%;background:' + colores[i % colores.length] + ';animation-delay:' + (Math.random() * 2.2).toFixed(2) + 's;animation-duration:' + (2.6 + Math.random() * 2).toFixed(2) + 's"></i>';
+    }
+    ov.innerHTML = '<div class="modal" style="max-width:520px;text-align:center;position:relative;overflow:hidden">' +
+      '<div class="gps-confeti">' + conf + '</div>' +
+      '<div style="position:relative;z-index:1">' +
+        '<img src="assets/nortia/nortia-bust.png" alt="NortIA" style="width:112px;height:112px;object-fit:contain;display:block;margin:0 auto 4px">' +
+        '<div style="font-size:12px;font-weight:800;color:#2563EB;text-transform:uppercase;letter-spacing:.6px">Club Pioneros de Norte</div>' +
+        '<div class="modal-title" style="font-size:26px;margin:8px 0 12px">¡Lo lograste!</div>' +
+        '<div style="font-size:15px;line-height:1.65;color:rgba(15,23,42,0.8)">Completaste los cuatro capítulos y el mes de acompañamiento entero. Sos oficialmente <b>Pionero Vitalicio</b>.</div>' +
+        '<div style="margin:18px 0;padding:16px;border-radius:14px;background:rgba(232,192,80,0.14);border:1px solid rgba(232,192,80,0.45)">' +
+          '<div style="font-size:32px;font-weight:900;color:#B8860B;line-height:1.1">40 / 40 pts</div>' +
+          '<div style="font-size:15px;font-weight:800;margin-top:6px">🏅 Norte FOCO gratis, para siempre</div></div>' +
+        '<div style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:18px">Gracias por bancarte el proceso completo — eso es lo que hace posible que sigamos sosteniendo Norte.</div>' +
+        '<button class="btn btn-primary" style="font-size:15px;padding:11px 24px" onclick="document.getElementById(\'gpsCeleOverlay\').style.display=\'none\'">Seguir en Norte →</button>' +
+      '</div></div>';
+    ov.style.display = 'flex';
+  };
 
   var _origRenderGps = window.render;
   window.render = function () {
