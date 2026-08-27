@@ -1163,7 +1163,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.053</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.054</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -1251,7 +1251,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.053</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.054</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -2704,7 +2704,7 @@ const getEmpresas    = ()  => JSON.parse(localStorage.getItem('fin_empresas') ||
 const saveEmpresas   = e   => localStorage.setItem('fin_empresas', JSON.stringify(e));
 const getSession     = ()  => JSON.parse(localStorage.getItem('fin_session')  || 'null');
 const setSession     = s   => localStorage.setItem('fin_session',  JSON.stringify(s));
-const clearSession   = () => { Object.keys(localStorage).forEach(k => { if (!k.startsWith('firebase:')) localStorage.removeItem(k); }); };
+const clearSession   = () => { const conservar = ['firebase:', 'gpsUltimoCapVisto_', 'fin_onboarding_done_', 'norte_ia_captura_', 'norteInstallDismiss']; Object.keys(localStorage).forEach(k => { if (!conservar.some(p => k.startsWith(p))) localStorage.removeItem(k); }); };
 
 // Current context helpers
 const curEmpresa     = ()  => getSession()?.empresaId || 'JLL';
