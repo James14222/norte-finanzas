@@ -1018,7 +1018,7 @@ tr:hover td { background: #fafbfc; }
   .gps-wrap { padding: 16px 16px 32px !important; }
   .gps-wrap::before { width: 190px; height: 198px; top: -16px; right: -26px; opacity: 0.06; }
   .gps-header-title { font-size: 24px; }
-  .gps-header-sub { font-size: 14px; }
+   .gps-header-sub { font-size: 14px; } .gps-header { position: sticky; top: 0; z-index: 45; background: var(--bg); padding: 8px 0; box-shadow: 0 8px 12px -10px rgba(0,0,0,.28); } .gps-volver { background: rgba(37,99,235,0.10) !important; border-color: rgba(37,99,235,0.32) !important; color: #2563EB !important; font-weight: 700; }
 }
 
 </style>
@@ -1201,7 +1201,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.061</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.062</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -1289,7 +1289,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.061</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.062</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -2284,7 +2284,7 @@ tr:hover td { background: #fafbfc; }
   </div><!-- /ayuda-panel -->
 </div><!-- /ayudaOverlay -->
 
-<!-- TU GPS PAGE --><div id="page-tugps" class="page"><div class="gps-wrap" style="max-width:760px;margin:0 auto;padding:8px 24px 40px;display:flex;flex-direction:column"><div class="gps-header"><div class="gps-header-title">Tu GPS</div><div class="gps-header-sub">Club Pioneros de Norte</div></div><div id="gpsBody" style="margin-top:16px;position:relative;z-index:1"><div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando...</div></div></div></div>
+<!-- TU GPS PAGE --><div id="page-tugps" class="page"><div class="gps-wrap" style="max-width:760px;margin:0 auto;padding:8px 24px 40px;display:flex;flex-direction:column"><div class="gps-header"><div style="display:flex;align-items:center;gap:12px"><button class="menu-toggle gps-volver" onclick="toggleSidebar()" aria-label="Volver al menu" title="Volver al menu">&#9776;</button><div><div class="gps-header-title">Tu GPS</div><div class="gps-header-sub">Club Pioneros de Norte</div></div></div></div><div id="gpsBody" style="margin-top:16px;position:relative;z-index:1"><div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando...</div></div></div></div>
 <!-- ADMIN PAGE -->
 <div id="page-admin" class="page">
   <div style="max-width:880px;margin:0 auto;padding:28px 24px;display:flex;flex-direction:column">
