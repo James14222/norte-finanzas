@@ -1191,7 +1191,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.058</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.059</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -1279,7 +1279,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.058</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.059</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -2733,7 +2733,7 @@ const getEmpresas    = ()  => JSON.parse(localStorage.getItem('fin_empresas') ||
 const saveEmpresas   = e   => localStorage.setItem('fin_empresas', JSON.stringify(e));
 const getSession     = ()  => JSON.parse(localStorage.getItem('fin_session')  || 'null');
 const setSession     = s   => localStorage.setItem('fin_session',  JSON.stringify(s));
-const clearSession   = () => { const conservar = ['firebase:', 'gpsUltimoCapVisto_', 'fin_onboarding_done_', 'norte_ia_captura_', 'norteInstallDismiss']; Object.keys(localStorage).forEach(k => { if (!conservar.some(p => k.startsWith(p))) localStorage.removeItem(k); }); };
+const clearSession   = () => { const conservar = ['firebase:', 'gpsUltimoCapVisto_', 'gpsCapLeido_', 'fin_onboarding_done_', 'norte_ia_captura_', 'norteInstallDismiss']; Object.keys(localStorage).forEach(k => { if (!conservar.some(p => k.startsWith(p))) localStorage.removeItem(k); }); };
 
 // Current context helpers
 const curEmpresa     = ()  => getSession()?.empresaId || 'JLL';
@@ -9595,6 +9595,25 @@ function subtituloRumbo() {
       filas + cardAcceso;
   }
 
+  function gpsKeyLeido(n) { try { return 'gpsCapLeido_' + ((getSession() || {}).userId || 'anon') + '_' + n; } catch (e) { return 'gpsCapLeido_anon_' + n; } }
+  function gpsCapYaLeido(n) { try { return localStorage.getItem(gpsKeyLeido(n)) === '1'; } catch (e) { return false; } }
+
+  window.gpsMarcarCapLeido = function (n) {
+    try { localStorage.setItem(gpsKeyLeido(n), '1'); } catch (e) {}
+    var btn = document.getElementById('gpsCapQuizBtn');
+    if (!btn || btn.getAttribute('data-listo') === '1') return;
+    btn.setAttribute('data-listo', '1');
+    btn.className = 'btn btn-primary';
+    btn.disabled = false;
+    btn.style.cssText = 'font-size:14.5px;padding:10px 20px';
+    btn.textContent = 'Hacer el quiz →';
+    btn.onclick = function () { document.getElementById('gpsCapOverlay').style.display = 'none'; gpsQuiz(n); };
+  };
+
+  window.gpsCapScroll = function (el, n) {
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 24) gpsMarcarCapLeido(n);
+  };
+
   window.gpsVerCapitulo = function (n) {
     var c = GPS_CONTENIDO[n];
     if (!c) return;
@@ -9603,24 +9622,31 @@ function subtituloRumbo() {
     var ov = document.getElementById('gpsCapOverlay');
     if (!ov) { ov = document.createElement('div'); ov.id = 'gpsCapOverlay'; ov.className = 'overlay'; document.body.appendChild(ov); }
     var seccionesHtml = c.secciones.map(function (s) {
-      return '<div style="margin:14px 0"><div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:6px">' + s.h + '</div><div style="font-size:13.5px;color:rgba(15,23,42,0.75);line-height:1.65">' + s.p + '</div></div>';
+      return '<div style="margin:14px 0"><div style="font-size:14.5px;font-weight:800;color:var(--text);margin-bottom:6px">' + s.h + '</div><div style="font-size:15px;color:rgba(15,23,42,0.75);line-height:1.65">' + s.p + '</div></div>';
     }).join('');
     var accionHtml = completo
-      ? '<button class="btn" onclick="document.getElementById(\'gpsCapOverlay\').style.display=\'none\'">Cerrar</button>'
-      : '<button class="btn btn-primary" onclick="document.getElementById(\'gpsCapOverlay\').style.display=\'none\';gpsQuiz(' + n + ')">Hacer el quiz →</button>';
-    ov.innerHTML = '<div class="modal" style="max-width:600px">' +
+      ? '<button class="btn" style="font-size:14.5px;padding:10px 20px" onclick="document.getElementById(\'gpsCapOverlay\').style.display=\'none\'">Cerrar</button>'
+      : '<button id="gpsCapQuizBtn" class="btn" disabled style="font-size:14.5px;padding:10px 20px;opacity:.55;cursor:not-allowed">🔒 Leé el capítulo para habilitar el quiz</button>';
+    ov.innerHTML = '<div class="modal" id="gpsCapModal" onscroll="gpsCapScroll(this,' + n + ')" style="max-width:600px">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">' +
-        '<div><div style="font-size:11px;color:#2563EB;font-weight:800;text-transform:uppercase;letter-spacing:.5px">Capítulo ' + n + ' · Semana ' + n + ' de 4</div>' +
+        '<div><div style="font-size:12px;color:#2563EB;font-weight:800;text-transform:uppercase;letter-spacing:.5px">Capítulo ' + n + ' · Semana ' + n + ' de 4</div>' +
         '<div class="modal-title" style="margin-bottom:0;margin-top:2px">' + c.titulo + '</div></div>' +
         '<span onclick="document.getElementById(\'gpsCapOverlay\').style.display=\'none\'" style="cursor:pointer;font-size:22px;color:var(--muted);line-height:1;padding:2px 4px;flex-shrink:0">×</span>' +
       '</div>' +
-      '<div style="font-size:13.5px;color:rgba(15,23,42,0.75);line-height:1.65;margin-top:12px">' + c.intro + '</div>' +
+      '<div style="font-size:15px;color:rgba(15,23,42,0.75);line-height:1.65;margin-top:12px">' + c.intro + '</div>' +
       seccionesHtml +
-      '<div style="background:rgba(111,224,204,0.1);border:1px solid rgba(111,224,204,0.3);border-radius:12px;padding:14px 16px;margin:14px 0"><div style="font-size:11px;color:#0d8c72;font-weight:800;text-transform:uppercase;margin-bottom:5px">Ejemplo real</div><div style="font-size:13px;color:rgba(15,23,42,0.8);line-height:1.6">' + c.ejemplo + '</div></div>' +
-      '<div style="background:rgba(255,138,92,0.08);border:1px solid rgba(255,138,92,0.25);border-radius:12px;padding:14px 16px;margin:14px 0 18px"><div style="font-size:11px;color:var(--primary-dark);font-weight:800;text-transform:uppercase;margin-bottom:5px">Tu desafío esta semana</div><div style="font-size:13px;color:rgba(15,23,42,0.8);line-height:1.6">' + c.desafio + '</div></div>' +
+      '<div style="background:rgba(111,224,204,0.1);border:1px solid rgba(111,224,204,0.3);border-radius:12px;padding:14px 16px;margin:14px 0"><div style="font-size:11.5px;color:#0d8c72;font-weight:800;text-transform:uppercase;margin-bottom:5px">Ejemplo real</div><div style="font-size:14.5px;color:rgba(15,23,42,0.8);line-height:1.6">' + c.ejemplo + '</div></div>' +
+      '<div style="background:rgba(255,138,92,0.08);border:1px solid rgba(255,138,92,0.25);border-radius:12px;padding:14px 16px;margin:14px 0 18px"><div style="font-size:11.5px;color:var(--primary-dark);font-weight:800;text-transform:uppercase;margin-bottom:5px">Tu desafío esta semana</div><div style="font-size:14.5px;color:rgba(15,23,42,0.8);line-height:1.6">' + c.desafio + '</div></div>' +
       '<div style="text-align:right">' + accionHtml + '</div>' +
     '</div>';
     ov.style.display = 'flex';
+    setTimeout(function () {
+      var m = document.getElementById('gpsCapModal');
+      if (!m) return;
+      m.scrollTop = 0;
+      // Ya lo leyó antes, o el contenido entra entero sin scroll: habilitamos igual.
+      if (gpsCapYaLeido(n) || m.scrollHeight <= m.clientHeight + 8) gpsMarcarCapLeido(n);
+    }, 60);
   };
 
   window.gpsQuiz = function (capitulo) {
