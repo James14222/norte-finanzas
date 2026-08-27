@@ -620,25 +620,35 @@ tr:hover td { background: #fafbfc; }
   .month-display { min-width:96px; }
 }
 
-/* Transacciones mobile: compactar a 2 renglones por movimiento (acciones inline) */
+/* Transacciones en mobile: grilla de 2 renglones exactos por movimiento */
 @media (max-width: 880px) {
-  #page-transacciones tbody tr { gap: 4px 8px !important; padding: 12px 14px 10px !important; margin-bottom: 10px !important; }
-  #page-transacciones tbody tr td:empty { display: none !important; }
-  #page-transacciones tbody tr td:nth-child(1) { order: 0 !important; flex: 0 0 auto !important; }
-  #page-transacciones tbody tr td:nth-child(2) { order: 0 !important; flex: 1 1 auto !important; min-width: 0 !important; font-size: 15px !important; }
-  #page-transacciones tbody tr td:nth-child(2) strong { font-size: 15px !important; }
-  #page-transacciones tbody tr td:nth-child(6) { order: 0 !important; flex: 0 0 auto !important; margin-left: auto !important; font-size: 18px !important; font-weight: 800 !important; }
-  #page-transacciones tbody tr td:nth-child(3),
-  #page-transacciones tbody tr td:nth-child(4),
+  #page-transacciones tbody tr {
+    display: grid !important;
+    grid-template-columns: auto 1fr auto auto !important;
+    grid-template-areas: "chk nom nom monto" "tipo rubro saldo acc" !important;
+    gap: 4px 7px !important; align-items: center !important;
+    padding: 10px 12px !important; margin-bottom: 8px !important;
+  }
+  #page-transacciones tbody tr td { padding: 0 !important; border: none !important; }
   #page-transacciones tbody tr td:nth-child(5),
   #page-transacciones tbody tr td:nth-child(7),
   #page-transacciones tbody tr td:nth-child(8),
-  #page-transacciones tbody tr td:nth-child(9),
-  #page-transacciones tbody tr td:nth-child(10) { order: 1 !important; flex: 0 0 auto !important; font-size: 12px !important; color: var(--muted) !important; text-align: left !important; margin-left: 0 !important; }
-  #page-transacciones tbody tr td:nth-child(9)::before { content: "Pagado " !important; font-size: 10.5px !important; }
-  #page-transacciones tbody tr td:nth-child(11) { order: 2 !important; flex: 0 0 auto !important; margin-left: auto !important; display: flex !important; gap: 10px !important; margin-top: 0 !important; padding-top: 0 !important; border-top: none !important; }
-  #page-transacciones tbody tr td:nth-child(11) button { font-size: 16px !important; padding: 2px 4px !important; }
+  #page-transacciones tbody tr td:nth-child(9) { display: none !important; }
+  #page-transacciones tbody tr td:nth-child(1) { grid-area: chk !important; }
+  #page-transacciones tbody tr td:nth-child(2) { grid-area: nom !important; min-width: 0 !important; font-size: 14.5px !important; line-height: 1.28 !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; }
+  #page-transacciones tbody tr td:nth-child(2) strong { font-size: 14.5px !important; }
+  #page-transacciones tbody tr td:nth-child(6) { grid-area: monto !important; text-align: right !important; font-size: 15.5px !important; font-weight: 800 !important; white-space: nowrap !important; }
+  #page-transacciones tbody tr td:nth-child(3) { grid-area: tipo !important; }
+  #page-transacciones tbody tr td:nth-child(3) .badge { font-size: 10.5px !important; padding: 2px 7px !important; }
+  #page-transacciones tbody tr td:nth-child(4) { grid-area: rubro !important; min-width: 0 !important; display: flex !important; align-items: center !important; gap: 3px !important; }
+  #page-transacciones tbody tr td:nth-child(4) .rubro-tag { min-width: 0 !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; font-size: 11px !important; padding: 2px 7px !important; }
+  #page-transacciones tbody tr .tg-full { display: none !important; }
+  #page-transacciones tbody tr .tg-abbr { display: inline !important; }
+  #page-transacciones tbody tr td:nth-child(10) { grid-area: saldo !important; font-size: 12px !important; white-space: nowrap !important; }
+  #page-transacciones tbody tr td:nth-child(11) { grid-area: acc !important; display: flex !important; gap: 4px !important; justify-content: flex-end !important; margin: 0 !important; padding: 0 !important; border-top: none !important; }
+  #page-transacciones tbody tr td:nth-child(11) button { font-size: 14px !important; padding: 1px 2px !important; }
 }
+.tg-abbr { display: none; }
 
 /* Sidebar: que se pueda scrollear cuando no entra todo (Exportar / Importar) */
 .sidebar { overflow-y: auto; overscroll-behavior: contain; }
@@ -1191,7 +1201,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.059</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.060</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -1279,7 +1289,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.059</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.060</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -4961,7 +4971,7 @@ function renderTx() {
       <td><input type="checkbox" class="tx-check" data-id="${t.id}" ${selectedTx.has(t.id)?'checked':''} onchange="toggleSelectTx('${t.id}', this.checked)"></td>
       <td><strong>${esc(t.detalle)}</strong>${pendiente ? ' <span title="Esqueleto de gasto fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de ${tcLabel(t)==='TD'?'Débito':'Crédito'}" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>` : ''}</td>
       <td><span class="badge badge-${t.tipo.toLowerCase()}">${t.tipo}</span></td>
-      <td><span class="rubro-tag">${esc(t.rubro||'-')}</span>${t.tipo==='Gasto' && t.tipoGasto ? `<span style="display:inline-block;margin-left:5px;font-size:10.5px;font-weight:600;color:var(--muted)">· ${t.tipoGasto}</span>` : ''}</td>
+      <td><span class="rubro-tag">${esc(t.rubro||'-')}</span>${t.tipo==='Gasto' && t.tipoGasto ? `<span style="display:inline-block;margin-left:5px;font-size:10.5px;font-weight:600;color:var(--muted)">· <span class="tg-full">${t.tipoGasto}</span><span class="tg-abbr">${t.tipoGasto.charAt(0)}</span></span>` : ''}</td>
       <td>${t.cliente ? `<span style="font-size:12px;font-weight:600;color:var(--primary)">${esc(t.cliente)}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
       <td class="amt ${t.tipo==='Ingreso'?'positive':'negative'}">${fmtP(t.impPesos)}</td>
       <td style="color:var(--muted)">${fmtU(t.impUSD)}</td>
