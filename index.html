@@ -1163,7 +1163,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.055</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.056</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -1251,7 +1251,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.055</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.056</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -1264,7 +1264,7 @@ tr:hover td { background: #fafbfc; }
     <div class="nav-item" onclick="showPage('progreso')"><span class="ico">🏆</span> Progreso</div>
     <div class="nav-item" onclick="showPage('reportes')"><span class="ico">📈</span> Reportes</div>
     <div class="nav-item disabled nortia-item" id="navNortia"><span class="nortia-nav-icon" style="display:inline-block;background-image:var(--nortia-icon-url);background-size:72%;background-repeat:no-repeat;background-position:center;background-color:#fff;border-radius:6px;"></span> <strong>NortIA</strong> <span class="badge-soon" id="navNortiaBadge">Próximamente</span></div>
-        <div class="nav-item gps-nav-item" id="navTuGps" onclick="showPage('tugps')"><span class="ico">GPS</span> Tu GPS<span id="gpsNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
+        <div class="nav-item gps-nav-item" id="navTuGps" onclick="showPage('tugps')"><span class="ico">GPS</span> - Pioneros<span id="gpsNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
      <div class="nav-item" id="navAdmin" style="display:none" onclick="showPage('admin')"><span class="ico">⚙️</span> Admin</div>
   </div>
   <div class="sidebar-user" id="sidebarUser" style="display:none">
@@ -6955,8 +6955,12 @@ async function qpToggleVoz() {
   }
 }
 
-function qpLimiteIaKey() {
-  return 'norte_ia_captura_' + curEmpresa() + '_' + curKey();
+function qpCapturaMesActual() {
+  return new Date().toISOString().slice(0, 7); // yyyy-mm real, no el mes navegado en el dashboard
+}
+
+function qpCapturaRef() {
+  return firebase.database().ref('norteSync/empresas/' + curEmpresa() + '/nortia/usageCaptura/' + qpCapturaMesActual());
 }
 
 function qpLimiteIaCapActual() {
@@ -6964,23 +6968,35 @@ function qpLimiteIaCapActual() {
   if (miPlanActual === 'PRO') return 100;
   return 50; // FOCO
 }
-function qpLimiteIaAlcanzado() {
-  const usado = parseInt(localStorage.getItem(qpLimiteIaKey()) || '0', 10);
-  return usado >= qpLimiteIaCapActual();
+
+async function qpCapturaLeerUso() {
+  try { const snap = await qpCapturaRef().once('value'); return snap.val() || 0; } catch (e) { return 0; }
 }
 
-function qpSumarUsoIa() {
-  const usado = parseInt(localStorage.getItem(qpLimiteIaKey()) || '0', 10);
-  localStorage.setItem(qpLimiteIaKey(), String(usado + 1));
+// Reserva un uso ANTES de llamar a la IA. Si la base falla, dejamos pasar la carga.
+async function qpCapturaCheckYRegistrarUso() {
+  const cap = qpLimiteIaCapActual();
+  if (cap === Infinity) return { ok: true, usados: 0 };
+  try {
+    const ref = qpCapturaRef();
+    const snap = await ref.once('value');
+    const usados = snap.val() || 0;
+    if (usados >= cap) return { ok: false, usados: usados };
+    await ref.set(usados + 1);
+    return { ok: true, usados: usados + 1 };
+  } catch (e) {
+    console.error('qpCapturaCheckYRegistrarUso error:', e);
+    return { ok: true, usados: undefined };
+  }
 }
 
-function actualizarQpIaContador() {
+async function actualizarQpIaContador(usadosConocido) {
   const el = document.getElementById('qpIaContador');
   if (!el) return;
   const cap = qpLimiteIaCapActual();
   if (cap === Infinity) { el.textContent = 'Cargas por foto/voz ilimitadas con tu plan'; el.style.color = '#6b7f93'; return; }
-  const usado = parseInt(localStorage.getItem(qpLimiteIaKey()) || '0', 10);
-  const quedan = Math.max(0, cap - usado);
+  const usados = (usadosConocido !== undefined) ? usadosConocido : await qpCapturaLeerUso();
+  const quedan = Math.max(0, cap - usados);
   el.textContent = quedan === 0
     ? 'Usaste las ' + cap + ' cargas por foto/voz del mes'
     : 'Te quedan ' + quedan + ' de ' + cap + ' cargas por foto/voz este mes';
@@ -6992,16 +7008,18 @@ async function qpProcesarIA(base64, mimeType) {
     alert('La IA de Norte todavía se está iniciando, esperá un segundo e intentá de nuevo.');
     return;
   }
-  if (qpLimiteIaAlcanzado()) {
-    alert('Llegaste al limite de ' + qpLimiteIaCapActual() + ' capturas por foto/voz este mes con tu plan actual. Podes seguir cargando manualmente, o mejorar tu plan desde el boton Mi plan.');
-    return;
-  }
   const statusEl = document.getElementById('qpIaStatus');
   statusEl.style.display = 'block';
   statusEl.textContent = mimeType && mimeType.startsWith('audio/') ? 'Norte está escuchando el audio…' : 'Norte está leyendo el gasto…';
+  const cupo = await qpCapturaCheckYRegistrarUso();
+  if (!cupo.ok) {
+    statusEl.textContent = 'Llegaste al límite de ' + qpLimiteIaCapActual() + ' cargas por foto/voz este mes. Podés seguir cargando a mano, o mejorar tu plan desde el botón Mi plan.';
+    actualizarQpIaContador(cupo.usados);
+    return;
+  }
+  actualizarQpIaContador(cupo.usados);
   try {
     const datos = await window.nortiaExtraerGasto(base64, mimeType); if (datos && mimeType && mimeType.startsWith('audio/')) { const _tr = (datos.transcripcionAudio || '').trim(); if (_tr.length < 6) datos.detectado = false; }
-    qpSumarUsoIa(); actualizarQpIaContador();
     if (!datos || !datos.detectado) {
       statusEl.textContent = mimeType && mimeType.startsWith('audio/') ? 'No entendimos la información. Por favor, volvé a compartirla o cargalo a mano.' : 'No pudimos identificar un gasto ahí — completá los datos a mano.';
       return;
