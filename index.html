@@ -21,6 +21,8 @@
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-analytics-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>if(window.pdfjsLib)window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
 
 <!-- NortIA — Firebase AI Logic (SDK modular, requiere carga separada del resto que es compat/global) -->
 <script type="module">
@@ -1201,7 +1203,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.064</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.065</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -1289,7 +1291,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.064</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.065</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -1447,8 +1449,8 @@ tr:hover td { background: #fafbfc; }
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-secondary" onclick="clonarMesAnterior()" title="Copia todos los registros del mes anterior a este mes, con sus importes">📋 Clonar mes anterior</button>
             <button class="btn btn-secondary" onclick="replicarGastosFijos()" title="Crea el esqueleto de tus gastos fijos del mes anterior, sin importe, para no olvidarte de ninguno">🧩 Replicar gastos fijos</button>
-            <button class="btn btn-secondary" onclick="document.getElementById('tcFileInput').click()" title="Importar resumen de tarjeta de crédito o débito (.xlsx)">💳 Importar TC / TD</button>
-            <input type="file" id="tcFileInput" accept=".xlsx,.xls" style="display:none" onchange="handleTCImport(this)">
+            <button class="btn btn-secondary" onclick="document.getElementById('tcFileInput').click()" title="Importar el resumen de tu tarjeta en PDF, o el Excel de movimientos del homebanking">💳 Importar TC / TD</button>
+            <input type="file" id="tcFileInput" accept=".pdf,.xlsx,.xls" style="display:none" onchange="handleTCImport(this)">
             <button class="btn btn-secondary" onclick="openPagarTC()" title="Registrar pago de resumen de tarjeta de crédito">✅ Pagar TC</button>
             <button class="btn btn-primary" onclick="openModal()">+ Agregar</button>
           </div>
@@ -2967,16 +2969,18 @@ tr:hover td { background: #fafbfc; }
            ondragleave="this.classList.remove('drag-over')"
            ondrop="event.preventDefault();this.classList.remove('drag-over');handleTCFile(event.dataTransfer.files[0])">
         <div class="drop-ico">📂</div>
-        <p><strong>Arrastrá el archivo .xlsx acá</strong> o hacé clic para seleccionarlo</p>
-        <p style="margin-top:6px;font-size:12px">Compatible con Santander · Banco Provincia y formatos similares</p>
-        <input type="file" id="tcFileInput2" accept=".xlsx,.xls" style="display:none" onchange="handleTCImport(this)">
+        <p><strong>Arrastrá el resumen de tu tarjeta acá</strong> o hacé clic para seleccionarlo</p>
+        <p style="margin-top:6px;font-size:12px">📄 <strong>PDF del resumen</strong> — reconoce el banco, el titular y los adicionales solo, e incluye los impuestos</p>
+        <p style="margin-top:2px;font-size:12px">También acepta el Excel de movimientos del homebanking (.xlsx)</p>
+        <input type="file" id="tcFileInput2" accept=".pdf,.xlsx,.xls" style="display:none" onchange="handleTCImport(this)">
       </div>
     </div>
 
     <!-- PASO DE CONFIGURACIÓN: banco + mes de impacto -->
     <div id="importConfig" style="display:none; padding:20px 24px 8px;">
+      <div id="tcPdfInfo" style="display:none;margin-bottom:16px"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div>
+        <div id="tcPasoBanco">
           <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">1. ¿De qué banco es la tarjeta?</div>
           <div style="display:flex;flex-direction:column;gap:8px" id="bankSelector">
             <label class="tc-option" onclick="tcSelectBank(this,'BAPRO')">
@@ -4411,6 +4415,270 @@ let tcBank      = '';   // 'BAPRO' | 'SANTANDER' | 'CUSTOM:<id>'
 let tcTargetMes = '';   // monthKey del mes de impacto
 let tcIsDebit   = false; // true si la tarjeta seleccionada es débito
 
+/* ══ MOTOR GENERICO DE IMPORTACION DE RESUMENES DE TC EN PDF ══════════════
+   Pipeline unico para todos los bancos: extraer palabras con coordenadas ->
+   detectar emisor -> aplicar su perfil -> normalizar -> validar contra los
+   totales que trae el propio resumen. Lo unico especifico de cada banco es
+   el perfil; el resto del recorrido es identico para todos.            */
+var tcPdfRes = null;
+var TCP_RE_MONTO = /^-?(?:U\$S|\$|USD)?\s*\d{1,3}(?:\.\d{3})*,\d{2}-?\s*\*?$|^-?(?:U\$S|\$|USD)?\s*\d+\.?\d*,\d{2}-?\s*\*?$/;
+function tcpEsMonto(t) { return TCP_RE_MONTO.test(String(t || '').trim()); }
+function tcpNum(t) {
+  var s = String(t || '').trim().replace(/\*/g, '').trim();
+  var neg = /^-/.test(s) || /-$/.test(s) || /^menos\s/i.test(s);
+  s = s.replace(/^-/, '').replace(/-$/, '').replace(/^menos\s+/i, '').replace(/U\$S|USD|\$/g, '').replace(/\s/g, '').replace(/\./g, '').replace(/,/, '.');
+  var v = parseFloat(s);
+  if (isNaN(v)) return 0;
+  return neg ? -v : v;
+}
+function tcpMonedaTok(t) { var s = String(t || ''); if (/U\$S|USD/i.test(s)) return 'USD'; if (/\$/.test(s)) return 'ARS'; return null; }
+var TCP_MESES = { enero:1, febrero:2, marzo:3, abril:4, mayo:5, junio:6, julio:7, agosto:8, setiembre:9, septiembre:9, octubre:10, noviembre:11, diciembre:12, ene:1, feb:2, mar:3, abr:4, may:5, jun:6, jul:7, ago:8, set:9, sep:9, oct:10, nov:11, dic:12 };
+function tcpFecha(a, m, d) { return a + '-' + ('0' + m).slice(-2) + '-' + ('0' + d).slice(-2); }
+
+async function tcpLeerPdf(arrayBuffer) {
+  if (!window.pdfjsLib) throw new Error('El lector de PDF todavia no termino de cargar. Reintenta en unos segundos.');
+  var doc = await window.pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer), useSystemFonts: true }).promise;
+  var paginas = [];
+  for (var p = 1; p <= doc.numPages; p++) {
+    var page = await doc.getPage(p);
+    var vp = page.getViewport({ scale: 1 });
+    var tc = await page.getTextContent();
+    var items = [];
+    for (var i = 0; i < tc.items.length; i++) {
+      var it = tc.items[i];
+      if (!it.str || !it.str.trim()) continue;
+      items.push({ t: it.str.trim(), x0: it.transform[4], x1: it.transform[4] + it.width, top: vp.height - it.transform[5] });
+    }
+    items.sort(function (a, b) { return (a.top - b.top) || (a.x0 - b.x0); });
+    var lineas = [], buf = [], last = null;
+    for (var j = 0; j < items.length; j++) {
+      var w = items[j];
+      if (last === null || Math.abs(w.top - last) <= 2.5) { buf.push(w); }
+      else { lineas.push(buf.sort(function (a, b) { return a.x0 - b.x0; })); buf = [w]; }
+      last = w.top;
+    }
+    if (buf.length) lineas.push(buf.sort(function (a, b) { return a.x0 - b.x0; }));
+    paginas.push({ lineas: lineas, ancho: vp.width, alto: vp.height });
+  }
+  return paginas;
+}
+function tcpTexto(paginas) {
+  return paginas.map(function (p) { return p.lineas.map(function (l) { return l.map(function (w) { return w.t; }).join(' '); }).join('\n'); }).join('\n');
+}
+var TCP_EMISORES = [
+  { id: 'SANTANDER', nombre: 'Santander', huella: function (t) { return /Movimientos de /i.test(t) && /Copia fiel de car/i.test(t); } },
+  { id: 'PRISMA', nombre: 'Formato clasico Visa / Mastercard', huella: function (t) { return /Prox\.Cierre:/i.test(t) && /LIMITES:/i.test(t); } }
+];
+function tcpDetectarEmisor(paginas) {
+  var txt = tcpTexto(paginas);
+  for (var i = 0; i < TCP_EMISORES.length; i++) if (TCP_EMISORES[i].huella(txt)) return TCP_EMISORES[i];
+  return null;
+}
+
+/* Perfil: formato clasico Prisma (Banco Provincia y similares) */
+function tcpParsePrisma(paginas) {
+  var filas = [], control = { ars: null, usd: null }, banco = null, titular = '', colArs = null, colUsd = null;
+  paginas.forEach(function (pg) {
+    pg.lineas.forEach(function (ln) {
+      var txt = ln.map(function (w) { return w.t; }).join(' ');
+      if (/Total Consumos/i.test(txt)) {
+        var m = ln.filter(function (w) { return tcpEsMonto(w.t); });
+        if (m.length >= 2) { colArs = m[0].x1; colUsd = m[m.length - 1].x1; control.ars = tcpNum(m[0].t); control.usd = tcpNum(m[m.length - 1].t); }
+        var nm = txt.match(/Total Consumos de\s+(.+?)\s*(?:[\d.,]+\s*\*|$)/i);
+        if (nm) titular = nm[1].trim();
+      }
+      if (banco === null && /BANCO DE LA PROVINCIA/i.test(txt)) banco = 'Banco Provincia';
+    });
+  });
+  if (colArs === null) { colArs = paginas[0].ancho * 0.77; colUsd = paginas[0].ancho * 0.925; }
+  var corte = (colArs + colUsd) / 2, anio = null, mes = null;
+  paginas.forEach(function (pg) {
+    pg.lineas.forEach(function (ln) {
+      var txt = ln.map(function (w) { return w.t; }).join(' '), idx = 0;
+      var m0 = ln[0] && ln[0].t.match(/^(\d{2})\s+([A-Za-zAEIOUaeiouáéíóú]+)$/);
+      if (m0 && ln[0].x0 < 40 && TCP_MESES[m0[2].toLowerCase()]) { anio = 2000 + parseInt(m0[1], 10); mes = TCP_MESES[m0[2].toLowerCase()]; idx = 1; }
+      var head = ln[idx];
+      if (!head || head.x0 < 60 || head.x0 > 100) return;
+      var mh = head.t.match(/^(\d{1,2})(?:\s+(\d{6}))?(?:\s+([A-Z*]))?$/);
+      if (!mh || anio === null) return;
+      if (/SU PAGO|SALDO ANTERIOR|TOTAL CONSUMOS/i.test(txt)) return;
+      var resto = ln.slice(idx + 1);
+      var montos = resto.filter(function (w) { return tcpEsMonto(w.t); });
+      if (!montos.length) return;
+      var ult = montos[montos.length - 1], monto = tcpNum(ult.t);
+      if (monto <= 0) return;
+      var desc = resto.filter(function (w) { return w.x0 >= 125 && w.x1 <= colArs - 60 && !tcpEsMonto(w.t) && !/^(USD|U\$S|\$)$/i.test(w.t); }).map(function (w) { return w.t; }).join(' ').replace(/\s+/g, ' ').trim();
+      if (!desc) return;
+      filas.push({ fecha: tcpFecha(anio, mes, parseInt(mh[1], 10)), desc: desc, monto: monto, moneda: ult.x1 > corte ? 'USD' : 'ARS', cuota: '', comprobante: mh[2] || '', titular: titular, tipo: mh[2] ? 'consumo' : 'impuesto' });
+    });
+  });
+  return { banco: banco || 'Visa / Mastercard', filas: filas, control: control, subtotales: [] };
+}
+
+/* Perfil: Santander */
+function tcpParseSantander(paginas) {
+  var filas = [], control = { ars: null, usd: null }, subtot = [];
+  var titular = '', tarjeta = '', seccion = '', fechaAct = '', ultima = null, colArs = 458, colUsd = 549;
+  paginas.forEach(function (pg) {
+    pg.lineas.forEach(function (ln) {
+      var txt = ln.map(function (w) { return w.t; }).join(' ');
+      if (/Monto en pesos/i.test(txt) && /Monto en d/i.test(txt)) {
+        ln.forEach(function (w) { if (/Monto en pesos/i.test(w.t)) colArs = w.x1; if (/Monto en d/i.test(w.t)) colUsd = w.x1; });
+        return;
+      }
+      var mMov = txt.match(/^Movimientos de\s+(.+)$/i);
+      if (mMov) { titular = mMov[1].trim(); seccion = 'consumos'; fechaAct = ''; ultima = null; return; }
+      var mTar = txt.match(/terminada en\s+(\d{3,4})/i);
+      if (mTar && /^(Visa|Mastercard|Amex)/i.test(txt)) { tarjeta = mTar[1]; return; }
+      if (/^Pago anterior y devoluciones/i.test(txt)) { seccion = 'pagos'; titular = ''; ultima = null; return; }
+      if (/^Impuestos, intereses y percepciones/i.test(txt)) { seccion = 'impuestos'; titular = ''; ultima = null; return; }
+      var mSub = txt.match(/^Subtotal de\s+(.+?)\s+(-?\$[\d.,\s]+)\s+(-?U\$S[\d.,\s]+)$/i);
+      if (mSub) { subtot.push({ titular: mSub[1].trim(), ars: tcpNum(mSub[2]), usd: tcpNum(mSub[3]) }); ultima = null; return; }
+      if (/^Total a pagar/i.test(txt)) {
+        var mt = ln.filter(function (w) { return tcpEsMonto(w.t); });
+        if (mt.length >= 2) { control.ars = tcpNum(mt[0].t); control.usd = tcpNum(mt[1].t); }
+        return;
+      }
+      if (/^Copia fiel|^Fecha\b|^M[ií]nimo a pagar|^Saldo del resumen/i.test(txt)) { ultima = null; return; }
+      if (seccion !== 'consumos' && seccion !== 'impuestos') return;
+      var montos = ln.filter(function (w) { return tcpEsMonto(w.t); });
+      var comp = ln.filter(function (w) { return /^\d{6}$/.test(w.t) && w.x0 > 280 && w.x0 < 380; });
+      if (!montos.length && !comp.length) {
+        if (ultima && ln[0] && ln[0].x0 > 95 && ln[0].x0 < 260) ultima.desc = (ultima.desc + ' ' + txt).replace(/\s+/g, ' ').trim();
+        return;
+      }
+      if (!montos.length) return;
+      var mf = ln[0].t.match(/^(\d{2})\/(\d{2})\/(\d{2})$/);
+      if (mf && ln[0].x0 < 95) fechaAct = tcpFecha(2000 + parseInt(mf[3], 10), parseInt(mf[2], 10), parseInt(mf[1], 10));
+      if (!fechaAct) return;
+      var ult = montos[montos.length - 1], monto = tcpNum(ult.t);
+      if (monto <= 0) return;
+      if (/^Su pago|^Saldo anterior/i.test(txt.replace(/^\d{2}\/\d{2}\/\d{2}\s*/, ''))) return;
+      var cuota = '', cw = ln.filter(function (w) { return /^\d{1,2}\s+de\s+\d{1,2}$/i.test(w.t); });
+      if (cw.length) cuota = cw[0].t.replace(/\s*de\s*/i, '/');
+      var desc = ln.filter(function (w) { return w.x0 > 95 && w.x0 < 250 && !tcpEsMonto(w.t); }).map(function (w) { return w.t; }).join(' ').replace(/\s+/g, ' ').trim();
+      if (!desc) return;
+      var fila = { fecha: fechaAct, desc: desc, monto: monto, moneda: tcpMonedaTok(ult.t) || (ult.x1 > (colArs + colUsd) / 2 ? 'USD' : 'ARS'), cuota: cuota, comprobante: comp.length ? comp[0].t : '', titular: titular, tarjeta: tarjeta, tipo: seccion === 'impuestos' ? 'impuesto' : 'consumo' };
+      filas.push(fila); ultima = fila;
+    });
+  });
+  return { banco: 'Santander', filas: filas, control: control, subtotales: subtot };
+}
+var TCP_PERFILES = { PRISMA: tcpParsePrisma, SANTANDER: tcpParseSantander };
+
+function tcpTotales(filas) {
+  var s = function (tipo, mon) { return filas.reduce(function (a, f) { return a + ((f.moneda === mon) && (!tipo || f.tipo === tipo) ? f.monto : 0); }, 0); };
+  var v = { consumosArs: +s('consumo', 'ARS').toFixed(2), consumosUsd: +s('consumo', 'USD').toFixed(2), impuestosArs: +s('impuesto', 'ARS').toFixed(2), impuestosUsd: +s('impuesto', 'USD').toFixed(2) };
+  v.totalArs = +(v.consumosArs + v.impuestosArs).toFixed(2);
+  v.totalUsd = +(v.consumosUsd + v.impuestosUsd).toFixed(2);
+  return v;
+}
+async function tcpProcesarPdf(arrayBuffer) {
+  var paginas = await tcpLeerPdf(arrayBuffer);
+  var emisor = tcpDetectarEmisor(paginas);
+  if (!emisor) return { ok: false, motivo: 'emisor_desconocido', paginas: paginas };
+  var r = TCP_PERFILES[emisor.id](paginas);
+  var val = tcpTotales(r.filas), cuadra = null;
+  if (r.control && r.control.ars !== null) {
+    var eArs = emisor.id === 'PRISMA' ? val.consumosArs : val.totalArs;
+    var eUsd = emisor.id === 'PRISMA' ? val.consumosUsd : val.totalUsd;
+    cuadra = Math.abs(eArs - r.control.ars) < 0.05 && Math.abs(eUsd - r.control.usd) < 0.05;
+  }
+  return { ok: true, emisor: emisor, banco: r.banco, filas: r.filas, control: r.control, subtotales: r.subtotales || [], totales: val, cuadra: cuadra, paginas: paginas };
+}
+
+/* Fallback con NortIA para emisores que todavia no tienen perfil */
+async function tcpFallbackIA(paginas) {
+  if (!window.nortiaChatEnviar) throw new Error('NortIA no esta disponible en este momento.');
+  var txt = tcpTexto(paginas).slice(0, 60000);
+  var prompt = 'Sos el lector de resumenes de tarjeta de credito de Norte. Abajo esta el texto plano de un resumen argentino.\n' +
+    'Devolve UNICAMENTE un JSON valido, sin explicaciones ni markdown, con esta forma exacta:\n' +
+    '{"banco":"nombre del banco","filas":[{"fecha":"AAAA-MM-DD","desc":"comercio","monto":1234.56,"moneda":"ARS","cuota":"3/9","titular":"nombre del portador","tipo":"consumo"}]}\n' +
+    'Reglas: incluí TODOS los consumos y tambien los impuestos, percepciones e intereses (esos van con tipo "impuesto"). ' +
+    'NO incluyas pagos del resumen anterior, saldos anteriores, subtotales ni totales. ' +
+    'moneda es "ARS" o "USD". cuota vacia si la compra no es en cuotas. ' +
+    'titular es la persona a la que pertenece la tarjeta o el adicional; si el resumen no lo aclara, dejalo vacio. ' +
+    'monto siempre positivo, con punto decimal. NUNCA inventes movimientos: si no lo ves en el texto, no lo pongas.\n\nTEXTO DEL RESUMEN:\n' + txt;
+  var raw = await window.nortiaChatEnviar(prompt);
+  var m = String(raw).match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('NortIA no pudo interpretar el resumen.');
+  var j = JSON.parse(m[0]);
+  var filas = (j.filas || []).filter(function (f) { return f && f.desc && Number(f.monto) > 0; }).map(function (f) {
+    return { fecha: f.fecha || '', desc: String(f.desc).trim(), monto: Number(f.monto), moneda: f.moneda === 'USD' ? 'USD' : 'ARS', cuota: f.cuota || '', comprobante: '', titular: f.titular || '', tipo: f.tipo === 'impuesto' ? 'impuesto' : 'consumo' };
+  });
+  return { ok: true, emisor: { id: 'IA', nombre: 'Leido con NortIA' }, banco: j.banco || 'Resumen de tarjeta', filas: filas, control: { ars: null, usd: null }, subtotales: [], totales: tcpTotales(filas), cuadra: null, viaIA: true };
+}
+
+/* Normalizacion al modelo de filas que usa la vista previa de Norte */
+function tcFilasDesdePdf(res) {
+  return res.filas.map(function (f) {
+    var esImp = f.tipo === 'impuesto';
+    var rubro = esImp ? 'Impuestos / Tasas' : tcGuessRubro(f.desc, 'Gasto');
+    return { id: uid(), desc: f.desc, monto: f.monto, esUSD: f.moneda === 'USD', cuota: f.cuota || '',
+             titular: f.titular || '', tipoMov: 'Gasto', rubro: rubro, selected: true,
+             fechaOrig: f.fecha || '', esImpuesto: esImp };
+  });
+}
+
+function tcPdfBadge() {
+  if (!tcPdfRes) return '';
+  var t = tcPdfRes.totales, n = tcPdfRes.filas.filter(function (f) { return f.tipo === 'impuesto'; }).length;
+  var s = '';
+  if (n) s += ' · <span style="background:#e0e7ff;color:#3730a3;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700">' + n + ' de impuestos incluidos</span>';
+  if (tcPdfRes.cuadra === true) s += ' · <span style="background:#d1fae5;color:#065f46;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700">✓ cuadra con el total del resumen</span>';
+  else if (tcPdfRes.cuadra === false) s += ' · <span style="background:#fef3c7;color:#92400e;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700">⚠ revisá: no cuadra con el total del resumen</span>';
+  return s;
+}
+
+async function tcPdfPreparar(file) {
+  var pb = document.getElementById('tcPasoBanco'), pi = document.getElementById('tcPdfInfo');
+  if (pb) pb.style.display = 'none';
+  if (pi) { pi.style.display = 'block'; pi.innerHTML = '<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--muted)">📄 Leyendo el resumen…</div>'; }
+  try {
+    var buf = await file.arrayBuffer();
+    var res = await tcpProcesarPdf(buf);
+    if (!res.ok) {
+      var seguir = confirm('No reconocemos el formato de este banco todavía.\n\n¿Querés que lo lea NortIA?\nUsa una carga de tu cupo mensual de foto/voz.');
+      if (!seguir) { tcPdfCancelar(pb, pi); return; }
+      if (typeof qpCapturaCheckYRegistrarUso === 'function') {
+        var cupo = await qpCapturaCheckYRegistrarUso();
+        if (cupo && cupo.ok === false) { alert('Te quedaste sin cargas este mes. Podés importar el Excel del banco o esperar al mes que viene.'); tcPdfCancelar(pb, pi); return; }
+      }
+      if (pi) pi.innerHTML = '<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--muted)">🧭 NortIA está leyendo el resumen…</div>';
+      res = await tcpFallbackIA(res.paginas);
+    }
+    if (!res.filas.length) throw new Error('No encontramos movimientos en este resumen.');
+    tcPdfRes = res;
+    tcBank = 'PDF:' + res.emisor.id;
+    tcIsDebit = false;
+    var tits = [];
+    res.filas.forEach(function (f) { if (f.titular && tits.indexOf(f.titular) < 0) tits.push(f.titular); });
+    var nCons = res.filas.filter(function (f) { return f.tipo === 'consumo'; }).length;
+    var nImp = res.filas.length - nCons;
+    var html = '<div style="background:rgba(37,99,235,0.06);border:1px solid rgba(37,99,235,0.22);border-radius:10px;padding:14px 16px">' +
+      '<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">1. Resumen reconocido</div>' +
+      '<div style="font-size:15px;font-weight:800;color:var(--text)">🏦 ' + esc(res.banco) + (res.viaIA ? ' <span style="font-size:11px;font-weight:700;color:var(--primary)">· leído por NortIA</span>' : '') + '</div>' +
+      '<div style="font-size:13px;color:var(--text);margin-top:6px">' + nCons + ' consumos' + (nImp ? ' · ' + nImp + ' impuestos y percepciones' : '') + '</div>' +
+      (tits.length ? '<div style="font-size:13px;color:var(--text);margin-top:4px">👤 ' + tits.map(esc).join(' · ') + '</div>' : '') +
+      (res.cuadra === true ? '<div style="font-size:12.5px;color:#16a34a;font-weight:700;margin-top:8px">✓ Los totales cuadran con el resumen</div>' :
+       res.cuadra === false ? '<div style="font-size:12.5px;color:#b45309;font-weight:700;margin-top:8px">⚠ Los totales no cuadran con el resumen — revisá la vista previa</div>' : '') +
+      '</div>';
+    if (pi) pi.innerHTML = html;
+    tcCheckConfig();
+  } catch (e) {
+    console.error(e);
+    alert('No pudimos leer el PDF: ' + e.message + '\n\nProbá con el Excel de movimientos del homebanking.');
+    tcPdfCancelar(pb, pi);
+  }
+}
+function tcPdfCancelar(pb, pi) {
+  tcPdfRes = null; tcPendFile = null;
+  if (pi) { pi.style.display = 'none'; pi.innerHTML = ''; }
+  if (pb) pb.style.display = '';
+  closeImport();
+}
+/* ══ fin del motor de PDF ══════════════════════════════════════════════ */
+
 function handleTCImport(input) {
   const file = input.files[0];
   if (!file) return;
@@ -4437,6 +4705,11 @@ function handleTCFile(file) {
   document.getElementById('tcConfigContinuar').disabled = true;
   // Inject custom bank options for this empresa
   renderTCBankOptions();
+  var _pb = document.getElementById('tcPasoBanco'), _pi = document.getElementById('tcPdfInfo');
+  if (_pb) _pb.style.display = '';
+  if (_pi) { _pi.style.display = 'none'; _pi.innerHTML = ''; }
+  tcPdfRes = null;
+  if (/\.pdf$/i.test(file.name || '')) tcPdfPreparar(file);
 }
 
 function tcSelectBank(el, val) {
@@ -4470,6 +4743,12 @@ function tcProcesarArchivo() {
   document.getElementById('importConfig').style.display = 'none';
   const file = tcPendFile;
   tcPendFile  = null;
+  if (tcPdfRes) {
+    tcRows = tcFilasDesdePdf(tcPdfRes);
+    if (!tcRows.length) { alert('No se encontraron movimientos en el resumen.'); return; }
+    renderImportPreview(file.name);
+    return;
+  }
   const reader = new FileReader();
   reader.onload = e => {
     try {
@@ -4543,14 +4822,14 @@ function tcSetTipo(i, tipo) { tcRows[i].tipoMov = tipo; tcRows[i].rubro = tcGues
 
   const [my, mm] = tcTargetMes.split('-').map(Number);
   const mesLabel  = MESES[mm - 1] + ' ' + my;
-  const bankLabel = tcBank === 'BAPRO' ? 'Banco Provincia'
+  const bankLabel = tcPdfRes ? tcPdfRes.banco : tcBank === 'BAPRO' ? 'Banco Provincia'
     : tcBank === 'SANTANDER' ? 'Santander'
     : (() => { const c = getBankConfigs().find(c => c.id === tcBank.slice(7)); return c ? `${c.banco} ${c.tarjeta}` : 'Banco'; })();
   const debitBadge = tcIsDebit
     ? ` · <span style="background:#d1fae5;color:#065f46;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700">🏦 DÉBITO — se registran como pagados</span>`
     : '';
   document.getElementById('importInfo').innerHTML =
-    `<b>💳 ${bankLabel}</b> · <b>${tcRows.length}</b> movimientos detectados · Impacto en <b>${mesLabel}</b>${debitBadge}`;
+    `<b>💳 ${bankLabel}</b> · <b>${tcRows.length}</b> movimientos detectados · Impacto en <b>${mesLabel}</b>${debitBadge}${tcPdfBadge()}`;
 
   const rubroOptsIng = getAllRubros('Ingreso').filter(r => r !== 'Personalizado...').map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join(''); const rubroOpts = getAllRubros('Gasto').filter(r => r !== 'Personalizado...')
     .map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('');
@@ -4640,7 +4919,7 @@ function confirmTCImport() {
       id:        r.id,
       mes,
       tipo:      r.tipoMov === 'Ingreso' ? 'Ingreso' : 'Gasto',
-      tipoGasto: r.tipoMov === 'Ingreso' ? '' : 'Variable',
+      tipoGasto: r.tipoMov === 'Ingreso' ? '' : (r.esImpuesto ? 'Fijo' : 'Variable'),
       rubro:     r.rubro || (r.tipoMov === 'Ingreso' ? 'Otros ingresos' : 'Otros gastos'),
       detalle:   r.desc + (r.cuota ? ` [${r.cuota}]` : '') + (r.titular ? ` · ${r.titular}` : ''),
       cliente:   '',
@@ -4650,7 +4929,7 @@ function confirmTCImport() {
       pagado:    isPaid ? (r.esUSD ? 0 : impP) : 0,
       saldo:     isPaid ? 0 : impP,
       origen:    'TARJETA',
-      banco:     tcBank.startsWith('CUSTOM:') ? tcBank.replace('CUSTOM:', '') : tcBank,
+      banco:     tcBank.startsWith('CUSTOM:') ? tcBank.replace('CUSTOM:', '') : tcBank.replace(/^PDF:/, ''),
       tcPagado:  isPaid, cardTipo: tcIsDebit ? 'TD' : 'TC',   // débito: ya pagado; crédito: pendiente de pagar el resumen
     });
   });
@@ -4671,7 +4950,7 @@ function openImportModal()  {
   document.getElementById('importConfig').style.display   = 'none';
   document.getElementById('importBody').style.display     = 'none';
   document.getElementById('importFooter').style.display   = 'none';
-  tcRows = []; tcPendFile = null; tcBank = ''; tcTargetMes = ''; tcIsDebit = false;
+  tcRows = []; tcPendFile = null; tcBank = ''; tcTargetMes = ''; tcIsDebit = false; tcPdfRes = null;
 }
 function closeImport() {
   document.getElementById('importOverlay').classList.remove('open');
