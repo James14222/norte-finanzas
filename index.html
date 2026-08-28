@@ -1036,6 +1036,15 @@ tr:hover td { background: #fafbfc; }
     .lsc-cmp { animation: lscSpin 90s linear infinite; will-change: transform; }
     .lsc-cmp[style*="right"] { animation: lscSpinR 120s linear infinite; }
     @media (prefers-reduced-motion: reduce) { .lsc-cmp { animation: none; } }
+  
+    /* Paneles de superadmin en mobile: el body tiene overflow-x clip (evita
+       que se achique la letra), asi que las tablas anchas quedaban cortadas
+       sin forma de scrollear. Se les da scroll horizontal propio, igual que
+       a los paneles de Reportes. */
+    @media (max-width: 880px) {
+      #wbBody, #pnBody, #saBody { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      #wbBody table, #pnBody table, #saBody table { min-width: 560px; }
+    }
   </style>
 </head>
 <body>
