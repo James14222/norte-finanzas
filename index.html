@@ -719,8 +719,8 @@ tr:hover td { background: #fafbfc; }
 .ayuda-tip { background:#fef9ec;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;margin:8px 0;font-size:12px;line-height:1.6; }
 .ayuda-tip::before { content:'💡 '; font-weight:700; }
 .ayuda-steps { counter-reset:step;list-style:none;padding:0;margin:8px 0; }
-.ayuda-steps li { counter-increment:step;display:flex;gap:10px;font-size:13px;margin-bottom:8px;line-height:1.6; }
-.ayuda-steps li::before { content:counter(step);display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;background:var(--primary);color:#fff;border-radius:50%;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px; }
+.ayuda-steps li { counter-increment:step;position:relative;padding-left:32px;font-size:13px;margin-bottom:8px;line-height:1.6; }
+.ayuda-steps li::before { content:counter(step);position:absolute;left:0;top:1px;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--primary);color:#fff;border-radius:50%;font-size:11px;font-weight:700; }
 @media(max-width:680px){.ayuda-panel{width:100%;}.ayuda-nav{width:52px;}.ayuda-nav-item span:not(.ai){display:none;}.ayuda-nav-item{padding:12px;justify-content:center;}.ayuda-content{padding:20px 16px;}}
 
 /* ── LOGIN ── */
@@ -1201,7 +1201,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.063</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.064</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -1289,7 +1289,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.063</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.064</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
