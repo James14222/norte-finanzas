@@ -1029,6 +1029,13 @@ tr:hover td { background: #fafbfc; }
 
     /* El link a la landing en el login no debe partirse (la flecha caia sola al renglon de abajo) */
     .login-landing-link a{white-space:nowrap}
+  
+    /* Brujulas del login: mismo giro lento que en la landing */
+    @keyframes lscSpin  { to { transform: rotate(360deg); } }
+    @keyframes lscSpinR { to { transform: rotate(-360deg); } }
+    .lsc-cmp { animation: lscSpin 90s linear infinite; will-change: transform; }
+    .lsc-cmp[style*="right"] { animation: lscSpinR 120s linear infinite; }
+    @media (prefers-reduced-motion: reduce) { .lsc-cmp { animation: none; } }
   </style>
 </head>
 <body>
