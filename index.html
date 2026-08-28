@@ -824,13 +824,16 @@ tr:hover td { background: #fafbfc; }
 /* ── ADMIN ── */
 .admin-section { margin-bottom:0; }
 .admin-table { width:100%;border-collapse:collapse;font-size:13px; }
-.admin-table th { text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);font-weight:600; }
-.admin-table td { padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle; }
+.admin-table th { text-align:left;padding:6px 10px;border-bottom:2px solid var(--border);font-weight:600;white-space:nowrap; }
+.admin-table td { padding:5px 10px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap; }
 .admin-table tr:last-child td { border-bottom:none; }
+.admin-table tr:hover td { background:#fafbfc; }
+.admin-table td.td-wrap { white-space:normal; }
+.bank-info-box { max-width:1000px; }
 .badge-role { display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600; }
 .badge-admin { background:#fef3c7;color:#92400e; }
 .badge-viewer { background:#e0f2fe;color:#075985; }
-.empresa-chip { display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:12px; }
+.empresa-chip { display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:1px 10px;font-size:12px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .sidebar-user { padding:10px 20px 4px;border-top:1px solid rgba(255,255,255,0.08);font-size:12px;color:rgba(255,255,255,0.55); }
 /* Admin visual dividers */
 .admin-group-label {
@@ -1203,7 +1206,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.066</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.067</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -1291,7 +1294,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.066</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.067</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -2687,7 +2690,7 @@ tr:hover td { background: #fafbfc; }
 <!-- TU GPS PAGE --><div id="page-tugps" class="page"><div class="gps-wrap" style="max-width:760px;margin:0 auto;padding:8px 24px 40px;display:flex;flex-direction:column"><div class="gps-header"><div style="display:flex;align-items:center;gap:12px"><button class="menu-toggle gps-volver" onclick="toggleSidebar()" aria-label="Volver al menu" title="Volver al menu">&#9776;</button><div><div class="gps-header-title">Tu GPS</div><div class="gps-header-sub">Club Pioneros de Norte</div></div></div></div><div id="gpsBody" style="margin-top:16px;position:relative;z-index:1"><div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando...</div></div></div></div>
 <!-- ADMIN PAGE -->
 <div id="page-admin" class="page">
-  <div style="max-width:880px;margin:0 auto;padding:28px 24px;display:flex;flex-direction:column">
+  <div style="max-width:1400px;margin:0 auto;padding:28px 24px;display:flex;flex-direction:column">
 
     <!-- Encabezado de página -->
     <div style="margin-bottom:4px">
@@ -9968,7 +9971,7 @@ function subtituloRumbo() {
 
   function fecha(iso) {
     if (!iso) return '—';
-    try { return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' }); }
+    try { return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' }); }
     catch (e) { return '—'; }
   }
 
@@ -10018,7 +10021,7 @@ function subtituloRumbo() {
       var filas = us.map(function (u) {
         var hogar = (u.hogares && u.hogares[0]) ? u.hogares[0] : null;
         var chip = hogar
-          ? '<span class="empresa-chip">' + esc(hogar.nombre) + ' <span style="opacity:0.6">' + esc(hogar.rol) + '</span></span>'
+          ? '<span class="empresa-chip" title="' + esc(hogar.nombre) + '">' + esc(hogar.nombre) + ' <span style="opacity:0.6">' + esc(hogar.rol) + '</span></span>'
           : '<span style="color:var(--muted)">Sin hogar</span>';
         var extra = (u.hogares && u.hogares.length > 1)
           ? ' <span style="font-size:11px;color:var(--muted)">+' + (u.hogares.length - 1) + '</span>' : '';
