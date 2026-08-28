@@ -1201,7 +1201,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.062</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.063</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -1289,7 +1289,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.062</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.063</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -1945,11 +1945,17 @@ tr:hover td { background: #fafbfc; }
         <div class="ayuda-nav-item active" onclick="ayudaGo('inicio')"><span class="ai">🏠</span><span>Inicio</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('dashboard')"><span class="ai">📊</span><span>Mi Rumbo</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('transacciones')"><span class="ai">📋</span><span>Transacciones</span></div>
-        <div class="ayuda-nav-item" onclick="ayudaGo('tarjetas')"><span class="ai">💳</span><span>Tarjetas TC</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('carga')"><span class="ai">⚡</span><span>Carga rápida</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('tarjetas')"><span class="ai">💳</span><span>Tarjetas TC / TD</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('presupuesto')"><span class="ai">🎯</span><span>Presupuesto</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('analisis')"><span class="ai">🔎</span><span>Análisis</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('progreso')"><span class="ai">🏆</span><span>Progreso</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('reportes')"><span class="ai">📈</span><span>Reportes</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('consultas')"><span class="ai" style="display:inline-block;width:16px;height:16px;background-image:var(--nortia-icon-url);background-size:contain;background-repeat:no-repeat;background-position:center"></span><span>NortIA</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('gps')"><span class="ai">🧭</span><span>GPS - Pioneros</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('hogares')"><span class="ai">👥</span><span>Mis hogares</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('plan')"><span class="ai">💎</span><span>Mi plan</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('cuenta')"><span class="ai">👤</span><span>Tu cuenta</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('admin')"><span class="ai">⚙️</span><span>Admin</span></div>
       </nav>
 
@@ -1959,249 +1965,429 @@ tr:hover td { background: #fafbfc; }
         <!-- INICIO -->
         <div class="ayuda-section active" id="ayuda-inicio">
           <h3>🏠 Bienvenido a Norte</h3>
-          <p class="subtitulo">Tu herramienta de gestión financiera personal y empresarial</p>
+          <p class="subtitulo">La brújula de las finanzas de tu hogar</p>
           <div class="ayuda-bloque">
-            <p>Norte te permite registrar ingresos y gastos, importar resúmenes de tarjetas de crédito, establecer presupuestos, analizar tus finanzas con reportes detallados y consultar tus datos en lenguaje natural con inteligencia artificial.</p>
+            <p>Norte es una aplicación para <strong>ver con claridad qué entra, qué sale y qué queda</strong> en tu hogar cada mes. No es una planilla ni un sistema contable: es una herramienta para tomar decisiones con datos propios, sin tener que saber de finanzas.</p>
+            <p>Con Norte podés registrar ingresos y gastos (a mano, por foto o hablándole), importar los resúmenes de tus tarjetas, ponerte límites por rubro, seguir tu progreso mes a mes, ver reportes anuales y conversar con <strong>NortIA</strong>, un asistente que analiza tus propios números.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Los 4 beneficios concretos</h4>
+            <div class="ayuda-ejemplo">
+              <strong>1. Saber dónde estás parado</strong> — en 30 segundos sabés cuánto entró, cuánto salió y cuánto falta pagar este mes.<br>
+              <strong>2. Que la tarjeta deje de sorprenderte</strong> — importás el resumen y cada consumo queda clasificado y con su saldo pendiente.<br>
+              <strong>3. Ponerle un techo a lo que se te escapa</strong> — presupuesto por rubro con alertas antes de pasarte, no después.<br>
+              <strong>4. Convertir el control en hábito</strong> — niveles, racha y medallas para sostenerlo en el tiempo.
+            </div>
           </div>
           <div class="ayuda-bloque">
             <h4>¿Por dónde empezar?</h4>
             <ol class="ayuda-steps">
               <li>Cargá tus <strong>ingresos del mes</strong> — sueldo, honorarios, cobros de clientes</li>
-              <li>Registrá tus <strong>gastos fijos</strong> — alquiler, servicios, cuotas</li>
-              <li>Importá el <strong>resumen de tu tarjeta</strong> de crédito en formato XLSX</li>
+              <li>Registrá tus <strong>gastos fijos</strong> — alquiler, expensas, servicios, cuotas</li>
+              <li>Importá el <strong>resumen de tu tarjeta</strong> de crédito o débito en formato XLSX</li>
               <li>Definí un <strong>presupuesto por rubro</strong> para controlar tus límites</li>
-              <li>Revisá el <strong>Dashboard</strong> para ver el estado de tu mes de un vistazo</li>
+              <li>Revisá <strong>Mi Rumbo</strong> para ver el estado de tu mes de un vistazo</li>
             </ol>
+            <div class="ayuda-tip">Si estás arrancando, cargá primero los movimientos grandes (ingresos, alquiler, tarjeta). Los gastos chicos se suman solos a medida que los vas registrando con el botón <strong>+</strong>.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>El menú, de arriba hacia abajo</h4>
+            <div class="ayuda-ejemplo">
+              <strong>📊 Mi Rumbo</strong> — el tablero del mes: ingresos, gastos, balance, pendientes y alertas.<br>
+              <strong>📋 Transacciones</strong> — donde se cargan y editan todos los movimientos.<br>
+              <strong>🎯 Presupuesto</strong> — límites por rubro y meta de ahorro.<br>
+              <strong>🔎 Análisis</strong> — conclusiones automáticas sobre tu mes.<br>
+              <strong>🏆 Progreso</strong> — tu nivel, tu racha y tus medallas.<br>
+              <strong>📈 Reportes</strong> — el año completo en seis vistas.<br>
+              <strong>NortIA</strong> — hallazgos automáticos y chat sobre tus propios datos.<br>
+              <strong>GPS - Pioneros</strong> — el recorrido guiado del Club Pioneros (solo si sos parte).<br>
+              <strong>⚙️ Admin</strong> — configuración de bancos y tarjetas (solo administradores).
+            </div>
           </div>
           <div class="ayuda-bloque">
             <h4>Navegación del mes</h4>
-            <p>Las flechas <strong>‹ ›</strong> en la barra superior cambian el mes que estás viendo. Todos los reportes y la pantalla de transacciones respetan el mes seleccionado. Los Reportes muestran el año completo.</p>
+            <p>Las flechas <strong>‹ ›</strong> de la barra superior cambian el mes que estás viendo. Mi Rumbo, Transacciones, Presupuesto y Análisis respetan ese mes. <strong>Reportes</strong> siempre muestra el año completo, y <strong>Progreso</strong> mira todo tu historial.</p>
           </div>
-          <div class="ayuda-tip">Podés usar Norte en varios dispositivos a la vez — los datos se sincronizan automáticamente en la nube a través de Firebase.</div>
+          <div class="ayuda-bloque">
+            <h4>En el celular</h4>
+            <p>Norte funciona igual en la computadora y en el teléfono. En el celular el menú se abre con el botón <strong>☰</strong> de arriba a la izquierda, y las transacciones se muestran compactadas en dos renglones para que entren en pantalla.</p>
+            <div class="ayuda-tip">Podés instalar Norte como app en tu teléfono para abrirla desde el ícono, sin pasar por el navegador. Mirá la sección <strong>Tu cuenta</strong>.</div>
+          </div>
+          <div class="ayuda-tip">Podés usar Norte en varios dispositivos a la vez — los datos se sincronizan solos en la nube. El indicador <strong>☁️ Sincronizado</strong> del menú te confirma que está todo guardado.</div>
         </div>
 
-        <!-- DASHBOARD -->
+        <!-- MI RUMBO -->
         <div class="ayuda-section" id="ayuda-dashboard">
           <h3>📊 Mi Rumbo</h3>
-          <p class="subtitulo">Vista rápida del estado financiero del mes seleccionado</p>
+          <p class="subtitulo">El estado de tu mes de un vistazo — es la pantalla que abre por defecto</p>
           <div class="ayuda-bloque">
-            <h4>Tarjetas de resumen</h4>
-            <p>Las 4 tarjetas superiores muestran los totales del mes:</p>
-            <div class="ayuda-ejemplo"><strong>Ingresos:</strong> todo lo que entraron — sueldos, cobros a clientes, ventas<br><strong>Gastos:</strong> todo lo que salió — facturas, compras, cuotas<br><strong>Balance:</strong> Ingresos − Gastos. En verde si es positivo, rojo si gastaste más de lo que entraste<br><strong>Pendiente:</strong> suma de gastos que aún no pagaste (saldo &gt; $0)</div>
+            <h4>Para qué sirve</h4>
+            <p>Mi Rumbo responde una sola pregunta: <strong>¿cómo vengo este mes?</strong> No hay que buscar ni filtrar nada — al entrar ya ves si estás en verde o en rojo, cuánto falta pagar y qué rubro se te está yendo de las manos.</p>
           </div>
           <div class="ayuda-bloque">
-            <h4>Gráfico — Gastos por rubro</h4>
-            <p>El donut muestra cómo se distribuyen tus gastos del mes entre las distintas categorías. Debajo aparece la tabla detallada con importe y porcentaje de cada rubro.</p>
-            <div class="ayuda-ejemplo"><strong>Ejemplo:</strong> Si en Mayo gastaste $200.000 en Supermercado y $80.000 en Auto, el gráfico lo representa visualmente y te dice que Supermercado es el 35% del total.</div>
+            <h4>El tablero de indicadores</h4>
+            <p>Las tarjetas de arriba resumen el mes seleccionado:</p>
+            <div class="ayuda-ejemplo">
+              <strong>Ingresos del mes</strong> — todo lo que entró: sueldos, cobros a clientes, ventas<br>
+              <strong>Gastos del mes</strong> — todo lo que salió: facturas, compras, cuotas<br>
+              <strong>Balance</strong> — Ingresos − Gastos. Verde si es positivo, rojo si gastaste más de lo que entró<br>
+              <strong>Saldo pendiente</strong> — la suma de lo que todavía no pagaste (tarjetas, gastos parciales)
+            </div>
+            <div class="ayuda-tip">El <strong>Saldo pendiente</strong> es el número que más gente subestima. Un balance en verde con $400.000 pendientes no es un mes en verde: es un mes con deuda por delante.</div>
           </div>
           <div class="ayuda-bloque">
-            <h4>Últimas transacciones</h4>
-            <p>Las 6 movimientos más recientes del mes. Hacé click en cualquiera para editarlo.</p>
+            <h4>Salud financiera</h4>
+            <p>Debajo del tablero, Norte califica tu mes combinando balance, nivel de pendientes y cumplimiento del presupuesto. Es un semáforo rápido, pensado para que no tengas que interpretar los números vos.</p>
           </div>
           <div class="ayuda-bloque">
-            <h4>Semáforo y alertas</h4>
-            <p>Norte analiza automáticamente tu situación y muestra alertas en naranja o rojo cuando detecta gastos sin importe, presupuestos superados o balance negativo.</p>
-            <div class="ayuda-tip">Si ves una alerta de gastos fijos con importe $0, significa que clonaste el mes anterior pero todavía no actualizaste los importes. Entrá a Transacciones para completarlos.</div>
+            <h4>Gastos por rubro</h4>
+            <p>El gráfico de torta muestra cómo se reparten tus gastos del mes entre categorías, con la tabla detallada al lado (importe y porcentaje de cada rubro).</p>
+            <div class="ayuda-ejemplo"><strong>Ejemplo:</strong> si en Mayo gastaste $200.000 en Supermercado y $80.000 en Auto, el gráfico te muestra de un golpe que Supermercado es el 35% de todo tu mes.</div>
           </div>
           <div class="ayuda-bloque">
-            <h4>Presupuesto del mes</h4>
-            <p>Muestra el avance vs. el límite definido en la sección Presupuesto. Hacé click en la card para ir directamente a configurarlo.</p>
+            <h4>Alertas agrupadas</h4>
+            <p>Norte revisa tu mes automáticamente y te avisa cuando detecta algo que conviene mirar. Las alertas están <strong>agrupadas por tema</strong> (Consumo, Registro, Presupuesto…) y se despliegan al hacer click, así no te tapan la pantalla.</p>
+            <div class="ayuda-ejemplo">
+              <strong>Gasto fijo faltante</strong> — un gasto que aparece todos los meses y este mes no está cargado<br>
+              <strong>Importe en $0</strong> — clonaste el mes anterior pero todavía no actualizaste los montos<br>
+              <strong>Presupuesto superado</strong> — te pasaste del límite que vos mismo definiste<br>
+              <strong>Balance negativo</strong> — este mes gastaste más de lo que entró
+            </div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Últimas transacciones y accesos rápidos</h4>
+            <p>Abajo aparecen los movimientos más recientes del mes — hacé click en cualquiera para editarlo — y tres tarjetas de acceso directo a <strong>Presupuesto</strong>, <strong>Meta de ahorro</strong> y <strong>Progreso</strong>.</p>
           </div>
         </div>
 
         <!-- TRANSACCIONES -->
         <div class="ayuda-section" id="ayuda-transacciones">
           <h3>📋 Transacciones</h3>
-          <p class="subtitulo">El corazón de Norte — aquí se registran todos los movimientos</p>
+          <p class="subtitulo">El corazón de Norte — acá se registra, edita y controla cada movimiento</p>
           <div class="ayuda-bloque">
-            <h4>Agregar una transacción</h4>
-            <p>Usá el botón <strong>＋ Nueva</strong> o el botón flotante <strong>＋</strong> en la esquina inferior derecha (registro rápido). Completá:</p>
+            <h4>Para qué sirve</h4>
+            <p>Todo lo que ves en el resto de la app sale de acá. Cuanto más completa esté esta pantalla, más útiles son Mi Rumbo, los Reportes y NortIA. La buena noticia es que cargar es rápido: tenés tres caminos (manual, foto y voz) y varios atajos para no repetir trabajo todos los meses.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Cargar un movimiento</h4>
+            <p>Usá <strong>+ Agregar</strong> arriba, o el botón flotante <strong>+</strong> de la esquina inferior derecha (Registro rápido, el más cómodo en el celular). Los campos:</p>
             <div class="ayuda-ejemplo">
               <strong>Tipo:</strong> Ingreso o Gasto<br>
-              <strong>Detalle:</strong> descripción breve — "Sueldo Enero", "Alquiler Palermo", "Netflix"<br>
-              <strong>Rubro:</strong> categoría — Supermercado, Auto, Salud, Freelance/Consultoría…<br>
-              <strong>Tipo de gasto:</strong> Fijo (se repite todos los meses) o Variable (eventual)<br>
-              <strong>Importe $:</strong> monto en pesos<br>
-              <strong>Importe USD:</strong> si el gasto o cobro fue en dólares<br>
-              <strong>Pagado:</strong> cuánto ya abonaste (puede ser parcial)<br>
-              <strong>Vencimiento:</strong> fecha límite de pago
+              <strong>Detalle:</strong> descripción breve — "Sueldo Enero", "Alquiler", "Netflix"<br>
+              <strong>Rubro:</strong> la categoría — Supermercado, Auto, Salud, Servicios…<br>
+              <strong>Tipo de gasto:</strong> <strong>Fijo</strong> (se repite todos los meses) o <strong>Variable</strong> (eventual)<br>
+              <strong>Importe $ / Importe USD:</strong> el monto, en pesos y/o en dólares<br>
+              <strong>Dueño del gasto:</strong> quién lo hizo, cuando el hogar tiene más de un integrante<br>
+              <strong>Pagado $:</strong> cuánto ya abonaste — puede ser un pago parcial<br>
+              <strong>Período:</strong> el mes en el que impacta el movimiento<br>
+              <strong>Vencimiento:</strong> la fecha límite de pago
             </div>
+            <div class="ayuda-tip">La diferencia entre <strong>Fijo</strong> y <strong>Variable</strong> no es un detalle: los fijos son los que Norte puede clonar y replicar mes a mes, y los que usa para avisarte cuando falta uno.</div>
           </div>
           <div class="ayuda-bloque">
-            <h4>Clonar mes anterior</h4>
-            <p>El botón <strong>📋 Clonar mes anterior</strong> crea automáticamente todos los gastos marcados como <em>Fijo</em> del mes previo, con importe $0 y vencimiento al último día del mes actual.</p>
-            <div class="ayuda-ejemplo"><strong>Ejemplo:</strong> Si en Junio tenías "Alquiler", "Expensas" y "Internet" como Fijo, al entrar a Julio y hacer Clonar te aparecen los 3 gastos listos para que solo actualices los importes cuando lleguen las facturas.</div>
-            <div class="ayuda-tip">Los gastos de tarjeta de crédito (TC) no se clonan — se importan por separado cada mes desde el archivo XLSX del banco.</div>
+            <h4>Rubros propios</h4>
+            <p>Si ninguna categoría te cierra, creá la tuya desde <strong>⚙ Gestionar rubros personalizados</strong> dentro del formulario. Los rubros nuevos quedan disponibles para siempre, separados entre gastos e ingresos.</p>
           </div>
           <div class="ayuda-bloque">
-            <h4>Columna Saldo</h4>
-            <p>Muestra cuánto falta pagar de cada gasto:</p>
+            <h4>Atajos para no repetir trabajo</h4>
+            <div class="ayuda-ejemplo">
+              <strong>📋 Clonar mes anterior</strong> — crea todos los gastos <em>Fijos</em> del mes previo con importe $0 y vencimiento a fin de mes. Solo actualizás los montos cuando llegan las facturas.<br>
+              <strong>🧩 Replicar gastos fijos</strong> — repite un conjunto de fijos hacia adelante, útil cuando ya sabés los importes.<br>
+              <strong>💳 Importar TC / TD</strong> — sube el resumen de tarjeta y carga todos los consumos de una (ver la sección Tarjetas).<br>
+              <strong>✅ Pagar TC</strong> — marca como pagado un resumen completo de tarjeta en un solo click.
+            </div>
+            <div class="ayuda-tip">Los gastos de tarjeta de crédito no se clonan: se importan de nuevo cada mes desde el archivo del banco, porque cambian todos los meses.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>La columna Saldo</h4>
+            <p>Es la que te dice cuánto falta pagar de cada movimiento:</p>
             <div class="ayuda-ejemplo">
               <strong>✓</strong> — pagado en su totalidad<br>
-              <strong>$45.000</strong> en naranja — falta pagar ese importe<br>
-              <strong>💳 $7.556</strong> en naranja — gasto de tarjeta pendiente de pago TC<br>
-              <strong>✓ TC</strong> en verde — gasto de tarjeta ya marcado como pagado
+              <strong>$45.000</strong> en naranja — todavía falta pagar ese importe<br>
+              <strong>💳 $7.556</strong> en naranja — consumo de tarjeta pendiente del pago del resumen<br>
+              <strong>✓ TC</strong> en verde — consumo de tarjeta ya cubierto por el pago del resumen
             </div>
           </div>
           <div class="ayuda-bloque">
-            <h4>Editar y eliminar</h4>
-            <p>Usá el ícono ✏️ para editar cualquier transacción o 🗑️ para eliminarla. También podés seleccionar varias con los checkboxes y eliminarlas en lote.</p>
+            <h4>Filtros y búsqueda</h4>
+            <p>La barra superior te permite buscar por texto y filtrar por tipo (Ingresos / Gastos), por rubro y por integrante (<strong>Todos</strong> o <strong>Solo yo</strong>). Los filtros se combinan entre sí.</p>
           </div>
           <div class="ayuda-bloque">
-            <h4>Filtros</h4>
-            <p>La barra de filtros te permite buscar por texto, filtrar por tipo (Ingreso/Gasto), por rubro o por tipo de gasto (Fijo/Variable).</p>
+            <h4>Editar, borrar y selección múltiple</h4>
+            <p>El ícono <strong>✏️</strong> edita y el <strong>🗑️</strong> elimina. Para limpiar varios de una, tildá los checkboxes de la izquierda y usá <strong>🗑️ Eliminar seleccionados</strong>.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Vista en computadora y en celular</h4>
+            <div class="ayuda-ejemplo">
+              <strong>En la computadora:</strong> la cabecera de la tabla queda fija al hacer scroll, así siempre sabés qué columna estás mirando.<br>
+              <strong>En el celular:</strong> cada movimiento se muestra en dos renglones — nombre e importe arriba, tipo, rubro, saldo y acciones abajo. <strong>F</strong> y <strong>V</strong> son las abreviaturas de Fijo y Variable.
+            </div>
           </div>
         </div>
 
+        <!-- CARGA RÁPIDA -->
+        <div class="ayuda-section" id="ayuda-carga">
+          <h3>⚡ Carga rápida — foto y voz</h3>
+          <p class="subtitulo">Cargá un gasto sacándole una foto al ticket o diciéndolo en voz alta</p>
+          <div class="ayuda-bloque">
+            <h4>Para qué sirve</h4>
+            <p>El motivo número uno por el que la gente abandona el control de gastos es el esfuerzo de cargarlos. La carga rápida ataca justamente eso: en lugar de completar seis campos, <strong>sacás una foto o decís una frase</strong> y Norte completa el formulario por vos. Vos solo revisás y guardás.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Dónde está</h4>
+            <p>En el botón flotante <strong>+</strong> (Registro rápido). Dentro del formulario vas a ver dos botones: <strong>📷 Foto</strong> y <strong>🎤 Voz</strong>.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>📷 Foto</h4>
+            <p>Sacá una foto del ticket, la factura o la pantalla del pago. Norte lee la imagen y completa detalle, importe, rubro y tipo de gasto.</p>
+            <div class="ayuda-ejemplo"><strong>Ejemplo:</strong> foto del ticket del supermercado → Detalle "Supermercado Coto", Importe $48.320, Rubro "Supermercado", Tipo "Variable".</div>
+            <div class="ayuda-tip">Sacá la foto derecha y con buena luz. Si el ticket es muy largo, alcanza con la parte del total y el nombre del comercio.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>🎤 Voz</h4>
+            <p>Apretá, hablá normal y soltá. Decilo como se lo dirías a alguien: <em>"Gasté cuatro mil quinientos en el kiosco"</em> o <em>"Pagué el alquiler, doscientos mil"</em>.</p>
+            <div class="ayuda-tip">Si el audio sale vacío o no se entiende, Norte te avisa y no inventa nada: preferimos no cargar un gasto antes que cargar uno equivocado.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Siempre revisás antes de guardar</h4>
+            <p>La foto y la voz <strong>nunca guardan solas</strong>. Lo que hacen es completar el formulario; vos ves el resultado, corregís lo que haga falta y recién ahí apretás Guardar. El campo que más conviene chequear es el rubro.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Cuántas cargas tenés por mes</h4>
+            <p>Debajo de los botones hay un contador con las cargas usadas y disponibles del mes. El cupo es <strong>por hogar</strong> (se comparte entre los integrantes) y se renueva el primer día de cada mes.</p>
+            <div class="ayuda-ejemplo">
+              <strong>FOCO:</strong> 50 cargas por mes<br>
+              <strong>PRO:</strong> 100 cargas por mes<br>
+              <strong>TOP:</strong> sin límite
+            </div>
+            <div class="ayuda-tip">La carga manual no consume cupo. El cupo aplica solo a foto y voz, que son las que usan inteligencia artificial.</div>
+          </div>
+        </div>
+
+
         <!-- TARJETAS -->
         <div class="ayuda-section" id="ayuda-tarjetas">
-          <h3>💳 Tarjetas de Crédito</h3>
-          <p class="subtitulo">Importá y gestioná tus resúmenes de TC en 3 pasos</p>
+          <h3>💳 Tarjetas de crédito y débito</h3>
+          <p class="subtitulo">Importá el resumen del banco y que la tarjeta deje de ser una caja negra</p>
           <div class="ayuda-bloque">
-            <h4>Paso 1 — Importar el archivo XLSX</h4>
-            <p>Descargá el resumen mensual de tu tarjeta desde el home banking en formato Excel (.xlsx). Luego en Transacciones hacé click en <strong>📂 Importar TC</strong> y elegí el archivo.</p>
+            <h4>Para qué sirve</h4>
+            <p>La tarjeta es donde más plata se escapa sin que te des cuenta, porque el gasto y el pago ocurren en momentos distintos. Norte importa el resumen completo, clasifica cada consumo por rubro y te deja ver <strong>cuánto de tu mes ya está comprometido</strong> antes de que llegue el débito.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Paso 1 — Importar el archivo</h4>
+            <p>Descargá el resumen mensual desde el home banking en formato Excel (.xlsx). En <strong>Transacciones → 💳 Importar TC / TD</strong> elegí el archivo y el banco.</p>
             <div class="ayuda-ejemplo">
-              <strong>Bancos soportados:</strong><br>
-              • Banco Provincia (BAPRO) — formato estándar<br>
-              • Santander — soporta titular y adicional en el mismo archivo
+              <strong>Vienen preconfigurados:</strong> Banco Provincia (BAPRO) y Santander (soporta titular y adicional en el mismo archivo).<br>
+              <strong>Cualquier otro banco o tarjeta</strong> se configura una sola vez desde Admin y queda disponible para siempre.
             </div>
           </div>
           <div class="ayuda-bloque">
             <h4>Paso 2 — Revisar y clasificar</h4>
-            <p>Norte muestra una vista previa de todos los gastos detectados. Para cada uno podés:</p>
+            <p>Norte muestra una vista previa con todos los consumos detectados. Para cada uno podés:</p>
             <div class="ayuda-ejemplo">
-              • Asignar o cambiar el <strong>Rubro</strong> (ej: MERPAGO*SHELLBOX → Auto)<br>
+              • Asignar o corregir el <strong>Rubro</strong> (ej: MERPAGO*SHELLBOX → Auto)<br>
               • Ver si es en <strong>pesos o dólares</strong><br>
-              • Ver el <strong>portador</strong> (Titular o Adicional)<br>
-              • Deseleccionar items que no querés importar
+              • Ver el <strong>portador</strong> (titular o adicional)<br>
+              • Destildar lo que no querés importar
             </div>
-            <p>Al confirmar, los gastos entran al mes seleccionado con estado <strong>Pendiente de pago</strong>.</p>
+            <p>Al confirmar, los consumos entran al mes elegido. Si es una tarjeta de <strong>crédito</strong> quedan <em>pendientes de pago</em>; si es de <strong>débito</strong> entran ya pagados, porque el dinero salió en el momento.</p>
           </div>
           <div class="ayuda-bloque">
-            <h4>Paso 3 — Pagar TC</h4>
-            <p>Cuando debitaron el resumen de tu tarjeta, usá el botón <strong>✅ Pagar TC</strong> en la barra de Transacciones. El sistema te muestra las combinaciones banco + moneda pendientes con el total de cada una:</p>
+            <h4>Paso 3 — Pagar el resumen</h4>
+            <p>Cuando te debitan la tarjeta, usá <strong>✅ Pagar TC</strong>. Norte te muestra las combinaciones de banco + moneda pendientes con su total:</p>
             <div class="ayuda-ejemplo">
               🏦 Banco Provincia — ARS · 18 ítems · $342.500 → Marcar pagado<br>
               🏦 Santander — ARS · 12 ítems · $198.000 → Marcar pagado<br>
               🏦 Santander — USD · 4 ítems · U$S 47,00 → Marcar pagado
             </div>
-            <p>Al marcar cada combinación, todos los items correspondientes pasan de <em>💳 Pendiente</em> a <em>✓ TC</em> en la columna Saldo.</p>
-            <div class="ayuda-tip">Si tenés gastos en dólares en la TC, necesitás hacer el pago en USD por separado del pago en pesos — aunque sea el mismo banco.</div>
+            <p>Al marcar una combinación, todos sus consumos pasan de <em>💳 Pendiente</em> a <em>✓ TC</em>.</p>
+            <div class="ayuda-tip">Si pagaste el resumen solo en parte, no uses Pagar TC: editá el gasto y cargá el importe real en <strong>Pagado $</strong>. Marcar como pagado algo que pagaste a medias es el error más común y el que más distorsiona el mes siguiente.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Dólares y pesos por separado</h4>
+            <p>Si tenés consumos en dólares, el pago en USD se marca aparte del pago en pesos — aunque sea el mismo banco y el mismo resumen.</p>
           </div>
         </div>
 
         <!-- PRESUPUESTO -->
         <div class="ayuda-section" id="ayuda-presupuesto">
           <h3>🎯 Presupuesto</h3>
-          <p class="subtitulo">Definí límites de gasto y una meta de ahorro mensual</p>
+          <p class="subtitulo">Ponete un techo por rubro y una meta de ahorro — y enterate antes, no después</p>
           <div class="ayuda-bloque">
-            <h4>Presupuesto por rubro</h4>
-            <p>Establecé cuánto querés gastar como máximo en cada categoría. Norte compara automáticamente lo presupuestado vs. lo real y te muestra una barra de progreso:</p>
+            <h4>Para qué sirve</h4>
+            <p>Registrar gastos te dice qué pasó. El presupuesto te deja <strong>decidir qué querés que pase</strong>. Es la diferencia entre mirar el mes por el espejo retrovisor y manejarlo mientras está ocurriendo.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Límites por rubro</h4>
+            <p>Definí cuánto querés gastar como máximo en cada categoría. Norte compara automáticamente lo presupuestado contra lo real y te muestra una barra de avance:</p>
             <div class="ayuda-ejemplo">
-              <strong>Supermercado:</strong> $150.000 presupuestado — $112.000 gastado (75%) 🟡<br>
-              <strong>Entretenimiento:</strong> $40.000 presupuestado — $52.000 gastado (130%) 🔴 ¡Superado!<br>
-              <strong>Auto:</strong> $80.000 presupuestado — $31.000 gastado (39%) 🟢
+              <strong>Supermercado:</strong> $150.000 de tope — $112.000 gastado (75%) 🟡<br>
+              <strong>Entretenimiento:</strong> $40.000 de tope — $52.000 gastado (130%) 🔴 ¡Superado!<br>
+              <strong>Auto:</strong> $80.000 de tope — $31.000 gastado (39%) 🟢
             </div>
+            <div class="ayuda-tip">Es <strong>opcional y por rubro</strong>: no hace falta ponerle límite a todo. Arrancá con los dos o tres rubros que sabés que se te escapan; el resto dejalo vacío.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Copiar del mes anterior</h4>
+            <p>Los presupuestos se guardan por mes. Con <strong>📋 Copiar del mes anterior</strong> traés los mismos topes al mes nuevo sin volver a escribirlos.</p>
           </div>
           <div class="ayuda-bloque">
             <h4>Meta de ahorro</h4>
-            <p>Definí un monto en pesos que querés ahorrar cada mes. Norte te muestra si estás en camino de alcanzarlo según el balance actual.</p>
-            <div class="ayuda-ejemplo"><strong>Ejemplo:</strong> Si tu meta es ahorrar $200.000 y tu balance del mes es $180.000, Norte te avisa que te faltan $20.000 para llegar a la meta.</div>
+            <p>Definí cuánto querés que te sobre al final del mes. Norte compara tu balance actual contra esa meta y te dice si vas en camino.</p>
+            <div class="ayuda-ejemplo"><strong>Ejemplo:</strong> si tu meta es $200.000 y tu balance del mes va $180.000, Norte te avisa que te faltan $20.000 para llegar.</div>
           </div>
-          <div class="ayuda-tip">Los presupuestos se guardan por mes. Si querés el mismo presupuesto todos los meses, tenés que definirlo nuevamente o clonar desde el mes anterior.</div>
+          <div class="ayuda-bloque">
+            <h4>Qué pasa si te pasás</h4>
+            <p>Norte <strong>no bloquea nada</strong>. La barra se pone roja, te muestra por cuánto te excediste y aparece una alerta en Mi Rumbo. La decisión sigue siendo tuya; lo que cambia es que ahora la tomás con el dato a la vista.</p>
+          </div>
         </div>
 
         <!-- ANÁLISIS -->
         <div class="ayuda-section" id="ayuda-analisis">
           <h3>🔎 Análisis</h3>
-          <p class="subtitulo">Conclusiones automáticas sobre tu situación financiera del mes</p>
+          <p class="subtitulo">Conclusiones automáticas sobre el mes, escritas en castellano</p>
           <div class="ayuda-bloque">
-            <h4>¿Qué hace?</h4>
-            <p>Norte analiza tus datos del mes y genera un informe automático con observaciones, alertas y sugerencias. No necesitás configurar nada — se actualiza solo cada vez que cargás movimientos.</p>
+            <h4>Para qué sirve</h4>
+            <p>Es el paso que la mayoría no hace: mirar los números y sacar conclusiones. Norte lo hace por vos. No hay nada que configurar — el informe se rearma solo cada vez que cargás movimientos.</p>
           </div>
           <div class="ayuda-bloque">
-            <h4>¿Qué analiza?</h4>
+            <h4>Qué analiza</h4>
             <div class="ayuda-ejemplo">
               • <strong>Balance:</strong> si estás en positivo o negativo, y por cuánto<br>
-              • <strong>Rubros que más pesaron:</strong> los 3 mayores gastos del mes<br>
-              • <strong>Comparación con mes anterior:</strong> si gastaste más o menos<br>
-              • <strong>Presupuestos superados:</strong> lista de rubros que pasaron el límite<br>
-              • <strong>Pendientes de pago:</strong> lo que todavía no pagaste<br>
-              • <strong>Gastos inusuales:</strong> items significativamente más altos que tu promedio
+              • <strong>Los rubros que más pesaron:</strong> los tres mayores gastos del mes<br>
+              • <strong>Comparación con el mes anterior:</strong> si gastaste más o menos, y en qué<br>
+              • <strong>Presupuestos superados:</strong> qué rubros pasaron el límite<br>
+              • <strong>Pendientes de pago:</strong> lo que todavía no saldaste<br>
+              • <strong>Gastos inusuales:</strong> movimientos muy por encima de tu promedio
             </div>
           </div>
-          <div class="ayuda-tip">El Análisis es más completo a medida que tenés más meses cargados — con solo 1 mes de datos, la comparación con meses anteriores no está disponible.</div>
+          <div class="ayuda-tip">El Análisis se vuelve más potente con el tiempo: con un solo mes cargado no puede comparar contra nada. A partir del tercer mes empieza a detectar patrones reales.</div>
+        </div>
+
+        <!-- PROGRESO -->
+        <div class="ayuda-section" id="ayuda-progreso">
+          <h3>🏆 Progreso</h3>
+          <p class="subtitulo">Niveles, racha y medallas — para que el control se vuelva hábito</p>
+          <div class="ayuda-bloque">
+            <h4>Para qué sirve</h4>
+            <p>Controlar las finanzas un mes es fácil; sostenerlo un año es lo difícil. Progreso convierte la constancia en algo visible y medible, para que veas el avance aunque el mes puntual no haya sido bueno.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Tu nivel</h4>
+            <p>El nivel sube según la cantidad de <strong>meses cerrados en verde</strong> (balance positivo) que acumulaste, no según cuánto ganás.</p>
+            <div class="ayuda-ejemplo">
+              🌱 <strong>Explorador</strong> — primeros pasos<br>
+              🌿 <strong>Constante</strong> — 2 meses en verde<br>
+              📊 <strong>Estratega</strong> — 5 meses en verde<br>
+              🧭 <strong>Experto</strong> — 9 meses en verde<br>
+              🛡️ <strong>Maestro</strong> — 14 meses en verde<br>
+              👑 <strong>Líder</strong> — 20 meses en verde<br>
+              🏆 <strong>Leyenda</strong> — 30 meses en verde (nivel máximo)
+            </div>
+            <p>El anillo de progreso te muestra cuánto te falta para el nivel siguiente.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Tu racha</h4>
+            <p>Cuántos meses seguidos venís cerrando con balance positivo. Al lado vas a ver también el total histórico: <em>"7 de 11 meses en verde"</em>.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Las 8 medallas</h4>
+            <div class="ayuda-ejemplo">
+              🥇 <strong>Primer paso</strong> — registraste tu primer mes de movimientos<br>
+              📅 <strong>Mes en verde</strong> — cerraste un mes con balance positivo<br>
+              🔥 <strong>Racha de 3</strong> — 3 meses seguidos en verde<br>
+              🛡️ <strong>Disciplina total</strong> — 6 meses seguidos en verde<br>
+              🎯 <strong>Meta cumplida</strong> — alcanzaste tu meta de ahorro mensual<br>
+              📊 <strong>Presupuesto bajo control</strong> — cerraste un mes sin pasarte de ningún límite<br>
+              🏆 <strong>Año completo</strong> — 12 meses de historial registrado<br>
+              👑 <strong>Leyenda</strong> — llegaste al nivel máximo
+            </div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Evolución del balance</h4>
+            <p>El gráfico de abajo muestra tu balance mes a mes. Es la mejor foto para ver si la tendencia mejora, aunque un mes puntual haya salido mal.</p>
+          </div>
+          <div class="ayuda-tip">Un mes en rojo no borra tu nivel: los niveles miden meses en verde acumulados, no consecutivos. Lo único que se corta es la racha.</div>
         </div>
 
         <!-- REPORTES -->
         <div class="ayuda-section" id="ayuda-reportes">
           <h3>📈 Reportes</h3>
-          <p class="subtitulo">Análisis histórico del año completo en 5 vistas</p>
+          <p class="subtitulo">El año completo en seis vistas — para ver tendencias, no fotos sueltas</p>
           <div class="ayuda-bloque">
-            <h4>Filtro de moneda</h4>
-            <p>En la esquina superior derecha podés elegir ver los reportes en <strong>$ ARS</strong>, <strong>USD</strong> o <strong>Ambas</strong>. El modo Ambas muestra un eje Y doble en los gráficos (ARS a la izquierda, USD a la derecha).</p>
+            <h4>Para qué sirve</h4>
+            <p>Mi Rumbo te muestra el mes. Reportes te muestra <strong>el año</strong>: si venís mejorando, en qué se te va la plata de verdad, cuánto gastás en promedio en cada rubro y cómo se comparan los integrantes del hogar.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Filtros generales</h4>
+            <div class="ayuda-ejemplo">
+              <strong>Hogar:</strong> si tenés más de un hogar, elegís cuál estás mirando<br>
+              <strong>Ver:</strong> <em>Agregado</em> (todo el hogar junto), <em>Detalle por integrante</em> o <em>Comparativo entre integrantes</em><br>
+              <strong>Moneda:</strong> $ ARS, USD o Ambas — el modo Ambas muestra doble eje en los gráficos
+            </div>
           </div>
           <div class="ayuda-bloque">
             <h4>📅 Evolución</h4>
-            <p>Vista anual con tres componentes:</p>
             <div class="ayuda-ejemplo">
-              <strong>Resumen anual:</strong> tarjetas con total de ingresos, gastos, balance y tasa de ahorro del año<br>
-              <strong>Gráfico mensual:</strong> barras comparando ingresos vs. gastos mes a mes<br>
-              <strong>Tabla mes a mes:</strong> detalle numérico de cada mes con % de ahorro, fila de totales al pie
+              <strong>Resumen anual:</strong> ingresos, gastos, balance y tasa de ahorro del año<br>
+              <strong>Gráfico mensual:</strong> barras de ingresos vs. gastos mes a mes<br>
+              <strong>Tabla mes a mes:</strong> el detalle numérico con % de ahorro y fila de totales
             </div>
           </div>
           <div class="ayuda-bloque">
             <h4>📊 Por Rubro</h4>
-            <p>Desglosa cómo se componen tus gastos:</p>
             <div class="ayuda-ejemplo">
-              <strong>Selector de período:</strong> elegí un mes específico o el acumulado del año<br>
-              <strong>Donut + Ranking:</strong> cada rubro con importe total, porcentaje y barra visual<br>
-              <strong>Drill-down:</strong> hacé click en cualquier rubro del ranking para ver el listado completo de transacciones individuales, con columnas separadas para ARS y USD<br>
-              <strong>Evolución apilada:</strong> gráfico de barras con todos los rubros apilados mes a mes<br>
-              <strong>Tabla rubro × mes:</strong> grilla cruzada con totales
+              <strong>Selector de período:</strong> un mes puntual o el acumulado del año<br>
+              <strong>Torta + ranking:</strong> cada rubro con importe, porcentaje y barra<br>
+              <strong>Drill-down:</strong> click en un rubro del ranking y ves todas sus transacciones, con columnas separadas de ARS y USD<br>
+              <strong>Evolución apilada:</strong> todos los rubros apilados mes a mes<br>
+              <strong>Tabla rubro × mes:</strong> la grilla cruzada con totales
             </div>
-            <div class="ayuda-tip">El drill-down siempre muestra TODOS los importes en su moneda real — aunque el filtro esté en ARS, los gastos en USD aparecen en su columna correspondiente.</div>
+            <div class="ayuda-tip">El drill-down siempre muestra los importes en su moneda real: aunque el filtro esté en ARS, los gastos en dólares aparecen en su propia columna.</div>
           </div>
           <div class="ayuda-bloque">
             <h4>📈 Promedios</h4>
-            <p>Calcula el promedio mensual de cada rubro basado en los meses con datos. Útil para estimar cuánto gastarás en un rubro el próximo mes.</p>
-            <div class="ayuda-ejemplo"><strong>Ejemplo:</strong> Si en Supermercado gastaste $100k en Enero, $120k en Febrero y $110k en Marzo, el promedio es $110k/mes.</div>
+            <p>El promedio mensual de cada rubro sobre los meses con datos. Es el número que te sirve para estimar el mes que viene y para poner topes realistas en Presupuesto.</p>
+            <div class="ayuda-ejemplo"><strong>Ejemplo:</strong> si en Supermercado gastaste $100k, $120k y $110k, el promedio es $110k/mes. Ese, y no otro, es el tope razonable.</div>
           </div>
           <div class="ayuda-bloque">
             <h4>💚 Ingresos</h4>
-            <p>Análisis detallado de tus ingresos: ranking por cliente/fuente, donut por rubro y tabla de detalle con cada cobro.</p>
-            <div class="ayuda-ejemplo"><strong>Ejemplo:</strong> Si facturaste a 3 clientes distintos, el ranking muestra cuál representa mayor volumen de facturación en el año.</div>
+            <p>El lado que casi nadie analiza: ranking por cliente o fuente, torta por rubro y detalle de cada cobro del año.</p>
+            <div class="ayuda-ejemplo"><strong>Ejemplo:</strong> si facturás a varios clientes, el ranking te muestra cuánto dependés de cada uno.</div>
           </div>
           <div class="ayuda-bloque">
             <h4>💳 Tarjetas</h4>
-            <p>Vista específica para gastos de tarjeta de crédito con filtros por banco, rubro y mes:</p>
-            <div class="ayuda-ejemplo">
-              • Total gastado por banco (BAPRO vs. Santander)<br>
-              • Gráfico de distribución por rubro<br>
-              • Evolución mensual del gasto en TC<br>
-              • Detalle de cada transacción importada
-            </div>
+            <p>Vista dedicada a los consumos con tarjeta, con filtros por banco, rubro y período: total por banco, distribución por rubro, evolución mensual y el detalle de cada consumo importado.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>👥 Comparativo entre integrantes</h4>
+            <p>Cuando el hogar tiene más de una persona, esta vista muestra cuánto aportó y cuánto gastó cada uno. No es para controlar a nadie: es para tener la conversación con números arriba de la mesa en lugar de con impresiones.</p>
           </div>
         </div>
 
-        <!-- CONSULTAS IA -->
+        <!-- NORTIA -->
         <div class="ayuda-section" id="ayuda-consultas">
           <h3 style="display:flex;align-items:center;gap:10px"><span style="display:inline-block;width:28px;height:28px;background-image:var(--nortia-pointing-url);background-size:contain;background-repeat:no-repeat;background-position:center;flex-shrink:0"></span>NortIA</h3>
-          <p class="subtitulo">Tu asistente financiero personal — entendé, proyectá y mejorá tus hábitos hablando en lenguaje natural</p>
+          <p class="subtitulo">Tu asistente financiero — entendé, proyectá y mejorá tus hábitos conversando</p>
           <div class="ayuda-bloque">
-            <h4>¿Qué es NortIA?</h4>
-            <p>NortIA es el asistente de Norte que te ayuda a <strong>entender</strong> tu situación financiera actual, <strong>proyectar</strong> cómo vas a terminar el mes o el año si seguís el mismo ritmo, <strong>aprender</strong> de tus propios patrones de gasto y <strong>adquirir hábitos</strong> más saludables de control del hogar. Todo conversando, sin fórmulas ni planillas.</p>
+            <h4>Qué es NortIA</h4>
+            <p>NortIA es el asistente de Norte. Te ayuda a <strong>entender</strong> tu situación actual, <strong>proyectar</strong> cómo vas a cerrar el mes o el año si seguís este ritmo, <strong>aprender</strong> de tus propios patrones y <strong>construir hábitos</strong> más sanos. Todo conversando, sin fórmulas ni planillas.</p>
+            <p>Está disponible para todas las cuentas, sin configurar ninguna clave ni contratar nada aparte.</p>
           </div>
           <div class="ayuda-bloque">
-            <h4>¿Cómo funciona?</h4>
-            <p>NortIA analiza todos tus datos financieros y responde preguntas en lenguaje natural. No necesitás saber nada de contabilidad ni buscar en tablas — simplemente preguntás como si le hablaras a un asesor que ya conoce tu hogar.</p>
-          </div>
-          <div class="ayuda-bloque">
-            <h4>Por qué es distinta a un chatbot genérico</h4>
+            <h4>Dos cosas distintas en una pantalla</h4>
             <div class="ayuda-ejemplo">
-              <strong>Personalizada</strong> — analiza tus propios movimientos, categorías y hábitos, no promedios genéricos de internet.<br>
-              <strong>Confidencial</strong> — tus datos no salen de tu cuenta. No opina sobre inversiones ni ingresos personales, solo analiza lo que vos le mostrás.<br>
-              <strong>Profesional</strong> — conclusiones claras y accionables, como las daría un asesor, no respuestas genéricas de chatbot.
+              <strong>📊 Hallazgos del mes</strong> — un diagnóstico automático que NortIA arma sola: pendientes, resumen del mes, mejor mes, gastos top, análisis por cliente, proyección y exposición en dólares. No hay que preguntar nada.<br>
+              <strong>💬 El chat</strong> — donde le preguntás lo que quieras sobre tus datos, con tus palabras.
+            </div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Por qué es distinta a un chatbot común</h4>
+            <div class="ayuda-ejemplo">
+              <strong>Personalizada</strong> — analiza tus movimientos, tus rubros y tus hábitos, no promedios genéricos de internet.<br>
+              <strong>Confidencial</strong> — trabaja únicamente sobre los datos de tu cuenta.<br>
+              <strong>Con límites claros</strong> — no recomienda inversiones ni opina sobre cuánto deberías ganar. Analiza lo que vos cargaste, nada más.<br>
+              <strong>Accionable</strong> — conclusiones concretas, como las daría un asesor que ya conoce tu hogar.
             </div>
           </div>
           <div class="ayuda-bloque">
@@ -2211,74 +2397,264 @@ tr:hover td { background: #fafbfc; }
               "¿En qué mes tuve el mayor gasto en Auto?"<br>
               "¿Cuánto facturé en total a Empresa XYZ?"<br>
               "Mostrame los gastos de entretenimiento de los últimos 3 meses"<br>
-              "¿Cuál fue mi rubro de mayor gasto en Abril?"<br>
               "¿Cuánto me falta pagar de gastos pendientes este mes?"<br>
-              "¿Cuál es mi promedio mensual de gasto en servicios?"<br>
               "¿Cómo voy a terminar el mes si sigo gastando a este ritmo?"<br>
               "¿Qué hábito de gasto me conviene cambiar para ahorrar más?"
             </div>
+            <p>Arriba del chat hay botones de preguntas frecuentes para arrancar sin escribir nada.</p>
           </div>
           <div class="ayuda-bloque">
-            <h4>Sugerencias rápidas</h4>
-            <p>La pantalla muestra botones de preguntas frecuentes para que puedas arrancar sin tener que escribir nada. Hacé click en cualquiera y se ejecuta automáticamente.</p>
+            <h4>Cuántas consultas tenés por mes</h4>
+            <p>El contador arriba del chat te muestra las consultas usadas y disponibles. El cupo es <strong>por hogar</strong> y se renueva cada mes.</p>
+            <div class="ayuda-ejemplo">
+              <strong>FOCO:</strong> 60 consultas por mes<br>
+              <strong>PRO:</strong> 200 consultas por mes<br>
+              <strong>TOP:</strong> sin límite
+            </div>
+            <p>Los hallazgos automáticos tienen su propio cupo, separado del chat.</p>
           </div>
-          <div class="ayuda-tip">Las respuestas de NortIA se basan en tus datos reales — cuantos más meses tengas cargados, más completas y precisas serán las respuestas.</div>
+          <div class="ayuda-tip">Las respuestas salen de tus datos reales: cuantos más meses tengas cargados, más precisas y más útiles se vuelven.</div>
         </div>
 
+        <!-- GPS PIONEROS -->
+        <div class="ayuda-section" id="ayuda-gps">
+          <h3>🧭 GPS - Pioneros</h3>
+          <p class="subtitulo">El recorrido guiado del Club Pioneros de Norte</p>
+          <div class="ayuda-bloque">
+            <h4>Qué es</h4>
+            <p>El <strong>Club Pioneros</strong> es el grupo fundador de Norte. Los Pioneros usan la aplicación completa sin pagar nada y, a cambio, hacen un recorrido guiado de cuatro semanas que les enseña a usar la herramienta a fondo y nos devuelve la mirada más valiosa que tenemos: la de alguien que la está usando en serio por primera vez.</p>
+            <div class="ayuda-tip">Este menú solo aparece si sos parte del Club Pioneros. Si no lo ves, es porque tu cuenta no está en el programa.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Cómo funciona el recorrido</h4>
+            <ol class="ayuda-steps">
+              <li>Cada semana se te <strong>desbloquea un capítulo</strong> — son cuatro en total, uno cada 7 días</li>
+              <li>Leés el capítulo completo dentro de la app (son cortos y prácticos)</li>
+              <li>Al llegar al final del capítulo se <strong>habilita el quiz</strong></li>
+              <li>Aprobás el quiz y sumás <strong>10 puntos</strong></li>
+              <li>Con los 4 capítulos completos llegás a <strong>40 / 40 puntos</strong></li>
+            </ol>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Por qué el quiz se habilita recién al final</h4>
+            <p>Porque el objetivo no es que apruebes: es que uses la herramienta. Cada quiz tiene preguntas que te obligan a entrar a una pantalla real de Norte y mirarla. Se habilita cuando llegás al final del capítulo, y una vez habilitado queda desbloqueado para siempre.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Capítulo bloqueado</h4>
+            <p>Si un capítulo todavía no está disponible vas a ver su <strong>fecha de desbloqueo</strong>. Si la fecha ya pasó y sigue bloqueado, es porque falta aprobar el quiz del capítulo anterior — los dos requisitos tienen que cumplirse.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>El premio: Pionero Vitalicio</h4>
+            <p>Al completar los cuatro capítulos y sus quizzes, tu cuenta pasa a <strong>Pionero Vitalicio</strong>: el plan Norte FOCO queda gratis para siempre, sin vencimiento y sin letra chica. La tarjeta del final de la pantalla se destraba sola cuando llegás a los 40 puntos.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Detalles prácticos</h4>
+            <div class="ayuda-ejemplo">
+              • La barra de arriba muestra tu progreso en puntos en todo momento.<br>
+              • El <strong>punto rojo</strong> en el menú avisa que hay un capítulo nuevo para leer, y desaparece cuando lo abrís.<br>
+              • Si hacés varios días sin entrar, te llega un recordatorio por mail con un tip corto.<br>
+              • En el celular, el botón <strong>☰</strong> al lado del título te devuelve al menú principal.
+            </div>
+          </div>
+        </div>
+
+        <!-- MIS HOGARES -->
+        <div class="ayuda-section" id="ayuda-hogares">
+          <h3>👥 Mis hogares e integrantes</h3>
+          <p class="subtitulo">Compartí las finanzas con quien convivís, o llevá más de un hogar por separado</p>
+          <div class="ayuda-bloque">
+            <h4>Para qué sirve</h4>
+            <p>Las finanzas de una casa casi nunca son de una sola persona. Norte te deja <strong>invitar integrantes</strong> a tu hogar para que carguen sus propios movimientos, y también <strong>tener varios hogares separados</strong> (la casa, la de tus padres, un emprendimiento) sin que se mezclen los datos.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Dónde está</h4>
+            <p>En el menú lateral, abajo: <strong>🏠 Mis hogares</strong>.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Invitar a un integrante</h4>
+            <ol class="ayuda-steps">
+              <li>Abrí <strong>Mis hogares</strong> → <strong>+ Invitar integrante</strong></li>
+              <li>Cargá nombre y email</li>
+              <li>La persona recibe un mail con un link para <strong>crear su propia contraseña</strong></li>
+              <li>Desde ese momento entra con su usuario y ve el mismo hogar</li>
+            </ol>
+            <div class="ayuda-tip">Si no le llega el mail, que revise la carpeta de spam o correo no deseado. Es lo primero que hay que mirar.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Qué comparten los integrantes</h4>
+            <div class="ayuda-ejemplo">
+              <strong>Se comparte:</strong> las transacciones, los presupuestos, los reportes, la meta y los cupos mensuales de foto/voz y NortIA.<br>
+              <strong>Es de cada uno:</strong> el usuario, la contraseña y el campo <em>Dueño del gasto</em> que identifica quién hizo cada movimiento.
+            </div>
+            <p>Ese campo es el que después alimenta las vistas <strong>Detalle por integrante</strong> y <strong>Comparativo</strong> de Reportes.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Varios hogares</h4>
+            <p>Con <strong>+ Crear otro hogar</strong> armás un espacio nuevo, con sus propios movimientos, rubros y presupuestos. Para pasar de uno a otro, elegilo desde la misma pantalla — la app se recarga en el hogar seleccionado.</p>
+            <div class="ayuda-ejemplo">
+              <strong>FOCO:</strong> 1 hogar, hasta 2 integrantes<br>
+              <strong>PRO:</strong> hasta 3 hogares, integrantes ilimitados<br>
+              <strong>TOP:</strong> hogares e integrantes ilimitados
+            </div>
+          </div>
+        </div>
+
+        <!-- MI PLAN -->
+        <div class="ayuda-section" id="ayuda-plan">
+          <h3>💎 Mi plan</h3>
+          <p class="subtitulo">Qué incluye cada plan y cómo cambiarlo</p>
+          <div class="ayuda-bloque">
+            <h4>Cómo está pensado</h4>
+            <p><strong>FOCO es un pago único</strong>: lo comprás una vez y es tuyo, sin suscripción y sin vencimiento. PRO y TOP son suscripciones mensuales opcionales, para quien necesita más volumen o más hogares. Lo que ya pagaste de FOCO no cambia nunca, aunque después te suscribas y luego canceles.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Qué incluye cada uno</h4>
+            <div class="ayuda-ejemplo">
+              <strong>FOCO — pago único</strong><br>
+              • 1 hogar, hasta 2 integrantes<br>
+              • 50 cargas por foto/voz al mes<br>
+              • 60 consultas a NortIA al mes<br>
+              • Reportes básicos
+            </div>
+            <div class="ayuda-ejemplo">
+              <strong>PRO — $5.000/mes</strong><br>
+              • Hasta 3 hogares, integrantes ilimitados<br>
+              • 100 cargas por foto/voz al mes<br>
+              • 200 consultas a NortIA al mes<br>
+              • Reportes avanzados
+            </div>
+            <div class="ayuda-ejemplo">
+              <strong>TOP — $9.000/mes</strong><br>
+              • Hogares e integrantes ilimitados<br>
+              • Cargas por foto/voz ilimitadas<br>
+              • Consultas a NortIA ilimitadas<br>
+              • Soporte prioritario
+            </div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Cambiar de plan</h4>
+            <p>Desde <strong>💎 Mi plan</strong> en el menú. La suscripción se gestiona por Mercado Pago y podés cancelarla cuando quieras desde ahí; al cancelar volvés a FOCO conservando todos tus datos.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Qué pasa si llegás al límite</h4>
+            <p>Norte no borra ni bloquea nada. Si te quedás sin cargas de foto/voz o sin consultas de NortIA, esas dos funciones esperan al mes siguiente — el resto de la aplicación sigue funcionando igual, y la carga manual nunca tiene límite.</p>
+          </div>
+          <div class="ayuda-tip">Si sos <strong>Pionero Vitalicio</strong>, tenés Norte FOCO gratis para siempre. Mirá la sección GPS - Pioneros.</div>
+        </div>
+
+        <!-- TU CUENTA -->
+        <div class="ayuda-section" id="ayuda-cuenta">
+          <h3>👤 Tu cuenta y tus datos</h3>
+          <p class="subtitulo">Perfil, contraseña, sincronización, backups e instalación en el celular</p>
+          <div class="ayuda-bloque">
+            <h4>Mi perfil</h4>
+            <p>Desde el menú podés completar y actualizar tus datos personales. Sirve para que Norte se dirija a vos por tu nombre y para que las notificaciones lleguen a la dirección correcta.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Contraseña</h4>
+            <div class="ayuda-ejemplo">
+              <strong>Cambiarla:</strong> con el ícono 🔑 del menú, ingresando la actual y la nueva.<br>
+              <strong>Si la olvidaste:</strong> en la pantalla de inicio, <em>¿Olvidaste tu contraseña?</em> → ponés tu email → te llega un link para elegir una nueva.
+            </div>
+            <div class="ayuda-tip">Si el mail de recuperación no aparece, revisá spam. Nunca vas a recibir una contraseña por mail: siempre es un link para que la elijas vos.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Sincronización en la nube</h4>
+            <p>Todo se guarda automáticamente y se sincroniza entre dispositivos. El indicador del menú te dice en qué estado está:</p>
+            <div class="ayuda-ejemplo">
+              <strong>☁️ Sincronizado</strong> — todo guardado<br>
+              <strong>☁️ Conectando…</strong> — está subiendo cambios<br>
+              <strong>Sin conexión</strong> — podés seguir usando la app; se sincroniza sola al recuperar internet
+            </div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Exportar e importar</h4>
+            <div class="ayuda-ejemplo">
+              <strong>📤 Exportar</strong> — descarga un archivo con todos tus datos. Es tu backup: guardalo cada tanto.<br>
+              <strong>📥 Importar</strong> — restaura un backup exportado antes.
+            </div>
+            <div class="ayuda-tip">Tus datos son tuyos y te los podés llevar cuando quieras. Antes de importar un backup grande, exportá el actual por las dudas.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Instalar Norte en el celular</h4>
+            <p>Norte se puede instalar como una app, con su ícono en la pantalla de inicio y sin la barra del navegador.</p>
+            <div class="ayuda-ejemplo">
+              <strong>Android:</strong> aceptá el cartel de instalación, o usá el menú del navegador → <em>Instalar aplicación</em>.<br>
+              <strong>iPhone:</strong> botón <em>Compartir</em> → <em>Agregar a pantalla de inicio</em>.
+            </div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Actualizaciones</h4>
+            <p>Norte se actualiza sola. La versión que estás usando figura abajo del logo en el menú (por ejemplo <strong>v005.1.062</strong>). Si algo no se ve como debería, cerrá y volvé a abrir la app para que tome la última versión.</p>
+          </div>
+        </div>
 
         <!-- ADMIN -->
         <div class="ayuda-section" id="ayuda-admin">
           <h3>⚙️ Administración</h3>
-          <p class="subtitulo">Panel de configuración del sistema — visible solo para administradores</p>
+          <p class="subtitulo">Configuración del sistema — visible solo para administradores</p>
 
-          <!-- BLOQUE: IMPORTACIÓN -->
           <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin:24px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Importación de extractos bancarios</div>
 
           <div class="ayuda-bloque" style="border-left:3px solid var(--primary)">
-            <h4>💳 Bancos y Tarjetas — Cómo funciona</h4>
-            <p>Cada banco y tarjeta genera un archivo XLSX con su propio formato: distintas columnas, distintos nombres, distinto orden. Esta sección permite enseñarle a Norte el formato de cualquier banco o tarjeta que uses, para que pueda importar sus extractos automáticamente.</p>
-            <p>El concepto central es simple: <strong>configurás una sola vez, usás para siempre</strong>.</p>
+            <h4>💳 Bancos y Tarjetas — cómo funciona</h4>
+            <p>Cada banco y cada tarjeta arma su archivo XLSX a su manera: distintas columnas, distintos nombres, distinto orden. Esta sección le enseña a Norte el formato de cualquier banco o tarjeta que uses, para que después pueda importar sus extractos solo.</p>
+            <p>El concepto es simple: <strong>configurás una vez, usás para siempre</strong>.</p>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin:14px 0">
               <div style="background:rgba(255,138,92,0.08);border:1px solid rgba(255,138,92,0.22);border-radius:8px;padding:12px 14px;flex:1;min-width:160px">
                 <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--primary);margin-bottom:6px">① Primera vez</div>
-                <div style="font-size:12.5px;color:var(--text);line-height:1.55">Subís un archivo XLSX de muestra de ese banco. Norte analiza la estructura, detecta las columnas (fecha, importe, descripción, etc.) y te muestra el mapeo propuesto. Lo revisás, ajustás si algo no quedó bien, y guardás.</div>
+                <div style="font-size:12.5px;color:var(--text);line-height:1.55">Subís un XLSX de muestra. Norte analiza la estructura, detecta las columnas y te propone el mapeo. Lo revisás, ajustás lo que haga falta y guardás.</div>
               </div>
               <div style="background:rgba(27,58,75,0.05);border:1px solid var(--border);border-radius:8px;padding:12px 14px;flex:1;min-width:160px">
                 <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--brand-navy);margin-bottom:6px">② Configurado para siempre</div>
-                <div style="font-size:12.5px;color:var(--text);line-height:1.55">El banco queda guardado. A partir de ahí aparece automáticamente en el menú de Importar TC. Para futuros extractos solo subís el archivo nuevo — no hay que volver a configurar nada.</div>
+                <div style="font-size:12.5px;color:var(--text);line-height:1.55">El banco queda guardado y aparece solo en Importar TC / TD. Para los resúmenes futuros únicamente subís el archivo nuevo.</div>
               </div>
             </div>
             <div class="ayuda-ejemplo">
               <strong>Paso a paso para configurar un banco nuevo:</strong><br>
-              1. Admin → sección "Bancos y Tarjetas" → <strong>+ Nuevo banco / tarjeta</strong><br>
+              1. Admin → "Bancos y Tarjetas" → <strong>+ Nuevo banco / tarjeta</strong><br>
               2. Completá País, Banco y nombre de la Tarjeta o Cuenta<br>
-              3. Subí un XLSX de muestra (no importa el mes — solo sirve para aprender el formato)<br>
-              4. Norte detecta las columnas automáticamente — revisá el mapeo propuesto<br>
-              5. Ajustá si hace falta: asigná manualmente columnas que no se detectaron bien<br>
-              6. Configurá patrones a ignorar (ej: <em>"PAGO EN PESOS"</em> para excluir pagos anteriores)<br>
-              7. Hacé click en <strong>Vista previa</strong> para ver los movimientos que se importarían<br>
-              8. <strong>Guardar</strong> — listo, el banco ya está disponible para importar
+              3. Elegí si es de <strong>crédito</strong> (se paga después, queda pendiente) o de <strong>débito</strong> (se registra pagado al importar)<br>
+              4. Subí un XLSX de muestra — el mes no importa, solo sirve para aprender el formato<br>
+              5. Revisá el mapeo de columnas que Norte propone y corregí lo que no detectó bien<br>
+              6. Configurá patrones a ignorar (ej: <em>"PAGO EN PESOS"</em>, para excluir los pagos anteriores)<br>
+              7. <strong>Vista previa</strong> para ver qué movimientos se importarían<br>
+              8. <strong>Guardar</strong> — el banco ya queda disponible
             </div>
             <div class="ayuda-ejemplo">
               <strong>Columnas que Norte puede mapear:</strong><br>
               • <strong>Fecha</strong> — fecha del movimiento<br>
-              • <strong>Descripción / Concepto</strong> — nombre del comercio o detalle<br>
+              • <strong>Descripción / Concepto</strong> — comercio o detalle<br>
               • <strong>Importe ARS ($)</strong> — monto en pesos<br>
-              • <strong>Importe USD (U$S)</strong> — monto en dólares (si existe columna separada)<br>
+              • <strong>Importe USD (U$S)</strong> — monto en dólares, si hay columna separada<br>
               • <strong>Moneda (ARS/USD)</strong> — columna que indica la divisa<br>
-              • <strong>Cuota actual / Cuota total</strong> — cuotas en columnas separadas (ej: "3" y "12")<br>
-              • <strong>Cuota combinada</strong> — cuotas en una sola columna (ej: "3/12")<br>
-              • <strong>Portador / Titular</strong> — nombre del tarjetahabiente (tarjetas adicionales)
+              • <strong>Cuota actual / Cuota total</strong> — en columnas separadas (ej: "3" y "12")<br>
+              • <strong>Cuota combinada</strong> — en una sola columna (ej: "3/12")<br>
+              • <strong>Portador / Titular</strong> — para tarjetas adicionales
             </div>
             <div class="ayuda-ejemplo">
-              <strong>Cómo importar con un banco ya configurado:</strong><br>
-              Transacciones → 💳 Importar TC → el banco aparece bajo "Mis bancos configurados" → seleccionarlo → subir el archivo → continuar normalmente
+              <strong>Extractos de cuenta (Mercado Pago y similares):</strong> activá la opción <em>"Los gastos/débitos son negativos en el archivo"</em>. Dejala apagada para resúmenes de tarjeta, donde los cargos vienen en positivo.
             </div>
-            <p style="margin-top:10px">Podés configurar tantos bancos y tarjetas como necesites. Las configuraciones son por empresa — no se comparten entre distintas empresas.</p>
+            <p style="margin-top:10px">Las configuraciones son por hogar: podés dar de alta tantas combinaciones de banco y tarjeta como necesites.</p>
           </div>
-          <div class="ayuda-tip">Podés editar la configuración de cualquier banco en cualquier momento (ícono ✏️) sin que eso afecte las transacciones ya importadas con ese banco.</div>
-        </div>
+          <div class="ayuda-tip">Podés editar la configuración de un banco cuando quieras (ícono ✏️) sin que eso afecte las transacciones ya importadas con ese banco.</div>
 
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)">NortIA</div>
+          <div class="ayuda-bloque">
+            <h4>🧭 Sin configuración</h4>
+            <p>NortIA funciona automáticamente para todas las cuentas: no hay que cargar ninguna clave de API ni contratar nada por separado. Los cupos mensuales dependen del plan del hogar.</p>
+          </div>
+
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Gestión de cuentas</div>
+          <div class="ayuda-bloque">
+            <h4>👤 Usuarios</h4>
+            <p>Panel reservado al administrador general de Norte. Permite dar de alta cuentas nuevas (incluyendo sumarlas al Club Pioneros), cambiar el plan de un hogar, reenviar el link de contraseña y dar de baja.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>🧭 Club Pioneros</h4>
+            <p>Seguimiento del programa guiado: cada Pionero con su avance en puntos, el estado de cada capítulo y si ya alcanzó el estado Vitalicio. Desde acá también se reenvía el mail de bienvenida a quien no lo haya recibido.</p>
+          </div>
+        </div>
       </div><!-- /ayuda-content -->
     </div><!-- /ayuda-body -->
   </div><!-- /ayuda-panel -->
@@ -8106,7 +8482,7 @@ function ayudaGo(id) {
   const sec = document.getElementById('ayuda-' + id);
   if (sec) sec.classList.add('active');
   const items = document.querySelectorAll('.ayuda-nav-item');
-  const order = ['inicio','dashboard','transacciones','tarjetas','presupuesto','analisis','reportes','consultas','admin'];
+  const order = Array.from(items).map(function (n) { var m = /ayudaGo\('([^']+)'\)/.exec(n.getAttribute('onclick') || ''); return m ? m[1] : ''; });
   const idx = order.indexOf(id);
   if (idx >= 0 && items[idx]) items[idx].classList.add('active');
   // scroll al tope del contenido
