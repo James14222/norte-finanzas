@@ -1203,7 +1203,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.065</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.066</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -1291,7 +1291,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.065</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.066</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -2170,44 +2170,65 @@ tr:hover td { background: #fafbfc; }
         <!-- TARJETAS -->
         <div class="ayuda-section" id="ayuda-tarjetas">
           <h3>💳 Tarjetas de crédito y débito</h3>
-          <p class="subtitulo">Importá el resumen del banco y que la tarjeta deje de ser una caja negra</p>
+          <p class="subtitulo">Subí el PDF del resumen y que la tarjeta deje de ser una caja negra</p>
           <div class="ayuda-bloque">
             <h4>Para qué sirve</h4>
-            <p>La tarjeta es donde más plata se escapa sin que te des cuenta, porque el gasto y el pago ocurren en momentos distintos. Norte importa el resumen completo, clasifica cada consumo por rubro y te deja ver <strong>cuánto de tu mes ya está comprometido</strong> antes de que llegue el débito.</p>
+            <p>La tarjeta es donde más plata se escapa sin que te des cuenta, porque el gasto y el pago ocurren en momentos distintos. Norte lee el <strong>resumen completo</strong>, clasifica cada consumo por rubro y te deja ver cuánto de tu mes ya está comprometido antes de que llegue el débito.</p>
           </div>
           <div class="ayuda-bloque">
-            <h4>Paso 1 — Importar el archivo</h4>
-            <p>Descargá el resumen mensual desde el home banking en formato Excel (.xlsx). En <strong>Transacciones → 💳 Importar TC / TD</strong> elegí el archivo y el banco.</p>
+            <h4>El camino corto: el PDF del resumen</h4>
+            <p>Descargá de tu homebanking el <strong>resumen de la tarjeta en PDF</strong> — el mismo que te manda el banco todos los meses — y arrastralo a <strong>Transacciones → 💳 Importar TC / TD</strong>. Listo, no hay que configurar nada.</p>
             <div class="ayuda-ejemplo">
-              <strong>Vienen preconfigurados:</strong> Banco Provincia (BAPRO) y Santander (soporta titular y adicional en el mismo archivo).<br>
-              <strong>Cualquier otro banco o tarjeta</strong> se configura una sola vez desde Admin y queda disponible para siempre.
+              Norte lo lee en menos de un segundo y reconoce solo:<br>
+              • <strong>De qué banco es</strong> — no se lo tenés que decir<br>
+              • <strong>Cada consumo</strong> con su fecha, comercio, importe y moneda<br>
+              • <strong>Las cuotas</strong> (ej: <em>3 de 9</em>)<br>
+              • <strong>El titular y los adicionales</strong>, si el resumen tiene más de una tarjeta<br>
+              • <strong>Los impuestos y percepciones</strong> — sellos, IIBB, IVA RG 4240, DB. RG 5617
+            </div>
+            <div class="ayuda-tip">Los impuestos son la diferencia grande. El Excel de "últimos consumos" que baja el banco no los trae, así que el saldo de la tarjeta en Norte quedaba corto. Con el PDF entran todos, y el total coincide exactamente con lo que el banco te va a debitar.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>El control que hace Norte solo</h4>
+            <p>Antes de importar nada, Norte suma lo que leyó y lo compara contra el total que declara el propio resumen. Si coincide, ves un <strong>✓ Los totales cuadran con el resumen</strong>. Si no coincide, te avisa en amarillo para que revises antes de confirmar.</p>
+            <p>Es un chequeo que el Excel no tiene: con el PDF sabés que no se perdió ni se duplicó ninguna línea.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Revisar y confirmar</h4>
+            <p>Después de leerlo, Norte te muestra el banco detectado y te deja <strong>corregir el nombre</strong> si hiciera falta — ese nombre es el que después vas a ver al pagar el resumen. Elegís en qué mes impactan los gastos y pasás a la vista previa.</p>
+            <p>En la vista previa aparece cada movimiento con su rubro propuesto. Ahí ajustás lo que quieras, destildás lo que no quieras importar, y confirmás.</p>
+            <div class="ayuda-tip">Norte aprende. El rubro que le asignás a un comercio queda guardado para todo el hogar, y el mes que viene ese mismo comercio ya viene clasificado. Cada importación deja menos filas para completar a mano.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Si tu banco todavía no está reconocido</h4>
+            <p>Norte te lo dice y te ofrece que lo lea <strong>NortIA</strong>, avisándote antes de que consuma una carga de tu cupo mensual de foto/voz. Si preferís no gastarla, siempre podés importar el Excel de movimientos.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>El camino alternativo: el Excel</h4>
+            <p>Sigue funcionando igual que antes, y es el camino para dos casos:</p>
+            <div class="ayuda-ejemplo">
+              <strong>Tarjetas de débito y cuentas</strong> — no tienen resumen en PDF, tienen extracto. <strong>MercadoPago</strong> ya viene configurado de fábrica.<br>
+              <strong>Bancos sin perfil todavía</strong> — mientras no reconozcamos su PDF, podés enseñarle el formato de su Excel una sola vez desde Admin.
             </div>
           </div>
           <div class="ayuda-bloque">
-            <h4>Paso 2 — Revisar y clasificar</h4>
-            <p>Norte muestra una vista previa con todos los consumos detectados. Para cada uno podés:</p>
+            <h4>Pagar el resumen</h4>
+            <p>Cuando te debitan la tarjeta, usá <strong>✅ Pagar TC</strong>. Norte agrupa lo pendiente por <strong>banco + moneda</strong> y te muestra el total de cada combinación:</p>
             <div class="ayuda-ejemplo">
-              • Asignar o corregir el <strong>Rubro</strong> (ej: MERPAGO*SHELLBOX → Auto)<br>
-              • Ver si es en <strong>pesos o dólares</strong><br>
-              • Ver el <strong>portador</strong> (titular o adicional)<br>
-              • Destildar lo que no querés importar
+              🏦 Banco Provincia — ARS · 48 ítems · $1.459.786,61 → Marcar pagado<br>
+              🏦 Banco Provincia — USD · 12 ítems · U$S 439,06 → Marcar pagado<br>
+              🏦 Santander — ARS · 24 ítems · $1.786.206,39 → Marcar pagado
             </div>
-            <p>Al confirmar, los consumos entran al mes elegido. Si es una tarjeta de <strong>crédito</strong> quedan <em>pendientes de pago</em>; si es de <strong>débito</strong> entran ya pagados, porque el dinero salió en el momento.</p>
-          </div>
-          <div class="ayuda-bloque">
-            <h4>Paso 3 — Pagar el resumen</h4>
-            <p>Cuando te debitan la tarjeta, usá <strong>✅ Pagar TC</strong>. Norte te muestra las combinaciones de banco + moneda pendientes con su total:</p>
-            <div class="ayuda-ejemplo">
-              🏦 Banco Provincia — ARS · 18 ítems · $342.500 → Marcar pagado<br>
-              🏦 Santander — ARS · 12 ítems · $198.000 → Marcar pagado<br>
-              🏦 Santander — USD · 4 ítems · U$S 47,00 → Marcar pagado
-            </div>
-            <p>Al marcar una combinación, todos sus consumos pasan de <em>💳 Pendiente</em> a <em>✓ TC</em>.</p>
+            <p>Al marcar una combinación, todos sus movimientos pasan de <em>💳 Pendiente</em> a <em>✓ TC</em>.</p>
             <div class="ayuda-tip">Si pagaste el resumen solo en parte, no uses Pagar TC: editá el gasto y cargá el importe real en <strong>Pagado $</strong>. Marcar como pagado algo que pagaste a medias es el error más común y el que más distorsiona el mes siguiente.</div>
           </div>
           <div class="ayuda-bloque">
             <h4>Dólares y pesos por separado</h4>
             <p>Si tenés consumos en dólares, el pago en USD se marca aparte del pago en pesos — aunque sea el mismo banco y el mismo resumen.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Crédito y débito</h4>
+            <p>Los consumos de una tarjeta de <strong>crédito</strong> entran <em>pendientes de pago</em>, porque el dinero sale cuando se debita el resumen. Los de <strong>débito</strong> entran ya pagados, porque salió en el momento.</p>
           </div>
         </div>
 
@@ -2599,9 +2620,10 @@ tr:hover td { background: #fafbfc; }
           <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin:24px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Importación de extractos bancarios</div>
 
           <div class="ayuda-bloque" style="border-left:3px solid var(--primary)">
-            <h4>💳 Bancos y Tarjetas — cómo funciona</h4>
-            <p>Cada banco y cada tarjeta arma su archivo XLSX a su manera: distintas columnas, distintos nombres, distinto orden. Esta sección le enseña a Norte el formato de cualquier banco o tarjeta que uses, para que después pueda importar sus extractos solo.</p>
-            <p>El concepto es simple: <strong>configurás una vez, usás para siempre</strong>.</p>
+            <h4>💳 Formatos de Excel — el camino alternativo</h4>
+            <div class="ayuda-tip">Para tarjetas de crédito ya no hace falta configurar nada: subí el PDF del resumen desde Transacciones y Norte reconoce el banco, los portadores, las cuotas y los impuestos solo. Esta sección quedó para los dos casos que el PDF no cubre.</div>
+            <p>Sirve para <strong>débitos y cuentas</strong> — que no tienen resumen en PDF sino extracto, como MercadoPago, que ya viene configurado — y para <strong>bancos cuyo PDF todavía no reconocemos</strong>.</p>
+            <p>Cada banco arma su XLSX a su manera. Acá le enseñás el formato una vez: <strong>configurás una vez, usás para siempre</strong>.</p>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin:14px 0">
               <div style="background:rgba(255,138,92,0.08);border:1px solid rgba(255,138,92,0.22);border-radius:8px;padding:12px 14px;flex:1;min-width:160px">
                 <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--primary);margin-bottom:6px">① Primera vez</div>
@@ -2674,7 +2696,7 @@ tr:hover td { background: #fafbfc; }
     </div>
 
     <!-- ── IMPORTACIÓN DE EXTRACTOS ── -->
-    <div class="admin-group-label">Importación de extractos bancarios</div>
+    <div class="admin-group-label">Formatos de Excel (opcional)</div>
 
     <!-- BANCOS / TARJETAS — card especial -->
     <div class="card admin-section admin-bank-card" id="adminBancosSection">
@@ -2682,24 +2704,16 @@ tr:hover td { background: #fafbfc; }
       <!-- Bloque explicativo -->
       <div class="bank-info-box">
         <div style="display:flex;gap:14px;align-items:flex-start">
-          <div style="font-size:32px;line-height:1;flex-shrink:0">💳</div>
+          <div style="font-size:32px;line-height:1;flex-shrink:0">📄</div>
           <div style="flex:1">
-            <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">Configuración de Bancos y Tarjetas</div>
-            <p style="font-size:13px;color:var(--muted);margin:0 0 14px;line-height:1.6">
-              Cada banco o tarjeta tiene un formato de archivo XLSX diferente. Esta sección permite configurar cualquier combinación de <strong>Banco + Tarjeta</strong> para que Norte sepa cómo leer sus extractos, adaptándose a la estructura exacta del archivo que cada uno genera.
+            <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">Para tarjetas de crédito ya no hace falta configurar nada</div>
+            <p style="font-size:13px;color:var(--muted);margin:0 0 12px;line-height:1.6">
+              El camino recomendado es subir el <strong>PDF del resumen</strong> desde Transacciones → 💳 Importar TC / TD. Norte reconoce el banco, el titular y los adicionales, las cuotas y los impuestos, y valida los totales contra el propio resumen. Sin mapeo de columnas y sin configuración previa.
             </p>
-            <div style="display:flex;gap:10px;flex-wrap:wrap">
-              <div class="bank-step-box">
-                <div class="bank-step-label">① Primera vez</div>
-                <div style="font-size:12px;color:var(--text);line-height:1.55">Subí un XLSX de muestra → Norte detecta y mapea las columnas automáticamente → revisás, ajustás si hace falta, y guardás.</div>
-              </div>
-              <div class="bank-step-box secondary">
-                <div class="bank-step-label">② Configurado para siempre</div>
-                <div style="font-size:12px;color:var(--text);line-height:1.55">El banco queda registrado y aparece en "Importar TC" para todos los archivos futuros de ese banco, sin volver a configurar nada.</div>
-              </div>
-            </div>
-            <div style="font-size:12px;color:var(--muted);margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,138,92,0.15)">
-              💡 <strong>Tip:</strong> podés configurar tantas combinaciones de Banco/Tarjeta como necesites. Cada una tiene su propio mapeo y puede editarse en cualquier momento sin perder datos ya importados.
+            <div style="font-size:12.5px;color:var(--text);line-height:1.6;padding-top:10px;border-top:1px solid rgba(255,138,92,0.15)">
+              Esta sección sigue disponible para los dos casos que el PDF no cubre:<br>
+              • <strong>Débitos y cuentas</strong> — no tienen resumen en PDF, tienen extracto. <strong>MercadoPago</strong> ya viene configurado.<br>
+              • <strong>Bancos cuyo PDF todavía no reconocemos</strong> — les enseñás el formato de su Excel una sola vez.
             </div>
           </div>
         </div>
@@ -4475,9 +4489,38 @@ function tcpDetectarEmisor(paginas) {
   return null;
 }
 
+/* Nombre del banco emisor: se busca en la primera y la ultima pagina, que es
+   donde va el membrete. El nombre es el que despues agrupa en Pagar TC. */
+var TCP_BANCOS = [
+  { re: /BANCO DE LA PROVINCIA/i, nombre: 'Banco Provincia' },
+  { re: /\bCREDICOOP\b/i, nombre: 'Banco Credicoop' },
+  { re: /\bSUPERVIELLE\b/i, nombre: 'Banco Supervielle' },
+  { re: /\bPATAGONIA\b/i, nombre: 'Banco Patagonia' },
+  { re: /\bHIPOTECARIO\b/i, nombre: 'Banco Hipotecario' },
+  { re: /\bCOMAFI\b/i, nombre: 'Banco Comafi' },
+  { re: /BANCO CIUDAD/i, nombre: 'Banco Ciudad' },
+  { re: /BANCO DE LA NACION|BANCO NACION/i, nombre: 'Banco Nación' },
+  { re: /BANCO SANTANDER|\bSANTANDER\b/i, nombre: 'Santander' },
+  { re: /BANCO GALICIA|\bGALICIA\b/i, nombre: 'Banco Galicia' },
+  { re: /\bBBVA\b/i, nombre: 'BBVA' },
+  { re: /BANCO MACRO|\bMACRO\b/i, nombre: 'Banco Macro' },
+  { re: /\bICBC\b/i, nombre: 'ICBC' },
+  { re: /\bHSBC\b/i, nombre: 'HSBC' },
+  { re: /\bBRUBANK\b/i, nombre: 'Brubank' },
+  { re: /\bNARANJA\b/i, nombre: 'Naranja X' }
+];
+function tcpDetectarBanco(paginas) {
+  var caras = [paginas[0]];
+  if (paginas.length > 1) caras.push(paginas[paginas.length - 1]);
+  var txt = tcpTexto(caras);
+  for (var i = 0; i < TCP_BANCOS.length; i++) if (TCP_BANCOS[i].re.test(txt)) return TCP_BANCOS[i].nombre;
+  var m = txt.match(/BANCO\s+[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ.\s]{2,26}/);
+  return m ? m[0].replace(/\s+/g, ' ').trim() : '';
+}
+
 /* Perfil: formato clasico Prisma (Banco Provincia y similares) */
 function tcpParsePrisma(paginas) {
-  var filas = [], control = { ars: null, usd: null }, banco = null, titular = '', colArs = null, colUsd = null;
+  var filas = [], control = { ars: null, usd: null }, banco = tcpDetectarBanco(paginas), titular = '', colArs = null, colUsd = null;
   paginas.forEach(function (pg) {
     pg.lineas.forEach(function (ln) {
       var txt = ln.map(function (w) { return w.t; }).join(' ');
@@ -4487,7 +4530,6 @@ function tcpParsePrisma(paginas) {
         var nm = txt.match(/Total Consumos de\s+(.+?)\s*(?:[\d.,]+\s*\*|$)/i);
         if (nm) titular = nm[1].trim();
       }
-      if (banco === null && /BANCO DE LA PROVINCIA/i.test(txt)) banco = 'Banco Provincia';
     });
   });
   if (colArs === null) { colArs = paginas[0].ancho * 0.77; colUsd = paginas[0].ancho * 0.925; }
@@ -4512,7 +4554,7 @@ function tcpParsePrisma(paginas) {
       filas.push({ fecha: tcpFecha(anio, mes, parseInt(mh[1], 10)), desc: desc, monto: monto, moneda: ult.x1 > corte ? 'USD' : 'ARS', cuota: '', comprobante: mh[2] || '', titular: titular, tipo: mh[2] ? 'consumo' : 'impuesto' });
     });
   });
-  return { banco: banco || 'Visa / Mastercard', filas: filas, control: control, subtotales: [] };
+  return { banco: banco || 'Tarjeta de crédito', filas: filas, control: control, subtotales: [] };
 }
 
 /* Perfil: Santander */
@@ -4657,7 +4699,8 @@ async function tcPdfPreparar(file) {
     var nImp = res.filas.length - nCons;
     var html = '<div style="background:rgba(37,99,235,0.06);border:1px solid rgba(37,99,235,0.22);border-radius:10px;padding:14px 16px">' +
       '<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">1. Resumen reconocido</div>' +
-      '<div style="font-size:15px;font-weight:800;color:var(--text)">🏦 ' + esc(res.banco) + (res.viaIA ? ' <span style="font-size:11px;font-weight:700;color:var(--primary)">· leído por NortIA</span>' : '') + '</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:17px">🏦</span><input id="tcPdfBancoInput" value="' + esc(res.banco) + '" oninput="if(tcPdfRes)tcPdfRes.banco=this.value" style="font-size:15px;font-weight:800;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:5px 10px;max-width:250px;background:var(--card)">' + (res.viaIA ? '<span style="font-size:11px;font-weight:700;color:var(--primary)">· leído por NortIA</span>' : '') + '</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-top:4px">Así vas a ver esta tarjeta al pagar el resumen. Si el nombre no es exacto, corregilo acá.</div>' +
       '<div style="font-size:13px;color:var(--text);margin-top:6px">' + nCons + ' consumos' + (nImp ? ' · ' + nImp + ' impuestos y percepciones' : '') + '</div>' +
       (tits.length ? '<div style="font-size:13px;color:var(--text);margin-top:4px">👤 ' + tits.map(esc).join(' · ') + '</div>' : '') +
       (res.cuadra === true ? '<div style="font-size:12.5px;color:#16a34a;font-weight:700;margin-top:8px">✓ Los totales cuadran con el resumen</div>' :
@@ -4677,6 +4720,22 @@ function tcPdfCancelar(pb, pi) {
   if (pb) pb.style.display = '';
   closeImport();
 }
+/* Reparacion puntual: las primeras importaciones por PDF guardaron el id del
+   formato ("PRISMA") en lugar del banco. Se corrige una vez, sin tocar nada mas. */
+var _tcBancoMigrado = false;
+var _origRenderMigBanco = window.render;
+window.render = function () {
+  var r = (typeof _origRenderMigBanco === 'function') ? _origRenderMigBanco.apply(this, arguments) : undefined;
+  if (!_tcBancoMigrado) {
+    _tcBancoMigrado = true;
+    try {
+      var d = getData(), n = 0;
+      d.forEach(function (t) { if (t && t.banco === 'PRISMA') { t.banco = 'Banco Provincia'; n++; } });
+      if (n) saveData(d);
+    } catch (e) { _tcBancoMigrado = false; }
+  }
+  return r;
+};
 /* ══ fin del motor de PDF ══════════════════════════════════════════════ */
 
 function handleTCImport(input) {
@@ -4929,7 +4988,7 @@ function confirmTCImport() {
       pagado:    isPaid ? (r.esUSD ? 0 : impP) : 0,
       saldo:     isPaid ? 0 : impP,
       origen:    'TARJETA',
-      banco:     tcBank.startsWith('CUSTOM:') ? tcBank.replace('CUSTOM:', '') : tcBank.replace(/^PDF:/, ''),
+      banco:     tcBank.startsWith('CUSTOM:') ? tcBank.replace('CUSTOM:', '') : (tcPdfRes ? (tcPdfRes.banco || 'Tarjeta de crédito') : tcBank),
       tcPagado:  isPaid, cardTipo: tcIsDebit ? 'TD' : 'TC',   // débito: ya pagado; crédito: pendiente de pagar el resumen
     });
   });
@@ -4991,15 +5050,17 @@ function renderPagarTCCombos(mes) {
   // Agrupar por banco + moneda
   const grupos = {};
   pendientes.forEach(t => {
-    const banco  = getBanco(t) || 'TC';
-    const moneda = (Number(t.impUSD) || 0) > 0 && !(Number(t.impPesos) || 0) ? 'USD' : 'ARS';
-    const key    = `${banco}|${moneda}`;
-    if (!grupos[key]) grupos[key] = { banco, moneda, items: [] };
+    const banco    = getBanco(t) || 'TC';
+    const etiqueta = getBancoLabel({ banco }) || banco;
+    const moneda   = (Number(t.impUSD) || 0) > 0 && !(Number(t.impPesos) || 0) ? 'USD' : 'ARS';
+    const key      = `${etiqueta}|${moneda}`;
+    if (!grupos[key]) grupos[key] = { banco, etiqueta, moneda, items: [] };
     grupos[key].items.push(t);
   });
 
-  combosEl.innerHTML = Object.values(grupos).map(g => {
-    const label  = getBancoLabel({ banco: g.banco });
+  window._tcPagoGrupos = Object.values(grupos);
+  combosEl.innerHTML = window._tcPagoGrupos.map((g, gi) => {
+    const label  = g.etiqueta;
     const n      = g.items.length;
     const totARS = g.moneda === 'ARS' ? g.items.reduce((s,t) => s + (Number(t.impPesos)||0), 0) : 0;
     const totUSD = g.moneda === 'USD' ? g.items.reduce((s,t) => s + (Number(t.impUSD)||0), 0) : 0;
@@ -5010,18 +5071,22 @@ function renderPagarTCCombos(mes) {
         <div style="font-size:12px;color:var(--muted);margin-top:3px">${n} transacción${n!==1?'es':''} pendiente${n!==1?'s':''} · Total: <strong>${totalStr}</strong></div>
       </div>
       <button class="btn btn-primary" style="white-space:nowrap;font-size:13px"
-        onclick="ejecutarPagoTC('${g.banco}','${g.moneda}','${mes}')">
+        onclick="ejecutarPagoTC(${gi},'${g.moneda}','${mes}')">
         ✅ Marcar pagado
       </button>
     </div>`;
   }).join('');
 }
 
-function ejecutarPagoTC(banco, moneda, mes) {
+function ejecutarPagoTC(gi, moneda, mes) {
+  const grupo = (window._tcPagoGrupos || [])[gi];
+  if (!grupo) return;
+  const etiqueta = grupo.etiqueta;
   const all = getData();
   let count = 0;
   const updated = all.map(t => {
-    if (!isTCOrigen(t) || getBanco(t) !== banco || t.mes !== mes || t.tcPagado !== false) return t;
+    const etq = getBancoLabel({ banco: getBanco(t) || 'TC' }) || (getBanco(t) || 'TC');
+    if (!isTCOrigen(t) || etq !== etiqueta || t.mes !== mes || t.tcPagado !== false) return t;
     const esUSD = (Number(t.impUSD) || 0) > 0 && !(Number(t.impPesos) || 0);
     if ((moneda === 'USD') !== esUSD) return t;
     count++;
@@ -5038,8 +5103,7 @@ function ejecutarPagoTC(banco, moneda, mes) {
   renderPagarTCCombos(mes);
   // Toast
   const toast = document.createElement('div');
-  const bancoLabel = getBancoLabel({ banco });
-  toast.textContent = `✓ ${count} gasto${count!==1?'s':''} de ${bancoLabel} en ${moneda} marcado${count!==1?'s':''} como pagado${count!==1?'s':''}`;
+  toast.textContent = `✓ ${count} gasto${count!==1?'s':''} de ${etiqueta} en ${moneda} marcado${count!==1?'s':''} como pagado${count!==1?'s':''}`;
   Object.assign(toast.style, { position:'fixed', bottom:'24px', left:'50%', transform:'translateX(-50%)', background:'var(--success)', color:'#fff', padding:'10px 22px', borderRadius:'999px', fontSize:'14px', fontWeight:'600', zIndex:'9999', boxShadow:'0 4px 16px rgba(0,0,0,.2)', pointerEvents:'none' });
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
