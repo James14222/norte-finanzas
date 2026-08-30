@@ -2222,6 +2222,28 @@ tr:hover td { background: #fafbfc; }
             <div class="ayuda-tip">Norte aprende. El rubro que le asignás a un comercio queda guardado para todo el hogar, y el mes que viene ese mismo comercio ya viene clasificado. Cada importación deja menos filas para completar a mano.</div>
           </div>
           <div class="ayuda-bloque">
+            <h4>Qué nombre queda asociado al consumo</h4>
+            <p>Al leer un PDF, Norte reconoce dos cosas distintas que conviene no confundir:</p>
+            <div class="ayuda-ejemplo">
+              <strong>El formato del resumen</strong> — internamente Norte identifica cómo está armado el PDF. Hoy entiende el formato de Santander y el formato clásico de Visa / Mastercard, que es el que usan la mayoría de los bancos. Eso es técnico y no lo vas a ver.<br>
+              <strong>El banco del membrete</strong> — el nombre que figura en el encabezado del resumen (Banco Provincia, Galicia, ICBC…). Es solo una <em>sugerencia</em> de origen.
+            </div>
+            <p>Lo que manda es <strong>la tarjeta que elegís vos</strong> entre las que diste de alta en Admin. Ese es el nombre que se guarda en cada consumo y con el que después vas a agrupar y pagar. Si tenés dos tarjetas del mismo banco, esta es la forma de mantenerlas separadas.</p>
+            <div class="ayuda-tip">Si un resumen no trae membrete claro o el banco no está en la lista, no pasa nada: alcanza con elegir la tarjeta correcta al importar.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Quién hizo cada consumo</h4>
+            <p>Los resúmenes indican, en cada consumo, si lo hizo el <strong>titular</strong> o una <strong>tarjeta adicional</strong>. Norte lee ese nombre y trata de reconocerlo entre los integrantes de tu hogar, aunque el banco lo escriba distinto: si en el resumen figura <em>"PEREZ JUAN CARLOS"</em> y en tu hogar tenés a <em>"Juan Pérez"</em>, lo asocia igual.</p>
+            <p>En la vista previa, la columna <strong>Portador</strong> es un desplegable: si acertó, lo dejás; si no, elegís al integrante correcto o dejás el nombre tal como vino del resumen.</p>
+            <div class="ayuda-tip">Esto es lo que permite que los reportes por integrante incluyan también lo gastado con tarjeta, y no solo lo que cada uno cargó a mano.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>El período del resumen</h4>
+            <p>Un resumen cubre un período de consumos que no siempre coincide con el mes en que lo pagás: podés estar pagando en septiembre lo que gastaste en agosto.</p>
+            <p>Por eso Norte guarda las dos cosas por separado. En la vista previa elegís el <strong>período del resumen</strong> (viene propuesto el mes de impacto y los tres anteriores, que es donde suele caer el cierre) y aparte definís en qué mes impacta el pago.</p>
+            <div class="ayuda-tip">Sirve para responder dos preguntas distintas: <em>¿cuánto gasté en agosto?</em> y <em>¿cuánto tengo que pagar este mes?</em></div>
+          </div>
+          <div class="ayuda-bloque">
             <h4>Si tu banco todavía no está reconocido</h4>
             <p>Norte te lo dice y te ofrece que lo lea <strong>NortIA</strong>, avisándote antes de que consuma una carga de tu cupo mensual de foto/voz. Si preferís no gastarla, siempre podés importar el Excel de movimientos.</p>
           </div>
@@ -2235,11 +2257,11 @@ tr:hover td { background: #fafbfc; }
           </div>
           <div class="ayuda-bloque">
             <h4>Pagar el resumen</h4>
-            <p>Cuando te debitan la tarjeta, usá <strong>✅ Pagar TC</strong>. Norte agrupa lo pendiente por <strong>banco + moneda</strong> y te muestra el total de cada combinación:</p>
+            <p>Cuando te debitan la tarjeta, usá <strong>✅ Pagar TC</strong>. Norte agrupa lo pendiente por <strong>tarjeta + moneda</strong> — con el nombre que vos le pusiste al darla de alta — y te muestra el total de cada combinación:</p>
             <div class="ayuda-ejemplo">
-              🏦 Banco Provincia — ARS · 48 ítems · $1.459.786,61 → Marcar pagado<br>
-              🏦 Banco Provincia — USD · 12 ítems · U$S 439,06 → Marcar pagado<br>
-              🏦 Santander — ARS · 24 ítems · $1.786.206,39 → Marcar pagado
+              🏦 Galicia · Visa — ARS · 48 ítems · $1.459.786,61 → Marcar pagado<br>
+              🏦 Galicia · Visa — USD · 12 ítems · U$S 439,06 → Marcar pagado<br>
+              🏦 ICBC · Mastercard — ARS · 24 ítems · $1.786.206,39 → Marcar pagado
             </div>
             <p>Al marcar una combinación, todos sus movimientos pasan de <em>💳 Pendiente</em> a <em>✓ TC</em>.</p>
             <div class="ayuda-tip">Si pagaste el resumen solo en parte, no uses Pagar TC: editá el gasto y cargá el importe real en <strong>Pagado $</strong>. Marcar como pagado algo que pagaste a medias es el error más común y el que más distorsiona el mes siguiente.</div>
@@ -2645,7 +2667,8 @@ tr:hover td { background: #fafbfc; }
             <h4>💳 Formatos de Excel — el camino alternativo</h4>
             <div class="ayuda-tip">Para tarjetas de crédito ya no hace falta configurar nada: subí el PDF del resumen desde Transacciones y Norte reconoce el banco, los portadores, las cuotas y los impuestos solo. Esta sección quedó para los dos casos que el PDF no cubre.</div>
             <p>Sirve para <strong>débitos y cuentas</strong> — que no tienen resumen en PDF sino extracto, como MercadoPago, que ya viene configurado — y para <strong>bancos cuyo PDF todavía no reconocemos</strong>.</p>
-            <p>Cada banco arma su XLSX a su manera. Acá le enseñás el formato una vez: <strong>configurás una vez, usás para siempre</strong>.</p>
+            <p>Además, dar de alta acá tus combinaciones reales de <strong>banco y tarjeta</strong> sirve para identificar el origen de cada importación: al subir un resumen elegís de qué tarjeta es, y esos consumos quedan referenciados a ella. Eso es lo que después permite agrupar y pagar todo junto por tarjeta.</p>
+            <p>Para los bancos cuyo PDF no reconocemos, cada uno arma su XLSX a su manera: acá le enseñás el formato una sola vez y queda configurado para siempre.</p>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin:14px 0">
               <div style="background:rgba(255,138,92,0.08);border:1px solid rgba(255,138,92,0.22);border-radius:8px;padding:12px 14px;flex:1;min-width:160px">
                 <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--primary);margin-bottom:6px">① Primera vez</div>
@@ -2657,15 +2680,13 @@ tr:hover td { background: #fafbfc; }
               </div>
             </div>
             <div class="ayuda-ejemplo">
-              <strong>Paso a paso para configurar un banco nuevo:</strong><br>
+              <strong>Dar de alta una tarjeta o cuenta:</strong><br>
               1. Admin → "Bancos y Tarjetas" → <strong>+ Nuevo banco / tarjeta</strong><br>
-              2. Completá País, Banco y nombre de la Tarjeta o Cuenta<br>
+              2. Completá País, Banco y nombre de la Tarjeta o Cuenta — por ejemplo <em>Galicia · Visa</em> o <em>ICBC · Mastercard</em><br>
               3. Elegí si es de <strong>crédito</strong> (se paga después, queda pendiente) o de <strong>débito</strong> (se registra pagado al importar)<br>
-              4. Subí un XLSX de muestra — el mes no importa, solo sirve para aprender el formato<br>
-              5. Revisá el mapeo de columnas que Norte propone y corregí lo que no detectó bien<br>
-              6. Configurá patrones a ignorar (ej: <em>"PAGO EN PESOS"</em>, para excluir los pagos anteriores)<br>
-              7. <strong>Vista previa</strong> para ver qué movimientos se importarían<br>
-              8. <strong>Guardar</strong> — el banco ya queda disponible
+              4. <strong>Guardar</strong> — listo, ya la podés usar<br>
+              <br>
+              <strong>No hace falta subir ningún archivo.</strong> Si tu banco es de los que el PDF no reconoce, abrí <em>Importar por Excel (opcional)</em> al pie del formulario y ahí sí enseñale el formato: subís un XLSX de muestra, revisás el mapeo de columnas que Norte propone, configurás los patrones a ignorar (ej: <em>"PAGO EN PESOS"</em>) y mirás la vista previa antes de guardar
             </div>
             <div class="ayuda-ejemplo">
               <strong>Columnas que Norte puede mapear:</strong><br>
