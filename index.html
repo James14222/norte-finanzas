@@ -1045,6 +1045,31 @@ tr:hover td { background: #fafbfc; }
       #wbBody, #pnBody, #saBody { overflow-x: auto; -webkit-overflow-scrolling: touch; }
       #wbBody table, #pnBody table, #saBody table { min-width: 560px; }
     }
+  
+    /* Bloque de tarjetas en Transacciones: se separa del resto de las
+       acciones para que quede claro que es un circuito propio (ingresar
+       el resumen primero, pagarlo después). */
+    .tc-bloque{position:relative;display:flex;align-items:center;gap:8px;margin-left:auto;
+      padding:8px 12px 8px 14px;border:1.5px solid var(--border);border-radius:12px;
+      background:rgba(27,58,75,.03)}
+    .tc-bloque-tit{font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
+      color:var(--muted);white-space:nowrap}
+    .tc-ayuda-btn{width:22px;height:22px;flex:0 0 22px;border-radius:50%;cursor:pointer;
+      border:1.5px solid var(--border);background:var(--card);color:var(--muted);
+      font-size:12px;font-weight:800;line-height:1;padding:0;transition:.15s}
+    .tc-ayuda-btn:hover{border-color:var(--primary);color:var(--primary)}
+    .tc-pop{display:none;position:absolute;top:calc(100% + 8px);right:0;width:330px;z-index:60;
+      background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.14);text-align:left;white-space:normal}
+    .tc-pop.open{display:block}
+    .tc-pop-tit{font-size:13px;font-weight:800;color:var(--text);margin-bottom:10px}
+    .tc-pop-paso{font-size:12.5px;color:var(--text);line-height:1.55;margin-bottom:9px}
+    .tc-pop-nota{font-size:11.5px;color:var(--muted);line-height:1.5;padding-top:9px;
+      border-top:1px solid var(--border)}
+    @media (max-width:880px){
+      .tc-bloque{margin-left:0;width:100%;flex-wrap:wrap}
+      .tc-pop{width:auto;left:0;right:0}
+    }
   </style>
 </head>
 <body>
@@ -1471,9 +1496,21 @@ tr:hover td { background: #fafbfc; }
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-secondary" onclick="clonarMesAnterior()" title="Copia todos los registros del mes anterior a este mes, con sus importes">📋 Clonar mes anterior</button>
             <button class="btn btn-secondary" onclick="replicarGastosFijos()" title="Crea el esqueleto de tus gastos fijos del mes anterior, sin importe, para no olvidarte de ninguno">🧩 Replicar gastos fijos</button>
-            <button class="btn btn-secondary" onclick="document.getElementById('tcFileInput').click()" title="Importar el resumen de tu tarjeta en PDF, o el Excel de movimientos del homebanking">💳 Importar TC / TD</button>
+            <div class="tc-bloque">
+            <span class="tc-bloque-tit">Tarjetas</span>
+            <button class="btn btn-secondary" onclick="document.getElementById('tcFileInput').click()"
+                    title="Subí el resumen en PDF de tu tarjeta de crédito — sirve para casi cualquier banco, Visa o Mastercard. Norte lee los consumos, las cuotas y los impuestos, y valida los totales contra el propio resumen.">💳 Ingresar resumen de tarjeta</button>
             <input type="file" id="tcFileInput" accept=".pdf,.xlsx,.xls" style="display:none" onchange="handleTCImport(this)">
-            <button class="btn btn-secondary" onclick="openPagarTC()" title="Registrar pago de resumen de tarjeta de crédito">✅ Pagar TC</button>
+            <button class="btn btn-secondary" onclick="openPagarTC()"
+                    title="Cuando te debitan el resumen, marcá como pagados todos los consumos de esa tarjeta de una sola vez.">✅ Pagar tarjeta</button>
+            <button type="button" class="tc-ayuda-btn" onclick="tcMiniAyuda(event)" aria-label="Cómo funciona" title="Cómo funciona">?</button>
+            <div class="tc-pop" id="tcPop">
+              <div class="tc-pop-tit">El circuito de una tarjeta, en dos pasos</div>
+              <div class="tc-pop-paso"><b>1. Ingresar el resumen.</b> Subís el PDF que te manda el banco. Norte lee cada consumo, reconoce cuotas e impuestos, y te deja revisar todo antes de confirmar. Los gastos entran como <em>pendientes de pago</em>.</div>
+              <div class="tc-pop-paso"><b>2. Pagar la tarjeta.</b> Cuando el banco te debita el resumen, marcás el pago y esos consumos pasan a <em>pagados</em>, agrupados por tarjeta y moneda.</div>
+              <div class="tc-pop-nota">Separar los dos momentos es lo que te deja ver cuánto gastaste con la tarjeta antes de que la plata salga de tu cuenta.</div>
+            </div>
+          </div>
             <button class="btn btn-primary" onclick="openModal()">+ Agregar</button>
           </div>
         </div>
@@ -2117,8 +2154,8 @@ tr:hover td { background: #fafbfc; }
             <div class="ayuda-ejemplo">
               <strong>📋 Clonar mes anterior</strong> — crea todos los gastos <em>Fijos</em> del mes previo con importe $0 y vencimiento a fin de mes. Solo actualizás los montos cuando llegan las facturas.<br>
               <strong>🧩 Replicar gastos fijos</strong> — repite un conjunto de fijos hacia adelante, útil cuando ya sabés los importes.<br>
-              <strong>💳 Importar TC / TD</strong> — sube el resumen de tarjeta y carga todos los consumos de una (ver la sección Tarjetas).<br>
-              <strong>✅ Pagar TC</strong> — marca como pagado un resumen completo de tarjeta en un solo click.
+              <strong>💳 Ingresar resumen de tarjeta</strong> — sube el resumen de tarjeta y carga todos los consumos de una (ver la sección Tarjetas).<br>
+              <strong>✅ Pagar tarjeta</strong> — marca como pagado un resumen completo de tarjeta en un solo click.
             </div>
             <div class="ayuda-tip">Los gastos de tarjeta de crédito no se clonan: se importan de nuevo cada mes desde el archivo del banco, porque cambian todos los meses.</div>
           </div>
@@ -2199,7 +2236,7 @@ tr:hover td { background: #fafbfc; }
           </div>
           <div class="ayuda-bloque">
             <h4>El camino corto: el PDF del resumen</h4>
-            <p>Descargá de tu homebanking el <strong>resumen de la tarjeta en PDF</strong> — el mismo que te manda el banco todos los meses — y arrastralo a <strong>Transacciones → 💳 Importar TC / TD</strong>. Listo, no hay que configurar nada.</p>
+            <p>Descargá de tu homebanking el <strong>resumen de la tarjeta en PDF</strong> — el mismo que te manda el banco todos los meses — y arrastralo a <strong>Transacciones → 💳 Ingresar resumen de tarjeta</strong>. Listo, no hay que configurar nada.</p>
             <div class="ayuda-ejemplo">
               Norte lo lee en menos de un segundo y reconoce solo:<br>
               • <strong>De qué banco es</strong> — no se lo tenés que decir<br>
@@ -2257,7 +2294,7 @@ tr:hover td { background: #fafbfc; }
           </div>
           <div class="ayuda-bloque">
             <h4>Pagar el resumen</h4>
-            <p>Cuando te debitan la tarjeta, usá <strong>✅ Pagar TC</strong>. Norte agrupa lo pendiente por <strong>tarjeta + moneda</strong> — con el nombre que vos le pusiste al darla de alta — y te muestra el total de cada combinación:</p>
+            <p>Cuando te debitan la tarjeta, usá <strong>✅ Pagar tarjeta</strong>. Norte agrupa lo pendiente por <strong>tarjeta + moneda</strong> — con el nombre que vos le pusiste al darla de alta — y te muestra el total de cada combinación:</p>
             <div class="ayuda-ejemplo">
               🏦 Galicia · Visa — ARS · 48 ítems · $1.459.786,61 → Marcar pagado<br>
               🏦 Galicia · Visa — USD · 12 ítems · U$S 439,06 → Marcar pagado<br>
@@ -2676,7 +2713,7 @@ tr:hover td { background: #fafbfc; }
               </div>
               <div style="background:rgba(27,58,75,0.05);border:1px solid var(--border);border-radius:8px;padding:12px 14px;flex:1;min-width:160px">
                 <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--brand-navy);margin-bottom:6px">② Configurado para siempre</div>
-                <div style="font-size:12.5px;color:var(--text);line-height:1.55">El banco queda guardado y aparece solo en Importar TC / TD. Para los resúmenes futuros únicamente subís el archivo nuevo.</div>
+                <div style="font-size:12.5px;color:var(--text);line-height:1.55">El banco queda guardado y aparece al ingresar el resumen de una tarjeta. Para los resúmenes futuros únicamente subís el archivo nuevo.</div>
               </div>
             </div>
             <div class="ayuda-ejemplo">
@@ -2751,7 +2788,7 @@ tr:hover td { background: #fafbfc; }
           <div style="flex:1">
             <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">Para tarjetas de crédito ya no hace falta configurar nada</div>
             <p style="font-size:13px;color:var(--muted);margin:0 0 12px;line-height:1.6">
-              El camino recomendado es subir el <strong>PDF del resumen</strong> desde Transacciones → 💳 Importar TC / TD. Norte reconoce el banco, el titular y los adicionales, las cuotas y los impuestos, y valida los totales contra el propio resumen. Sin mapeo de columnas y sin configuración previa.
+              El camino recomendado es subir el <strong>PDF del resumen</strong> desde Transacciones → 💳 Ingresar resumen de tarjeta. Norte reconoce el banco, el titular y los adicionales, las cuotas y los impuestos, y valida los totales contra el propio resumen. Sin mapeo de columnas y sin configuración previa.
             </p>
             <div style="font-size:12.5px;color:var(--text);line-height:1.6;padding-top:10px;border-top:1px solid rgba(255,138,92,0.15)">
               Esta sección sigue disponible para los dos casos que el PDF no cubre:<br>
@@ -5163,6 +5200,25 @@ function closeImport() {
 }
 
 // ── PAGAR TC ─────────────────────────────────────────────────
+/* Mini ayuda del bloque de tarjetas: explica el circuito en dos pasos
+   sin sacar al usuario de la pantalla. Se cierra al hacer click afuera. */
+function tcMiniAyuda(ev) {
+  if (ev) ev.stopPropagation();
+  var pop = document.getElementById('tcPop');
+  if (!pop) return;
+  var abrir = !pop.classList.contains('open');
+  pop.classList.toggle('open', abrir);
+  if (abrir) {
+    setTimeout(function () {
+      document.addEventListener('click', function cerrar(e) {
+        if (pop.contains(e.target)) return;
+        pop.classList.remove('open');
+        document.removeEventListener('click', cerrar);
+      });
+    }, 0);
+  }
+}
+
 function openPagarTC() {
   const mes = curKey();
   const [y, m] = mes.split('-').map(Number);
