@@ -2812,7 +2812,7 @@ tr:hover td { background: #fafbfc; }
       </div>
 
       <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">
-        Subí un archivo de muestra para configurar el formato
+        Importar por Excel (opcional) <span id="bankAdvToggle" style="cursor:pointer;color:var(--primary);text-transform:none;letter-spacing:0;font-weight:600" onclick="bankToggleAvanzado()">Mostrar</span>
       </div>
       <div id="bankDropZone"
            onclick="document.getElementById('bankSampleInput').click()"
@@ -2828,7 +2828,8 @@ tr:hover td { background: #fafbfc; }
       <div id="bankStep1Error" style="color:#ef4444;font-size:12px;margin-top:8px;display:none"></div>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
         <button class="btn btn-secondary" onclick="closeBankModal()">Cancelar</button>
-        <button class="btn btn-primary" id="bankStep1Next" onclick="bankGoStep2()" disabled>Siguiente →</button>
+        <button class="btn btn-primary" id="bankStep1Save" onclick="bankSaveConfig()">Guardar</button>
+            <button class="btn btn-secondary" id="bankStep1Next" onclick="bankGoStep2()" style="display:none">Mapear columnas &rarr;</button>
       </div>
     </div>
 
@@ -3693,7 +3694,7 @@ function renderAdminBancos() {
     return;
   }
   el.innerHTML = `<table class="admin-table">
-    <thead><tr><th>País</th><th>Banco</th><th>Tarjeta / Cuenta</th><th>Columnas</th><th></th></tr></thead>
+    <thead><tr><th>País</th><th>Banco</th><th>Tarjeta / Cuenta</th><th>Importación</th><th></th></tr></thead>
     <tbody>${configs.map(c => {
       const cols = c.parser?.colRoles || {};
       const mapped = Object.values(cols).filter(r => r !== 'skip').length;
@@ -3701,7 +3702,7 @@ function renderAdminBancos() {
         <td>${esc(c.pais||'—')}</td>
         <td><strong>${esc(c.banco)}</strong></td>
         <td>${esc(c.tarjeta)}</td>
-        <td style="font-size:12px;color:var(--muted)">${mapped} columna${mapped!==1?'s':''} mapeada${mapped!==1?'s':''}</td>
+        <td style="font-size:12px;color:var(--muted)">${mapped ? mapped + ' col. (Excel)' : 'Resúmenes PDF'}</td>
         <td>
           <button class="act-btn" onclick="openBankModal('${c.id}')" title="Editar">✏️</button>
           <button class="act-btn" onclick="deleteBankConfig('${c.id}')" title="Eliminar">🗑️</button>
@@ -3725,7 +3726,7 @@ function openBankModal(editId) {
   document.getElementById('bankNombre').value  = cfg?.banco   || '';
   document.getElementById('bankTarjeta').value = cfg?.tarjeta || '';
   document.getElementById('bankStep1Error').style.display = 'none';
-  document.getElementById('bankStep1Next').disabled = !cfg;
+  document.getElementById('bankStep1Next').disabled = false;
   // If editing and has parser, populate step-2 fields
   if (cfg?.parser) {
     document.getElementById('bankSkipPatterns').value  = (cfg.parser.skipPatterns||[]).join(', ');
@@ -3740,8 +3741,22 @@ function openBankModal(editId) {
          Subí un nuevo archivo de muestra para revisar o ajustar el mapeo.
        </div>`;
   }
-  bankShowStep(cfg ? 2 : 1);
+  bankToggleAvanzado(!!(cfg && cfg.parser && Object.keys(cfg.parser.colRoles || {}).length));
+  bankShowStep(1);
   document.getElementById('bankConfigOverlay').style.display = 'flex';
+}
+
+/* El mapeo por Excel es opcional: el bloque arranca plegado y solo se abre
+   si el usuario lo pide, o si esta config ya tenia un mapeo guardado. */
+function bankToggleAvanzado(forzar) {
+  var dz = document.getElementById('bankDropZone');
+  var tg = document.getElementById('bankAdvToggle');
+  if (!dz) return;
+  var mostrar = (forzar === undefined) ? (dz.style.display === 'none') : !!forzar;
+  dz.style.display = mostrar ? 'block' : 'none';
+  if (tg) tg.textContent = mostrar ? 'Ocultar' : 'Mostrar';
+  var btn = document.getElementById('bankStep1Next');
+  if (btn) btn.style.display = mostrar ? '' : 'none';
 }
 
 function closeBankModal() {
@@ -4449,7 +4464,8 @@ let tcRows      = [];   // filas parseadas en curso
 let tcPendFile  = null; // archivo pendiente hasta que se confirme config
 let tcBank      = '';   // 'BAPRO' | 'SANTANDER' | 'CUSTOM:<id>'
 let tcTargetMes = '';   // monthKey del mes de impacto
-let tcIsDebit   = false; // true si la tarjeta seleccionada es débito
+let tcIsDebit = false;   // true si la tarjeta seleccionada es debito
+let tcMesResumen = '';   // periodo que cubre el resumen (puede diferir del mes de impacto)
 
 /* ══ MOTOR GENERICO DE IMPORTACION DE RESUMENES DE TC EN PDF ══════════════
    Pipeline unico para todos los bancos: extraer palabras con coordenadas ->
@@ -4910,12 +4926,25 @@ function tcSetTipo(i, tipo) { tcRows[i].tipoMov = tipo; tcRows[i].rubro = tcGues
     ? ` · <span style="background:#d1fae5;color:#065f46;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700">🏦 DÉBITO — se registran como pagados</span>`
     : '';
   document.getElementById('importInfo').innerHTML =
-    `<b>💳 ${bankLabel}</b> · <b>${tcRows.length}</b> movimientos detectados · Impacto en <b>${mesLabel}</b>${debitBadge}${tcPdfBadge()}`;
+    `<b>💳 ${bankLabel}</b> · <b>${tcRows.length}</b> movimientos detectados · Impacto en <b>${mesLabel}</b>${debitBadge}${tcPdfBadge()}` +
+      `<div style="margin-top:8px;font-size:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">` +
+      `<span style="color:var(--muted)">Período del resumen:</span>` +
+      `<select onchange="tcSetMesResumen(this.value)" style="font-size:12px;padding:3px 8px">${tcOpcionesMesResumen()}</select>` +
+      `<span style="color:var(--muted);font-size:11px">Los consumos quedan asociados a este período, más allá del mes en que pagues el resumen.</span></div>`;
 
   const rubroOptsIng = getAllRubros('Ingreso').filter(r => r !== 'Personalizado...').map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join(''); const rubroOpts = getAllRubros('Gasto').filter(r => r !== 'Personalizado...')
     .map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('');
 
-  const hasTitular = tcRows.some(r => r.titular);
+  // Portador: se guarda el nombre crudo del resumen y se intenta reconocerlo
+    tcRows.forEach(r => {
+      if (r.titularRaw === undefined) r.titularRaw = r.titular || '';
+      if (!r.titularId) {
+        const m = tcMatchIntegrante(r.titularRaw);
+        if (m) { r.titularId = m.id; r.titular = m.nombre; }
+      }
+    });
+    if (!tcMesResumen) tcMesResumen = tcTargetMes || curKey();
+    const hasTitular = tcRows.some(r => r.titularRaw || r.titular);
   // Actualizar encabezado de la tabla
   const thead = document.querySelector('#importTable thead tr');
   if (thead) {
@@ -4937,7 +4966,7 @@ function tcSetTipo(i, tipo) { tcRows[i].tipoMov = tipo; tcRows[i].rubro = tcGues
       <td>
         <input type="text" value="${esc(r.desc)}" oninput="tcRows[${i}].desc=this.value" style="min-width:180px">
       </td>
-      ${hasTitular ? `<td><span style="font-size:11px;font-weight:600;color:var(--primary);white-space:nowrap">${esc(r.titular||'—')}</span></td>` : ''}
+      ${hasTitular ? `<td>${tcSelectPortador(i, r)}</td>` : ''}
       <td style="white-space:nowrap">
         ${r.esUSD
           ? `<span style="font-size:11px;color:var(--muted)">USD</span>
@@ -4985,6 +5014,76 @@ function tcUpdateSummary() {
   document.getElementById('importConfirmBtn').textContent = `✓ Importar ${sel.length} movimiento${sel.length!==1?'s':''}`;
 }
 
+/* ── PORTADOR DEL CONSUMO → INTEGRANTE DEL HOGAR ──────────────────────
+   Los resumenes traen el nombre del titular o del adicional en cada
+   consumo. Se intenta reconocerlo contra los integrantes del hogar para
+   que los reportes por integrante incluyan tambien los gastos de tarjeta.
+   Si no hay match, queda el nombre crudo del resumen y se puede corregir
+   a mano en la previa antes de importar. */
+var tcMiembros = [];
+
+async function tcCargarMiembros() {
+  try {
+    var snap = await firebase.database().ref('norteSync/empresaMiembros/' + curEmpresa()).once('value');
+    var m = snap.val() || {};
+    tcMiembros = Object.keys(m).map(function (uid) {
+      return { id: uid, nombre: String(m[uid].nombre || m[uid].email || '').trim() };
+    }).filter(function (x) { return x.nombre; });
+  } catch (e) { tcMiembros = []; }
+}
+
+function tcNormNombre(v) {
+  return String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase().replace(/[^A-Z\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/* Los bancos escriben "PEREZ JUAN CARLOS" y en el hogar puede figurar
+   "Juan Perez": se compara por palabras sueltas, sin importar el orden. */
+function tcMatchIntegrante(nombre) {
+  var partesT = tcNormNombre(nombre).split(' ').filter(function (p) { return p.length > 2; });
+  if (!partesT.length) return null;
+  var mejor = null, puntaje = 0;
+  tcMiembros.forEach(function (m) {
+    var partesM = tcNormNombre(m.nombre).split(' ').filter(function (p) { return p.length > 2; });
+    var comunes = partesM.filter(function (p) { return partesT.indexOf(p) >= 0; }).length;
+    if (comunes > puntaje) { puntaje = comunes; mejor = m; }
+  });
+  return puntaje >= 1 ? mejor : null;
+}
+
+function tcSelectPortador(i, r) {
+  var crudo = r.titularRaw || r.titular || '';
+  var opts = tcMiembros.map(function (m) {
+    return '<option value="' + esc(m.id) + '"' + (r.titularId === m.id ? ' selected' : '') + '>' + esc(m.nombre) + '</option>';
+  }).join('');
+  return '<select onchange="tcSetPortador(' + i + ',this.value)" style="font-size:11px;max-width:160px">'
+       + '<option value=""' + (r.titularId ? '' : ' selected') + '>' + esc(crudo || 'Sin identificar') + '</option>'
+       + opts + '</select>';
+}
+
+function tcSetPortador(i, val) {
+  var m = tcMiembros.filter(function (x) { return x.id === val; })[0];
+  if (m) { tcRows[i].titularId = m.id; tcRows[i].titular = m.nombre; }
+  else   { tcRows[i].titularId = ''; tcRows[i].titular = tcRows[i].titularRaw || ''; }
+}
+
+function tcSetMesResumen(v) { tcMesResumen = v; }
+
+/* Opciones de periodo del resumen: el mes de impacto y los 3 anteriores,
+   que es el rango real en el que suele caer el cierre de una tarjeta. */
+function tcOpcionesMesResumen() {
+  var base = tcTargetMes || curKey();
+  var p = base.split('-'), y = Number(p[0]), m = Number(p[1]) - 1;
+  var out = [];
+  for (var k = 0; k < 4; k++) {
+    var yy = y, mm = m - k;
+    while (mm < 0) { mm += 12; yy--; }
+    var key = yy + '-' + ('0' + (mm + 1)).slice(-2);
+    out.push('<option value="' + key + '"' + (key === (tcMesResumen || base) ? ' selected' : '') + '>' + MESES[mm] + ' ' + yy + '</option>');
+  }
+  return out.join('');
+}
+
 function confirmTCImport() {
   const sel = tcRows.filter(r => r.selected && r.monto > 0);
   if (!sel.length) { alert('No hay movimientos seleccionados.'); return; }
@@ -5002,7 +5101,7 @@ function confirmTCImport() {
       tipo:      r.tipoMov === 'Ingreso' ? 'Ingreso' : 'Gasto',
       tipoGasto: r.tipoMov === 'Ingreso' ? '' : (r.esImpuesto ? 'Fijo' : 'Variable'),
       rubro:     r.rubro || (r.tipoMov === 'Ingreso' ? 'Otros ingresos' : 'Otros gastos'),
-      detalle:   r.desc + (r.cuota ? ` [${r.cuota}]` : '') + (r.titular ? ` · ${r.titular}` : ''),
+      detalle: r.desc + (r.cuota ? ` [${r.cuota}]` : ''),
       cliente:   '',
       impPesos:  impP,
       impUSD:    impU,
@@ -5011,7 +5110,10 @@ function confirmTCImport() {
       saldo:     isPaid ? 0 : impP,
       origen:    'TARJETA',
       banco:     tcBank.startsWith('CUSTOM:') ? tcBank.replace('CUSTOM:', '') : (tcPdfRes ? (tcPdfRes.banco || 'Tarjeta de crédito') : tcBank),
-      tcPagado:  isPaid, cardTipo: tcIsDebit ? 'TD' : 'TC',   // débito: ya pagado; crédito: pendiente de pagar el resumen
+      tcPagado:  isPaid, cardTipo: tcIsDebit ? 'TD' : 'TC',
+          titular:     r.titular   || '',
+          titularId:   r.titularId || '',
+          mesResumen:  tcMesResumen || mes,   // débito: ya pagado; crédito: pendiente de pagar el resumen
     });
   });
   saveData(data);
@@ -5025,17 +5127,18 @@ function confirmTCImport() {
   setTimeout(() => msg.remove(), 3000);
 }
 
-function openImportModal()  {
+function openImportModal() {
+  tcCargarMiembros();   // para poder reconocer al portador de cada consumo
   document.getElementById('importOverlay').classList.add('open');
   document.getElementById('importDropZone').style.display = 'block';
   document.getElementById('importConfig').style.display   = 'none';
   document.getElementById('importBody').style.display     = 'none';
   document.getElementById('importFooter').style.display   = 'none';
-  tcRows = []; tcPendFile = null; tcBank = ''; tcTargetMes = ''; tcIsDebit = false; tcPdfRes = null;
+  tcRows = []; tcPendFile = null; tcBank = ''; tcTargetMes = ''; tcIsDebit = false; tcPdfRes = null; tcMesResumen = '';
 }
 function closeImport() {
   document.getElementById('importOverlay').classList.remove('open');
-  tcRows = []; tcPendFile = null; tcBank = ''; tcTargetMes = ''; tcIsDebit = false;
+  tcRows = []; tcPendFile = null; tcBank = ''; tcTargetMes = ''; tcIsDebit = false; tcMesResumen = '';
 }
 
 // ── PAGAR TC ─────────────────────────────────────────────────
