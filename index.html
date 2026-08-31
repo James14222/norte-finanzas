@@ -4634,7 +4634,14 @@ function tcpParsePrisma(paginas) {
     pg.lineas.forEach(function (ln) {
       var txt = ln.map(function (w) { return w.t; }).join(' '), idx = 0;
       var m0 = ln[0] && ln[0].t.match(/^(\d{2})\s+([A-Za-zAEIOUaeiouáéíóú]+)$/);
-      if (m0 && ln[0].x0 < 40 && TCP_MESES[m0[2].toLowerCase()]) { anio = 2000 + parseInt(m0[1], 10); mes = TCP_MESES[m0[2].toLowerCase()]; idx = 1; }
+        var _salto = 1;
+        /* Segun como el generador del PDF agrupe el texto, pdf.js puede devolver
+           el anclaje de periodo en un solo item ("26 Agosto") o partido en dos
+           ("26" + "Agosto"). Se aceptan las dos formas. */
+        if (!m0 && ln[0] && ln[1] && /^\d{2}$/.test(ln[0].t.trim()) && /^[A-Za-zAEIOUaeiouáéíóú]+$/.test(ln[1].t.trim())) {
+          m0 = [null, ln[0].t.trim(), ln[1].t.trim()]; _salto = 2;
+        }
+        if (m0 && ln[0].x0 < 40 && TCP_MESES[m0[2].toLowerCase()]) { anio = 2000 + parseInt(m0[1], 10); mes = TCP_MESES[m0[2].toLowerCase()]; idx = _salto; }
       var head = ln[idx];
       if (!head || head.x0 < 60 || head.x0 > 100) return;
       var mh = head.t.match(/^(\d{1,2})(?:\s+(\d{6}))?(?:\s+([A-Z*]))?$/);
