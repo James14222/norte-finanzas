@@ -4630,7 +4630,9 @@ function tcpParsePrisma(paginas) {
             control.usd = (control.usd || 0) + tcpNum(m[m.length - 1].t);
           }
         var nm = txt.match(/Total Consumos de\s+(.+?)\s*(?:[\d.,]+\s*\*|$)/i);
-        if (nm) titular = nm[1].trim();
+        /* Con adicionales hay una linea de cierre por tarjeta: el titular principal
+             es el del primer bloque, y es a quien se le imputan los impuestos. */
+          if (nm && !titular) titular = nm[1].trim();
       }
     });
   });
