@@ -5063,7 +5063,7 @@ function tcSetTipo(i, tipo) { tcRows[i].tipoMov = tipo; tcRows[i].rubro = tcGues
         ${r.cuota ? `<span class="cuota-badge">⟳ ${esc(r.cuota)}</span>` : '<span style="color:var(--muted);font-size:12px">—</span>'}
       </td>
       <td>
-        <select style='min-width:190px;max-width:100%' onchange="tcRows[${i}].rubro=this.value">
+        <select style='min-width:200px;max-width:100%' onchange="tcRows[${i}].rubro=this.value">
           <option value="">— sin rubro —</option>
           ${(r.tipoMov==='Ingreso'?rubroOptsIng:rubroOpts).replace(`value="${esc(r.rubro)}"`,`value="${esc(r.rubro)}" selected`)}
         </select>
@@ -5139,7 +5139,7 @@ function tcSelectPortador(i, r) {
   var opts = tcMiembros.map(function (m) {
     return '<option value="' + esc(m.id) + '"' + (r.titularId === m.id ? ' selected' : '') + '>' + esc(m.nombre) + '</option>';
   }).join('');
-  return '<select onchange="tcSetPortador(' + i + ',this.value)" style="font-size:11px;max-width:160px">'
+  return '<select onchange="tcSetPortador(' + i + ',this.value)" style="font-size:11px;min-width:120px;max-width:160px">'
        + '<option value=""' + (r.titularId ? '' : ' selected') + '>' + esc(crudo || 'Sin identificar') + '</option>'
        + opts + '</select>';
 }
