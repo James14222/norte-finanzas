@@ -5047,7 +5047,7 @@ function tcSetTipo(i, tipo) { tcRows[i].tipoMov = tipo; tcRows[i].rubro = tcGues
     <tr id="tcrow-${i}" class="${r.selected?'':'row-skip'}">
       <td><input type="checkbox" ${r.selected?'checked':''} onchange="tcToggleRow(${i},this.checked)"></td>
       <td>
-        <input type="text" value="${esc(r.desc)}" oninput="tcRows[${i}].desc=this.value" style="min-width:180px">
+        <input type="text" value="${esc(r.desc)}" oninput="tcRows[${i}].desc=this.value" style="min-width:120px">
       </td>
       ${hasTitular ? `<td>${tcSelectPortador(i, r)}</td>` : ''}
       <td style="white-space:nowrap">
@@ -5063,7 +5063,7 @@ function tcSetTipo(i, tipo) { tcRows[i].tipoMov = tipo; tcRows[i].rubro = tcGues
         ${r.cuota ? `<span class="cuota-badge">⟳ ${esc(r.cuota)}</span>` : '<span style="color:var(--muted);font-size:12px">—</span>'}
       </td>
       <td>
-        <select onchange="tcRows[${i}].rubro=this.value">
+        <select style='min-width:170px;max-width:100%' onchange="tcRows[${i}].rubro=this.value">
           <option value="">— sin rubro —</option>
           ${(r.tipoMov==='Ingreso'?rubroOptsIng:rubroOpts).replace(`value="${esc(r.rubro)}"`,`value="${esc(r.rubro)}" selected`)}
         </select>
