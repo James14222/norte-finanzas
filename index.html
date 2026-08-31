@@ -5207,6 +5207,7 @@ function confirmTCImport() {
     });
   });
   saveData(data);
+      pushNow();   // subir ya: no esperar el debounce de 900ms
   render();
   closeImport();
   // Pequeño toast de confirmación
@@ -5332,6 +5333,7 @@ function ejecutarPagoTC(gi, moneda, mes) {
     };
   });
   saveData(updated);
+      pushNow();   // subir ya: no esperar el debounce de 900ms
   render();
   // Refrescar el panel (puede quedar abierto para pagar otras combos)
   renderPagarTCCombos(mes);
@@ -5376,6 +5378,10 @@ if (!syncClientId) {
 let fbRef = null;
 let syncApplyingRemote = false;
 let syncPushTimer = null;
+    /* Queda en true desde que se escribe algo local hasta que la nube confirma
+       que lo recibio. Mientras este activo no dejamos que un snapshot remoto
+       (que todavia no incluye ese cambio) pise lo que acabamos de guardar. */
+    let syncLocalDirty = false;
 
 function setSyncStatus(state) {
   const el = document.getElementById('syncStatus');
@@ -5398,6 +5404,10 @@ function syncSnapshot() {
 }
 
 function applyRemoteSnapshot(remote) {
+    /* Si todavia no confirmamos la subida de un cambio local, el snapshot de la
+       nube esta desactualizado: aplicarlo borraria lo recien guardado (era el
+       caso del import de tarjeta, que se perdia la primera vez). */
+    if (syncLocalDirty) { schedulePush(); return; }
   syncApplyingRemote = true;
   try {
     SYNC_KEYS.forEach(k => {
@@ -5409,13 +5419,27 @@ function applyRemoteSnapshot(remote) {
   }
 }
 
-function schedulePush() {
-  if (syncApplyingRemote || !fbRef) return; const myRef = fbRef;
+function pushNow() {
+      /* Sube ya, sin esperar el debounce. Se usa despues de operaciones que
+         escriben muchos registros de una (import de resumen, pago de tarjeta). */
+      if (!fbRef) return;
+      const myRef = fbRef;
+      clearTimeout(syncPushTimer);
+      syncLocalDirty = true;
+      setSyncStatus('pending');
+      fbRef.set(syncSnapshot())
+        .then(() => { if (myRef === fbRef) { syncLocalDirty = false; setSyncStatus('ok'); } })
+        .catch(() => setSyncStatus('error'));
+    }
+
+    function schedulePush() {
+  if (syncApplyingRemote || !fbRef) return;
+      syncLocalDirty = true; const myRef = fbRef;
   setSyncStatus('pending');
   clearTimeout(syncPushTimer);
   syncPushTimer = setTimeout(() => { if (fbRef !== myRef) return;
     fbRef.set(syncSnapshot())
-      .then(() => setSyncStatus('ok'))
+      .then(() => { syncLocalDirty = false; setSyncStatus('ok'); })
       .catch(() => setSyncStatus('error'));
   }, 900);
 }
