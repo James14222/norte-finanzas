@@ -662,7 +662,7 @@ tr:hover td { background: #fafbfc; }
 /* ── IMPORTADOR TC ─────────────────────────────────────────── */
 .import-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1100;display:none;align-items:center;justify-content:center;padding:16px; }
 .import-overlay.open { display:flex; }
-.import-modal { background:var(--card);border-radius:16px;width:100%;max-width:960px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.25);overflow:hidden; }
+.import-modal { background:var(--card);border-radius:16px;width:100%;max-width:1140px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.25);overflow:hidden; }
 .import-header { padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0; }
 .import-header h2 { font-size:17px;font-weight:700;color:var(--text); }
 .import-header .close-btn { background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1; }
@@ -3120,7 +3120,7 @@ tr:hover td { background: #fafbfc; }
           <thead>
             <tr>
               <th style="width:32px"><input type="checkbox" id="importSelectAll" onchange="tcToggleAll(this.checked)" checked></th>
-              <th>Concepto</th>
+              <th>Concepto</th><th style="width:110px">Quién</th>
               <th style="width:110px">Importe $</th>
               <th style="width:90px">Cuota</th>
               <th style="width:180px">Rubro</th><th style="width:110px">Tipo</th>
@@ -5063,7 +5063,7 @@ function tcSetTipo(i, tipo) { tcRows[i].tipoMov = tipo; tcRows[i].rubro = tcGues
         ${r.cuota ? `<span class="cuota-badge">⟳ ${esc(r.cuota)}</span>` : '<span style="color:var(--muted);font-size:12px">—</span>'}
       </td>
       <td>
-        <select style='min-width:170px;max-width:100%' onchange="tcRows[${i}].rubro=this.value">
+        <select style='min-width:190px;max-width:100%' onchange="tcRows[${i}].rubro=this.value">
           <option value="">— sin rubro —</option>
           ${(r.tipoMov==='Ingreso'?rubroOptsIng:rubroOpts).replace(`value="${esc(r.rubro)}"`,`value="${esc(r.rubro)}" selected`)}
         </select>
