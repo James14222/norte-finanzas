@@ -4622,17 +4622,32 @@ function tcpParsePrisma(paginas) {
       var txt = ln.map(function (w) { return w.t; }).join(' ');
       if (/Total Consumos/i.test(txt)) {
         var m = ln.filter(function (w) { return tcpEsMonto(w.t); });
-        if (m.length >= 2) { colArs = m[0].x1; colUsd = m[m.length - 1].x1; control.ars = tcpNum(m[0].t); control.usd = tcpNum(m[m.length - 1].t); }
+        if (m.length >= 2) {
+            /* Un resumen con adicionales trae una linea de cierre por tarjeta
+               ("Tarjeta 8780 Total Consumos de ..."): los subtotales se SUMAN. */
+            if (colArs === null) { colArs = m[0].x1; colUsd = m[m.length - 1].x1; }
+            control.ars = (control.ars || 0) + tcpNum(m[0].t);
+            control.usd = (control.usd || 0) + tcpNum(m[m.length - 1].t);
+          }
         var nm = txt.match(/Total Consumos de\s+(.+?)\s*(?:[\d.,]+\s*\*|$)/i);
         if (nm) titular = nm[1].trim();
       }
     });
   });
   if (colArs === null) { colArs = paginas[0].ancho * 0.77; colUsd = paginas[0].ancho * 0.925; }
-  var corte = (colArs + colUsd) / 2, anio = null, mes = null;
+  var corte = (colArs + colUsd) / 2, anio = null, mes = null, _pend = [];
   paginas.forEach(function (pg) {
     pg.lineas.forEach(function (ln) {
       var txt = ln.map(function (w) { return w.t; }).join(' '), idx = 0;
+        /* Linea de cierre de una tarjeta: todo lo acumulado desde el cierre
+           anterior pertenece a esa persona (titular o adicional). */
+        if (/Total Consumos/i.test(txt)) {
+          var _nm = txt.match(/Total Consumos de\s+(.+?)\s*(?:[\d.,]+\s*\*|$)/i);
+          var _nom = _nm ? _nm[1].trim() : '';
+          if (_nom) { _pend.forEach(function (f) { f.titular = _nom; }); }
+          _pend = [];
+          return;
+        }
       var m0 = ln[0] && ln[0].t.match(/^(\d{2})\s+([A-Za-zAEIOUaeiouáéíóú]+)$/);
         var _salto = 1;
         /* Segun como el generador del PDF agrupe el texto, pdf.js puede devolver
@@ -4646,7 +4661,7 @@ function tcpParsePrisma(paginas) {
       if (!head || head.x0 < 60 || head.x0 > 100) return;
       var mh = head.t.match(/^(\d{1,2})(?:\s+(\d{6}))?(?:\s+([A-Z*]))?$/);
       if (!mh || anio === null) return;
-      if (/SU PAGO|SALDO ANTERIOR|TOTAL CONSUMOS/i.test(txt)) return;
+      if (/SU PAGO|SALDO ANTERIOR/i.test(txt)) return;
       var resto = ln.slice(idx + 1);
       var montos = resto.filter(function (w) { return tcpEsMonto(w.t); });
       if (!montos.length) return;
@@ -4654,9 +4669,12 @@ function tcpParsePrisma(paginas) {
       if (monto <= 0) return;
       var desc = resto.filter(function (w) { return w.x0 >= 125 && w.x1 <= colArs - 60 && !tcpEsMonto(w.t) && !/^(USD|U\$S|\$)$/i.test(w.t); }).map(function (w) { return w.t; }).join(' ').replace(/\s+/g, ' ').trim();
       if (!desc) return;
-      filas.push({ fecha: tcpFecha(anio, mes, parseInt(mh[1], 10)), desc: desc, monto: monto, moneda: ult.x1 > corte ? 'USD' : 'ARS', cuota: '', comprobante: mh[2] || '', titular: titular, tipo: mh[2] ? 'consumo' : 'impuesto' });
+      var _f = { fecha: tcpFecha(anio, mes, parseInt(mh[1], 10)), desc: desc, monto: monto, moneda: ult.x1 > corte ? 'USD' : 'ARS', cuota: '', comprobante: mh[2] || '', titular: '', tipo: mh[2] ? 'consumo' : 'impuesto' };
+        filas.push(_f); _pend.push(_f);
     });
   });
+  /* Filas sin bloque de cierre propio: quedan a nombre del titular principal. */
+  filas.forEach(function (f) { if (!f.titular) f.titular = titular; });
   return { banco: banco || 'Tarjeta de crédito', filas: filas, control: control, subtotales: [] };
 }
 
