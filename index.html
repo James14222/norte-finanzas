@@ -5196,6 +5196,11 @@ function confirmTCImport() {
       tcPagado:  isPaid, cardTipo: tcIsDebit ? 'TD' : 'TC',
           titular:     r.titular   || '',
           titularId:   r.titularId || '',
+            /* El portador de la tarjeta es el dueño del gasto: si se pudo
+               vincular con un integrante del hogar va su uid; si no, al menos
+               queda visible el nombre que trae el resumen del banco. */
+            creadoPor: r.titularId || curUserId(),
+            creadoPorNombre: r.titular || curUserName() || '',
           mesResumen:  tcMesResumen || mes,   // débito: ya pagado; crédito: pendiente de pagar el resumen
     });
   });
