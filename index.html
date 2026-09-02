@@ -1072,6 +1072,11 @@ tr:hover td { background: #fafbfc; }
     }
 /* ── Mi Rumbo: dólar integrado + panel del año + cuenta (v005.1.069) ── */
 #sidebarUser{display:none!important}
+/* La brújula va DETRÁS de todo el contenido del tablero */
+#page-dashboard > *:not(#rumboDeco){position:relative;z-index:1}
+#rumboDeco{z-index:0}
+/* En Mi Rumbo la barra blanca duplicaba el título de la barra oscura: se oculta también en escritorio */
+.main:has(#page-dashboard.active) .topbar{display:none}
 .fx-strip{display:flex;align-items:stretch;flex-wrap:wrap;background:#F7F8FA;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;position:relative;z-index:1}
 .fx-strip .fx-lbl{padding:8px 14px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--border);min-width:150px}
 .fx-strip .fx-lbl b{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:800}
@@ -1432,6 +1437,7 @@ tr:hover td { background: #fafbfc; }
   <div class="acct-links" id="acctLinks" style="display:none">
     <button id="logoutBtn" onclick="doLogout()" title="Cerrar sesión" aria-label="Cerrar sesión">🚪</button>
     <button onclick="openAyuda()" title="Ayuda" aria-label="Ayuda">❓</button>
+    <button id="navMiPerfil" onclick="openMiPerfil()" title="Mi perfil" aria-label="Mi perfil">👤</button>
     <button onclick="openPlanModal()" title="Mi plan" aria-label="Mi plan">💎</button>
     <button onclick="openHogaresModal()" title="Mis hogares" aria-label="Mis hogares">🏠</button>
   </div>
@@ -5930,7 +5936,7 @@ function renderAcctBox(){
   box.innerHTML =
     '<div class="acct-who"><div class="acct-av" id="acctAv">' + esc(inicial) + '</div>'
     + '<div class="nm"><b>' + esc(nombre) + '</b><span>' + esc(hogar) + '</span></div>'
-    + '<button class="acct-key" onclick="openCambiarPwd()" title="Cambiar contraseña" aria-label="Cambiar contraseña">\U0001F511</button></div>'
+    + '<button class="acct-key" onclick="openCambiarPwd()" title="Cambiar contraseña" aria-label="Cambiar contraseña">🔑</button></div>'
     + '<div class="acct-chips"><span class="acct-chip">PLAN ' + esc(miPlanActual || 'FOCO') + '</span>'
     + (esPionero ? '<span class="acct-chip pio">PIONERO</span>' : '') + '</div>'
     + '<div class="acct-lbl">Constancia</div>'
