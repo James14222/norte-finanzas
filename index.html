@@ -1071,6 +1071,7 @@ tr:hover td { background: #fafbfc; }
       .tc-pop{width:auto;left:0;right:0}
     }
 /* ── Mi Rumbo: dólar integrado + panel del año + cuenta (v005.1.069) ── */
+#sidebarUser{display:none!important}
 .fx-strip{display:flex;align-items:stretch;flex-wrap:wrap;background:#F7F8FA;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;position:relative;z-index:1}
 .fx-strip .fx-lbl{padding:8px 14px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--border);min-width:150px}
 .fx-strip .fx-lbl b{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:800}
@@ -1426,6 +1427,7 @@ tr:hover td { background: #fafbfc; }
         <div class="nav-item gps-nav-item" id="navTuGps" onclick="showPage('tugps')"><span class="ico">GPS</span> - Pioneros<span id="gpsNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
      <div class="nav-item" id="navAdmin" style="display:none" onclick="showPage('admin')"><span class="ico">⚙️</span> Admin</div>
   </div>
+  <div class="sidebar-user" id="sidebarUser"><strong id="sidebarUsername">—</strong><span id="sidebarEmpresa"></span></div>
   <div class="acct-box" id="acctBox" style="display:none"></div>
   <div class="acct-links" id="acctLinks" style="display:none">
     <button id="logoutBtn" onclick="doLogout()" title="Cerrar sesión" aria-label="Cerrar sesión">🚪</button>
