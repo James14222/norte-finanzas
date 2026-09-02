@@ -5900,12 +5900,14 @@ function acctUltimaTxt(ts){
 function renderAcctBox(){
   const box = document.getElementById('acctBox'), links = document.getElementById('acctLinks');
   if (!box) return;
-  const nombre = (typeof firebaseUser !== 'undefined' && firebaseUser)
-      ? (firebaseUser.displayName || firebaseUser.email || '') : '';
-  if (!nombre){ box.style.display = 'none'; if (links) links.style.display = 'none'; return; }
+  // El nombre sale del DOM que llena bootApp: firebaseUser es un parámetro suyo,
+  // no una variable global, así que desde acá no se puede leer.
+  const unEl = document.getElementById('sidebarUsername');
+  const nombre = ((unEl && unEl.textContent) || '').trim();
+  if (!nombre || nombre === '—'){ box.style.display = 'none'; if (links) links.style.display = 'none'; return; }
   box.style.display = 'block';
   if (links) links.style.display = 'flex';
-  const inicial = (nombre.trim()[0] || '?').toUpperCase();
+  const inicial = (nombre[0] || '?').toUpperCase();
   const hogar = (document.getElementById('sidebarEmpresa') && document.getElementById('sidebarEmpresa').textContent) || '';
   const esPionero = String(miOrigenCuenta || '') === 'club_pioneros';
   const c = acctConstancia();
