@@ -1070,6 +1070,78 @@ tr:hover td { background: #fafbfc; }
       .tc-bloque{margin-left:0;width:100%;flex-wrap:wrap}
       .tc-pop{width:auto;left:0;right:0}
     }
+/* ── Mi Rumbo: dólar integrado + panel del año + cuenta (v005.1.069) ── */
+.fx-strip{display:flex;align-items:stretch;flex-wrap:wrap;background:#F7F8FA;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;position:relative;z-index:1}
+.fx-strip .fx-lbl{padding:8px 14px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--border);min-width:150px}
+.fx-strip .fx-lbl b{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:800}
+.fx-strip .fx-lbl span{font-size:11px;color:var(--muted)}
+.fx-rate{padding:7px 16px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--border)}
+.fx-rate .n{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.fx-rate .v{font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.fx-rate .u{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--success);font-weight:800}
+.fx-rate.ref .v{font-size:14.5px;font-weight:600;color:var(--muted)}
+.fx-note{padding:8px 14px;font-size:11.5px;color:var(--muted);display:flex;align-items:center;max-width:230px;line-height:1.3}
+.fx-tog{padding:7px 14px;display:flex;flex-direction:column;gap:5px;justify-content:center;margin-left:auto}
+.fx-tog .tl{font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.fx-seg{display:flex;background:#E7EAEE;border-radius:7px;padding:2px;gap:2px}
+.fx-seg button{border:0;background:none;font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:5px;color:var(--muted);cursor:pointer;font-family:inherit;white-space:nowrap}
+.fx-seg button.on{background:#fff;color:var(--text);box-shadow:0 1px 2px rgba(27,58,75,.14)}
+.cards-grid .card{background:#FFF9F6;border-color:rgba(255,138,92,.38)}
+.card-vrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px}
+.card-vrow .card-value{margin-top:0}
+.card-vrow .card-icon{float:none;font-size:22px;opacity:.5;margin:0;flex:none}
+.cmp{margin-top:11px;padding-top:9px;border-top:1px solid rgba(255,138,92,.42);display:flex;flex-direction:column;gap:6px}
+.cmp .ch{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.cmp-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.cmp-row .cl{font-size:13px;color:var(--muted)}
+.cmp-row .cl b{color:var(--text)}
+.cmp-row .cv{font-size:14.5px;font-weight:700;white-space:nowrap}
+.fx-tag{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:#ECEFF3;border:1px solid #D3D9E0;padding:0 5px;border-radius:3px;margin-left:5px}
+.yr-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.yr-sum{display:flex;gap:14px;font-size:12px;color:var(--muted);margin:4px 0 6px;flex-wrap:wrap}
+.yr-sum b{color:var(--text)}
+.yr-sum i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;font-style:normal}
+.yr-foot{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.4}
+.yr-wrap{position:relative}
+.yr-tip{position:absolute;background:var(--brand-navy);color:#fff;border-radius:6px;padding:6px 10px;font-size:11.5px;line-height:1.4;pointer-events:none;opacity:0;transition:opacity .12s;z-index:5;white-space:nowrap;box-shadow:0 4px 14px rgba(27,58,75,.28)}
+.yr-tip b{display:block;font-size:12px}
+.yr-bar{cursor:pointer}
+.acct-box{padding:10px 20px 0;border-top:1px solid rgba(255,255,255,.10);margin-top:6px}
+.acct-who{display:flex;align-items:center;gap:9px}
+.acct-av{width:30px;height:30px;border-radius:50%;flex:none;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);display:grid;place-items:center;font-size:12.5px;font-weight:800;color:#fff;overflow:hidden}
+.acct-who .nm{min-width:0;flex:1}
+.acct-who .nm b{display:block;font-size:12.5px;color:#fff;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acct-who .nm span{display:block;font-size:10px;color:rgba(255,255,255,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acct-key{background:none;border:none;cursor:pointer;font-size:13px;opacity:.55;padding:0 2px;color:#fff}
+.acct-key:hover{opacity:1}
+.acct-chips{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap}
+.acct-chip{font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 6px;border-radius:3px;background:rgba(255,255,255,.13);color:rgba(255,255,255,.9)}
+.acct-chip.pio{background:var(--brand-accent);color:#2a1206}
+.acct-lbl{font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45);font-weight:800;margin:11px 0 4px}
+.acct-dots{display:flex;align-items:center;gap:8px}
+.acct-dots .dd{display:flex;gap:4px}
+.acct-dots .dd i{width:12px;height:12px;border-radius:3px;font-style:normal;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.16)}
+.acct-dots .dd i.on{background:#3fbf87;border-color:#3fbf87}
+.acct-dots span{font-size:10.5px;color:rgba(255,255,255,.5)}
+.acct-val{font-size:12.5px;color:#fff;font-weight:700}
+.acct-bar{height:4px;border-radius:3px;background:rgba(255,255,255,.13);overflow:hidden;margin-top:5px}
+.acct-bar i{display:block;height:100%;background:var(--brand-accent)}
+.acct-links{display:flex;gap:4px;padding:11px 20px 12px;margin-top:10px;border-top:1px solid rgba(255,255,255,.10)}
+.acct-links button{flex:1;border:0;background:rgba(255,255,255,.08);color:rgba(255,255,255,.75);border-radius:6px;padding:7px 0;font-size:15px;cursor:pointer;line-height:1}
+.acct-links button:hover{background:rgba(255,255,255,.18);color:#fff}
+@media (max-width: 860px){
+  .fx-strip{flex-direction:column}
+  .fx-strip .fx-lbl{border-right:0;border-bottom:1px solid var(--border);min-width:0}
+  .fx-rate{border-right:0;padding:6px 14px}
+  .fx-note{max-width:none;padding-top:4px}
+  .fx-tog{margin-left:0;padding-bottom:10px}
+  .fx-seg button{flex:1;text-align:center}
+  .cards-grid .card.k-ing{order:1}
+  .cards-grid .card.k-bal{order:2}
+  .cards-grid .card.k-gas{order:3;grid-column:1 / -1}
+  .cards-grid .card.k-pend{order:4;grid-column:1 / -1}
+}
+
   </style>
 </head>
 <body>
@@ -1250,7 +1322,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.068</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.069</div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -1338,7 +1410,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.068</span>
+      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.069</span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -1354,17 +1426,13 @@ tr:hover td { background: #fafbfc; }
         <div class="nav-item gps-nav-item" id="navTuGps" onclick="showPage('tugps')"><span class="ico">GPS</span> - Pioneros<span id="gpsNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
      <div class="nav-item" id="navAdmin" style="display:none" onclick="showPage('admin')"><span class="ico">⚙️</span> Admin</div>
   </div>
-  <div class="sidebar-user" id="sidebarUser" style="display:none">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <strong id="sidebarUsername">—</strong>
-      <button onclick="openCambiarPwd()" title="Cambiar contraseña" style="background:none;border:none;cursor:pointer;font-size:13px;opacity:0.6;padding:0 2px" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">🔑</button>
-    </div>
-    <span id="sidebarEmpresa" style="opacity:0.7"></span>
+  <div class="acct-box" id="acctBox" style="display:none"></div>
+  <div class="acct-links" id="acctLinks" style="display:none">
+    <button id="logoutBtn" onclick="doLogout()" title="Cerrar sesión" aria-label="Cerrar sesión">🚪</button>
+    <button onclick="openAyuda()" title="Ayuda" aria-label="Ayuda">❓</button>
+    <button onclick="openPlanModal()" title="Mi plan" aria-label="Mi plan">💎</button>
+    <button onclick="openHogaresModal()" title="Mis hogares" aria-label="Mis hogares">🏠</button>
   </div>
-  <button class="logout-btn" id="logoutBtn" style="display:none" onclick="doLogout()">🚪 Cerrar sesión</button>
-  <button class="logout-btn" onclick="openAyuda()" style="display:flex">❓ Ayuda</button>
-  <button class="logout-btn" onclick="openPlanModal()" style="display:flex">💎 Mi plan</button>
-  <button class="logout-btn" onclick="openHogaresModal()" style="display:flex">🏠 Mis hogares</button>
   <div class="sidebar-footer">
     <span class="sync-badge sync-offline" id="syncStatus"><span>☁️</span> Conectando…</span>
     <div class="data-btns">
@@ -1393,31 +1461,29 @@ tr:hover td { background: #fafbfc; }
   <div class="content">
 
     <!-- DASHBOARD -->
-    <div id="page-dashboard" class="page active" style="position:relative"><div id="rumboDeco"></div><div id="rumboHeader"></div>
+    <div id="page-dashboard" class="page active" style="position:relative"><div id="rumboDeco"></div><div id="rumboHeader"></div><div id="fxStrip" class="fx-strip" style="display:none"></div>
       <div class="cards-grid">
-        <div class="card">
-          <div class="card-icon">💚</div>
+        <div class="card k-ing">
           <div class="card-label">Ingresos del mes</div>
-          <div class="card-value positive" id="d-ing">$0</div>
+          <div class="card-vrow"><div class="card-value positive" id="d-ing">$0</div><div class="card-icon">💚</div></div>
           <div class="card-sub" id="d-ing-usd"></div>
         </div>
-        <div class="card">
-          <div class="card-icon">🔴</div>
-          <div class="card-label">Gastos del mes</div>
-          <div class="card-value negative" id="d-gas">$0</div>
+        <div class="card k-gas">
+          <div class="card-label" id="d-gas-lbl">Gastos del mes</div>
+          <div class="card-vrow"><div class="card-value negative" id="d-gas">$0</div><div class="card-icon">🔴</div></div>
           <div class="card-sub" id="d-gas-usd"></div>
+          <div id="d-gas-cmp"></div>
         </div>
-        <div class="card">
-          <div class="card-icon">⚖️</div>
+        <div class="card k-bal">
           <div class="card-label">Balance</div>
-          <div class="card-value" id="d-bal">$0</div>
-          <div class="card-sub">Ingresos − Gastos</div>
+          <div class="card-vrow"><div class="card-value" id="d-bal">$0</div><div class="card-icon">⚖️</div></div>
+          <div class="card-sub" id="d-bal-sub">Ingresos − Gastos</div>
         </div>
-        <div class="card">
-          <div class="card-icon">⏳</div>
-          <div class="card-label">Saldo pendiente</div>
-          <div class="card-value warning-c" id="d-pend">$0</div>
-          <div class="card-sub">Por pagar</div>
+        <div class="card k-pend">
+          <div class="card-label" id="d-pend-lbl">Saldo pendiente</div>
+          <div class="card-vrow"><div class="card-value warning-c" id="d-pend">$0</div><div class="card-icon">⏳</div></div>
+          <div class="card-sub" id="d-pend-sub">Por pagar</div>
+          <div id="d-pend-cmp"></div>
         </div>
       </div>
       <!-- Semáforo -->
@@ -1443,8 +1509,8 @@ tr:hover td { background: #fafbfc; }
           <div id="dashLegend" style="margin-top:6px"></div>
         </div>
         <div class="card">
-          <div class="report-title">Últimas transacciones</div>
-          <div id="d-recent"></div>
+          <div class="report-title">Cómo venís mes a mes</div>
+          <div id="d-year"></div>
         </div>
       </div>
 
@@ -2097,6 +2163,34 @@ tr:hover td { background: #fafbfc; }
             <div class="ayuda-tip">El <strong>Saldo pendiente</strong> es el número que más gente subestima. Un balance en verde con $400.000 pendientes no es un mes en verde: es un mes con deuda por delante.</div>
           </div>
           <div class="ayuda-bloque">
+            <h4>Cómo se cuentan los dólares</h4>
+            <p>Si cargás gastos en moneda extranjera —lo más común es el resumen de la tarjeta— Norte los <strong>convierte a pesos y los suma a tus totales</strong>, para que veas el compromiso real del mes y no una foto incompleta.</p>
+            <p>Arriba del tablero vas a ver una franja con el <strong>dólar del día</strong>. Se usa el <strong>oficial de venta del Banco Nación</strong>. También te mostramos el dólar tarjeta al lado, pero solo como referencia: no entra en ninguna cuenta.</p>
+            <div class="ayuda-tip">La cotización está a la vista a propósito. Todos los números convertidos de la pantalla salen de ese valor, así que podés rehacer cualquier cuenta a mano. Si algún día no pudimos actualizarla, te decimos de qué día es el dólar que estamos usando, en vez de esconderlo.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>El interruptor: “Pesos + dólares” o “Solo pesos”</h4>
+            <p>En la misma franja tenés un interruptor con dos posiciones. Lo único que cambia es <strong>si los dólares entran o no en los totales</strong>. No se borra ni se esconde nada: tus importes en dólares siguen a la vista en las dos posiciones.</p>
+            <div class="ayuda-ejemplo">
+              <strong>Pesos + dólares</strong> — tus gastos en dólares se convierten y suman. Responde: <em>de mis ingresos en pesos, ¿cuánto me queda de verdad?</em><br>
+              <strong>Solo pesos</strong> — los totales cuentan únicamente los movimientos en pesos. Responde: <em>¿cómo vengo en la moneda en la que cobro?</em>
+            </div>
+            <p>Las dos lecturas son correctas, y cuál te sirve depende de <strong>con qué plata pagás tus dólares</strong>. Si cobrás en pesos y pagás la tarjeta en pesos, ese consumo le compite a tu sueldo: la primera posición es tu realidad. Si tenés ahorros o ingresos en dólares y pagás esos consumos con dólares propios, convertirlos te infla un compromiso que no existe: ahí conviene la segunda.</p>
+            <div class="ayuda-ejemplo">
+              <strong>El mismo mes, las dos lecturas.</strong> Entraron $3.200.000 y gastaste $2.700.000 en pesos. Mirando solo pesos, te sobraron <strong>$500.000</strong>. Pero tenés un resumen de tarjeta de USD 590,83, que al oficial son $906.924. Contando los dólares, el mes cierra en <strong>−$406.924</strong>. Misma plata, conclusión opuesta.
+            </div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Cómo se compone cada total</h4>
+            <p>Cuando un total mezcla monedas, debajo del número grande aparece la suma abierta: cuánto es peso genuino, cuánto vino del dólar, y con qué cotización se convirtió.</p>
+            <div class="ayuda-ejemplo">
+              <strong>Gastos del mes · total en pesos — $3.606.924</strong><br>
+              Gastos en pesos — $2.700.000<br>
+              + USD 590,83 (oficial $1.535) — $906.924
+            </div>
+            <p>La idea es que puedas <strong>rehacer el total vos mismo</strong> mirando la tarjeta. Si el hogar no tiene ningún importe en dólares, este bloque no aparece y la pantalla se ve igual que siempre.</p>
+          </div>
+          <div class="ayuda-bloque">
             <h4>Salud financiera</h4>
             <p>Debajo del tablero, Norte califica tu mes combinando balance, nivel de pendientes y cumplimiento del presupuesto. Es un semáforo rápido, pensado para que no tengas que interpretar los números vos.</p>
           </div>
@@ -2116,8 +2210,22 @@ tr:hover td { background: #fafbfc; }
             </div>
           </div>
           <div class="ayuda-bloque">
-            <h4>Últimas transacciones y accesos rápidos</h4>
-            <p>Abajo aparecen los movimientos más recientes del mes — hacé click en cualquiera para editarlo — y tres tarjetas de acceso directo a <strong>Presupuesto</strong>, <strong>Meta de ahorro</strong> y <strong>Progreso</strong>.</p>
+            <h4>Cómo venís mes a mes</h4>
+            <p>Al lado del gráfico de rubros vas a ver el <strong>saldo neto de cada mes del año</strong>, de enero hasta el mes que estás mirando. Cada barra es un mes: <strong>arriba de la línea y en verde</strong> si cerró positivo, <strong>abajo y en rojo</strong> si cerró negativo. Arriba te decimos cuántos meses llevás de cada color.</p>
+            <p>La curva que atraviesa las barras marca la tendencia, y si pasás el mouse (o tocás, en el celular) sobre cualquier mes te muestra los ingresos, los gastos y el neto de ese mes.</p>
+            <div class="ayuda-tip">Esta vista es a propósito de alto nivel: es para saber <strong>cómo venís</strong>, no para revisar el detalle. Si querés el desglose completo del año, está en <strong>Reportes → Evolución</strong>. Y si buscás un movimiento puntual, en <strong>Transacciones</strong>.</div>
+            <p>Debajo quedan las tarjetas de acceso directo a <strong>Presupuesto</strong>, <strong>Meta de ahorro</strong> y <strong>Progreso</strong>.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Tu cuenta, en el menú de la izquierda</h4>
+            <p>Abajo del menú tenés un resumen de <strong>tu uso de la app</strong> — nada de plata, solo cómo venís usándola:</p>
+            <div class="ayuda-ejemplo">
+              <strong>Tu plan</strong> — y, si entraste por el Club Pionero, tu distintivo de Pionero<br>
+              <strong>Constancia</strong> — cuatro cuadraditos, uno por cada una de las últimas cuatro semanas. Se encienden si esa semana cargaste algo<br>
+              <strong>Última carga</strong> — hace cuánto no registrás un movimiento<br>
+              <strong>Tu nivel</strong> — el nivel de Progreso que alcanzaste. Si sos Pionero, en su lugar ves los puntos del GPS
+            </div>
+            <div class="ayuda-tip">La constancia se mide <strong>por semana y no por día</strong> a propósito. Registrar todos los días no es la meta: si subís el resumen de la tarjeta una vez por mes y cargás tus gastos fijos, lo estás haciendo bien. Lo que queremos es que no se te pase una semana entera.</div>
           </div>
         </div>
 
@@ -3456,6 +3564,7 @@ async function bootApp(firebaseUser) {
   document.getElementById('logoutBtn').style.display = 'block';
   unEl.textContent = firebaseUser.displayName || firebaseUser.email;
   emEl.textContent = empresaNombre;
+  try { fxCargarModo(); renderAcctBox(); } catch(e){}
 
   // Mostrar Admin nav si corresponde
   if (isAdmin()) document.getElementById('navAdmin').style.display = 'flex';
@@ -5581,6 +5690,259 @@ function render() { if (curPage !== 'dashboard') { const _mn = document.querySel
   // consultas no necesita re-render al cambiar mes
 }
 
+
+// ── DÓLAR: cotización, modo de conteo y conversión (v005.1.069) ──────────
+// La cotización la escribe una Cloud Function programada en norteSync/fx/ARS.
+// Si no hay dato o no hay permiso de lectura, la pantalla se comporta como antes.
+let FX = null;
+let fxModo = 'ambas';               // 'ambas' | 'pesos'
+const fmtPz = v => '$' + Number(v||0).toLocaleString('es-AR', {minimumFractionDigits:0, maximumFractionDigits:2});
+function fxRate(){ return (FX && Number(FX.oficialVenta) > 0) ? Number(FX.oficialVenta) : 0; }
+function fxActivo(){ return fxModo === 'ambas' && fxRate() > 0; }
+function fxAPesos(usd){ return (Number(usd)||0) * fxRate(); }
+function fxFechaTxt(){
+  if (!FX || !FX.fecha) return 'Banco Nación';
+  const hoy = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+  if (FX.fecha === hoy) return 'Banco Nación · hoy';
+  const p = String(FX.fecha).split('-');
+  return p.length === 3 ? `Banco Nación · dólar del ${p[2]}/${p[1]}` : 'Banco Nación';
+}
+function iniciarListenerFX(){
+  try {
+    firebase.database().ref('norteSync/fx/ARS').on('value',
+      snap => { const v = snap.val(); FX = (v && Number(v.oficialVenta) > 0) ? v : null;
+                if (curPage === 'dashboard') renderDash(); },
+      ()   => { FX = null; });
+  } catch(e) { FX = null; }
+}
+function fxCargarModo(){
+  try { const v = localStorage.getItem('norteFxModo_' + curEmpresa()); if (v === 'ambas' || v === 'pesos') fxModo = v; } catch(e){}
+}
+function fxSetModo(m){
+  fxModo = m;
+  try { localStorage.setItem('norteFxModo_' + curEmpresa(), m); } catch(e){}
+  renderDash();
+}
+function renderFXStrip(){
+  const el = document.getElementById('fxStrip');
+  if (!el) return;
+  if (!fxRate()) { el.style.display = 'none'; return; }
+  const tarj = Number(FX.tarjeta) > 0 ? Number(FX.tarjeta) : 0;
+  el.style.display = 'flex';
+  el.innerHTML =
+    '<div class="fx-lbl"><b>Dólar de hoy</b><span>' + esc(fxFechaTxt()) + '</span></div>' +
+    '<div class="fx-rate"><span class="n">Oficial · venta</span><span class="v">' + fmtPz(fxRate()) + '</span>' +
+      (fxActivo() ? '<span class="u">▸ con este se calcula</span>' : '') + '</div>' +
+    (tarj ? '<div class="fx-rate ref"><span class="n">Tarjeta · solo referencia</span><span class="v">' + fmtPz(tarj) + '</span></div>' : '') +
+    '<div class="fx-note">' + (fxActivo()
+        ? 'Los dólares suman al total, convertidos al oficial de venta.'
+        : 'Los dólares se muestran aparte y no suman a los totales.') + '</div>' +
+    '<div class="fx-tog"><span class="tl">Cómo contar los dólares</span><div class="fx-seg">' +
+      '<button class="' + (fxModo==='ambas'?'on':'') + '" onclick="fxSetModo(\'ambas\')">Pesos + dólares</button>' +
+      '<button class="' + (fxModo==='pesos'?'on':'') + '" onclick="fxSetModo(\'pesos\')">Solo pesos</button>' +
+    '</div></div>';
+}
+function cmpHTML(lblPesos, pesos, usd){
+  return '<div class="cmp"><span class="ch">Cómo se compone</span>' +
+    '<div class="cmp-row"><span class="cl">' + lblPesos + '</span><span class="cv">' + fmtPz(pesos) + '</span></div>' +
+    '<div class="cmp-row"><span class="cl">+ <b>' + fmtU(usd) + '</b><span class="fx-tag">of. ' + fmtPz(fxRate()) + '</span></span>' +
+    '<span class="cv">' + fmtPz(fxAPesos(usd)) + '</span></div></div>';
+}
+// USD todavía no pagado: mismo criterio que usa Reportes → Tarjetas
+function fxUsdPendiente(txs){
+  return txs.reduce(function(acc, t){
+    const usd = Number(t.impUSD) || 0;
+    if (usd <= 0 || t.tipo !== 'Gasto') return acc;
+    let pagadoOk;
+    try { pagadoOk = isTCOrigen(t) ? t.tcPagado === true : (Number(t.saldo)||0) <= 0; }
+    catch(e){ pagadoOk = (Number(t.saldo)||0) <= 0; }
+    return pagadoOk ? acc : acc + usd;
+  }, 0);
+}
+
+// ── Panel "Cómo venís mes a mes" ────────────────────────────────────────
+function renderAnioPanel(){
+  const wrap = document.getElementById('d-year');
+  if (!wrap) return;
+  const key = curKey(), anio = Number(key.split('-')[0]), hasta = Number(key.split('-')[1]);
+  const all = getData();
+  const rows = [];
+  for (let m = 1; m <= hasta; m++){
+    const mk = anio + '-' + String(m).padStart(2,'0');
+    const tx = all.filter(t => t.mes === mk);
+    if (!tx.length){ rows.push({m:m, mk:mk, neto:null}); continue; }
+    const sump = (arr,f) => arr.reduce((a,t)=>a+(Number(t[f])||0),0);
+    const ing = tx.filter(t=>t.tipo==='Ingreso'), gas = tx.filter(t=>t.tipo==='Gasto');
+    let ti = sump(ing,'impPesos'), tg = sump(gas,'impPesos');
+    if (fxActivo()){ ti += fxAPesos(sump(ing,'impUSD')); tg += fxAPesos(sump(gas,'impUSD')); }
+    rows.push({m:m, mk:mk, neto: ti - tg, ing: ti, gas: tg});
+  }
+  const con = rows.filter(r => r.neto !== null);
+  if (!con.length){
+    wrap.innerHTML = '<div class="empty" style="padding:20px"><div class="ei">📭</div><p>Todavía no hay meses cargados este año</p></div>';
+    return;
+  }
+  const verdes = con.filter(r => r.neto >= 0).length, rojos = con.length - verdes;
+  const posMax = Math.max(0, ...con.map(r => r.neto));
+  const negMax = Math.max(0, ...con.map(r => -r.neto));
+  const span = (posMax + negMax) || 1;
+  const H = 200, TOP = 22;
+  const k = H / span;
+  const zeroY = TOP + posMax * k;
+  const BW = 30, GAP = 24, X0 = 16;
+  const W = X0*2 + rows.length*BW + Math.max(0, rows.length-1)*GAP;
+  const cx = i => X0 + i*(BW+GAP) + BW/2;
+  let bars = '', labels = '', pts = [];
+  rows.forEach(function(r,i){
+    const x = X0 + i*(BW+GAP);
+    if (r.neto === null){
+      labels += '<text x="'+cx(i)+'" y="'+(TOP+H+28)+'" text-anchor="middle" font-size="11" fill="#94a3b8">'+MESES[r.m-1].slice(0,3)+'</text>';
+      return;
+    }
+    const h = Math.max(1, Math.abs(r.neto) * k);
+    const y = r.neto >= 0 ? zeroY - h : zeroY;
+    const col = r.neto >= 0 ? '#10b981' : '#ef4444';
+    const act = (r.m === hasta);
+    bars += '<rect class="yr-bar" x="'+x+'" y="'+y.toFixed(1)+'" width="'+BW+'" height="'+h.toFixed(1)+'" rx="3" fill="'+col+'"'
+         + (act ? ' stroke="#1B3A4B" stroke-width="1.5" stroke-opacity=".55"' : '')
+         + ' data-m="'+r.m+'" data-neto="'+r.neto+'" data-ing="'+r.ing+'" data-gas="'+r.gas+'"></rect>';
+    labels += '<text x="'+cx(i)+'" y="'+(TOP+H+28)+'" text-anchor="middle" font-size="11" fill="'+(act?'#1e293b':'#94a3b8')+'"'
+           + (act?' font-weight="800"':'')+'>'+MESES[r.m-1].slice(0,3)+'</text>';
+    pts.push([cx(i), zeroY - r.neto * k]);
+  });
+  // Curva de tendencia monótona (Fritsch-Carlson): nunca dibuja un valor que no existe
+  let curva = '', dots = '';
+  if (pts.length > 1){
+    const n = pts.length, d = [], mm = [];
+    for (let i=0;i<n-1;i++) d.push((pts[i+1][1]-pts[i][1])/(pts[i+1][0]-pts[i][0]));
+    mm[0]=d[0]; mm[n-1]=d[n-2];
+    for (let i=1;i<n-1;i++) mm[i] = (d[i-1]*d[i] <= 0) ? 0 : (d[i-1]+d[i])/2;
+    for (let i=0;i<n-1;i++){
+      if (d[i] === 0){ mm[i]=0; mm[i+1]=0; continue; }
+      const a=mm[i]/d[i], b=mm[i+1]/d[i], t=a*a+b*b;
+      if (t>9){ const q=3/Math.sqrt(t); mm[i]=q*a*d[i]; mm[i+1]=q*b*d[i]; }
+    }
+    curva = 'M '+pts[0][0].toFixed(1)+' '+pts[0][1].toFixed(1);
+    for (let i=0;i<n-1;i++){
+      const dx = pts[i+1][0]-pts[i][0];
+      curva += ' C '+(pts[i][0]+dx/3).toFixed(1)+' '+(pts[i][1]+mm[i]*dx/3).toFixed(1)
+            +  ' '+(pts[i+1][0]-dx/3).toFixed(1)+' '+(pts[i+1][1]-mm[i+1]*dx/3).toFixed(1)
+            +  ' '+pts[i+1][0].toFixed(1)+' '+pts[i+1][1].toFixed(1);
+    }
+    curva = '<path d="'+curva+'" fill="none" stroke="#1B3A4B" stroke-opacity=".5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>';
+    dots = pts.map(p => '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3.2" fill="#fff" stroke="#1B3A4B" stroke-opacity=".55" stroke-width="1.6"></circle>').join('');
+  }
+  const actual = rows[rows.length-1];
+  wrap.innerHTML =
+    '<div class="yr-head"><span></span><span style="font-size:13px;font-weight:700;color:'
+      + (actual.neto === null ? 'var(--muted)' : (actual.neto>=0?'var(--success)':'var(--danger)')) + '">'
+      + MESES[hasta-1] + ' ' + (actual.neto === null ? '—' : fmtPz(actual.neto)) + '</span></div>'
+    + '<div class="yr-sum"><span><i style="background:#10b981"></i><b>' + verdes + (verdes===1?' mes':' meses') + '</b> en verde</span>'
+    + '<span><i style="background:#ef4444"></i><b>' + rojos + (rojos===1?' mes':' meses') + '</b> en rojo</span></div>'
+    + '<div class="yr-wrap" id="yrWrap"><div class="yr-tip" id="yrTip"></div>'
+    + '<svg viewBox="0 0 '+W+' '+(TOP+H+40)+'" width="100%" role="img" aria-label="Saldo neto por mes">'
+    + '<line x1="0" y1="'+zeroY.toFixed(1)+'" x2="'+W+'" y2="'+zeroY.toFixed(1)+'" stroke="#cbd5e1" stroke-width="1"></line>'
+    + '<text x="'+(W-2)+'" y="'+(zeroY-5).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="#94a3b8">$0</text>'
+    + bars + curva + dots + labels + '</svg></div>'
+    + '<div class="yr-foot">Saldo neto del mes (ingresos − gastos)'
+    + (fxActivo() ? ', con los dólares convertidos. Si pasás a <b>Solo pesos</b>, el gráfico se recalcula.' : '.')
+    + '</div>';
+  yrHookTooltip();
+}
+function yrHookTooltip(){
+  const wrap = document.getElementById('yrWrap'), tip = document.getElementById('yrTip');
+  if (!wrap || !tip) return;
+  const show = function(ev){
+    const b = ev.target;
+    if (!b || !b.classList || !b.classList.contains('yr-bar')) return;
+    const m = Number(b.getAttribute('data-m'));
+    tip.innerHTML = '<b>' + MESES[m-1] + '</b>Ingresos ' + fmtPz(b.getAttribute('data-ing'))
+                  + ' · Gastos ' + fmtPz(b.getAttribute('data-gas'))
+                  + '<br>Neto ' + fmtPz(b.getAttribute('data-neto'));
+    tip.style.opacity = '1';
+    const wr = wrap.getBoundingClientRect(), br = b.getBoundingClientRect();
+    let left = br.left - wr.left + br.width/2 - tip.offsetWidth/2;
+    left = Math.max(2, Math.min(left, wr.width - tip.offsetWidth - 2));
+    let top = br.top - wr.top - tip.offsetHeight - 8;
+    if (top < 0) top = br.top - wr.top + br.height + 8;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  };
+  wrap.addEventListener('mouseover', show);
+  wrap.addEventListener('touchstart', show, {passive:true});
+  wrap.addEventListener('mouseleave', function(){ tip.style.opacity = '0'; });
+}
+
+// ── Bloque "Tu cuenta" del menú lateral ─────────────────────────────────
+let miOrigenCuenta = '', miGPS = null;
+function acctConstancia(){
+  // Las ids de movimiento empiezan con Date.now().toString(36) → de ahí sale la fecha de carga
+  const ahora = Date.now(), SEM = 7*24*3600*1000, sem = [false,false,false,false];
+  let ultima = 0;
+  getData().forEach(function(t){
+    const raw = String(t.id||'').slice(0,8);
+    const ts = parseInt(raw, 36);
+    if (!ts || ts < 1577836800000 || ts > ahora + 86400000) return;   // 2020 → hoy
+    if (ts > ultima) ultima = ts;
+    const idx = Math.floor((ahora - ts) / SEM);
+    if (idx >= 0 && idx < 4) sem[3-idx] = true;
+  });
+  return { sem: sem, activas: sem.filter(Boolean).length, ultima: ultima };
+}
+function acctUltimaTxt(ts){
+  if (!ts) return 'sin cargas todavía';
+  const dias = Math.floor((Date.now() - ts) / 86400000);
+  if (dias <= 0) return 'hoy';
+  if (dias === 1) return 'ayer';
+  return 'hace ' + dias + ' días';
+}
+function renderAcctBox(){
+  const box = document.getElementById('acctBox'), links = document.getElementById('acctLinks');
+  if (!box) return;
+  const nombre = (typeof firebaseUser !== 'undefined' && firebaseUser)
+      ? (firebaseUser.displayName || firebaseUser.email || '') : '';
+  if (!nombre){ box.style.display = 'none'; if (links) links.style.display = 'none'; return; }
+  box.style.display = 'block';
+  if (links) links.style.display = 'flex';
+  const inicial = (nombre.trim()[0] || '?').toUpperCase();
+  const hogar = (document.getElementById('sidebarEmpresa') && document.getElementById('sidebarEmpresa').textContent) || '';
+  const esPionero = String(miOrigenCuenta || '') === 'club_pioneros';
+  const c = acctConstancia();
+  let ultimaFila = '';
+  if (esPionero && miGPS && typeof miGPS.puntos === 'number'){
+    const pts = Math.max(0, Math.min(40, miGPS.puntos));
+    ultimaFila = '<div class="acct-lbl">GPS Pioneros</div><div class="acct-val">' + pts + ' de 40 puntos</div>'
+               + '<div class="acct-bar"><i style="width:' + (pts/40*100) + '%"></i></div>';
+  } else {
+    try {
+      const r = computeRacha(getData(), curKey());
+      let idx = 0;
+      for (let i = 0; i < NIVELES.length; i++) if (r.enVerde >= NIVELES[i].min) idx = i;
+      const lvl = NIVELES[idx], next = NIVELES[idx+1];
+      const pct = next ? Math.min(100, Math.round((r.enVerde - lvl.min) / (next.min - lvl.min) * 100)) : 100;
+      ultimaFila = '<div class="acct-lbl">Tu nivel</div><div class="acct-val">' + lvl.ico + ' ' + esc(lvl.nombre) + '</div>'
+                 + '<div class="acct-bar"><i style="width:' + pct + '%"></i></div>';
+    } catch(e){ ultimaFila = ''; }
+  }
+  box.innerHTML =
+    '<div class="acct-who"><div class="acct-av" id="acctAv">' + esc(inicial) + '</div>'
+    + '<div class="nm"><b>' + esc(nombre) + '</b><span>' + esc(hogar) + '</span></div>'
+    + '<button class="acct-key" onclick="openCambiarPwd()" title="Cambiar contraseña" aria-label="Cambiar contraseña">\U0001F511</button></div>'
+    + '<div class="acct-chips"><span class="acct-chip">PLAN ' + esc(miPlanActual || 'FOCO') + '</span>'
+    + (esPionero ? '<span class="acct-chip pio">PIONERO</span>' : '') + '</div>'
+    + '<div class="acct-lbl">Constancia</div>'
+    + '<div class="acct-dots"><div class="dd">'
+    + c.sem.map(v => '<i class="' + (v?'on':'') + '"></i>').join('')
+    + '</div><span>' + acctUltimaTxt(c.ultima) + '</span></div>'
+    + ultimaFila;
+}
+function cargarGPSPioneros(){
+  try {
+    firebase.database().ref('norteSync/programaGuiado/' + curEmpresa()).once('value')
+      .then(function(s){ miGPS = s.val() || null; renderAcctBox(); })
+      .catch(function(){ miGPS = null; });
+  } catch(e){ miGPS = null; }
+}
+
 // ── DASHBOARD ───────────────────────────────────────────────
 function renderDash() {
   const all  = getData().filter(t => t.mes === curKey());
@@ -5595,33 +5957,39 @@ function renderDash() {
   const bal     = totIngP - totGasP;
   const pend    = all.reduce((s,t) => s + (Number(t.saldo)||0), 0);
 
-  document.getElementById('d-ing').textContent   = fmtP(totIngP);
-  document.getElementById('d-gas').textContent   = fmtP(totGasP);
-  document.getElementById('d-bal').textContent   = fmtP(bal);
-  document.getElementById('d-pend').textContent  = fmtP(pend);
-  document.getElementById('d-ing-usd').textContent = totIngU ? fmtU(totIngU) : '';
-  document.getElementById('d-gas-usd').textContent = totGasU ? fmtU(totGasU) : '';
-  const balEl = document.getElementById('d-bal');
-  balEl.className = 'card-value ' + (bal >= 0 ? 'positive' : 'negative');
+  // ── Dólar integrado ───────────────────────────────────────
+  fxCargarModo();
+  const usdPend  = fxUsdPendiente(all);
+  const on       = fxActivo();
+  const ingT     = on ? totIngP + fxAPesos(totIngU) : totIngP;
+  const gasT     = on ? totGasP + fxAPesos(totGasU) : totGasP;
+  const balT     = ingT - gasT;
+  const pendT    = on ? pend + fxAPesos(usdPend)    : pend;
 
-  // Recent
-  const recent = [...all].reverse().slice(0,6);
-  const rEl = document.getElementById('d-recent');
-  rEl.innerHTML = recent.length ? recent.map(t => `
-    <div class="recent-item">
-      <div>
-        <div class="recent-detail">${esc(t.detalle)}</div>
-        <div class="recent-rubro">${t.rubro || ''}</div>
-      </div>
-      <div class="recent-amt ${t.tipo==='Ingreso'?'positive':'negative'}">
-        ${t.tipo==='Ingreso'?'+':'-'}${fmtP(t.impPesos)}
-      </div>
-    </div>`).join('')
-    : '<div class="empty" style="padding:20px"><div class="ei">📭</div><p>Sin movimientos</p></div>';
+  document.getElementById('d-ing').textContent   = fmtP(ingT);
+  document.getElementById('d-gas').textContent   = fmtP(gasT);
+  document.getElementById('d-bal').textContent   = fmtP(balT);
+  document.getElementById('d-pend').textContent  = fmtP(pendT);
+  document.getElementById('d-ing-usd').textContent = (!on && totIngU) ? fmtU(totIngU) : '';
+  document.getElementById('d-gas-usd').textContent = (!on && totGasU) ? fmtU(totGasU) : '';
+  document.getElementById('d-gas-lbl').textContent  = (on && totGasU) ? 'Gastos del mes · total en pesos' : 'Gastos del mes';
+  document.getElementById('d-pend-lbl').textContent = (on && usdPend) ? 'Saldo pendiente · total en pesos' : 'Saldo pendiente';
+  document.getElementById('d-gas-cmp').innerHTML  = (on && totGasU) ? cmpHTML('Gastos en pesos', totGasP, totGasU) : '';
+  document.getElementById('d-pend-cmp').innerHTML = (on && usdPend) ? cmpHTML('Por pagar en pesos', pend, usdPend) : '';
+  document.getElementById('d-bal-sub').innerHTML  = (on && (totGasU || totIngU))
+      ? 'Ingresos − Gastos, todo valuado en pesos.<br>Sin contar el dólar daba <b>' + fmtP(bal) + '</b>.'
+      : 'Ingresos − Gastos';
+  const balEl = document.getElementById('d-bal');
+  balEl.className = 'card-value ' + (balT >= 0 ? 'positive' : 'negative');
+  renderFXStrip();
+  try { renderAcctBox(); } catch(e){}
+
+  renderAnioPanel();
 
   // Chart rubros
   const rubroMap = {};
-  gas.forEach(t => { rubroMap[t.rubro] = (rubroMap[t.rubro]||0) + (Number(t.impPesos)||0); });
+  gas.forEach(t => { rubroMap[t.rubro] = (rubroMap[t.rubro]||0) + (Number(t.impPesos)||0)
+                     + (fxActivo() ? fxAPesos(t.impUSD) : 0); });
   const entries = Object.entries(rubroMap).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);
   const emptyEl   = document.getElementById('dashEmpty');
   const cvs        = document.getElementById('dashChart');
@@ -5649,7 +6017,7 @@ function renderDash() {
   }
 
   // Semáforo + Alertas
-  renderHealth(totIngP, totGasP, pend);
+  renderHealth(ingT, gasT, pendT);
   renderAlertas();
 
   // Mini-resumen Presupuesto
@@ -5677,7 +6045,7 @@ function renderDash() {
 
   // Decoración Mi Rumbo (una sola vez)
     const rDeco = document.getElementById('rumboDeco');
-      if (rDeco && !rDeco.dataset.done) { rDeco.dataset.done = '1'; rDeco.outerHTML = `<div id="rumboDeco" data-done="1" aria-hidden="true" style="position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none;border-radius:16px;"><svg width="760" height="760" viewBox="0 0 760 760" style="position:absolute;bottom:-160px;right:-160px;opacity:0.07"><circle cx="380" cy="380" r="335" fill="none" stroke="#8B5E34" stroke-width="3"></circle><circle cx="380" cy="380" r="264" fill="none" stroke="#8B5E34" stroke-width="2"></circle><line x1="380" y1="22" x2="380" y2="738" stroke="#8B5E34" stroke-width="2"></line><line x1="22" y1="380" x2="738" y2="380" stroke="#8B5E34" stroke-width="2"></line><line x1="123" y1="123" x2="637" y2="637" stroke="#8B5E34" stroke-width="1.4"></line><line x1="637" y1="123" x2="123" y2="637" stroke="#8B5E34" stroke-width="1.4"></line><polygon points="380,101 407,380 380,659 353,380" fill="#8B5E34"></polygon><polygon points="101,380 380,353 659,380 380,407" fill="#8B5E34"></polygon><text x="380" y="76" text-anchor="middle" font-size="28" fill="#8B5E34" font-family="Georgia,serif">N</text><text x="380" y="706" text-anchor="middle" font-size="28" fill="#8B5E34" font-family="Georgia,serif">S</text><text x="706" y="391" text-anchor="middle" font-size="28" fill="#8B5E34" font-family="Georgia,serif">E</text><text x="54" y="391" text-anchor="middle" font-size="28" fill="#8B5E34" font-family="Georgia,serif">O</text></svg><div style="position:absolute;top:10px;left:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div><div style="position:absolute;top:10px;right:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div><div style="position:absolute;bottom:10px;left:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div><div style="position:absolute;bottom:10px;right:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div></div>`; }
+      if (rDeco && !rDeco.dataset.done) { rDeco.dataset.done = '1'; rDeco.outerHTML = `<div id="rumboDeco" data-done="1" aria-hidden="true" style="position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none;border-radius:16px;"><svg width="1400" height="1400" viewBox="0 0 760 760" style="position:absolute;top:-392px;right:-430px;opacity:0.13;transform:rotate(-12deg)"><circle cx="380" cy="380" r="335" fill="none" stroke="#B5603A" stroke-width="3"></circle><circle cx="380" cy="380" r="264" fill="none" stroke="#B5603A" stroke-width="2"></circle><line x1="380" y1="22" x2="380" y2="738" stroke="#B5603A" stroke-width="2"></line><line x1="22" y1="380" x2="738" y2="380" stroke="#B5603A" stroke-width="2"></line><line x1="123" y1="123" x2="637" y2="637" stroke="#B5603A" stroke-width="1.4"></line><line x1="637" y1="123" x2="123" y2="637" stroke="#B5603A" stroke-width="1.4"></line><polygon points="380,101 407,380 380,659 353,380" fill="#B5603A"></polygon><polygon points="101,380 380,353 659,380 380,407" fill="#B5603A"></polygon><text x="380" y="76" text-anchor="middle" font-size="28" fill="#B5603A" font-family="Georgia,serif">N</text><text x="380" y="706" text-anchor="middle" font-size="28" fill="#B5603A" font-family="Georgia,serif">S</text><text x="706" y="391" text-anchor="middle" font-size="28" fill="#B5603A" font-family="Georgia,serif">E</text><text x="54" y="391" text-anchor="middle" font-size="28" fill="#B5603A" font-family="Georgia,serif">O</text></svg><div style="position:absolute;top:10px;left:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div><div style="position:absolute;top:10px;right:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div><div style="position:absolute;bottom:10px;left:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div><div style="position:absolute;bottom:10px;right:10px;width:6px;height:6px;border-radius:50%;background:#D8D2C4"></div></div>`; }
         const rHeader = document.getElementById('rumboHeader');
           if (rHeader && !rHeader.dataset.done) { rHeader.dataset.done = '1'; rHeader.outerHTML = `<div id="rumboHeader" data-done="1" style="position:relative;z-index:1;background:#0c1c2b;border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px"><div style="display:flex;align-items:baseline;gap:10px"><button class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menu" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff">☰</button><span style="color:#fff;font-size:23px;font-weight:700;letter-spacing:-0.3px">MI RUMBO</span><span style="color:#E3A67E;font-size:12px">${subtituloRumbo()}</span></div><div id="rumboHeaderRight" style="display:flex;align-items:center"></div></div>`; } const rHeaderRight = document.getElementById('rumboHeaderRight'); const monthNavEl = document.querySelector('.month-nav'); if (rHeaderRight && monthNavEl && !rHeaderRight.contains(monthNavEl)) { monthNavEl.querySelectorAll('button').forEach(b => { b.style.background = 'rgba(255,255,255,.12)'; b.style.borderColor = 'rgba(255,255,255,.3)'; b.style.color = '#fff'; }); const md = document.getElementById('monthDisplay'); if (md) { md.style.color = '#fff'; md.style.fontWeight = '600'; } rHeaderRight.appendChild(monthNavEl); }
           
@@ -8850,11 +9218,14 @@ function closePlanModal(e) {
 }
 function iniciarListenerPlan() {
   const empresaId = curEmpresa();
+  try { iniciarListenerFX(); cargarGPSPioneros(); } catch(e){}
   firebase.database().ref('norteSync/billing/' + empresaId).on('value', snap => {
     const v = snap.val();
     miPlanActual = (v && v.tier) || 'FOCO';
     miPlanEstado = (v && v.status) || 'active';
+    miOrigenCuenta = (v && v.origen) || '';
     renderPlanUI();
+    try { renderAcctBox(); } catch(e){}
   });
 }
 function renderPlanUI() {
