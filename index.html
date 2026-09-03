@@ -122,7 +122,17 @@ ${resumenCalculado}`;
       return result.response.text();
     };
     window.nortiaExtraerGasto = async function (base64Data, mimeType) {
-      const rubros = (window.RUBROS && (window.RUBROS.Gasto || []).concat(window.RUBROS.Ingreso || [])) || [];
+      // La lista sale de la base maestra del hogar, no de la fija: si no, NortIA
+      // nunca podría clasificar en un rubro creado por el usuario.
+      const rubros = (function () {
+        try {
+          if (typeof window.getAllRubros === 'function') {
+            return window.getAllRubros('Gasto').concat(window.getAllRubros('Ingreso'))
+                     .filter(function (r) { return r !== 'Personalizado...'; });
+          }
+        } catch (e) {}
+        return (window.RUBROS && (window.RUBROS.Gasto || []).concat(window.RUBROS.Ingreso || [])) || [];
+      })();
       const prompt = `Sos el extractor de gastos de Norte, una app argentina de finanzas del hogar.
 Se te va a mandar UNA imagen (foto de un ticket, recibo o resumen) O un audio corto donde alguien describe un gasto o ingreso en voz alta.
 Tu tarea es devolver los datos estructurados de ese único movimiento.
@@ -227,6 +237,32 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   background:#FFF1EA; border:1px solid rgba(255,138,92,.45); border-top:none;
   border-radius:0 0 12px 12px; box-shadow:0 6px 16px rgba(11,31,51,.10); }
 #bulkBarFija.show { display:flex; }
+/* Administración de rubros */
+.rb-tabs { display:flex; gap:6px; margin-bottom:14px; }
+.rb-tab { padding:7px 16px; border:1px solid var(--border); background:var(--card); color:var(--muted);
+  border-radius:9px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; }
+.rb-tab.on { background:var(--brand-navy); border-color:var(--brand-navy); color:#fff; }
+.rb-alta { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+.rb-alta input { flex:1; min-width:180px; padding:8px 11px; border:1px solid var(--border);
+  border-radius:8px; font-size:13.5px; font-family:inherit; background:var(--card); color:var(--text); }
+.rb-lista { border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.rb-fila { display:flex; align-items:center; gap:10px; padding:9px 13px; border-bottom:1px solid var(--border); }
+.rb-fila:last-child { border-bottom:none; }
+.rb-fila:hover { background:var(--bg); }
+.rb-nom { flex:1; font-size:13.5px; color:var(--text); font-weight:600; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.rb-uso { font-size:11.5px; color:var(--muted); white-space:nowrap; }
+.rb-uso.cero { opacity:.55; }
+.rb-acc { display:flex; gap:4px; }
+.rb-acc button { background:none; border:none; cursor:pointer; font-size:14px; padding:3px 6px;
+  border-radius:6px; line-height:1; }
+.rb-acc button:hover { background:rgba(11,31,51,.07); }
+.rb-fila.especial { background:#FFF7ED; }
+.rb-fila.especial .rb-nom { color:#B45309; }
+.rb-vacio { padding:18px; text-align:center; font-size:13px; color:var(--muted); }
+.rb-edit { flex:1; padding:6px 9px; border:1px solid var(--brand-accent); border-radius:7px;
+  font-size:13.5px; font-family:inherit; background:var(--card); color:var(--text); min-width:0; }
+.rb-nota { font-size:12.5px; color:var(--muted); line-height:1.5; margin-top:12px; }
 #bulkBarFija #bulkCountFija { font-size:12.5px; font-weight:700; color:var(--text); white-space:nowrap; }
 #bulkBarFija .bbf-acciones { margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; }
 @media (max-width:640px){
@@ -2319,7 +2355,11 @@ tr:hover td { background: #fafbfc; }
           </div>
           <div class="ayuda-bloque">
             <h4>Rubros propios</h4>
-            <p>Si ninguna categoría te cierra, creá la tuya desde <strong>⚙ Gestionar rubros personalizados</strong> dentro del formulario. Los rubros nuevos quedan disponibles para siempre, separados entre gastos e ingresos.</p>
+            <p>Si ninguna categoría te cierra, elegí <strong>Personalizado...</strong> en el selector y escribí la tuya: queda guardada para siempre y disponible en toda la app.</p>
+            <p>Y si querés ordenar la lista entera, está en <strong>Administración → Rubros</strong>. Ahí podés <strong>crear, renombrar y eliminar</strong> cualquier rubro, separados entre gastos e ingresos, y ver cuántos movimientos tiene cada uno antes de tocarlo.</p>
+            <div class="ayuda-tip">Esa lista es la que usa <strong>todo</strong> Norte: el selector al cargar, los filtros, el presupuesto, los reportes, el ingreso masivo desde Excel y NortIA. Por eso conviene tenerla corta y con tus palabras: cada rubro que no usás es una opción de más cada vez que cargás un gasto.</div>
+            <p>Al <strong>renombrar</strong> no perdés historia: los movimientos que ya tenías y los topes de presupuesto se reetiquetan solos. Al <strong>eliminar</strong>, si el rubro tiene movimientos, Norte te pregunta a cuál pasarlos — nunca se borra un dato tuyo por eliminar una categoría.</p>
+            <p>Si preferís decidirlo después, mandalos a <strong>Sin clasificar</strong>: quedan juntos y a la vista, los reordenás cuando quieras desde Transacciones, y ese rubro desaparece solo cuando no queda ninguno.</p>
           </div>
           <div class="ayuda-bloque">
             <h4>Atajos para no repetir trabajo</h4>
@@ -2978,6 +3018,28 @@ tr:hover td { background: #fafbfc; }
       <div style="font-size:13px;color:var(--muted);margin-top:4px">Panel de configuración del sistema — visible solo para administradores</div>
     </div>
 
+    <!-- ── RUBROS ── -->
+    <div class="admin-group-label">Rubros</div>
+    <div class="card admin-section" id="adminRubrosSection" style="padding:22px 24px">
+      <div style="font-size:16px;font-weight:800;color:var(--text)">Los rubros de tu hogar</div>
+      <div style="font-size:13px;color:var(--muted);margin:6px 0 16px;line-height:1.55">
+        Esta es la lista que usa <strong>toda</strong> la aplicación: el selector al cargar un movimiento,
+        los filtros, el presupuesto, los reportes, el ingreso masivo desde Excel y NortIA. Lo que cambies acá
+        cambia en todos lados.
+      </div>
+      <div class="rb-tabs">
+        <button type="button" class="rb-tab on" id="rbTabGasto"   onclick="rbSetTipo('Gasto')">Gastos</button>
+        <button type="button" class="rb-tab"    id="rbTabIngreso" onclick="rbSetTipo('Ingreso')">Ingresos</button>
+      </div>
+      <div class="rb-alta">
+        <input type="text" id="rbNuevo" placeholder="Nombre del rubro nuevo..." maxlength="40"
+               onkeydown="if(event.key==='Enter'){event.preventDefault();rbAgregar();}">
+        <button class="btn btn-primary" onclick="rbAgregar()">+ Agregar</button>
+      </div>
+      <div class="rb-lista" id="rbLista"></div>
+      <div class="rb-nota" id="rbNota"></div>
+    </div>
+
     <!-- ── IMPORTACIÓN DE EXTRACTOS ── -->
     <div class="admin-group-label">Formatos de Excel (opcional)</div>
 
@@ -3198,18 +3260,8 @@ tr:hover td { background: #fafbfc; }
           <input type="text" id="txRubroCustom" placeholder="Escribí el rubro personalizado...">
           <div style="font-size:11px;color:var(--success);margin-top:4px">✓ Se guardará en tu lista al confirmar</div>
         </div>
-        <button type="button" class="manage-rubros-link" onclick="toggleRubrosManager()">⚙ Gestionar rubros personalizados</button>
-        <div id="rubrosManagerPanel" style="display:none;margin-top:8px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;">
-          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Rubros personalizados</div>
-          <div id="customRubrosList" style="margin-bottom:10px"></div>
-          <div style="display:flex;gap:6px;align-items:center">
-            <input type="text" id="newRubroInput" placeholder="Nombre del rubro..." style="flex:1;font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:7px;background:var(--card);color:var(--text);">
-            <select id="newRubroTipoSel" style="font-size:13px;padding:6px 8px;border:1px solid var(--border);border-radius:7px;background:var(--card);color:var(--text);">
-              <option value="Gasto">Gasto</option>
-              <option value="Ingreso">Ingreso</option>
-            </select>
-            <button type="button" onclick="addCustomRubroFromPanel()" style="padding:6px 12px;background:var(--primary);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer">Agregar</button>
-          </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.45">
+          ¿Querés ordenar toda tu lista? Se administra en <strong>Administración → Rubros</strong>.
         </div>
       </div>
 
@@ -3345,6 +3397,32 @@ tr:hover td { background: #fafbfc; }
 
 <!-- CONFIRM DELETE -->
 <!-- ── MODAL PAGAR TC ─────────────────────────────────────── -->
+<div class="overlay" id="rbBorrarOverlay">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <span>Eliminar rubro</span>
+      <button onclick="rbCerrarBorrar()" aria-label="Cerrar" style="background:none;border:none;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px">×</button>
+    </div>
+    <div>
+      <div style="font-size:14px;color:var(--text);line-height:1.55" id="rbBorrarTexto"></div>
+      <div id="rbBorrarDestinoWrap" style="margin-top:16px;display:none">
+        <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:7px">
+          ¿A qué rubro los paso?
+        </div>
+        <select id="rbBorrarDestino" style="width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;font-family:inherit;background:var(--card);color:var(--text)"></select>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5">
+          Si elegís <strong>Sin clasificar</strong>, los movimientos quedan a la vista para que los reordenes
+          cuando quieras desde Transacciones, y el rubro desaparece solo cuando no quede ninguno.
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="rbCerrarBorrar()">Cancelar</button>
+      <button class="btn btn-danger" onclick="rbConfirmarBorrar()">Eliminar rubro</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="masivoOverlay">
   <div class="modal" style="max-width:820px">
     <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
@@ -3852,8 +3930,8 @@ function renderObS1() {
 }
 
 function renderObS2() {
-  const rubrosI = RUBROS.Ingreso.filter(r => r !== 'Personalizado...');
-  const rubrosG = RUBROS.Gasto.filter(r => r !== 'Personalizado...');
+  const rubrosI = getAllRubros('Ingreso').filter(r => r !== 'Personalizado...');
+  const rubrosG = getAllRubros('Gasto').filter(r => r !== 'Personalizado...');
   document.getElementById('obBody').innerHTML = `
     <div id="obTipoRow" class="ob-tipo-row">
       <button class="ob-tipo-btn sel-ingreso" onclick="obSetTipo('Ingreso')">💰 Ingreso</button>
@@ -3885,9 +3963,7 @@ function obSetTipo(tipo) {
   const btns = document.querySelectorAll('.ob-tipo-btn');
   btns[0].className = 'ob-tipo-btn' + (tipo==='Ingreso' ? ' sel-ingreso' : '');
   btns[1].className = 'ob-tipo-btn' + (tipo==='Gasto'   ? ' sel-gasto'   : '');
-  const rubros = tipo === 'Ingreso'
-    ? RUBROS.Ingreso.filter(r=>r!=='Personalizado...')
-    : RUBROS.Gasto.filter(r=>r!=='Personalizado...');
+  const rubros = getAllRubros(tipo === 'Ingreso' ? 'Ingreso' : 'Gasto').filter(r => r !== 'Personalizado...');
   document.getElementById('obRubro').innerHTML = rubros.map(r=>`<option>${esc(r)}</option>`).join('');
 }
 
@@ -4471,23 +4547,163 @@ const saveData = d => {
   if (!yaMigrado) localStorage.setItem(migKey, '1');
   localStorage.setItem(`fin_data_${eid}`, JSON.stringify(conAutor));
 };
-const getCustomRubros  = () => JSON.parse(localStorage.getItem(`fin_rubros_custom_${curEmpresa()}`) || '{"Gasto":[],"Ingreso":[]}');
-const saveCustomRubros = r  => localStorage.setItem(`fin_rubros_custom_${curEmpresa()}`, JSON.stringify(r));
-// Devuelve la lista completa (base + custom) para un tipo
+// ── BASE MAESTRA DE RUBROS ───────────────────────────────────────
+// Antes había dos listas: 26 rubros fijos escritos en el código y una lista de
+// "personalizados" guardada aparte, que además NO se sincronizaba — vivía sólo
+// en el navegador donde la habías creado. Encima, varios lugares (NortIA, el
+// onboarding, el ingreso masivo) leían la lista fija y se salteaban los tuyos.
+// Ahora hay una sola lista por hogar, editable de punta a punta, que viaja con
+// el resto de los datos. RUBROS queda únicamente como semilla del primer uso.
+const RUBRO_SIN = 'Sin clasificar';
+const rubrosKey = () => `fin_rubros_${curEmpresa()}`;
+
+function getRubrosMaestro() {
+  let m = null;
+  try { m = JSON.parse(localStorage.getItem(rubrosKey()) || 'null'); } catch (e) { m = null; }
+  if (!m || !Array.isArray(m.Gasto) || !Array.isArray(m.Ingreso)) m = sembrarRubrosMaestro();
+  return m;
+}
+function saveRubrosMaestro(m) {
+  localStorage.setItem(rubrosKey(), JSON.stringify(m));
+  try { schedulePush(); } catch (e) {}
+}
+// Primera vez en un hogar: los de fábrica, más los personalizados que hubiera,
+// más cualquier rubro que ya aparezca en movimientos cargados. Ese último paso
+// es el que evita que un rubro viejo quede huérfano y desaparezca del selector.
+function sembrarRubrosMaestro() {
+  const m = {
+    Ingreso: (RUBROS.Ingreso || []).filter(r => r !== 'Personalizado...'),
+    Gasto:   (RUBROS.Gasto   || []).filter(r => r !== 'Personalizado...')
+  };
+  try {
+    const viejos = JSON.parse(localStorage.getItem(`fin_rubros_custom_${curEmpresa()}`) || '{}');
+    ['Ingreso', 'Gasto'].forEach(function (t) {
+      (viejos[t] || []).forEach(function (r) {
+        if (r && r !== 'Personalizado...' && r !== RUBRO_SIN && !m[t].includes(r)) m[t].push(r);
+      });
+    });
+  } catch (e) {}
+  try {
+    getData().forEach(function (t) {
+      const tipo = t.tipo === 'Ingreso' ? 'Ingreso' : 'Gasto';
+      const r = String(t.rubro || '').trim();
+      if (r && r !== RUBRO_SIN && !m[tipo].includes(r)) m[tipo].push(r);
+    });
+  } catch (e) {}
+  localStorage.setItem(rubrosKey(), JSON.stringify(m));
+  return m;
+}
+// Cuántos movimientos usan un rubro. Es el número que decide si se puede borrar
+// sin dejar nada colgado, así que se cuenta sobre todos los meses, no sobre el
+// mes que estés mirando.
+function contarPorRubro(tipo) {
+  const c = {};
+  try {
+    getData().forEach(function (t) {
+      const tt = t.tipo === 'Ingreso' ? 'Ingreso' : 'Gasto';
+      if (tipo && tt !== tipo) return;
+      const r = String(t.rubro || '').trim() || RUBRO_SIN;
+      c[r] = (c[r] || 0) + 1;
+    });
+  } catch (e) {}
+  return c;
+}
+// Lista para los selectores. 'Sin clasificar' no vive en el maestro: aparece
+// sólo si algún movimiento quedó ahí, y se va solo cuando terminás de ordenarlos.
 function getAllRubros(tipo) {
-  const base   = RUBROS[tipo] || [];
-  const custom = (getCustomRubros()[tipo] || []).filter(r => !base.includes(r));
-  return [...base.filter(r => r !== 'Personalizado...'), ...custom, 'Personalizado...'];
+  const t = tipo === 'Ingreso' ? 'Ingreso' : 'Gasto';
+  const lista = (getRubrosMaestro()[t] || []).slice();
+  if (!lista.includes(RUBRO_SIN) && (contarPorRubro(t)[RUBRO_SIN] || 0) > 0) lista.push(RUBRO_SIN);
+  return [...lista, 'Personalizado...'];
 }
-// Persiste un rubro nuevo si no existe ya
+window.getAllRubros = getAllRubros;
+// Alta de un rubro (desde Admin o desde "Personalizado..." al cargar).
+// Devuelve true si lo agregó, false si ya existía o el nombre no sirve.
 function persistCustomRubro(tipo, nombre) {
-  if (!nombre || RUBROS[tipo]?.includes(nombre)) return;
-  const cr = getCustomRubros();
-  if (!(cr[tipo] || []).includes(nombre)) {
-    cr[tipo] = [...(cr[tipo] || []), nombre];
-    saveCustomRubros(cr);
-  }
+  const t = tipo === 'Ingreso' ? 'Ingreso' : 'Gasto';
+  const n = String(nombre || '').trim();
+  if (!n || n === 'Personalizado...' || n === RUBRO_SIN) return false;
+  const m = getRubrosMaestro();
+  if (m[t].some(r => r.toLowerCase() === n.toLowerCase())) return false;
+  m[t].push(n);
+  saveRubrosMaestro(m);
+  return true;
 }
+// Renombrar arrastra todo: los movimientos, los topes de presupuesto de cada
+// mes y lo que NortIA aprendió. Si no, el rubro viejo quedaría vivo en los datos
+// con un nombre que ya no existe en ninguna lista.
+function renombrarRubro(tipo, viejo, nuevo) {
+  const t = tipo === 'Ingreso' ? 'Ingreso' : 'Gasto';
+  const n = String(nuevo || '').trim();
+  if (!n || n === viejo || n === 'Personalizado...' || n === RUBRO_SIN) return false;
+  const m = getRubrosMaestro();
+  if (m[t].some(r => r.toLowerCase() === n.toLowerCase())) return false;
+  m[t] = m[t].map(r => (r === viejo ? n : r));
+  saveRubrosMaestro(m);
+  reasignarRubroEnDatos(t, viejo, n);
+  return true;
+}
+// Mueve movimientos, presupuestos y memoria de un rubro a otro.
+function reasignarRubroEnDatos(tipo, desde, hacia) {
+  const t = tipo === 'Ingreso' ? 'Ingreso' : 'Gasto';
+  try {
+    const datos = getData();
+    let tocados = 0;
+    datos.forEach(function (x) {
+      const tt = x.tipo === 'Ingreso' ? 'Ingreso' : 'Gasto';
+      if (tt === t && x.rubro === desde) { x.rubro = hacia; tocados++; }
+    });
+    if (tocados) saveData(datos);
+  } catch (e) {}
+  if (t === 'Gasto') {
+    try {
+      const b = getBudgets();
+      let cambio = false;
+      Object.keys(b).forEach(function (mes) {
+        const mb = b[mes];
+        if (mb && Object.prototype.hasOwnProperty.call(mb, desde)) {
+          if (hacia === RUBRO_SIN) { delete mb[desde]; }
+          else { mb[hacia] = (Number(mb[hacia]) || 0) + (Number(mb[desde]) || 0); delete mb[desde]; }
+          cambio = true;
+        }
+      });
+      if (cambio) saveBudgets(b);
+    } catch (e) {}
+  }
+  // Lo que NortIA aprendió ("Coto" → "Supermercado") apunta al rubro por
+  // nombre, así que también hay que moverlo, y en la nube, que es de donde lo
+  // levanta el otro dispositivo.
+  try {
+    const mk = 'fin_rubromem_' + curEmpresa();
+    const mem = JSON.parse(localStorage.getItem(mk) || 'null');
+    if (mem && typeof mem === 'object') {
+      let cambio = false;
+      Object.keys(mem).forEach(function (k) { if (mem[k] === desde) { mem[k] = hacia; cambio = true; } });
+      if (cambio) {
+        localStorage.setItem(mk, JSON.stringify(mem));
+        try {
+          if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+            firebase.database().ref('norteSync/empresas/' + curEmpresa() + '/rubroMemoria').set(mem);
+          }
+        } catch (e) {}
+      }
+    }
+  } catch (e) {}
+  try { pushNow(); } catch (e) {}
+}
+// Borrar exige decir adónde van los movimientos que tenía.
+function borrarRubro(tipo, nombre, destino) {
+  const t = tipo === 'Ingreso' ? 'Ingreso' : 'Gasto';
+  const m = getRubrosMaestro();
+  if (!m[t].includes(nombre)) return false;
+  m[t] = m[t].filter(r => r !== nombre);
+  saveRubrosMaestro(m);
+  reasignarRubroEnDatos(t, nombre, destino || RUBRO_SIN);
+  return true;
+}
+// Compatibilidad: quedaba un ★ para marcar "rubro tuyo". Con una sola lista
+// esa distinción ya no significa nada, así que devuelve vacío.
+const getCustomRubros = () => ({ Gasto: [], Ingreso: [] });
 const uid      = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 const monthKey = (y, m) => `${y}-${String(m+1).padStart(2,'0')}`;
 const curKey   = () => monthKey(curYear, curMonth);
@@ -5632,7 +5848,10 @@ const firebaseConfig = {
 // SYNC_KEYS y SYNC_PATH son dinámicos: dependen de la empresa logueada
 function getSyncKeys() {
   const eid = curEmpresa();
-  return [`fin_data_${eid}`, `fin_budgets_${eid}`, `fin_meta_ahorro_${eid}`, `fin_bankconfigs_${eid}`];
+  // fin_rubros: antes la lista de rubros propios no sincronizaba, así que un
+  // rubro creado en la notebook no existía en el celular ni para el otro
+  // integrante del hogar. Ahora viaja como un dato más.
+  return [`fin_data_${eid}`, `fin_budgets_${eid}`, `fin_meta_ahorro_${eid}`, `fin_bankconfigs_${eid}`, `fin_rubros_${eid}`];
 }
 function getSyncPath() { return `norteSync/empresas/${curEmpresa()}`; }
 // Compat aliases (se sobreescriben después del login)
@@ -5800,8 +6019,11 @@ window.scrollTo(0, 0);
   document.getElementById('pageTitle').textContent = {dashboard:'Mi Rumbo',transacciones:'Transacciones',presupuesto:'Presupuesto',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',consultas:'NortIA',admin:'Administración',tugps:'Tu GPS'}[p] || p;
   curPage = p;
   if (p === 'reportes') initReportesFiltros();
+  if (p === 'admin' && window.renderRubrosAdminAlEntrar) { try { window.renderRubrosAdminAlEntrar(); } catch (e) {} }
   const fabEl = document.querySelector('.fab');
-  if (fabEl) fabEl.style.display = (p === 'consultas') ? 'none' : '';
+  // En Administración el botón flotante tapaba las acciones de la lista de
+  // rubros, y ahí no se cargan movimientos: se esconde, igual que en NortIA.
+  if (fabEl) fabEl.style.display = (p === 'consultas' || p === 'admin') ? 'none' : '';
   render();
   if (p === 'consultas') actualizarNortiaChatCounter();
 }
@@ -8009,16 +8231,209 @@ function renderDrillDown(gastos, rubro) {
     </div>`;
 }
 
+
+// ── ADMINISTRACIÓN DE RUBROS ─────────────────────────────────────
+// Pantalla única para la base maestra. Todo lo que se hace acá arrastra los
+// datos: renombrar reetiqueta los movimientos, borrar obliga a decir adónde van.
+let rbTipo = 'Gasto';
+let rbEditando = null;      // nombre del rubro en modo edición
+let rbPorBorrar = null;     // { tipo, nombre, usos }
+
+window.renderRubrosAdminAlEntrar = function () {
+  if (!document.getElementById('rbLista')) return;
+  rbEditando = null;
+  renderRubrosAdmin();
+};
+
+function rbSetTipo(t) {
+  rbTipo = (t === 'Ingreso') ? 'Ingreso' : 'Gasto';
+  rbEditando = null;
+  const g = document.getElementById('rbTabGasto');
+  const i = document.getElementById('rbTabIngreso');
+  if (g) g.classList.toggle('on', rbTipo === 'Gasto');
+  if (i) i.classList.toggle('on', rbTipo === 'Ingreso');
+  const nu = document.getElementById('rbNuevo');
+  if (nu) nu.placeholder = rbTipo === 'Gasto'
+    ? 'Nombre del rubro de gasto nuevo...' : 'Nombre del rubro de ingreso nuevo...';
+  renderRubrosAdmin();
+}
+
+function renderRubrosAdmin() {
+  const cont = document.getElementById('rbLista');
+  if (!cont) return;
+  const maestro = getRubrosMaestro()[rbTipo] || [];
+  const usos = contarPorRubro(rbTipo);
+  const sinClasificar = usos[RUBRO_SIN] || 0;
+
+  if (!maestro.length && !sinClasificar) {
+    cont.innerHTML = '<div class="rb-vacio">No te queda ningún rubro de ' +
+      (rbTipo === 'Gasto' ? 'gasto' : 'ingreso') + '. Agregá el primero acá arriba.</div>';
+  } else {
+    let html = maestro.map(function (r) {
+      const n = usos[r] || 0;
+      if (rbEditando === r) {
+        return '<div class="rb-fila">' +
+          '<input class="rb-edit" id="rbEditInput" value="' + esc(r) + '" maxlength="40" ' +
+            'onkeydown="if(event.key===\'Enter\'){event.preventDefault();rbGuardarNombre()}' +
+                       'if(event.key===\'Escape\'){rbCancelarEdicion()}">' +
+          '<span class="rb-acc">' +
+            '<button onclick="rbGuardarNombre()" title="Guardar">✔️</button>' +
+            '<button onclick="rbCancelarEdicion()" title="Cancelar">✖️</button>' +
+          '</span></div>';
+      }
+      return '<div class="rb-fila">' +
+        '<span class="rb-nom" title="' + esc(r) + '">' + esc(r) + '</span>' +
+        '<span class="rb-uso' + (n ? '' : ' cero') + '">' + (n ? n + ' movimiento' + (n === 1 ? '' : 's') : 'sin uso') + '</span>' +
+        '<span class="rb-acc">' +
+          '<button onclick="rbEditar(' + JSON.stringify(r).replace(/"/g, '&quot;') + ')" title="Renombrar">✏️</button>' +
+          '<button onclick="rbPedirBorrar(' + JSON.stringify(r).replace(/"/g, '&quot;') + ')" title="Eliminar">🗑️</button>' +
+        '</span></div>';
+    }).join('');
+
+    // 'Sin clasificar' no es un rubro del maestro: es la bandeja de los que
+    // quedaron sueltos. Se muestra sólo si tiene algo, y no se borra ni renombra.
+    if (sinClasificar) {
+      html += '<div class="rb-fila especial">' +
+        '<span class="rb-nom">' + esc(RUBRO_SIN) + '</span>' +
+        '<span class="rb-uso">' + sinClasificar + ' movimiento' + (sinClasificar === 1 ? '' : 's') + ' esperando</span>' +
+        '<span class="rb-acc"><button onclick="rbIrASinClasificar()" title="Ver en Transacciones">↗</button></span>' +
+        '</div>';
+    }
+    cont.innerHTML = html;
+  }
+
+  const nota = document.getElementById('rbNota');
+  if (nota) {
+    const total = maestro.length;
+    nota.innerHTML = total + ' rubro' + (total === 1 ? '' : 's') + ' de ' +
+      (rbTipo === 'Gasto' ? 'gasto' : 'ingreso') + '. ' +
+      'Al renombrar, los movimientos que ya tenías se reetiquetan solos. ' +
+      'Al eliminar, Norte te pregunta a qué rubro pasarlos: nada queda huérfano.';
+  }
+  if (rbEditando) { const i = document.getElementById('rbEditInput'); if (i) { i.focus(); i.select(); } }
+}
+
+function rbAgregar() {
+  const el = document.getElementById('rbNuevo');
+  if (!el) return;
+  const n = el.value.trim();
+  if (!n) return;
+  if (n === RUBRO_SIN || n === 'Personalizado...') {
+    alert('Ese nombre está reservado por Norte. Elegí otro.');
+    return;
+  }
+  if (!persistCustomRubro(rbTipo, n)) {
+    alert('Ya tenés un rubro de ' + (rbTipo === 'Gasto' ? 'gasto' : 'ingreso') + ' con ese nombre.');
+    return;
+  }
+  el.value = '';
+  renderRubrosAdmin();
+  rbRefrescarPantallas();
+}
+
+function rbEditar(nombre) { rbEditando = nombre; renderRubrosAdmin(); }
+function rbCancelarEdicion() { rbEditando = null; renderRubrosAdmin(); }
+
+function rbGuardarNombre() {
+  const input = document.getElementById('rbEditInput');
+  if (!input || !rbEditando) return;
+  const viejo = rbEditando, nuevo = input.value.trim();
+  if (!nuevo || nuevo === viejo) { rbCancelarEdicion(); return; }
+  if (nuevo === RUBRO_SIN || nuevo === 'Personalizado...') {
+    alert('Ese nombre está reservado por Norte. Elegí otro.');
+    return;
+  }
+  const usos = contarPorRubro(rbTipo)[viejo] || 0;
+  if (usos && !confirm('Renombrar «' + viejo + '» a «' + nuevo + '».\n\n' +
+      'Se van a reetiquetar ' + usos + ' movimiento' + (usos === 1 ? '' : 's') +
+      ' y los topes de presupuesto de ese rubro.\n\n¿Continuar?')) return;
+  if (!renombrarRubro(rbTipo, viejo, nuevo)) {
+    alert('Ya tenés un rubro con ese nombre.');
+    return;
+  }
+  rbEditando = null;
+  renderRubrosAdmin();
+  rbRefrescarPantallas();
+}
+
+function rbPedirBorrar(nombre) {
+  const usos = contarPorRubro(rbTipo)[nombre] || 0;
+  rbPorBorrar = { tipo: rbTipo, nombre: nombre, usos: usos };
+  const texto = document.getElementById('rbBorrarTexto');
+  const wrap  = document.getElementById('rbBorrarDestinoWrap');
+  const sel   = document.getElementById('rbBorrarDestino');
+
+  if (usos > 0) {
+    texto.innerHTML = '<strong>' + esc(nombre) + '</strong> tiene <strong>' + usos + ' movimiento' +
+      (usos === 1 ? '' : 's') + '</strong> cargado' + (usos === 1 ? '' : 's') +
+      '. Si lo eliminás, esos movimientos no se borran: hay que decidir dónde quedan.';
+    const otros = (getRubrosMaestro()[rbTipo] || []).filter(function (r) { return r !== nombre; });
+    sel.innerHTML = otros.map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + '</option>'; }).join('') +
+      '<option value="' + esc(RUBRO_SIN) + '">— ' + esc(RUBRO_SIN) + ' —</option>';
+    sel.value = RUBRO_SIN;
+    wrap.style.display = 'block';
+  } else {
+    texto.innerHTML = 'Vas a eliminar <strong>' + esc(nombre) + '</strong>. No tiene ningún movimiento cargado, ' +
+      'así que no se toca ningún dato.';
+    wrap.style.display = 'none';
+  }
+  document.getElementById('rbBorrarOverlay').classList.add('show');
+}
+
+function rbCerrarBorrar() {
+  rbPorBorrar = null;
+  document.getElementById('rbBorrarOverlay').classList.remove('show');
+}
+
+function rbConfirmarBorrar() {
+  if (!rbPorBorrar) return;
+  const destino = rbPorBorrar.usos > 0
+    ? (document.getElementById('rbBorrarDestino').value || RUBRO_SIN)
+    : RUBRO_SIN;
+  borrarRubro(rbPorBorrar.tipo, rbPorBorrar.nombre, destino);
+  rbCerrarBorrar();
+  renderRubrosAdmin();
+  rbRefrescarPantallas();
+}
+
+function rbIrASinClasificar() {
+  try {
+    // El filtro de Transacciones sólo ofrece los rubros del mes que estás
+    // mirando. Si los movimientos sin clasificar quedaron en meses anteriores,
+    // llevar al mes actual mostraría una pantalla vacía: saltamos al mes más
+    // reciente que realmente tenga alguno.
+    const meses = getData()
+      .filter(function (t) { return (String(t.rubro || '').trim() || RUBRO_SIN) === RUBRO_SIN; })
+      .map(function (t) { return t.mes; })
+      .filter(Boolean).sort();
+    const destino = meses.length ? meses[meses.length - 1] : null;
+    if (destino) {
+      curYear  = Number(destino.split('-')[0]);
+      curMonth = Number(destino.split('-')[1]) - 1;
+    }
+    showPage('transacciones');
+    const f = document.getElementById('rubroFilt');
+    if (f) { f.value = RUBRO_SIN; setRubroFilter(RUBRO_SIN); }
+  } catch (e) {}
+}
+
+// Después de tocar la lista maestra hay pantallas abiertas que quedaron con la
+// lista vieja: el filtro de Transacciones, el selector del formulario, el
+// presupuesto y los reportes.
+function rbRefrescarPantallas() {
+  try { if (typeof render === 'function') render(); } catch (e) {}
+  try {
+    const tipoForm = document.getElementById('txTipo');
+    if (tipoForm && tipoForm.value) populateRubros(tipoForm.value, document.getElementById('txRubro').value);
+  } catch (e) {}
+}
+
 // ── MODAL ────────────────────────────────────────────────────
 function populateRubros(tipo, selected) {
   const all = getAllRubros(tipo);
-  const custom = getCustomRubros()[tipo] || [];
   const sel = document.getElementById('txRubro');
   sel.innerHTML = '<option value="">Seleccionar rubro</option>' +
-    all.map(r => {
-      const isCustom = custom.includes(r);
-      return `<option value="${r}" ${r===selected?'selected':''}>${r}${isCustom?' ★':''}</option>`;
-    }).join('');
+    all.map(r => `<option value="${esc(r)}" ${r === selected ? 'selected' : ''}>${esc(r)}</option>`).join('');
 }
 
 function setTipoForm(tipo) {
@@ -8047,51 +8462,6 @@ function handleRubroChange(v) {
   }
 }
 
-function toggleRubrosManager() {
-  const panel = document.getElementById('rubrosManagerPanel');
-  const isOpen = panel.style.display !== 'none';
-  panel.style.display = isOpen ? 'none' : 'block';
-  if (!isOpen) renderCustomRubrosList();
-}
-
-function renderCustomRubrosList() {
-  const cr  = getCustomRubros();
-  const all = [...(cr.Gasto||[]).map(r=>({r,t:'Gasto'})), ...(cr.Ingreso||[]).map(r=>({r,t:'Ingreso'}))];
-  const el  = document.getElementById('customRubrosList');
-  if (!all.length) {
-    el.innerHTML = '<div style="font-size:12px;color:var(--muted)">No hay rubros personalizados todavía.</div>';
-    return;
-  }
-  el.innerHTML = all.map(({r,t}) =>
-    `<span class="custom-rubro-chip">
-      <span style="color:var(--muted);font-size:10px;margin-right:2px">${t==='Gasto'?'💸':'💚'}</span>
-      ${esc(r)}
-      <button type="button" onclick="deleteCustomRubro('${esc(t)}','${esc(r)}')" title="Eliminar">×</button>
-    </span>`
-  ).join('');
-}
-
-function addCustomRubroFromPanel() {
-  const nombre = document.getElementById('newRubroInput').value.trim();
-  const tipo   = document.getElementById('newRubroTipoSel').value;
-  if (!nombre) return;
-  persistCustomRubro(tipo, nombre);
-  document.getElementById('newRubroInput').value = '';
-  renderCustomRubrosList();
-  // Refrescar el select del form si el tipo coincide
-  const tipoActual = document.getElementById('txTipo')?.value;
-  if (tipoActual === tipo) populateRubros(tipo, nombre);
-}
-
-function deleteCustomRubro(tipo, nombre) {
-  const cr = getCustomRubros();
-  cr[tipo] = (cr[tipo] || []).filter(r => r !== nombre);
-  saveCustomRubros(cr);
-  renderCustomRubrosList();
-  const tipoActual = document.getElementById('txTipo')?.value;
-  if (tipoActual === tipo) populateRubros(tipo, document.getElementById('txRubro').value);
-}
-
 function openModal(id) {
   document.getElementById('modalTitle').textContent = id ? 'Editar transacción' : 'Nueva transacción';
   document.getElementById('txId').value = id || '';
@@ -8099,7 +8469,7 @@ function openModal(id) {
   if (id) {
     const t = getData().find(x => x.id === id);
     if (!t) return;
-    const isCustom = !RUBROS[t.tipo].includes(t.rubro) && t.rubro;
+    const isCustom = !!t.rubro && !getAllRubros(t.tipo).includes(t.rubro);
     document.getElementById('txTipo').value = t.tipo;
     document.getElementById('btnIng').classList.toggle('active', t.tipo==='Ingreso');
     document.getElementById('btnGas').classList.toggle('active', t.tipo==='Gasto');
@@ -8369,7 +8739,7 @@ function masFecha(v){
   return null;
 }
 function masRubroOficial(tipo, valor){
-  const lista = (RUBROS[tipo === 'Ingreso' ? 'Ingreso' : 'Gasto'] || []).filter(r => r !== 'Personalizado...');
+  const lista = getAllRubros(tipo === 'Ingreso' ? 'Ingreso' : 'Gasto').filter(r => r !== 'Personalizado...');
   const n = masNorm(valor);
   if (!n) return null;
   let hit = lista.find(r => masNorm(r) === n);
@@ -8541,8 +8911,8 @@ function masValidar(){
     '<span class="mas-chip ok">' + buenas + ' lista' + (buenas===1?'':'s') + ' para cargar</span>' +
     (malas ? '<span class="mas-chip mal">' + malas + ' con problemas</span>' : '');
 
-  const rubrosGasto = (RUBROS.Gasto || []).filter(r => r !== 'Personalizado...');
-  const rubrosIng   = (RUBROS.Ingreso || []).filter(r => r !== 'Personalizado...');
+  const rubrosGasto = getAllRubros('Gasto').filter(r => r !== 'Personalizado...');
+  const rubrosIng   = getAllRubros('Ingreso').filter(r => r !== 'Personalizado...');
   document.getElementById('masTabla').innerHTML =
     '<table><thead><tr><th>#</th><th>Fecha</th><th>Tipo</th><th>Detalle</th><th>Rubro</th><th style="text-align:right">Importe</th><th>Problema</th></tr></thead><tbody>' +
     filas.map(function(f){
@@ -8861,8 +9231,7 @@ function setQpTipoGasto(tg) {
 
 function populateQpRubros(tipo) {
         const sel = document.getElementById('qpRubro');
-        const custom = (getCustomRubros()[tipo] || []);
-        sel.innerHTML = '<option value="">Seleccionar rubro</option>' + getAllRubros(tipo).map(r => `<option value="${esc(r)}">${esc(r)}${custom.includes(r) && r !== 'Personalizado...' ? ' ★' : ''}</option>`).join('');
+        sel.innerHTML = '<option value="">Seleccionar rubro</option>' + getAllRubros(tipo).map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('');
       }
 
       function handleQpRubroChange(v) {
@@ -10240,9 +10609,10 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAyuda()
     wrap('copiarPresupuestoMesAnterior', function () { track('presupuesto_copiado'); });
     wrap('setMetaAhorro',                function () { track('meta_ahorro_definida'); });
 
-    // Rubros propios
-    wrap('addCustomRubroFromPanel', function () { track('rubro_custom_creado'); });
-    wrap('deleteCustomRubro',       function () { track('rubro_custom_eliminado'); });
+    // Rubros (base maestra, en Administración)
+    wrap('rbAgregar',         function () { track('rubro_creado'); });
+    wrap('rbGuardarNombre',   function () { track('rubro_renombrado'); });
+    wrap('rbConfirmarBorrar', function () { track('rubro_eliminado'); });
 
     // Reportes y análisis
     wrap('setRepTab',    function (t) { track('reporte_tab', { tab: String(t) }); });
