@@ -1072,6 +1072,19 @@ tr:hover td { background: #fafbfc; }
     }
 /* ── Mi Rumbo: dólar integrado + panel del año + cuenta (v005.1.069) ── */
 #sidebarUser{display:none!important}
+/* Copiar a otro mes */
+.cm-meses{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;max-height:280px;overflow-y:auto;padding:2px}
+.cm-mes{border:1px solid var(--border);background:var(--card);border-radius:8px;padding:9px 8px;cursor:pointer;text-align:center;font-size:13px;font-weight:600;color:var(--text);font-family:inherit;line-height:1.25}
+.cm-mes:hover{border-color:var(--brand-accent)}
+.cm-mes.on{background:#FFF1EA;border-color:var(--brand-accent);color:var(--text)}
+.cm-mes small{display:block;font-size:10px;font-weight:600;color:var(--muted);margin-top:2px}
+.cm-mes.on small{color:var(--brand-accent)}
+.cm-mes .dup{display:block;font-size:9.5px;color:var(--warning);font-weight:700;margin-top:2px}
+.cm-lista{max-height:132px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:8px 10px;background:var(--bg);font-size:12.5px}
+.cm-lista div{display:flex;justify-content:space-between;gap:10px;padding:2px 0}
+.cm-lista span:last-child{font-weight:700;white-space:nowrap}
+.cm-total{font-size:13px;color:var(--muted);margin-top:12px}
+.cm-total b{color:var(--text)}
 /* La brújula va DETRÁS de todo el contenido del tablero */
 #page-dashboard > *:not(#rumboDeco){position:relative;z-index:1}
 #rumboDeco{z-index:0}
@@ -1592,6 +1605,7 @@ tr:hover td { background: #fafbfc; }
           <span id="bulkCount">0 seleccionados</span>
           <div style="display:flex;gap:8px">
             <button class="btn btn-secondary" onclick="clearSelectionTx()">Cancelar selección</button>
+            <button class="btn btn-secondary" onclick="openCopiarMes()">📅 Copiar a otro mes</button>
             <button class="btn btn-danger" onclick="askDeleteBulk()">🗑️ Eliminar seleccionados</button>
           </div>
         </div>
@@ -3258,6 +3272,28 @@ tr:hover td { background: #fafbfc; }
 
 <!-- CONFIRM DELETE -->
 <!-- ── MODAL PAGAR TC ─────────────────────────────────────── -->
+<div class="overlay" id="copiarMesOverlay">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <span>📅 Copiar a otro mes</span>
+      <button onclick="closeCopiarMes()" aria-label="Cerrar" style="background:none;border:none;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px">×</button>
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:10px" id="cmResumen"></div>
+    <div class="cm-lista" id="cmLista"></div>
+    <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:16px 0 8px">Elegí uno o varios meses</div>
+    <div class="cm-meses" id="cmMeses"></div>
+    <div class="cm-total" id="cmTotal"></div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45">
+      Se copian con su importe original y quedan <strong>sin pagar</strong>, con vencimiento a fin del mes destino.
+      Los consumos que vinieron de un resumen de tarjeta se copian como gastos comunes.
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px">
+      <button class="btn btn-secondary" onclick="closeCopiarMes()">Cancelar</button>
+      <button class="btn btn-primary" id="cmConfirm" onclick="doCopiarMes()">Copiar</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="pagarTCOverlay">
   <div class="modal" style="max-width:480px">
     <div class="modal-header">
@@ -8069,6 +8105,116 @@ function askDelete(id) {
   document.getElementById('confirmMsg').textContent = 'Esta acción no se puede deshacer.';
   document.getElementById('confirmOverlay').classList.add('show');
 }
+
+// ── COPIAR MOVIMIENTOS A OTRO MES ───────────────────────────────
+// Para gastos periódicos que no son mensuales: seguro semestral, patente,
+// cuota del colegio. Se marcan en Transacciones y se proyectan a los meses
+// que correspondan, siempre hacia adelante.
+let cmSel = new Set();          // meses destino elegidos, formato AAAA-MM
+let cmOrigenKey = '';           // mes más nuevo entre los seleccionados
+
+function cmMesLabel(key){
+  const p = key.split('-');
+  return MESES[Number(p[1])-1] + ' ' + p[0];
+}
+function openCopiarMes(){
+  if (!selectedTx.size) return;
+  const all = getData();
+  const sel = all.filter(t => selectedTx.has(t.id));
+  if (!sel.length) return;
+  cmSel.clear();
+  // El piso es el mes más nuevo de la selección: nunca se copia hacia atrás
+  cmOrigenKey = sel.map(t => t.mes).sort().pop();
+
+  document.getElementById('cmResumen').innerHTML =
+    '<strong>' + sel.length + '</strong> movimiento' + (sel.length===1?'':'s') +
+    ' seleccionado' + (sel.length===1?'':'s') + ' de <strong>' + esc(cmMesLabel(cmOrigenKey)) + '</strong>';
+
+  document.getElementById('cmLista').innerHTML = sel.map(t =>
+    '<div><span>' + esc(t.detalle || '(sin detalle)') + '</span><span>' +
+    ((Number(t.impUSD)||0) > 0 && !(Number(t.impPesos)||0) ? fmtU(t.impUSD) : fmtP(t.impPesos)) +
+    '</span></div>').join('');
+
+  // Detalles ya presentes en cada mes, para avisar de repetidos
+  const detSel = new Set(sel.map(t => String(t.detalle||'').trim()));
+  const porMes = {};
+  all.forEach(t => {
+    const d = String(t.detalle||'').trim();
+    if (detSel.has(d)) { (porMes[t.mes] = porMes[t.mes] || new Set()).add(d); }
+  });
+
+  const [oy, om] = cmOrigenKey.split('-').map(Number);
+  let html = '';
+  for (let i = 1; i <= 18; i++){
+    const d = new Date(oy, om - 1 + i, 1);
+    const k = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    const dup = porMes[k] ? porMes[k].size : 0;
+    html += '<button type="button" class="cm-mes" data-k="' + k + '" onclick="cmToggle(this)">'
+          + MESES[d.getMonth()].slice(0,3) + '<small>' + d.getFullYear() + '</small>'
+          + (dup ? '<span class="dup">ya hay ' + dup + '</span>' : '') + '</button>';
+  }
+  document.getElementById('cmMeses').innerHTML = html;
+  cmActualizarTotal();
+  document.getElementById('copiarMesOverlay').classList.add('show');
+}
+function cmToggle(btn){
+  const k = btn.getAttribute('data-k');
+  if (cmSel.has(k)) { cmSel.delete(k); btn.classList.remove('on'); }
+  else { cmSel.add(k); btn.classList.add('on'); }
+  cmActualizarTotal();
+}
+function cmActualizarTotal(){
+  const n = selectedTx.size, m = cmSel.size, tot = n * m;
+  const el = document.getElementById('cmTotal');
+  const btn = document.getElementById('cmConfirm');
+  if (!m) {
+    el.innerHTML = 'Elegí al menos un mes.';
+    btn.disabled = true; btn.style.opacity = '.5';
+  } else {
+    el.innerHTML = 'Se van a crear <b>' + tot + '</b> movimiento' + (tot===1?'':'s') +
+                   ' en <b>' + m + '</b> mes' + (m===1?'':'es') + '.';
+    btn.disabled = false; btn.style.opacity = '1';
+  }
+}
+function closeCopiarMes(){
+  cmSel.clear();
+  document.getElementById('copiarMesOverlay').classList.remove('show');
+}
+function doCopiarMes(){
+  if (!cmSel.size || !selectedTx.size) return;
+  const all = getData();
+  const sel = all.filter(t => selectedTx.has(t.id));
+  const meses = [...cmSel].sort();
+  const nuevos = [];
+  meses.forEach(function(k){
+    const y = Number(k.split('-')[0]), m = Number(k.split('-')[1]) - 1;
+    const ld = lastDayOfMonth(y, m);
+    const venc = y + '-' + String(m+1).padStart(2,'0') + '-' + String(ld).padStart(2,'0');
+    sel.forEach(function(t){
+      const c = Object.assign({}, t);
+      // Una copia proyectada no es un consumo de tarjeta: se limpia esa metadata
+      delete c.origen; delete c.banco; delete c.tcPagado; delete c.cardTipo; delete c.mesResumen;
+      c.id     = uid();
+      c.mes    = k;
+      c.venc   = venc;
+      c.pagado = 0;
+      c.saldo  = Number(t.impPesos) || 0;
+      nuevos.push(c);
+    });
+  });
+  const msg = 'Copiar ' + sel.length + ' movimiento' + (sel.length===1?'':'s') + ' a ' +
+              meses.map(cmMesLabel).join(', ') + '.\n\nSe van a crear ' + nuevos.length +
+              ' registro' + (nuevos.length===1?'':'s') + ', con su importe y sin pagar.\n\n¿Continuar?';
+  if (!confirm(msg)) return;
+  saveData([...all, ...nuevos]);
+  try { pushNow(); } catch(e){}
+  closeCopiarMes();
+  clearSelectionTx();
+  render();
+  alert('Listo: ' + nuevos.length + ' movimiento' + (nuevos.length===1?'':'s') + ' creado' +
+        (nuevos.length===1?'':'s') + ' en ' + meses.length + ' mes' + (meses.length===1?'':'es') + '.');
+}
+
 function askDeleteBulk() {
   if (!selectedTx.size) return;
   delIds = [...selectedTx];
