@@ -215,7 +215,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .warning-c { color: var(--warning); }
 
 /* BULK SELECTION */
-.bulk-bar { display: none; align-items: center; justify-content: space-between; padding: 10px 18px; background: #FFF1EA; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; color: var(--brand-navy); }
+.bulk-bar { display:none; align-items:center; gap:8px; padding:4px 4px 4px 12px; background:#FFF1EA; border:1px solid rgba(255,138,92,.45); border-radius:10px; }
+.bulk-bar #bulkCount { font-size:12.5px; font-weight:700; color:var(--text); white-space:nowrap; }
 .bulk-bar.show { display: flex; }
 .tx-check, #selectAllTx { width: 16px; height: 16px; cursor: pointer; accent-color: var(--brand-navy); }
 
@@ -1072,6 +1073,32 @@ tr:hover td { background: #fafbfc; }
     }
 /* ── Mi Rumbo: dólar integrado + panel del año + cuenta (v005.1.069) ── */
 #sidebarUser{display:none!important}
+/* Ingreso masivo */
+.mas-drop{border:2px dashed var(--border);border-radius:12px;padding:28px 18px;text-align:center;cursor:pointer;background:var(--bg)}
+.mas-drop:hover,.mas-drop.over{border-color:var(--brand-accent);background:#FFF6F2}
+.mas-drop b{display:block;font-size:14px;margin-bottom:4px}
+.mas-drop span{font-size:12px;color:var(--muted)}
+.mas-paso{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:18px 0 8px}
+.mas-map{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.mas-map label{font-size:12.5px;color:var(--text);display:flex;flex-direction:column;gap:3px}
+.mas-map label i{font-style:normal;font-size:10.5px;color:var(--muted);font-weight:600}
+.mas-map label b{font-weight:700}
+.mas-map label .oblig{color:var(--danger)}
+.mas-map select{width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:7px;font-size:12.5px;font-family:inherit;background:var(--card);color:var(--text)}
+.mas-map select.falta{border-color:var(--danger);background:#FEF2F2}
+.mas-tabla{max-height:260px;overflow:auto;border:1px solid var(--border);border-radius:8px}
+.mas-tabla table{width:100%;border-collapse:collapse;font-size:12px}
+.mas-tabla th{position:sticky;top:0;background:#f8fafc;text-align:left;padding:6px 8px;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+.mas-tabla td{padding:5px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+.mas-tabla tr.mal td{background:#FEF2F2}
+.mas-tabla .err{color:var(--danger);font-size:11px;font-weight:600}
+.mas-tabla select{padding:3px 5px;border:1px solid var(--border);border-radius:5px;font-size:11.5px;font-family:inherit;max-width:190px}
+.mas-resumen{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;margin:10px 0}
+.mas-resumen b{color:var(--text)}
+.mas-chip{padding:3px 9px;border-radius:20px;font-weight:700;font-size:12px}
+.mas-chip.ok{background:#ECFDF5;color:#047857}
+.mas-chip.mal{background:#FEF2F2;color:#B91C1C}
+@media (max-width:720px){ .mas-map{grid-template-columns:1fr} }
 /* Copiar a otro mes */
 .cm-meses{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;max-height:280px;overflow-y:auto;padding:2px}
 .cm-mes{border:1px solid var(--border);background:var(--card);border-radius:8px;padding:9px 8px;cursor:pointer;text-align:center;font-size:13px;font-weight:600;color:var(--text);font-family:inherit;line-height:1.25}
@@ -1582,6 +1609,7 @@ tr:hover td { background: #fafbfc; }
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-secondary" onclick="clonarMesAnterior()" title="Copia todos los registros del mes anterior a este mes, con sus importes">📋 Clonar mes anterior</button>
+            <button class="btn btn-secondary" onclick="openMasivo()" title="Cargá muchos movimientos de una vez desde un Excel, mapeando tus columnas contra los datos de Norte">📊 Ingreso masivo</button>
             <button class="btn btn-secondary" onclick="replicarGastosFijos()" title="Crea el esqueleto de tus gastos fijos del mes anterior, sin importe, para no olvidarte de ninguno">🧩 Replicar gastos fijos</button>
             <div class="tc-bloque">
             <span class="tc-bloque-tit">Tarjetas</span>
@@ -1599,14 +1627,12 @@ tr:hover td { background: #fafbfc; }
             </div>
           </div>
             <button class="btn btn-primary" onclick="openModal()">+ Agregar</button>
-          </div>
-        </div>
-        <div class="bulk-bar" id="bulkBar">
-          <span id="bulkCount">0 seleccionados</span>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-secondary" onclick="clearSelectionTx()">Cancelar selección</button>
-            <button class="btn btn-secondary" onclick="openCopiarMes()">📅 Copiar a otro mes</button>
-            <button class="btn btn-danger" onclick="askDeleteBulk()">🗑️ Eliminar seleccionados</button>
+            <div class="bulk-bar" id="bulkBar">
+              <span id="bulkCount">0 seleccionados</span>
+              <button class="btn btn-secondary" onclick="clearSelectionTx()">Cancelar</button>
+              <button class="btn btn-secondary" onclick="openCopiarMes()">📅 Copiar a otro mes</button>
+              <button class="btn btn-danger" onclick="askDeleteBulk()">🗑️ Eliminar</button>
+            </div>
           </div>
         </div>
         <div class="tx-scroll">
@@ -2306,6 +2332,37 @@ tr:hover td { background: #fafbfc; }
           <div class="ayuda-bloque">
             <h4>Editar, borrar y selección múltiple</h4>
             <p>El ícono <strong>✏️</strong> edita y el <strong>🗑️</strong> elimina. Para limpiar varios de una, tildá los checkboxes de la izquierda y usá <strong>🗑️ Eliminar seleccionados</strong>.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Copiar movimientos a otro mes</h4>
+            <p>Sirve para los gastos que <strong>se repiten pero no todos los meses</strong>: el seguro semestral, la patente, la matrícula del colegio. Tildá uno o varios movimientos y usá <strong>📅 Copiar a otro mes</strong>, al lado de <strong>+ Agregar</strong>.</p>
+            <p>Se abre una grilla con los meses siguientes y elegís <strong>todos los que quieras de una sola vez</strong> — para algo trimestral marcás tres y listo. Solo se ofrecen meses <strong>posteriores</strong> al más nuevo de tu selección: nunca se copia hacia atrás.</p>
+            <div class="ayuda-ejemplo">
+              Las copias se crean con <strong>el mismo importe</strong>, <strong>sin pagar</strong> y con vencimiento a fin del mes destino, así aparecen en tu saldo pendiente de ese mes.<br>
+              Si en un mes ya tenés un movimiento con el mismo detalle, el botón te lo avisa con un <strong>“ya hay 1”</strong>. No te lo bloquea, pero te evita el duplicado por descuido.
+            </div>
+            <div class="ayuda-tip">Si copiás un consumo que vino del resumen de la tarjeta, la copia se guarda como <strong>gasto común</strong>, no como consumo de tarjeta. Es una proyección tuya, no un movimiento que informó el banco, y así no te ensucia el reporte de Tarjetas.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>📊 Ingreso masivo desde Excel</h4>
+            <p>Si ya tenés los gastos armados en una planilla, no hace falta cargarlos de a uno. Con <strong>Ingreso masivo</strong> subís el Excel y Norte crea todos los movimientos juntos.</p>
+            <p><strong>No necesitás que tus columnas se llamen de una forma especial.</strong> Después de subir el archivo vas a ver una pantalla donde emparejás cada columna tuya con el dato de Norte que le corresponde. Norte intenta adivinarlo solo, y vos corregís lo que haga falta.</p>
+            <div class="ayuda-ejemplo">
+              <strong>Columnas obligatorias:</strong><br>
+              <strong>Fecha</strong> — dd/mm/aaaa. De acá sale el mes de cada movimiento, así que un mismo archivo puede tener varios meses<br>
+              <strong>Tipo</strong> — Ingreso o Gasto<br>
+              <strong>Detalle</strong> — de qué se trata<br>
+              <strong>Rubro</strong> — tiene que ser uno de los rubros de Norte<br>
+              <strong>Importe $</strong> — en pesos (poné 0 si el gasto es solo en dólares)<br><br>
+              <strong>Opcionales:</strong> Importe USD · Fijo/Variable (por defecto Variable) · Pagado $ (por defecto, el total) · Cliente
+            </div>
+            <p>Desde la misma pantalla podés <strong>descargar una plantilla</strong> con las columnas y cuatro filas de ejemplo. Es la forma más rápida de arrancar: la abrís, borrás los ejemplos y cargás lo tuyo.</p>
+            <div class="ayuda-tip">El rubro tiene que coincidir con la lista de Norte. Si en tu Excel dice algo que no existe, la fila aparece marcada y elegís el rubro correcto de un desplegable ahí mismo. Es a propósito: si cada archivo pudiera inventar rubros, en dos importaciones tendrías “Super”, “Supermercado” y “SUPER” separados, y los reportes por rubro dejarían de servir.</div>
+            <p><strong>Se carga todo o no se carga nada.</strong> Antes de confirmar, Norte revisa fila por fila y te muestra cuántas están listas y cuántas tienen problemas, con el motivo de cada una. Mientras quede una sola fila con error, el botón de cargar sigue apagado. Así no terminás con media importación hecha sin saber qué entró y qué no.</p>
+            <div class="ayuda-ejemplo">
+              <strong>Límites:</strong> archivos .xlsx, .xls o .csv · hasta 2 MB · hasta 500 filas por vez.<br>
+              Si tenés más, partilo en dos y hacé dos cargas.
+            </div>
           </div>
           <div class="ayuda-bloque">
             <h4>Vista en computadora y en celular</h4>
@@ -3272,6 +3329,49 @@ tr:hover td { background: #fafbfc; }
 
 <!-- CONFIRM DELETE -->
 <!-- ── MODAL PAGAR TC ─────────────────────────────────────── -->
+<div class="overlay" id="masivoOverlay">
+  <div class="modal" style="max-width:820px">
+    <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <span>📊 Ingreso masivo desde Excel</span>
+      <button onclick="closeMasivo()" aria-label="Cerrar" style="background:none;border:none;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px">×</button>
+    </div>
+
+    <div id="masPaso1">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5">
+        Cargá muchos movimientos de una vez desde una planilla. No hace falta que tus columnas se llamen de una forma
+        determinada: después las vas a poder emparejar con los datos de Norte.
+      </div>
+      <div class="mas-drop" id="masDrop" onclick="document.getElementById('masFile').click()">
+        <b>Arrastrá tu Excel acá o hacé clic para elegirlo</b>
+        <span>.xlsx, .xls o .csv · hasta 2 MB · hasta 500 filas</span>
+      </div>
+      <input type="file" id="masFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="masArchivo(this.files[0])">
+      <div style="margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.55">
+        ¿No sabés cómo armarlo? <a href="#" onclick="masPlantilla();return false" style="color:var(--primary);font-weight:700">Descargá la plantilla</a>
+        con las columnas y un ejemplo cargado.
+      </div>
+      <div id="masError" style="display:none;margin-top:12px;font-size:13px;color:var(--danger);font-weight:600"></div>
+    </div>
+
+    <div id="masPaso2" style="display:none">
+      <div style="font-size:13px;color:var(--muted)" id="masArchInfo"></div>
+      <div class="mas-paso">1 · Emparejá tus columnas con los datos de Norte</div>
+      <div class="mas-map" id="masMap"></div>
+      <div class="mas-paso">2 · Revisá antes de cargar</div>
+      <div class="mas-resumen" id="masResumen"></div>
+      <div class="mas-tabla" id="masTabla"></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.45" id="masNota"></div>
+      <div style="display:flex;justify-content:space-between;gap:10px;margin-top:18px;flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="masReset()">← Elegir otro archivo</button>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary" onclick="closeMasivo()">Cancelar</button>
+          <button class="btn btn-primary" id="masConfirm" onclick="masImportar()">Cargar movimientos</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="copiarMesOverlay">
   <div class="modal" style="max-width:560px">
     <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
@@ -8105,6 +8205,318 @@ function askDelete(id) {
   document.getElementById('confirmMsg').textContent = 'Esta acción no se puede deshacer.';
   document.getElementById('confirmOverlay').classList.add('show');
 }
+
+
+// ── INGRESO MASIVO DESDE EXCEL ──────────────────────────────────
+// Flujo: archivo -> mapeo de columnas -> validación fila por fila -> carga.
+// Si algo obligatorio falta, el botón de confirmar queda deshabilitado.
+const MAS_MAX_BYTES = 2 * 1024 * 1024;
+const MAS_MAX_FILAS = 500;
+const MAS_CAMPOS = [
+  { k:'fecha',   t:'Fecha',        req:true,  ayuda:'dd/mm/aaaa — define el mes del movimiento' },
+  { k:'tipo',    t:'Tipo',         req:true,  ayuda:'Ingreso o Gasto' },
+  { k:'detalle', t:'Detalle',      req:true,  ayuda:'de qué se trata' },
+  { k:'rubro',   t:'Rubro',        req:true,  ayuda:'tiene que existir en Norte' },
+  { k:'impPesos',t:'Importe $',    req:true,  ayuda:'en pesos; 0 si el gasto es solo en USD' },
+  { k:'impUSD',  t:'Importe USD',  req:false, ayuda:'opcional' },
+  { k:'tipoGasto',t:'Fijo/Variable',req:false, ayuda:'opcional — por defecto Variable' },
+  { k:'pagado',  t:'Pagado $',     req:false, ayuda:'opcional — por defecto igual al importe' },
+  { k:'cliente', t:'Cliente',      req:false, ayuda:'opcional' }
+];
+let masCols = [], masFilas = [], masMapa = {}, masRubroFix = {}, masNombreArch = '';
+
+function masNorm(v){
+  return String(v == null ? '' : v).toLowerCase().normalize('NFD')
+    .replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,'');
+}
+function masNum(v){
+  if (v == null || v === '') return 0;
+  if (typeof v === 'number') return v;
+  let t = String(v).replace(/\s|\$|U\$S|USD/gi,'').trim();
+  if (t.indexOf(',') > -1 && t.indexOf('.') > -1) {
+    t = (t.lastIndexOf(',') > t.lastIndexOf('.')) ? t.replace(/\./g,'').replace(',','.') : t.replace(/,/g,'');
+  } else if (t.indexOf(',') > -1) { t = t.replace(',', '.'); }
+  const n = parseFloat(t);
+  return isNaN(n) ? NaN : n;
+}
+function masFecha(v){
+  if (v instanceof Date && !isNaN(v)) return v;
+  if (typeof v === 'number' && v > 0) {           // serial de Excel
+    const d = new Date(Math.round((v - 25569) * 86400 * 1000));
+    return isNaN(d) ? null : d;
+  }
+  const t = String(v || '').trim();
+  let m = t.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+  if (m) { let a = +m[3]; if (a < 100) a += 2000; const d = new Date(a, +m[2]-1, +m[1]); return isNaN(d) ? null : d; }
+  m = t.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/);
+  if (m) { const d = new Date(+m[1], +m[2]-1, +m[3]); return isNaN(d) ? null : d; }
+  return null;
+}
+function masRubroOficial(tipo, valor){
+  const lista = (RUBROS[tipo === 'Ingreso' ? 'Ingreso' : 'Gasto'] || []).filter(r => r !== 'Personalizado...');
+  const n = masNorm(valor);
+  if (!n) return null;
+  let hit = lista.find(r => masNorm(r) === n);
+  if (hit) return hit;
+  hit = lista.find(r => masNorm(r).indexOf(n) === 0 || n.indexOf(masNorm(r)) === 0);
+  return hit || null;
+}
+
+function openMasivo(){
+  masReset();
+  document.getElementById('masivoOverlay').classList.add('show');
+}
+function closeMasivo(){
+  document.getElementById('masivoOverlay').classList.remove('show');
+}
+function masReset(){
+  masCols = []; masFilas = []; masMapa = {}; masRubroFix = {}; masNombreArch = '';
+  const f = document.getElementById('masFile'); if (f) f.value = '';
+  document.getElementById('masPaso1').style.display = '';
+  document.getElementById('masPaso2').style.display = 'none';
+  const e = document.getElementById('masError'); if (e) e.style.display = 'none';
+}
+function masFallo(msg){
+  const e = document.getElementById('masError');
+  e.textContent = msg; e.style.display = 'block';
+}
+function masArchivo(file){
+  if (!file) return;
+  const nombre = file.name || '';
+  const ext = nombre.slice(nombre.lastIndexOf('.')).toLowerCase();
+  if (['.xlsx','.xls','.csv'].indexOf(ext) === -1){
+    masFallo('Ese archivo es ' + (ext || 'de un tipo que no reconozco') + '. Tiene que ser .xlsx, .xls o .csv.'); return;
+  }
+  if (file.size > MAS_MAX_BYTES){
+    masFallo('El archivo pesa ' + (file.size/1024/1024).toFixed(1) + ' MB y el máximo es 2 MB. Si tiene hojas o formatos de más, guardá solo la hoja con los datos.'); return;
+  }
+  if (typeof XLSX === 'undefined'){ masFallo('No se pudo cargar el lector de Excel. Revisá tu conexión y probá de nuevo.'); return; }
+  const r = new FileReader();
+  r.onload = function(ev){
+    let wb;
+    try { wb = XLSX.read(new Uint8Array(ev.target.result), { type:'array', cellDates:true }); }
+    catch(e){ masFallo('No pude leer el archivo. ¿Seguro que es un Excel válido y no está protegido con contraseña?'); return; }
+    const hoja = wb.Sheets[wb.SheetNames[0]];
+    if (!hoja){ masFallo('El archivo no tiene ninguna hoja con datos.'); return; }
+    const filas = XLSX.utils.sheet_to_json(hoja, { header:1, raw:true, defval:'', blankrows:false });
+    if (filas.length < 2){ masFallo('La primera hoja tiene que tener una fila de títulos y al menos un movimiento.'); return; }
+    masCols = (filas[0] || []).map((c,i) => String(c || '').trim() || ('Columna ' + (i+1)));
+    masFilas = filas.slice(1).filter(f => f.some(c => String(c || '').trim() !== ''));
+    if (!masFilas.length){ masFallo('No encontré ninguna fila con datos debajo de los títulos.'); return; }
+    if (masFilas.length > MAS_MAX_FILAS){
+      masFallo('El archivo trae ' + masFilas.length + ' filas y el máximo por vez es ' + MAS_MAX_FILAS + '. Partilo en dos y cargalos por separado.'); return;
+    }
+    masNombreArch = nombre;
+    masAutoMapear();
+    document.getElementById('masPaso1').style.display = 'none';
+    document.getElementById('masPaso2').style.display = '';
+    document.getElementById('masArchInfo').innerHTML =
+      '<strong>' + esc(nombre) + '</strong> · ' + masFilas.length + ' fila' + (masFilas.length===1?'':'s') +
+      ' · ' + masCols.length + ' columna' + (masCols.length===1?'':'s');
+    masPintarMapa();
+    masValidar();
+  };
+  r.onerror = function(){ masFallo('No pude abrir el archivo.'); };
+  r.readAsArrayBuffer(file);
+}
+function masAutoMapear(){
+  const alias = {
+    fecha:['fecha','date','dia','día','fechamovimiento'],
+    tipo:['tipo','tipomovimiento','ingresogasto','movimiento'],
+    detalle:['detalle','descripcion','descripción','concepto','nombre','desc'],
+    rubro:['rubro','categoria','categoría','clasificacion','clasificación'],
+    impPesos:['importe','importepesos','monto','pesos','importe$','total','montopesos'],
+    impUSD:['importeusd','usd','dolares','dólares','montousd'],
+    tipoGasto:['fijovariable','fijo','tipogasto','frecuencia'],
+    pagado:['pagado','pagadopesos','abonado'],
+    cliente:['cliente','proveedor','quien']
+  };
+  MAS_CAMPOS.forEach(function(c){
+    const cands = alias[c.k] || [];
+    let idx = -1;
+    masCols.forEach(function(col, i){
+      if (idx > -1) return;
+      const n = masNorm(col);
+      if (cands.some(a => masNorm(a) === n)) idx = i;
+    });
+    if (idx === -1) masCols.forEach(function(col, i){
+      if (idx > -1) return;
+      const n = masNorm(col);
+      if (cands.some(a => n.indexOf(masNorm(a)) === 0)) idx = i;
+    });
+    masMapa[c.k] = idx;
+  });
+}
+function masPintarMapa(){
+  document.getElementById('masMap').innerHTML = MAS_CAMPOS.map(function(c){
+    const opts = ['<option value="-1">— sin columna —</option>'].concat(
+      masCols.map((col,i) => '<option value="' + i + '"' + (masMapa[c.k] === i ? ' selected' : '') + '>' + esc(col) + '</option>')
+    ).join('');
+    return '<label><b>' + c.t + (c.req ? ' <span class="oblig">*</span>' : '') + '</b>' +
+           '<select data-campo="' + c.k + '" onchange="masCambiarMapa(this)">' + opts + '</select>' +
+           '<i>' + c.ayuda + '</i></label>';
+  }).join('');
+}
+function masCambiarMapa(sel){
+  masMapa[sel.getAttribute('data-campo')] = Number(sel.value);
+  masRubroFix = {};
+  masValidar();
+}
+function masVal(fila, campo){
+  const i = masMapa[campo];
+  return (i == null || i < 0) ? '' : fila[i];
+}
+function masParsear(){
+  return masFilas.map(function(f, n){
+    const errs = [];
+    const rawTipo = String(masVal(f,'tipo') || '').trim();
+    const tipo = /ingr/i.test(rawTipo) ? 'Ingreso' : (/gast|egres/i.test(rawTipo) ? 'Gasto' : '');
+    if (!tipo) errs.push('Tipo debe decir Ingreso o Gasto');
+
+    const d = masFecha(masVal(f,'fecha'));
+    if (!d) errs.push('Fecha inválida');
+
+    const detalle = String(masVal(f,'detalle') || '').trim();
+    if (!detalle) errs.push('Falta el detalle');
+
+    const p = masNum(masVal(f,'impPesos'));
+    const u = masNum(masVal(f,'impUSD'));
+    if (isNaN(p)) errs.push('Importe $ no es un número');
+    if (isNaN(u)) errs.push('Importe USD no es un número');
+    if (!isNaN(p) && !isNaN(u) && !p && !u) errs.push('El movimiento no tiene importe');
+
+    const rubroRaw = String(masVal(f,'rubro') || '').trim();
+    let rubro = null;
+    if (tipo){
+      rubro = masRubroFix[n] || masRubroOficial(tipo, rubroRaw);
+      if (!rubro) errs.push('Rubro no reconocido');
+    }
+    const tgRaw = String(masVal(f,'tipoGasto') || '').trim();
+    const tipoGasto = tipo === 'Ingreso' ? '' : (/fij/i.test(tgRaw) ? 'Fijo' : 'Variable');
+    const pagRaw = masVal(f,'pagado');
+    let pagado = (pagRaw === '' || pagRaw == null) ? (isNaN(p) ? 0 : p) : masNum(pagRaw);
+    if (isNaN(pagado)) { pagado = 0; errs.push('Pagado $ no es un número'); }
+
+    return { n:n, errs:errs, tipo:tipo, fecha:d, detalle:detalle, rubro:rubro, rubroRaw:rubroRaw,
+             impPesos: isNaN(p)?0:p, impUSD: isNaN(u)?0:u, tipoGasto:tipoGasto, pagado:pagado,
+             cliente: String(masVal(f,'cliente') || '').trim() };
+  });
+}
+function masValidar(){
+  // Falta alguna columna obligatoria
+  const faltan = MAS_CAMPOS.filter(c => c.req && (masMapa[c.k] == null || masMapa[c.k] < 0));
+  document.querySelectorAll('#masMap select').forEach(function(sel){
+    const c = MAS_CAMPOS.find(x => x.k === sel.getAttribute('data-campo'));
+    sel.classList.toggle('falta', !!(c && c.req && Number(sel.value) < 0));
+  });
+  const btn = document.getElementById('masConfirm');
+  if (faltan.length){
+    document.getElementById('masResumen').innerHTML =
+      '<span class="mas-chip mal">Faltan columnas obligatorias: ' + faltan.map(c => c.t).join(', ') + '</span>';
+    document.getElementById('masTabla').innerHTML = '';
+    document.getElementById('masNota').textContent = 'Emparejá las columnas marcadas en rojo para poder seguir.';
+    btn.disabled = true; btn.style.opacity = '.5';
+    return;
+  }
+  const filas = masParsear();
+  const malas = filas.filter(f => f.errs.length).length;
+  const buenas = filas.length - malas;
+  document.getElementById('masResumen').innerHTML =
+    '<span class="mas-chip ok">' + buenas + ' lista' + (buenas===1?'':'s') + ' para cargar</span>' +
+    (malas ? '<span class="mas-chip mal">' + malas + ' con problemas</span>' : '');
+
+  const rubrosGasto = (RUBROS.Gasto || []).filter(r => r !== 'Personalizado...');
+  const rubrosIng   = (RUBROS.Ingreso || []).filter(r => r !== 'Personalizado...');
+  document.getElementById('masTabla').innerHTML =
+    '<table><thead><tr><th>#</th><th>Fecha</th><th>Tipo</th><th>Detalle</th><th>Rubro</th><th style="text-align:right">Importe</th><th>Problema</th></tr></thead><tbody>' +
+    filas.map(function(f){
+      const necesitaRubro = f.tipo && !f.rubro;
+      const lista = f.tipo === 'Ingreso' ? rubrosIng : rubrosGasto;
+      const celdaRubro = necesitaRubro
+        ? '<select onchange="masFijarRubro(' + f.n + ',this.value)"><option value="">— elegí —</option>' +
+          lista.map(r => '<option value="' + esc(r) + '">' + esc(r) + '</option>').join('') + '</select>' +
+          (f.rubroRaw ? '<div style="font-size:10.5px;color:var(--muted)">dice: ' + esc(f.rubroRaw) + '</div>' : '')
+        : esc(f.rubro || '');
+      return '<tr class="' + (f.errs.length ? 'mal' : '') + '">' +
+        '<td style="color:var(--muted)">' + (f.n + 2) + '</td>' +
+        '<td>' + (f.fecha ? f.fecha.toLocaleDateString('es-AR') : '—') + '</td>' +
+        '<td>' + esc(f.tipo || '—') + '</td>' +
+        '<td>' + esc(f.detalle || '—') + '</td>' +
+        '<td>' + celdaRubro + '</td>' +
+        '<td style="text-align:right;white-space:nowrap">' + (f.impPesos ? fmtP(f.impPesos) : '') +
+          (f.impUSD ? '<div style="font-size:10.5px;color:var(--muted)">' + fmtU(f.impUSD) + '</div>' : '') + '</td>' +
+        '<td class="err">' + esc(f.errs.join(' · ')) + '</td></tr>';
+    }).join('') + '</tbody></table>';
+
+  document.getElementById('masNota').innerHTML = malas
+    ? 'Corregí las filas en rojo en tu Excel y volvé a subirlo, o elegí el rubro donde falte. <strong>Mientras haya filas con problemas no se puede cargar nada</strong>: se carga todo o nada.'
+    : 'El mes de cada movimiento sale de su fecha. Los que no tengan “Pagado $” quedan como pagados por el total.';
+  btn.disabled = malas > 0; btn.style.opacity = malas > 0 ? '.5' : '1';
+}
+function masFijarRubro(n, val){
+  if (val) masRubroFix[n] = val; else delete masRubroFix[n];
+  masValidar();
+}
+function masImportar(){
+  const filas = masParsear();
+  if (filas.some(f => f.errs.length)) return;
+  const nuevos = filas.map(function(f){
+    const y = f.fecha.getFullYear(), m = f.fecha.getMonth();
+    return {
+      id: uid(),
+      mes: y + '-' + String(m+1).padStart(2,'0'),
+      tipo: f.tipo,
+      tipoGasto: f.tipoGasto,
+      rubro: f.rubro,
+      detalle: f.detalle,
+      cliente: f.cliente,
+      impPesos: f.impPesos,
+      impUSD: f.impUSD,
+      venc: y + '-' + String(m+1).padStart(2,'0') + '-' + String(f.fecha.getDate()).padStart(2,'0'),
+      pagado: f.pagado,
+      saldo: Math.max(0, f.impPesos - f.pagado),
+      creadoPor: (typeof curUserId === 'function' ? curUserId() : ''),
+      creadoPorNombre: (typeof curUserName === 'function' ? (curUserName() || '') : '')
+    };
+  });
+  const meses = [...new Set(nuevos.map(t => t.mes))].sort();
+  if (!confirm('Cargar ' + nuevos.length + ' movimiento' + (nuevos.length===1?'':'s') +
+               ' en ' + meses.length + ' mes' + (meses.length===1?'':'es') + '.\n\n¿Continuar?')) return;
+  saveData([...getData(), ...nuevos]);
+  try { pushNow(); } catch(e){}
+  closeMasivo();
+  render();
+  alert('Listo: ' + nuevos.length + ' movimiento' + (nuevos.length===1?'':'s') + ' cargado' +
+        (nuevos.length===1?'':'s') + ' desde ' + masNombreArch + '.');
+}
+function masPlantilla(){
+  if (typeof XLSX === 'undefined'){ alert('No se pudo cargar el generador de Excel. Probá de nuevo.'); return; }
+  const hoy = new Date();
+  const f = (d) => String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+  const datos = [
+    ['Fecha','Tipo','Detalle','Rubro','Importe $','Importe USD','Fijo/Variable','Pagado $','Cliente'],
+    [f(hoy), 'Gasto',  'Alquiler',        'Alquiler / Vivienda',         850000, '', 'Fijo',     850000, ''],
+    [f(hoy), 'Gasto',  'Compra semanal',  'Supermercado / Alimentación', 124500, '', 'Variable', 124500, ''],
+    [f(hoy), 'Gasto',  'Seguro del auto', 'Seguros',                     480000, '', 'Fijo',     0,      ''],
+    [f(hoy), 'Ingreso','Sueldo',          'Sueldo',                     3200000, '', '',         3200000, '']
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(datos);
+  ws['!cols'] = [{wch:12},{wch:10},{wch:26},{wch:30},{wch:12},{wch:12},{wch:14},{wch:12},{wch:16}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Movimientos');
+  XLSX.writeFile(wb, 'Norte - plantilla de ingreso masivo.xlsx');
+}
+// Arrastrar y soltar sobre la zona
+(function(){
+  const z = document.getElementById('masDrop');
+  if (!z) return;
+  ['dragenter','dragover'].forEach(e => z.addEventListener(e, function(ev){ ev.preventDefault(); z.classList.add('over'); }));
+  ['dragleave','drop'].forEach(e => z.addEventListener(e, function(ev){ ev.preventDefault(); z.classList.remove('over'); }));
+  z.addEventListener('drop', function(ev){
+    const f = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
+    if (f) masArchivo(f);
+  });
+})();
 
 // ── COPIAR MOVIMIENTOS A OTRO MES ───────────────────────────────
 // Para gastos periódicos que no son mensuales: seguro semestral, patente,
