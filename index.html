@@ -11457,6 +11457,11 @@ function subtituloRumbo() {
     }
   };
 
+  // Vuelve a pedir el progreso al servidor. El servidor revisa el desbloqueo en
+  // cada consulta, así que esto alcanza para destrabar un capítulo que ya
+  // cumplía las condiciones, sin recargar toda la app.
+  window.gpsRecargar = async function () { _gpsLoaded = false; await window.gpsRender(); };
+
   function gpsFechaDesbloqueo(p, n) {
     try {
       var c = p.capitulos[n] || {};
@@ -11502,8 +11507,14 @@ function subtituloRumbo() {
           if (f && f.getTime() > Date.now()) {
             estado += '<div style="margin-top:7px;font-size:13.5px;font-weight:800;color:#2563EB">Fecha de desbloqueo: ' + gpsFechaCorta(f) + '</div>';
             estado += '<div style="margin-top:3px;font-size:12.5px;color:var(--muted);line-height:1.5">Se abre a los 7 días y con el quiz del capítulo ' + (n - 1) + ' aprobado.</div>';
-          } else {
+          } else if (!(p.capitulos[n - 1] || {}).quizEnviado) {
             estado += '<div style="margin-top:7px;font-size:12.5px;color:var(--muted);line-height:1.5">Ya pasaron los 7 días — te falta aprobar el quiz del capítulo ' + (n - 1) + '.</div>';
+          } else {
+            // Los 7 días se cumplieron y el quiz anterior está aprobado: el capítulo
+            // tendría que estar abierto. Antes le echábamos la culpa a un quiz que la
+            // persona ya había hecho. Ahora decimos lo que pasa y damos la salida.
+            estado += '<div style="margin-top:7px;font-size:12.5px;color:var(--muted);line-height:1.5">Ya cumpliste las dos condiciones. Actualizá y se abre.</div>';
+            estado += '<div style="margin-top:8px"><button class="btn" style="font-size:12.5px;padding:6px 13px" onclick="event.stopPropagation();gpsRecargar()">Actualizar</button></div>';
           }
         }
         accion = ''; clickAttr = ''; cursorStyle = '';
