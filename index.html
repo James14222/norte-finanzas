@@ -218,6 +218,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .bulk-bar { display:none; align-items:center; gap:8px; padding:4px 4px 4px 12px; background:#FFF1EA; border:1px solid rgba(255,138,92,.45); border-radius:10px; }
 .bulk-bar #bulkCount { font-size:12.5px; font-weight:700; color:var(--text); white-space:nowrap; }
 .bulk-bar.show { display: flex; }
+/* Copia congelada de la barra de selección. Aparece pegada abajo de la barra
+   superior sólo cuando la original ya se fue con el scroll. z-index 45: por
+   encima de las cabeceras pegajosas (5) y por debajo de la barra superior (50),
+   del menú lateral (100) y de los modales (200). */
+#bulkBarFija { display:none; position:fixed; z-index:45; box-sizing:border-box;
+  align-items:center; gap:10px; padding:9px 14px;
+  background:#FFF1EA; border:1px solid rgba(255,138,92,.45); border-top:none;
+  border-radius:0 0 12px 12px; box-shadow:0 6px 16px rgba(11,31,51,.10); }
+#bulkBarFija.show { display:flex; }
+#bulkBarFija #bulkCountFija { font-size:12.5px; font-weight:700; color:var(--text); white-space:nowrap; }
+#bulkBarFija .bbf-acciones { margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; }
+@media (max-width:640px){
+  #bulkBarFija { padding:8px 10px; gap:7px; flex-wrap:wrap; }
+  #bulkBarFija .bbf-acciones { gap:6px; }
+  #bulkBarFija .btn { font-size:12px; padding:6px 10px; }
+}
 .tx-check, #selectAllTx { width: 16px; height: 16px; cursor: pointer; accent-color: var(--brand-navy); }
 
 /* TABLE CONTAINER */
@@ -8186,6 +8202,105 @@ function clearSelectionTx() {
   if (selectAllCb) selectAllCb.checked = false;
   updateBulkBar();
 }
+
+// ── BARRA DE SELECCIÓN CONGELADA ─────────────────────────────────
+// La barra de acciones vive dentro de la fila de botones: cuando esa fila se va
+// con el scroll, se la lleva puesta. Hacerla sticky no alcanza, porque su
+// contenedor es la fila que desaparece. Entonces mantenemos una copia fija que
+// se muestra sólo mientras la original quedó arriba y hay algo seleccionado.
+// Mientras se ve, las cabeceras de la tabla bajan su ancla lo justo para no
+// quedar tapadas — y eso se hace con una regla !important en vez de estilo
+// inline, porque el ajustador general de cabeceras reescribe el inline cada vez
+// que el DOM cambia y las dos correcciones se pisarían.
+(function () {
+  var fija = null, hoja = null, rafPend = false;
+
+  function crear() {
+    if (fija) return fija;
+    fija = document.createElement('div');
+    fija.id = 'bulkBarFija';
+    fija.innerHTML =
+      '<span id="bulkCountFija">0 seleccionados</span>' +
+      '<span class="bbf-acciones">' +
+        '<button class="btn btn-secondary" onclick="clearSelectionTx()">Cancelar</button>' +
+        '<button class="btn btn-secondary" onclick="openCopiarMes()">📅 Copiar a otro mes</button>' +
+        '<button class="btn btn-danger" onclick="askDeleteBulk()">🗑️ Eliminar</button>' +
+      '</span>';
+    document.body.appendChild(fija);
+    hoja = document.createElement('style');
+    hoja.id = 'bulkBarFijaAnclaje';
+    document.head.appendChild(hoja);
+    return fija;
+  }
+
+  function altoBarraSuperior() {
+    var tb = document.querySelector('.topbar');
+    if (!tb) return 0;
+    if (getComputedStyle(tb).display === 'none') return 0;
+    var h = tb.getBoundingClientRect().height;
+    return h > 5 ? h : 0;
+  }
+
+  function anclaje(px) {
+    if (!hoja) return;
+    hoja.textContent = (px == null)
+      ? ''
+      : '#page-transacciones .tx-scroll table thead th{top:' + px + 'px!important}';
+  }
+
+  window.sincronizarBulkFija = function () {
+    var pagina   = document.getElementById('page-transacciones');
+    var original = document.getElementById('bulkBar');
+    var cont     = document.querySelector('#page-transacciones .tx-scroll');
+    var top      = altoBarraSuperior();
+
+    var mostrar = !!(pagina && pagina.classList.contains('active') &&
+                     original && original.classList.contains('show') && cont);
+    // Sólo cuando la original ya salió de vista hacia arriba: si se ve, sobra.
+    if (mostrar) mostrar = original.getBoundingClientRect().bottom <= top + 2;
+
+    if (!mostrar) {
+      if (fija) { fija.classList.remove('show'); anclaje(null); }
+      return;
+    }
+
+    var f = crear();
+    var r = cont.getBoundingClientRect();
+    f.style.left  = Math.round(r.left) + 'px';
+    f.style.width = Math.round(Math.max(0, r.width)) + 'px';
+    f.style.top   = Math.round(top) + 'px';
+    f.classList.add('show');
+
+    var destino = document.getElementById('bulkCountFija');
+    var fuente  = document.getElementById('bulkCount');
+    if (destino && fuente) destino.textContent = fuente.textContent;
+
+    anclaje(Math.round(top + f.getBoundingClientRect().height));
+  };
+
+  function pedir() {
+    if (rafPend) return;
+    rafPend = true;
+    requestAnimationFrame(function () {
+      rafPend = false;
+      try { window.sincronizarBulkFija(); } catch (e) {}
+    });
+  }
+  window.addEventListener('scroll', pedir, { passive: true });
+  window.addEventListener('resize', pedir);
+
+  // Cambiar de página no dispara scroll: si no revisamos acá, la barra puede
+  // quedar flotando sobre una pantalla que ya no es Transacciones.
+  var _showPage = window.showPage;
+  if (typeof _showPage === 'function') {
+    window.showPage = function () {
+      var r = _showPage.apply(this, arguments);
+      pedir();
+      return r;
+    };
+  }
+})();
+
 function updateBulkBar() {
   const bar = document.getElementById('bulkBar');
   const count = document.getElementById('bulkCount');
@@ -8196,6 +8311,7 @@ function updateBulkBar() {
   } else {
     bar.classList.remove('show');
   }
+  try { if (window.sincronizarBulkFija) window.sincronizarBulkFija(); } catch (e) {}
 }
 
 // ── DELETE ───────────────────────────────────────────────────
