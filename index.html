@@ -4610,10 +4610,26 @@ function contarPorRubro(tipo) {
 }
 // Lista para los selectores. 'Sin clasificar' no vive en el maestro: aparece
 // sólo si algún movimiento quedó ahí, y se va solo cuando terminás de ordenarlos.
+//
+// Acá también se reconcilia contra los datos. La siembra corre la primera vez
+// que alguien pide la lista, y eso puede pasar ANTES de que los movimientos del
+// hogar terminen de bajar de la nube: en ese caso el maestro nacía con los de
+// fábrica solamente y un rubro que sólo existía en tus movimientos quedaba
+// afuera del selector. Como igual hay que recorrer los datos para contar, la
+// reconciliación sale en la misma pasada y no cuesta nada.
 function getAllRubros(tipo) {
   const t = tipo === 'Ingreso' ? 'Ingreso' : 'Gasto';
-  const lista = (getRubrosMaestro()[t] || []).slice();
-  if (!lista.includes(RUBRO_SIN) && (contarPorRubro(t)[RUBRO_SIN] || 0) > 0) lista.push(RUBRO_SIN);
+  const maestro = getRubrosMaestro();
+  const usos = contarPorRubro(t);
+  const faltantes = Object.keys(usos).filter(function (r) {
+    return r && r !== RUBRO_SIN && !maestro[t].includes(r);
+  });
+  if (faltantes.length) {
+    maestro[t] = maestro[t].concat(faltantes);
+    saveRubrosMaestro(maestro);
+  }
+  const lista = maestro[t].slice();
+  if (!lista.includes(RUBRO_SIN) && (usos[RUBRO_SIN] || 0) > 0) lista.push(RUBRO_SIN);
   return [...lista, 'Personalizado...'];
 }
 window.getAllRubros = getAllRubros;
@@ -8261,6 +8277,10 @@ function rbSetTipo(t) {
 function renderRubrosAdmin() {
   const cont = document.getElementById('rbLista');
   if (!cont) return;
+  // Vía getAllRubros para que la reconciliación con los datos corra también acá:
+  // si no, un rubro recuperado aparecía en el selector pero no en esta lista, y
+  // no se podía ni renombrar ni borrar.
+  getAllRubros(rbTipo);
   const maestro = getRubrosMaestro()[rbTipo] || [];
   const usos = contarPorRubro(rbTipo);
   const sinClasificar = usos[RUBRO_SIN] || 0;
