@@ -237,6 +237,49 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   background:#FFF1EA; border:1px solid rgba(255,138,92,.45); border-top:none;
   border-radius:0 0 12px 12px; box-shadow:0 6px 16px rgba(11,31,51,.10); }
 #bulkBarFija.show { display:flex; }
+/* Novedades */
+.nv-wrap { max-width:760px; margin:0 auto; padding:8px 24px 40px; }
+.nv-entrada { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:22px 24px; margin-bottom:16px; }
+.nv-cab { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+.nv-fecha { font-size:12px; color:var(--muted); font-weight:600; }
+.nv-ver { font-size:10.5px; font-weight:800; letter-spacing:.05em; color:var(--brand-accent);
+  background:#FFF1EA; border-radius:20px; padding:2px 9px; }
+.nv-nueva { font-size:10.5px; font-weight:800; letter-spacing:.05em; color:#fff; background:#ef4444;
+  border-radius:20px; padding:2px 9px; }
+.nv-titulo { font-size:19px; font-weight:800; color:var(--text); letter-spacing:-0.3px; margin:2px 0 8px; }
+.nv-resumen { font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:16px; }
+.nv-cambio { border-top:1px solid var(--border); padding-top:14px; margin-top:14px; }
+.nv-cambio:first-child { border-top:none; padding-top:0; margin-top:0; }
+.nv-ct { font-size:15px; font-weight:700; color:var(--text); margin-bottom:5px; }
+.nv-cb { font-size:14px; color:var(--text); line-height:1.6; }
+.nv-cu { font-size:13px; color:var(--muted); line-height:1.55; margin-top:7px;
+  border-left:3px solid var(--brand-accent); padding-left:11px; }
+.nv-cu b { color:var(--text); font-weight:700; }
+.nv-vacio { text-align:center; padding:40px 20px; color:var(--muted); font-size:14px; }
+/* Editor de novedades */
+.nva-fila { display:flex; align-items:center; gap:10px; padding:10px 13px; border:1px solid var(--border);
+  border-radius:10px; margin-bottom:8px; background:var(--card); }
+.nva-fila .t { flex:1; font-size:13.5px; font-weight:600; color:var(--text); min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nva-fila .m { font-size:11.5px; color:var(--muted); white-space:nowrap; }
+.nva-fila .borrador { font-size:10px; font-weight:800; letter-spacing:.05em; color:#B45309;
+  background:#FFF7ED; border-radius:20px; padding:2px 8px; }
+.nva-fila .acc button { background:none; border:none; cursor:pointer; font-size:14px; padding:3px 6px;
+  border-radius:6px; }
+.nva-fila .acc button:hover { background:rgba(11,31,51,.07); }
+.nva-campo { margin-bottom:12px; }
+.nva-campo label { display:block; font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--muted); font-weight:700; margin-bottom:5px; }
+.nva-campo input, .nva-campo textarea { width:100%; padding:8px 11px; border:1px solid var(--border);
+  border-radius:8px; font-size:13.5px; font-family:inherit; background:var(--card); color:var(--text);
+  box-sizing:border-box; }
+.nva-campo textarea { min-height:62px; resize:vertical; line-height:1.5; }
+.nva-cambio { border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:10px; background:var(--bg); }
+.nva-cambio .cab { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.nva-cambio .cab b { font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+.nva-cambio .cab button { background:none; border:none; cursor:pointer; font-size:13px; color:var(--danger); }
+.nva-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+@media (max-width:720px){ .nva-3 { grid-template-columns:1fr; } }
 /* Administración de rubros */
 .rb-tabs { display:flex; gap:6px; margin-bottom:14px; }
 .rb-tab { padding:7px 16px; border:1px solid var(--border); background:var(--card); color:var(--muted);
@@ -1050,6 +1093,10 @@ tr:hover td { background: #fafbfc; }
 /* 5) Tu GPS (Club Pioneros): header propio mas compacto, watermark de marca,
    barra de progreso mas grande y resaltado en el menu lateral. */
 .main:has(#page-tugps.active) .topbar { display: none; }
+/* Ojo: page-novedades cuelga de <body>, no de .main — un selector .main:has(...)
+   no lo alcanza. Por eso el ancla es body. */
+body:has(#page-novedades.active) .topbar { display: none; }
+body:has(#page-novedades.active) .content { display: none; padding: 0; }
 .main:has(#page-tugps.active) .content { display: none; padding: 0; }
 .main:has(#page-admin.active) .content { display: none; padding: 0; }
 .gps-wrap { position: relative; overflow: visible; }
@@ -1420,7 +1467,7 @@ tr:hover td { background: #fafbfc; }
       </svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px">v005.1.069</div>
+    <div id="verLogin" style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px"></div>
     <div class="lsc-brand-tag">La brújula de tus finanzas.</div>
     <div class="lsc-brand-sub">La aplicación para gestionar tu economía hogareña.</div>
   </div>
@@ -1508,7 +1555,7 @@ tr:hover td { background: #fafbfc; }
     </svg>
     <div>
       <h1>Norte</h1>
-      <span style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px">v005.1.069</span>
+      <span id="verSidebar" style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px"></span>
       <span class="tagline">La brújula de tus finanzas</span>
       <span id="sideYear"></span>
     </div>
@@ -1522,6 +1569,7 @@ tr:hover td { background: #fafbfc; }
     <div class="nav-item" onclick="showPage('reportes')"><span class="ico">📈</span> Reportes</div>
     <div class="nav-item disabled nortia-item" id="navNortia"><span class="nortia-nav-icon" style="display:inline-block;background-image:var(--nortia-icon-url);background-size:72%;background-repeat:no-repeat;background-position:center;background-color:#fff;border-radius:6px;"></span> <strong>NortIA</strong> <span class="badge-soon" id="navNortiaBadge">Próximamente</span></div>
         <div class="nav-item gps-nav-item" id="navTuGps" onclick="showPage('tugps')"><span class="ico">GPS</span> - Pioneros<span id="gpsNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
+    <div class="nav-item" id="navNovedades" onclick="showPage('novedades')"><span class="ico">✨</span> Novedades<span id="novNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
      <div class="nav-item" id="navAdmin" style="display:none" onclick="showPage('admin')"><span class="ico">⚙️</span> Admin</div>
   </div>
   <div class="sidebar-user" id="sidebarUser"><strong id="sidebarUsername">—</strong><span id="sidebarEmpresa"></span></div>
@@ -2934,7 +2982,8 @@ tr:hover td { background: #fafbfc; }
           </div>
           <div class="ayuda-bloque">
             <h4>Actualizaciones</h4>
-            <p>Norte se actualiza sola. La versión que estás usando figura abajo del logo en el menú (por ejemplo <strong>v005.1.062</strong>). Si algo no se ve como debería, cerrá y volvé a abrir la app para que tome la última versión.</p>
+            <p>Norte se actualiza sola. La versión que estás usando figura abajo del logo en el menú (por ejemplo <strong>v005.2.000</strong>). Si algo no se ve como debería, cerrá y volvé a abrir la app para que tome la última versión.</p>
+            <p>Cada vez que mejoramos algo lo contamos en <strong>✨ Novedades</strong>, en el menú de la izquierda: qué cambió, para qué te sirve y dónde encontrarlo. Cuando hay algo que todavía no viste, el ítem muestra un puntito con la cantidad; se apaga solo cuando entrás.</p>
           </div>
         </div>
 
@@ -3010,6 +3059,22 @@ tr:hover td { background: #fafbfc; }
 </div><!-- /ayudaOverlay -->
 
 <!-- TU GPS PAGE --><div id="page-tugps" class="page"><div class="gps-wrap" style="max-width:760px;margin:0 auto;padding:8px 24px 40px;display:flex;flex-direction:column"><div class="gps-header"><div style="display:flex;align-items:center;gap:12px"><button class="menu-toggle gps-volver" onclick="toggleSidebar()" aria-label="Volver al menu" title="Volver al menu">&#9776;</button><div><div class="gps-header-title">Tu GPS</div><div class="gps-header-sub">Club Pioneros de Norte</div></div></div></div><div id="gpsBody" style="margin-top:16px;position:relative;z-index:1"><div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando...</div></div></div></div>
+<!-- NOVEDADES PAGE -->
+<div id="page-novedades" class="page">
+  <div class="nv-wrap">
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:20px">
+      <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menú" title="Abrir menú">&#9776;</button>
+      <div>
+        <div style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-0.5px">✨ Novedades</div>
+        <div style="font-size:13.5px;color:var(--muted);margin-top:5px;line-height:1.55">
+          Lo que fuimos mejorando en Norte, contado en criollo: qué cambió, para qué te sirve y cómo se usa.
+        </div>
+      </div>
+    </div>
+    <div id="novBody"><div class="nv-vacio">Cargando…</div></div>
+  </div>
+</div>
+
 <!-- ADMIN PAGE -->
 <div id="page-admin" class="page">
   <div style="max-width:1400px;margin:0 auto;padding:28px 24px;display:flex;flex-direction:column">
@@ -3018,6 +3083,18 @@ tr:hover td { background: #fafbfc; }
     <div style="margin-bottom:4px">
       <div style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-0.5px">⚙️ Administración</div>
       <div style="font-size:13px;color:var(--muted);margin-top:4px">Panel de configuración del sistema — visible solo para administradores</div>
+    </div>
+
+    <!-- ── NOVEDADES ── -->
+    <div class="admin-group-label" id="adminNovedadesLabel" style="display:none">Novedades</div>
+    <div class="card admin-section" id="adminNovedadesSection" style="padding:22px 24px;display:none">
+      <div style="font-size:16px;font-weight:800;color:var(--text)">La bitácora que ven los usuarios</div>
+      <div style="font-size:13px;color:var(--muted);margin:6px 0 16px;line-height:1.55">
+        Lo que publiques acá aparece al instante en <strong>Novedades</strong>, sin volver a subir la app.
+        Escribilo en criollo: qué cambió, para qué le sirve y, si hace falta, dónde lo encuentra.
+      </div>
+      <div id="nvaLista" style="margin-bottom:14px"></div>
+      <button class="btn btn-primary" onclick="nvaNueva()">+ Escribir una novedad</button>
     </div>
 
     <!-- ── RUBROS ── -->
@@ -3399,6 +3476,41 @@ tr:hover td { background: #fafbfc; }
 
 <!-- CONFIRM DELETE -->
 <!-- ── MODAL PAGAR TC ─────────────────────────────────────── -->
+<div class="overlay" id="nvaOverlay">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <span id="nvaTitulo">Nueva novedad</span>
+      <button onclick="nvaCerrar()" aria-label="Cerrar" style="background:none;border:none;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px">×</button>
+    </div>
+    <div class="nva-3">
+      <div class="nva-campo"><label>Fecha</label><input type="date" id="nvaFecha"></div>
+      <div class="nva-campo"><label>Versión</label><input type="text" id="nvaVersion" placeholder="v005.2.000" maxlength="30"></div>
+      <div class="nva-campo"><label>Estado</label>
+        <select id="nvaPublicada" style="width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;font-family:inherit;background:var(--card);color:var(--text)">
+          <option value="1">Publicada</option>
+          <option value="0">Borrador (no se ve)</option>
+        </select>
+      </div>
+    </div>
+    <div class="nva-campo">
+      <label>Título</label>
+      <input type="text" id="nvaEntTitulo" placeholder="Tu mes, ahora completo" maxlength="120">
+    </div>
+    <div class="nva-campo">
+      <label>Resumen (opcional)</label>
+      <textarea id="nvaResumen" maxlength="600" placeholder="Una o dos frases contando de qué se trata esta tanda."></textarea>
+    </div>
+    <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:18px 0 8px">Los cambios</div>
+    <div id="nvaCambios"></div>
+    <button class="btn btn-secondary" onclick="nvaAgregarCambio()" style="font-size:13px">+ Agregar un cambio</button>
+    <div id="nvaError" style="display:none;margin-top:12px;font-size:13px;color:var(--danger);font-weight:600"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="nvaCerrar()">Cancelar</button>
+      <button class="btn btn-primary" id="nvaGuardar" onclick="nvaGuardar()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="rbBorrarOverlay">
   <div class="modal" style="max-width:520px">
     <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
@@ -6034,10 +6146,12 @@ window.scrollTo(0, 0);
   toggleSidebar(false);
   const navIdx = ['dashboard','transacciones','presupuesto','analisis','progreso','reportes','consultas'].indexOf(p);
   if (navIdx >= 0) document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
-  document.getElementById('pageTitle').textContent = {dashboard:'Mi Rumbo',transacciones:'Transacciones',presupuesto:'Presupuesto',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',consultas:'NortIA',admin:'Administración',tugps:'Tu GPS'}[p] || p;
+  document.getElementById('pageTitle').textContent = {dashboard:'Mi Rumbo',transacciones:'Transacciones',presupuesto:'Presupuesto',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',consultas:'NortIA',admin:'Administración',tugps:'Tu GPS',novedades:'Novedades'}[p] || p;
   curPage = p;
   if (p === 'reportes') initReportesFiltros();
   if (p === 'admin' && window.renderRubrosAdminAlEntrar) { try { window.renderRubrosAdminAlEntrar(); } catch (e) {} }
+  if (p === 'admin') { try { renderNovedadesAdmin(); } catch (e) {} }
+  if (p === 'novedades') { try { renderNovedades(); } catch (e) {} }
   const fabEl = document.querySelector('.fab');
   // En Administración el botón flotante tapaba las acciones de la lista de
   // rubros, y ahí no se cargan movimientos: se esconde, igual que en NortIA.
@@ -6115,6 +6229,17 @@ function fxFechaTxt(){
   const cuando = 'Banco Nación · valor del ' + p[2] + '/' + p[1];
   return dias > 4 ? cuando + ' (sin actualizar)' : cuando;
 }
+// La versión se escribe desde una sola constante: antes estaba copiada a mano en
+// dos lugares del HTML y quedaba desfasada en cada pase.
+function pintarVersion(){
+  ['verLogin', 'verSidebar'].forEach(function (id) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = APP_VERSION;
+  });
+}
+try { pintarVersion(); } catch(e) {}
+document.addEventListener('DOMContentLoaded', function(){ try { pintarVersion(); } catch(e) {} });
+
 function iniciarListenerFX(){
   try {
     firebase.database().ref('norteSync/fx/ARS').on('value',
@@ -8458,6 +8583,238 @@ function rbRefrescarPantallas() {
   } catch (e) {}
 }
 
+
+// ── NOVEDADES (bitácora de cambios) ──────────────────────────────
+// Las entradas viven en la base, no en este archivo: se publican y se corrigen
+// sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
+// Function que exige superadmin.
+const APP_VERSION = 'v005.2.000';
+let novEntradas = [];
+
+function novKeyVisto() {
+  try { return 'fin_novedades_visto_' + (curUserId() || 'anon'); } catch (e) { return 'fin_novedades_visto'; }
+}
+function novUltimaVista() { return Number(localStorage.getItem(novKeyVisto()) || 0); }
+function novSinLeer() {
+  const visto = novUltimaVista();
+  return novEntradas.filter(function (e) { return Number(e.orden) > visto; }).length;
+}
+function novPintarBadge() {
+  const b = document.getElementById('novNavBadge');
+  if (!b) return;
+  const n = novSinLeer();
+  b.textContent = n > 9 ? '9+' : String(n);
+  b.style.display = n > 0 ? 'inline-flex' : 'none';
+}
+function iniciarListenerNovedades() {
+  try {
+    firebase.database().ref('norteSync/bitacora').on('value', function (snap) {
+      const obj = snap.val() || {};
+      novEntradas = Object.keys(obj).map(function (k) { return obj[k]; })
+        .filter(function (e) { return e && e.publicada !== false; })
+        .sort(function (a, b) { return Number(b.orden || 0) - Number(a.orden || 0); });
+      novPintarBadge();
+      if (curPage === 'novedades') renderNovedades();
+      if (typeof renderNovedadesAdmin === 'function') { try { renderNovedadesAdmin(); } catch (e) {} }
+    }, function () { novEntradas = []; novPintarBadge(); });
+  } catch (e) { novEntradas = []; }
+}
+
+function renderNovedades() {
+  const cont = document.getElementById('novBody');
+  if (!cont) return;
+  if (!novEntradas.length) {
+    cont.innerHTML = '<div class="nv-vacio">Todavía no hay novedades publicadas.<br>' +
+      'Cuando mejoremos algo, te lo vas a encontrar acá.</div>';
+    return;
+  }
+  // El corte se calcula ANTES de marcar como visto: si no, al entrar ya nada
+  // aparecería como nuevo y el distintivo no habría servido de nada.
+  const corte = novUltimaVista();
+  cont.innerHTML = novEntradas.map(function (e) {
+    const nueva = Number(e.orden) > corte;
+    const cambios = (Array.isArray(e.cambios) ? e.cambios : []).map(function (c) {
+      return '<div class="nv-cambio">' +
+        (c.titulo ? '<div class="nv-ct">' + esc(c.titulo) + '</div>' : '') +
+        (c.beneficio ? '<div class="nv-cb">' + esc(c.beneficio) + '</div>' : '') +
+        (c.comoSeUsa ? '<div class="nv-cu"><b>Cómo se usa:</b> ' + esc(c.comoSeUsa) + '</div>' : '') +
+        '</div>';
+    }).join('');
+    return '<div class="nv-entrada">' +
+      '<div class="nv-cab">' +
+        '<span class="nv-fecha">' + esc(novFechaLarga(e.fecha)) + '</span>' +
+        (e.version ? '<span class="nv-ver">' + esc(e.version) + '</span>' : '') +
+        (nueva ? '<span class="nv-nueva">NUEVO</span>' : '') +
+      '</div>' +
+      '<div class="nv-titulo">' + esc(e.titulo || '') + '</div>' +
+      (e.resumen ? '<div class="nv-resumen">' + esc(e.resumen) + '</div>' : '') +
+      cambios +
+      '</div>';
+  }).join('');
+
+  // Recién ahora queda todo marcado como leído.
+  const masNueva = Math.max.apply(null, novEntradas.map(function (e) { return Number(e.orden) || 0; }));
+  try { localStorage.setItem(novKeyVisto(), String(masNueva)); } catch (e) {}
+  novPintarBadge();
+}
+
+function novFechaLarga(iso) {
+  if (!iso) return '';
+  const p = String(iso).split('-');
+  if (p.length !== 3) return String(iso);
+  const M = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return Number(p[2]) + ' de ' + (M[Number(p[1]) - 1] || '') + ' de ' + p[0];
+}
+
+
+// ── EDITOR DE NOVEDADES (solo superadmin) ────────────────────────
+// Escribe contra Cloud Functions, no contra la base: la regla de `bitacora` es
+// `.write: false` para todos, así que la única puerta es una función que exige
+// superadmin. Guardar acá se ve al instante en la pantalla de Novedades porque
+// la app escucha ese nodo en vivo.
+let nvaEditandoId = null;
+// FN está declarado con var dentro de otros bloques y no llega hasta acá.
+const NVA_FN = 'https://us-central1-norte-finanzas.cloudfunctions.net';
+
+function nvaLlamar(endpoint, datos) {
+  return (async function () {
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const r = await fetch(NVA_FN + '/' + endpoint, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.assign({ idToken: idToken }, datos || {}))
+    });
+    const j = await r.json().catch(function () { return {}; });
+    if (!r.ok) throw new Error(j.error || 'Error inesperado.');
+    return j;
+  })();
+}
+
+// La lista del panel muestra también los borradores; la pantalla del usuario no.
+let nvaTodas = [];
+function renderNovedadesAdmin() {
+  // La bitácora es de toda la app, no de un hogar: la escribe sólo el superadmin.
+  // El endpoint ya lo exige del lado del servidor; acá escondemos la sección para
+  // no ofrecerle a un admin de hogar algo que le va a dar 403.
+  // esSuper() vive dentro de otro bloque y no llega hasta acá, así que se repite
+  // la misma comprobación que usa el panel de superadmin.
+  const soyElSuper = (function () {
+    try { return (getSession() || {}).userId === 'RUO9uxaH26QZDC1eMVuA0kjMYkw2'; } catch (e) { return false; }
+  })();
+  const label = document.getElementById('adminNovedadesLabel');
+  const secc  = document.getElementById('adminNovedadesSection');
+  if (label) label.style.display = soyElSuper ? '' : 'none';
+  if (secc)  secc.style.display  = soyElSuper ? '' : 'none';
+  if (!soyElSuper) return;
+
+  const cont = document.getElementById('nvaLista');
+  if (!cont) return;
+  try {
+    firebase.database().ref('norteSync/bitacora').once('value').then(function (snap) {
+      const obj = snap.val() || {};
+      nvaTodas = Object.keys(obj).map(function (k) { return obj[k]; })
+        .sort(function (a, b) { return Number(b.orden || 0) - Number(a.orden || 0); });
+      if (!nvaTodas.length) {
+        cont.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:6px 0">Todavía no escribiste ninguna novedad.</div>';
+        return;
+      }
+      cont.innerHTML = nvaTodas.map(function (e) {
+        const n = (e.cambios || []).length;
+        return '<div class="nva-fila">' +
+          '<span class="t">' + esc(e.titulo || '(sin título)') + '</span>' +
+          (e.publicada === false ? '<span class="borrador">BORRADOR</span>' : '') +
+          '<span class="m">' + esc(e.version || '—') + ' · ' + esc(e.fecha || '') + ' · ' + n + ' cambio' + (n === 1 ? '' : 's') + '</span>' +
+          '<span class="acc">' +
+            '<button onclick="nvaEditar(' + JSON.stringify(e.id).replace(/"/g, '&quot;') + ')" title="Editar">✏️</button>' +
+            '<button onclick="nvaBorrar(' + JSON.stringify(e.id).replace(/"/g, '&quot;') + ')" title="Eliminar">🗑️</button>' +
+          '</span></div>';
+      }).join('');
+    }).catch(function () {});
+  } catch (e) {}
+}
+
+function nvaFilaCambio(c) {
+  c = c || {};
+  return '<div class="nva-cambio">' +
+    '<div class="cab"><b>Cambio</b><button onclick="this.closest(\'.nva-cambio\').remove()">Quitar</button></div>' +
+    '<div class="nva-campo"><label>Qué cambió</label>' +
+      '<input type="text" class="c-tit" maxlength="120" placeholder="Copiar a otro mes" value="' + esc(c.titulo || '') + '"></div>' +
+    '<div class="nva-campo"><label>Para qué te sirve</label>' +
+      '<textarea class="c-ben" maxlength="600" placeholder="El beneficio en criollo, sin tecnicismos.">' + esc(c.beneficio || '') + '</textarea></div>' +
+    '<div class="nva-campo"><label>Cómo se usa (opcional)</label>' +
+      '<textarea class="c-uso" maxlength="600" placeholder="Dónde está y qué hay que tocar.">' + esc(c.comoSeUsa || '') + '</textarea></div>' +
+    '</div>';
+}
+function nvaAgregarCambio(c) {
+  document.getElementById('nvaCambios').insertAdjacentHTML('beforeend', nvaFilaCambio(c));
+}
+
+function nvaAbrir(entrada) {
+  entrada = entrada || {};
+  nvaEditandoId = entrada.id || null;
+  document.getElementById('nvaTitulo').textContent = nvaEditandoId ? 'Editar novedad' : 'Nueva novedad';
+  document.getElementById('nvaFecha').value      = entrada.fecha || new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10);
+  document.getElementById('nvaVersion').value    = entrada.version || APP_VERSION;
+  document.getElementById('nvaPublicada').value  = entrada.publicada === false ? '0' : '1';
+  document.getElementById('nvaEntTitulo').value  = entrada.titulo || '';
+  document.getElementById('nvaResumen').value    = entrada.resumen || '';
+  document.getElementById('nvaError').style.display = 'none';
+  const cont = document.getElementById('nvaCambios');
+  cont.innerHTML = '';
+  const cambios = (entrada.cambios && entrada.cambios.length) ? entrada.cambios : [{}];
+  cambios.forEach(function (c) { nvaAgregarCambio(c); });
+  document.getElementById('nvaOverlay').classList.add('show');
+}
+function nvaNueva() { nvaAbrir(null); }
+function nvaEditar(id) { nvaAbrir(nvaTodas.find(function (e) { return e.id === id; }) || null); }
+function nvaCerrar() {
+  nvaEditandoId = null;
+  document.getElementById('nvaOverlay').classList.remove('show');
+}
+
+async function nvaGuardar() {
+  const err = document.getElementById('nvaError');
+  const btn = document.getElementById('nvaGuardar');
+  const cambios = [...document.querySelectorAll('#nvaCambios .nva-cambio')].map(function (d) {
+    return {
+      titulo:    d.querySelector('.c-tit').value.trim(),
+      beneficio: d.querySelector('.c-ben').value.trim(),
+      comoSeUsa: d.querySelector('.c-uso').value.trim()
+    };
+  }).filter(function (c) { return c.titulo || c.beneficio; });
+
+  const titulo = document.getElementById('nvaEntTitulo').value.trim();
+  if (!titulo)         { err.textContent = 'Ponele un título a la novedad.'; err.style.display = 'block'; return; }
+  if (!cambios.length) { err.textContent = 'Agregá al menos un cambio con su título o su beneficio.'; err.style.display = 'block'; return; }
+
+  err.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  try {
+    await nvaLlamar('adminGuardarNovedad', {
+      id: nvaEditandoId || '',
+      fecha:     document.getElementById('nvaFecha').value,
+      version:   document.getElementById('nvaVersion').value.trim(),
+      titulo:    titulo,
+      resumen:   document.getElementById('nvaResumen').value.trim(),
+      publicada: document.getElementById('nvaPublicada').value === '1',
+      cambios:   cambios
+    });
+    nvaCerrar();
+    renderNovedadesAdmin();
+  } catch (e) {
+    err.textContent = e.message; err.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Guardar';
+  }
+}
+
+async function nvaBorrar(id) {
+  const e = nvaTodas.find(function (x) { return x.id === id; });
+  if (!e) return;
+  if (!confirm('Eliminar la novedad «' + (e.titulo || '') + '».\n\nLos usuarios dejan de verla. No se puede deshacer.')) return;
+  try { await nvaLlamar('adminBorrarNovedad', { id: id }); renderNovedadesAdmin(); }
+  catch (err) { alert(err.message); }
+}
+
 // ── MODAL ────────────────────────────────────────────────────
 function populateRubros(tipo, selected) {
   const all = getAllRubros(tipo);
@@ -10301,7 +10658,7 @@ function closePlanModal(e) {
 }
 function iniciarListenerPlan() {
   const empresaId = curEmpresa();
-  try { iniciarListenerFX(); cargarGPSPioneros(); } catch(e){}
+  try { iniciarListenerFX(); cargarGPSPioneros(); iniciarListenerNovedades(); } catch(e){}
   firebase.database().ref('norteSync/billing/' + empresaId).on('value', snap => {
     const v = snap.val();
     miPlanActual = (v && v.tier) || 'FOCO';
