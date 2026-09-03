@@ -2266,7 +2266,9 @@ tr:hover td { background: #fafbfc; }
             <h4>Cómo se cuentan los dólares</h4>
             <p>Si cargás gastos en moneda extranjera —lo más común es el resumen de la tarjeta— Norte los <strong>convierte a pesos y los suma a tus totales</strong>, para que veas el compromiso real del mes y no una foto incompleta.</p>
             <p>Arriba del tablero vas a ver una franja con el <strong>dólar del día</strong>. Se usa el <strong>oficial de venta del Banco Nación</strong>. También te mostramos el dólar tarjeta al lado, pero solo como referencia: no entra en ninguna cuenta.</p>
-            <div class="ayuda-tip">La cotización está a la vista a propósito. Todos los números convertidos de la pantalla salen de ese valor, así que podés rehacer cualquier cuenta a mano. Si algún día no pudimos actualizarla, te decimos de qué día es el dólar que estamos usando, en vez de esconderlo.</div>
+            <p>Norte toma <strong>una sola cotización por día</strong>, de madrugada, y con esa calcula toda la jornada. Como a esa hora el banco todavía no publicó, el valor es el del <strong>cierre anterior</strong> — y por eso la franja dice siempre de qué día es el número, en vez de un “hoy” que no sería cierto.</p>
+            <div class="ayuda-tip">Que el valor quede quieto todo el día es a propósito. Si la cotización se moviera a media mañana, tus totales cambiarían solos sin que hubieras tocado nada, y dos miradas a la misma pantalla darían distinto. Con un valor por día, cualquier cuenta que hagas a mano te va a dar igual que la de Norte.</div>
+            <div class="ayuda-tip">La cotización está a la vista a propósito. Todos los números convertidos de la pantalla salen de ese valor, así que podés rehacer cualquier cuenta. Si pasaron varios días sin que pudiéramos actualizarla — un fin de semana largo, por ejemplo — la franja lo dice, en vez de esconderlo.</div>
           </div>
           <div class="ayuda-bloque">
             <h4>El interruptor: “Pesos + dólares” o “Solo pesos”</h4>
@@ -6098,12 +6100,20 @@ const fmtPz = v => '$' + Number(v||0).toLocaleString('es-AR', {minimumFractionDi
 function fxRate(){ return (FX && Number(FX.oficialVenta) > 0) ? Number(FX.oficialVenta) : 0; }
 function fxActivo(){ return fxModo === 'ambas' && fxRate() > 0; }
 function fxAPesos(usd){ return (Number(usd)||0) * fxRate(); }
+// Norte toma una sola cotización por día, a la 1 de la mañana, y con eso calcula
+// toda la jornada. A esa hora el BNA todavía no publicó, así que el valor es el
+// del cierre anterior: por eso la etiqueta dice SIEMPRE de qué día es el número,
+// en vez de un "hoy" que sería falso. Si el valor quedó viejo — un finde largo,
+// o una corrida que falló — se ve en la misma etiqueta y no hay que adivinarlo.
 function fxFechaTxt(){
   if (!FX || !FX.fecha) return 'Banco Nación';
-  const hoy = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
-  if (FX.fecha === hoy) return 'Banco Nación · hoy';
   const p = String(FX.fecha).split('-');
-  return p.length === 3 ? `Banco Nación · dólar del ${p[2]}/${p[1]}` : 'Banco Nación';
+  if (p.length !== 3) return 'Banco Nación';
+  const hoy = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+  if (FX.fecha === hoy) return 'Banco Nación · valor de hoy';
+  const dias = Math.round((new Date(hoy) - new Date(FX.fecha)) / 86400000);
+  const cuando = 'Banco Nación · valor del ' + p[2] + '/' + p[1];
+  return dias > 4 ? cuando + ' (sin actualizar)' : cuando;
 }
 function iniciarListenerFX(){
   try {
@@ -6128,7 +6138,7 @@ function renderFXStrip(){
   const tarj = Number(FX.tarjeta) > 0 ? Number(FX.tarjeta) : 0;
   el.style.display = 'flex';
   el.innerHTML =
-    '<div class="fx-lbl"><b>Dólar de hoy</b><span>' + esc(fxFechaTxt()) + '</span></div>' +
+    '<div class="fx-lbl"><b>Dólar del día</b><span>' + esc(fxFechaTxt()) + '</span></div>' +
     '<div class="fx-rate"><span class="n">Oficial · venta</span><span class="v">' + fmtPz(fxRate()) + '</span>' +
       (fxActivo() ? '<span class="u">▸ con este se calcula</span>' : '') + '</div>' +
     (tarj ? '<div class="fx-rate ref"><span class="n">Tarjeta · solo referencia</span><span class="v">' + fmtPz(tarj) + '</span></div>' : '') +
