@@ -2426,7 +2426,7 @@ tr:hover td { background: #fafbfc; }
             <div class="ayuda-tip">La diferencia entre <strong>Fijo</strong> y <strong>Variable</strong> no es un detalle: los fijos son los que Norte puede clonar y replicar mes a mes, y los que usa para avisarte cuando falta uno.</div>
           </div>
           <div class="ayuda-bloque">
-            <h4>Rubros propios</h4>
+            <h4>Tus rubros</h4>
             <p>Si ninguna categoría te cierra, elegí <strong>Personalizado...</strong> en el selector y escribí la tuya: queda guardada para siempre y disponible en toda la app.</p>
             <p>Y si querés ordenar la lista entera, está en <strong>Administración → Rubros</strong>. Ahí podés <strong>crear, renombrar y eliminar</strong> cualquier rubro, separados entre gastos e ingresos, y ver cuántos movimientos tiene cada uno antes de tocarlo.</p>
             <div class="ayuda-tip">Esa lista es la que usa <strong>todo</strong> Norte: el selector al cargar, los filtros, el presupuesto, los reportes, el ingreso masivo desde Excel y NortIA. Por eso conviene tenerla corta y con tus palabras: cada rubro que no usás es una opción de más cada vez que cargás un gasto.</div>
@@ -2470,6 +2470,11 @@ tr:hover td { background: #fafbfc; }
               Si en un mes ya tenés un movimiento con el mismo detalle, el botón te lo avisa con un <strong>“ya hay 1”</strong>. No te lo bloquea, pero te evita el duplicado por descuido.
             </div>
             <div class="ayuda-tip">Si copiás un consumo que vino del resumen de la tarjeta, la copia se guarda como <strong>gasto común</strong>, no como consumo de tarjeta. Es una proyección tuya, no un movimiento que informó el banco, y así no te ensucia el reporte de Tarjetas.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>La barra de acciones te sigue</h4>
+            <p>Cuando marcás varios movimientos y bajás por una lista larga, la barra con <strong>Cancelar</strong>, <strong>Copiar a otro mes</strong> y <strong>Eliminar</strong> te queda fija arriba, debajo del encabezado. No hace falta volver al principio de la página para usarla.</p>
+            <p>Aparece sola en cuanto la barra original se va con el scroll, y se retira cuando cancelás la selección o volvés arriba.</p>
           </div>
           <div class="ayuda-bloque">
             <h4>📊 Ingreso masivo desde Excel</h4>
@@ -2860,7 +2865,19 @@ tr:hover td { background: #fafbfc; }
           </div>
           <div class="ayuda-bloque">
             <h4>Capítulo bloqueado</h4>
-            <p>Si un capítulo todavía no está disponible vas a ver su <strong>fecha de desbloqueo</strong>. Si la fecha ya pasó y sigue bloqueado, es porque falta aprobar el quiz del capítulo anterior — los dos requisitos tienen que cumplirse.</p>
+            <p>Si un capítulo todavía no está disponible vas a ver su <strong>fecha de desbloqueo</strong>. Hacen falta las dos cosas: que pasen los 7 días <em>y</em> que tengas aprobado el quiz del capítulo anterior.</p>
+            <p>Si ya cumpliste las dos y aun así lo ves cerrado, la pantalla te lo dice y te ofrece un botón para <strong>actualizar</strong>: se abre en el momento. No hace falta esperar ni escribirnos.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>En qué estoy trabajando</h4>
+            <p>Abajo de los capítulos vas a encontrar la <strong>bitácora de cambios</strong>: cada mejora que le vamos haciendo a Norte, contada en criollo — qué cambió, para qué te sirve y dónde encontrarlo.</p>
+            <div class="ayuda-tip">Esta sección es <strong>exclusiva del Club Pioneros</strong>. Te enterás de cada cambio antes que el resto de los usuarios, que no la ven.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Hablemos</h4>
+            <p>Al final de la pantalla tenés un espacio para escribirle directo a Jaime: algo que no te cierra, una idea, algo que se rompió. Es una <strong>conversación privada</strong> entre vos y él — ningún otro Pionero la ve.</p>
+            <p>Cuando mandás un mensaje le llega un aviso por mail en el momento. La respuesta aparece en esa misma pantalla, sin que tengas que recargar nada.</p>
+            <div class="ayuda-tip">Es el canal directo del programa: no hace falta buscarlo por Instagram ni esperar a que él pregunte. Lo que cuentes acá es lo que termina cambiando la app — varias de las mejoras de la bitácora salieron de mensajes de Pioneros.</div>
           </div>
           <div class="ayuda-bloque">
             <h4>El premio: Pionero Vitalicio</h4>
@@ -2870,7 +2887,7 @@ tr:hover td { background: #fafbfc; }
             <h4>Detalles prácticos</h4>
             <div class="ayuda-ejemplo">
               • La barra de arriba muestra tu progreso en puntos en todo momento.<br>
-              • El <strong>punto rojo</strong> en el menú avisa que hay un capítulo nuevo para leer, y desaparece cuando lo abrís.<br>
+              • El <strong>punto rojo</strong> en el menú avisa que hay algo nuevo para vos: un capítulo recién liberado, una novedad en la bitácora o una respuesta a tu mensaje. El número es la suma de las tres, y se apaga cuando entrás.<br>
               • Si hacés varios días sin entrar, te llega un recordatorio por mail con un tip corto.<br>
               • En el celular, el botón <strong>☰</strong> al lado del título te devuelve al menú principal.
             </div>
@@ -3013,6 +3030,15 @@ tr:hover td { background: #fafbfc; }
         <div class="ayuda-section" id="ayuda-admin">
           <h3>⚙️ Administración</h3>
           <p class="subtitulo">Configuración del sistema — visible solo para administradores</p>
+
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin:24px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Rubros</div>
+
+          <div class="ayuda-bloque">
+            <h4>La lista de rubros de tu hogar</h4>
+            <p>Acá administrás las categorías con las que clasificás tus movimientos: <strong>crear, renombrar y eliminar</strong> cualquiera, incluidos los que vienen de fábrica. Arriba elegís si estás mirando gastos o ingresos, y al lado de cada uno ves cuántos movimientos tiene antes de tocarlo.</p>
+            <div class="ayuda-tip">Es la lista que usa <strong>toda</strong> la aplicación —el selector al cargar, los filtros, el presupuesto, los reportes, el ingreso masivo y NortIA— y es la misma para todo el hogar y en todos tus dispositivos. Lo que cambies acá cambia en todos lados.</div>
+            <p>Ningún movimiento se pierde por tocar la lista: al renombrar, los que ya tenías y sus topes de presupuesto se reetiquetan solos; al eliminar un rubro con movimientos, Norte te pregunta a cuál pasarlos. El detalle completo está en la sección <strong>Carga de movimientos</strong> de esta ayuda.</p>
+          </div>
 
           <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin:24px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Importación de extractos bancarios</div>
 
