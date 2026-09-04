@@ -12620,6 +12620,7 @@ function subtituloRumbo() {
   var _gpsLoaded = false;
   var _gpsUltimoPrograma = null;
   var _gpsBadgeChecked = false;
+  var _gpsBadgeUid = null;
   var _gpsBadgeChecking = false;
 
   function gpsKeyVisto() { try { return 'gpsUltimoCapVisto_' + ((getSession() || {}).userId || 'anon'); } catch (e) { return 'gpsUltimoCapVisto_anon'; } }
@@ -12653,6 +12654,14 @@ function subtituloRumbo() {
     var badge = document.getElementById('gpsNavBadge');
     if (!badge || _gpsBadgeChecking) return;
     _gpsBadgeChecking = true;
+    // Si cambió el usuario, todo el estado anterior deja de valer.
+    try {
+      var uidAhora = (getSession() || {}).userId || null;
+      if (uidAhora !== _gpsBadgeUid) {
+        _gpsBadgeUid = uidAhora; _gpsParticipa = false; _gpsCapPendiente = false;
+        badge.style.display = 'none';
+      }
+    } catch (e) {}
     try {
       var d = await gpsLlamar('obtenerProgramaGuiado');
       _gpsParticipa = !!d.participa;
@@ -12702,7 +12711,14 @@ function subtituloRumbo() {
 
   function gpsPintar(d) {
     var body = document.getElementById('gpsBody');
-    if (!d.participa) { body.innerHTML = '<div class="card" style="padding:26px;text-align:center"><div style="font-size:17px;font-weight:700;margin-bottom:8px">Todavía no estás en el Club Pioneros</div><div style="font-size:14.5px;color:var(--muted)">Esta sección es para quienes están haciendo el mes de acompañamiento guiado.</div></div>'; return; }
+    if (!d.participa) {
+      // Limpiar el estado acá importa: si no, un usuario que no es Pionero puede
+      // heredar el distintivo del que estaba logueado antes en la misma pestaña.
+      _gpsParticipa = false; _gpsCapPendiente = false;
+      try { window.gpsPintarBadgeTotal(); } catch (e) {}
+      body.innerHTML = '<div class="card" style="padding:26px;text-align:center"><div style="font-size:17px;font-weight:700;margin-bottom:8px">Todavía no estás en el Club Pioneros</div><div style="font-size:14.5px;color:var(--muted)">Esta sección es para quienes están haciendo el mes de acompañamiento guiado.</div></div>';
+      return;
+    }
     var p = d.programa;
     _gpsUltimoPrograma = p;
     gpsMarcarVisto(p);
@@ -12895,7 +12911,10 @@ function subtituloRumbo() {
     var r = (typeof _origRenderGps === 'function') ? _origRenderGps.apply(this, arguments) : undefined;
     try {
       if (typeof curPage !== 'undefined' && curPage === 'tugps') gpsRender();
-      if (!_gpsBadgeChecked) gpsSyncBadge();
+      // No es un chequeo de una sola vez: si cambió la cuenta hay que rehacerlo.
+      var uidHoy = null;
+      try { uidHoy = (getSession() || {}).userId || null; } catch (e) {}
+      if (!_gpsBadgeChecked || uidHoy !== _gpsBadgeUid) gpsSyncBadge();
     } catch (e) {}
     return r;
   };
