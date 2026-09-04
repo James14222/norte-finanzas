@@ -238,7 +238,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   border-radius:0 0 12px 12px; box-shadow:0 6px 16px rgba(11,31,51,.10); }
 #bulkBarFija.show { display:flex; }
 /* Novedades */
-.nv-wrap { max-width:760px; margin:0 auto; padding:8px 24px 40px; }
 .nv-entrada { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:22px 24px; margin-bottom:16px; }
 .nv-cab { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
 .nv-fecha { font-size:12px; color:var(--muted); font-weight:600; }
@@ -1093,10 +1092,6 @@ tr:hover td { background: #fafbfc; }
 /* 5) Tu GPS (Club Pioneros): header propio mas compacto, watermark de marca,
    barra de progreso mas grande y resaltado en el menu lateral. */
 .main:has(#page-tugps.active) .topbar { display: none; }
-/* Ojo: page-novedades cuelga de <body>, no de .main — un selector .main:has(...)
-   no lo alcanza. Por eso el ancla es body. */
-body:has(#page-novedades.active) .topbar { display: none; }
-body:has(#page-novedades.active) .content { display: none; padding: 0; }
 .main:has(#page-tugps.active) .content { display: none; padding: 0; }
 .main:has(#page-admin.active) .content { display: none; padding: 0; }
 .gps-wrap { position: relative; overflow: visible; }
@@ -1569,7 +1564,6 @@ body:has(#page-novedades.active) .content { display: none; padding: 0; }
     <div class="nav-item" onclick="showPage('reportes')"><span class="ico">📈</span> Reportes</div>
     <div class="nav-item disabled nortia-item" id="navNortia"><span class="nortia-nav-icon" style="display:inline-block;background-image:var(--nortia-icon-url);background-size:72%;background-repeat:no-repeat;background-position:center;background-color:#fff;border-radius:6px;"></span> <strong>NortIA</strong> <span class="badge-soon" id="navNortiaBadge">Próximamente</span></div>
         <div class="nav-item gps-nav-item" id="navTuGps" onclick="showPage('tugps')"><span class="ico">GPS</span> - Pioneros<span id="gpsNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
-    <div class="nav-item" id="navNovedades" onclick="showPage('novedades')"><span class="ico">✨</span> Novedades<span id="novNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
      <div class="nav-item" id="navAdmin" style="display:none" onclick="showPage('admin')"><span class="ico">⚙️</span> Admin</div>
   </div>
   <div class="sidebar-user" id="sidebarUser"><strong id="sidebarUsername">—</strong><span id="sidebarEmpresa"></span></div>
@@ -2983,7 +2977,7 @@ body:has(#page-novedades.active) .content { display: none; padding: 0; }
           <div class="ayuda-bloque">
             <h4>Actualizaciones</h4>
             <p>Norte se actualiza sola. La versión que estás usando figura abajo del logo en el menú (por ejemplo <strong>v005.2.000</strong>). Si algo no se ve como debería, cerrá y volvé a abrir la app para que tome la última versión.</p>
-            <p>Cada vez que mejoramos algo lo contamos en <strong>✨ Novedades</strong>, en el menú de la izquierda: qué cambió, para qué te sirve y dónde encontrarlo. Cuando hay algo que todavía no viste, el ítem muestra un puntito con la cantidad; se apaga solo cuando entrás.</p>
+
           </div>
         </div>
 
@@ -3059,22 +3053,6 @@ body:has(#page-novedades.active) .content { display: none; padding: 0; }
 </div><!-- /ayudaOverlay -->
 
 <!-- TU GPS PAGE --><div id="page-tugps" class="page"><div class="gps-wrap" style="max-width:760px;margin:0 auto;padding:8px 24px 40px;display:flex;flex-direction:column"><div class="gps-header"><div style="display:flex;align-items:center;gap:12px"><button class="menu-toggle gps-volver" onclick="toggleSidebar()" aria-label="Volver al menu" title="Volver al menu">&#9776;</button><div><div class="gps-header-title">Tu GPS</div><div class="gps-header-sub">Club Pioneros de Norte</div></div></div></div><div id="gpsBody" style="margin-top:16px;position:relative;z-index:1"><div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando...</div></div></div></div>
-<!-- NOVEDADES PAGE -->
-<div id="page-novedades" class="page">
-  <div class="nv-wrap">
-    <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:20px">
-      <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menú" title="Abrir menú">&#9776;</button>
-      <div>
-        <div style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-0.5px">✨ Novedades</div>
-        <div style="font-size:13.5px;color:var(--muted);margin-top:5px;line-height:1.55">
-          Lo que fuimos mejorando en Norte, contado en criollo: qué cambió, para qué te sirve y cómo se usa.
-        </div>
-      </div>
-    </div>
-    <div id="novBody"><div class="nv-vacio">Cargando…</div></div>
-  </div>
-</div>
-
 <!-- ADMIN PAGE -->
 <div id="page-admin" class="page">
   <div style="max-width:1400px;margin:0 auto;padding:28px 24px;display:flex;flex-direction:column">
@@ -3086,12 +3064,13 @@ body:has(#page-novedades.active) .content { display: none; padding: 0; }
     </div>
 
     <!-- ── NOVEDADES ── -->
-    <div class="admin-group-label" id="adminNovedadesLabel" style="display:none">Novedades</div>
+    <div class="admin-group-label" id="adminNovedadesLabel" style="display:none">Novedades para Pioneros</div>
     <div class="card admin-section" id="adminNovedadesSection" style="padding:22px 24px;display:none">
-      <div style="font-size:16px;font-weight:800;color:var(--text)">La bitácora que ven los usuarios</div>
+      <div style="font-size:16px;font-weight:800;color:var(--text)">Lo que leen tus Pioneros</div>
       <div style="font-size:13px;color:var(--muted);margin:6px 0 16px;line-height:1.55">
-        Lo que publiques acá aparece al instante en <strong>Novedades</strong>, sin volver a subir la app.
-        Escribilo en criollo: qué cambió, para qué le sirve y, si hace falta, dónde lo encuentra.
+        Aparece al instante dentro de <strong>Tu GPS</strong>, en «En qué estoy trabajando», y sólo lo ven
+        quienes están en el Club Pioneros. Escribilo en criollo y en primera persona: qué cambió,
+        para qué le sirve y, si hace falta, dónde lo encuentra.
       </div>
       <div id="nvaLista" style="margin-bottom:14px"></div>
       <button class="btn btn-primary" onclick="nvaNueva()">+ Escribir una novedad</button>
@@ -6146,12 +6125,11 @@ window.scrollTo(0, 0);
   toggleSidebar(false);
   const navIdx = ['dashboard','transacciones','presupuesto','analisis','progreso','reportes','consultas'].indexOf(p);
   if (navIdx >= 0) document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
-  document.getElementById('pageTitle').textContent = {dashboard:'Mi Rumbo',transacciones:'Transacciones',presupuesto:'Presupuesto',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',consultas:'NortIA',admin:'Administración',tugps:'Tu GPS',novedades:'Novedades'}[p] || p;
+  document.getElementById('pageTitle').textContent = {dashboard:'Mi Rumbo',transacciones:'Transacciones',presupuesto:'Presupuesto',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',consultas:'NortIA',admin:'Administración',tugps:'Tu GPS'}[p] || p;
   curPage = p;
   if (p === 'reportes') initReportesFiltros();
   if (p === 'admin' && window.renderRubrosAdminAlEntrar) { try { window.renderRubrosAdminAlEntrar(); } catch (e) {} }
   if (p === 'admin') { try { renderNovedadesAdmin(); } catch (e) {} }
-  if (p === 'novedades') { try { renderNovedades(); } catch (e) {} }
   const fabEl = document.querySelector('.fab');
   // En Administración el botón flotante tapaba las acciones de la lista de
   // rubros, y ahí no se cargan movimientos: se esconde, igual que en NortIA.
@@ -8599,12 +8577,10 @@ function novSinLeer() {
   const visto = novUltimaVista();
   return novEntradas.filter(function (e) { return Number(e.orden) > visto; }).length;
 }
+// Ya no hay distintivo propio: el aviso se suma al de GPS - Pioneros, que es
+// donde vive la bitácora. Un solo número en el menú, y adentro se ve qué es.
 function novPintarBadge() {
-  const b = document.getElementById('novNavBadge');
-  if (!b) return;
-  const n = novSinLeer();
-  b.textContent = n > 9 ? '9+' : String(n);
-  b.style.display = n > 0 ? 'inline-flex' : 'none';
+  try { if (typeof window.gpsPintarBadgeTotal === 'function') window.gpsPintarBadgeTotal(); } catch (e) {}
 }
 function iniciarListenerNovedades() {
   try {
@@ -8621,11 +8597,20 @@ function iniciarListenerNovedades() {
 }
 
 function renderNovedades() {
-  const cont = document.getElementById('novBody');
+  const cont = document.getElementById('gpsNovWrap');
   if (!cont) return;
+  const encabezado =
+    '<div style="border-top:1px solid var(--border);padding-top:22px;margin-bottom:16px">' +
+      '<div style="font-size:19px;font-weight:800;color:var(--text);letter-spacing:-0.3px">En qué estoy trabajando</div>' +
+      '<div style="font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.55">' +
+        'Sos Pionero, así que te lo cuento acá primero: cada cosa que voy mejorando en Norte, ' +
+        'qué cambió y para qué te sirve.' +
+      '</div>' +
+    '</div>';
   if (!novEntradas.length) {
-    cont.innerHTML = '<div class="nv-vacio">Todavía no hay novedades publicadas.<br>' +
-      'Cuando mejoremos algo, te lo vas a encontrar acá.</div>';
+    cont.innerHTML = encabezado +
+      '<div class="nv-vacio">Todavía no hay nada para contarte.<br>' +
+      'Apenas mejore algo, lo vas a leer acá antes que nadie.</div>';
     return;
   }
   // El corte se calcula ANTES de marcar como visto: si no, al entrar ya nada
@@ -8651,6 +8636,7 @@ function renderNovedades() {
       cambios +
       '</div>';
   }).join('');
+  cont.innerHTML = encabezado + cont.innerHTML;
 
   // Recién ahora queda todo marcado como leído.
   const masNueva = Math.max.apply(null, novEntradas.map(function (e) { return Number(e.orden) || 0; }));
@@ -12334,12 +12320,45 @@ function subtituloRumbo() {
 
   function gpsKeyVisto() { try { return 'gpsUltimoCapVisto_' + ((getSession() || {}).userId || 'anon'); } catch (e) { return 'gpsUltimoCapVisto_anon'; } }
   function gpsMaxDisponible(p) { var max = 0; [1, 2, 3, 4].forEach(function (n) { if ((p.capitulos[n] || {}).disponible) max = n; }); return max; }
+  // El distintivo de GPS - Pioneros cuenta dos cosas: capítulos recién liberados
+  // y novedades de la bitácora sin leer. Se guarda el estado de cada una por
+  // separado porque llegan por caminos distintos — el capítulo por la Cloud
+  // Function, las novedades por el listener de la base — y cualquiera de las
+  // dos puede actualizarse sola.
+  var _gpsCapPendiente = false;
+  var _gpsParticipa = false;
+  window.gpsPintarBadgeTotal = function () {
+    var badge = document.getElementById('gpsNavBadge');
+    if (!badge) return;
+    if (!_gpsParticipa) { badge.style.display = 'none'; return; }
+    var n = (_gpsCapPendiente ? 1 : 0);
+    try { if (typeof novSinLeer === 'function') n += novSinLeer(); } catch (e) {}
+    badge.textContent = n > 9 ? '9+' : String(n);
+    badge.style.display = n > 0 ? 'inline-flex' : 'none';
+  };
+
   function gpsMarcarVisto(p) {
     try { localStorage.setItem(gpsKeyVisto(), String(gpsMaxDisponible(p))); } catch (e) {}
-    var badge = document.getElementById('gpsNavBadge');
-    if (badge) badge.style.display = 'none';
+    _gpsParticipa = true;
+    _gpsCapPendiente = false;
+    // Las novedades las marca renderNovedades cuando termina de pintarlas.
+    window.gpsPintarBadgeTotal();
   }
-  async function gpsSyncBadge() { var badge = document.getElementById('gpsNavBadge'); if (!badge) return; if (_gpsBadgeChecking) return; _gpsBadgeChecking = true; try { var d = await gpsLlamar('obtenerProgramaGuiado'); if (!d.participa) { badge.style.display = 'none'; _gpsBadgeChecked = true; return; } var maxDisp = gpsMaxDisponible(d.programa); var visto = parseInt(localStorage.getItem(gpsKeyVisto()) || '0', 10); badge.style.display = (maxDisp > visto) ? 'inline-flex' : 'none'; _gpsBadgeChecked = true; } catch (e) { } finally { _gpsBadgeChecking = false; } }
+  async function gpsSyncBadge() {
+    var badge = document.getElementById('gpsNavBadge');
+    if (!badge || _gpsBadgeChecking) return;
+    _gpsBadgeChecking = true;
+    try {
+      var d = await gpsLlamar('obtenerProgramaGuiado');
+      _gpsParticipa = !!d.participa;
+      if (!d.participa) { badge.style.display = 'none'; _gpsBadgeChecked = true; return; }
+      var maxDisp = gpsMaxDisponible(d.programa);
+      var visto = parseInt(localStorage.getItem(gpsKeyVisto()) || '0', 10);
+      _gpsCapPendiente = maxDisp > visto;
+      window.gpsPintarBadgeTotal();
+      _gpsBadgeChecked = true;
+    } catch (e) { } finally { _gpsBadgeChecking = false; }
+  }
 
  window.gpsRender = async function () {
     var body = document.getElementById('gpsBody');
@@ -12428,7 +12447,12 @@ function subtituloRumbo() {
     var banner = vit ? '<div class="card" style="padding:18px;margin-bottom:18px;text-align:center;background:rgba(232,192,80,0.12);border:1px solid rgba(232,192,80,0.3)"><div style="font-size:17px;font-weight:700">Sos Pionero Vitalicio</div><div style="font-size:14.5px;color:var(--muted);margin-top:5px">Completaste el mes de acompañamiento. Tu acceso a Norte FOCO queda gratis para siempre.</div></div>' : '';
     body.innerHTML = banner +
       '<div class="gps-progress-card"><div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;margin-bottom:2px"><span>Tu progreso</span><span>' + (p.puntos || 0) + ' / 40 pts</span></div><div class="gps-progress-bar-track"><div class="gps-progress-bar-fill" style="width:' + pct + '%"></div></div></div>' +
-      filas + cardAcceso;
+      filas + cardAcceso +
+      // La bitácora es una comunicación exclusiva para Pioneros: vive acá abajo
+      // y no en una pantalla pública. Sólo se arma dentro de esta rama, que es
+      // la que corre cuando la persona efectivamente participa del programa.
+      '<div id="gpsNovWrap" style="margin-top:28px"></div>';
+    try { renderNovedades(); } catch (e) {}
   }
 
   function gpsKeyLeido(n) { try { return 'gpsCapLeido_' + ((getSession() || {}).userId || 'anon') + '_' + n; } catch (e) { return 'gpsCapLeido_anon_' + n; } }
