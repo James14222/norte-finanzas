@@ -1592,7 +1592,7 @@ tr:hover td { background: #fafbfc; }
     <div class="nav-item" onclick="showPage('reportes')"><span class="ico">📈</span> Reportes</div>
     <div class="nav-item disabled nortia-item" id="navNortia"><span class="nortia-nav-icon" style="display:inline-block;background-image:var(--nortia-icon-url);background-size:72%;background-repeat:no-repeat;background-position:center;background-color:#fff;border-radius:6px;"></span> <strong>NortIA</strong> <span class="badge-soon" id="navNortiaBadge">Próximamente</span></div>
         <div class="nav-item gps-nav-item" id="navTuGps" onclick="showPage('tugps')"><span class="ico">GPS</span> - Pioneros<span id="gpsNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
-     <div class="nav-item" id="navAdmin" style="display:none" onclick="showPage('admin')"><span class="ico">⚙️</span> Admin</div>
+     <div class="nav-item" id="navAdmin" style="display:none" onclick="showPage('admin')"><span class="ico">⚙️</span> Admin<span id="adminNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
   </div>
   <div class="sidebar-user" id="sidebarUser"><strong id="sidebarUsername">—</strong><span id="sidebarEmpresa"></span></div>
   <div class="acct-box" id="acctBox" style="display:none"></div>
@@ -6212,6 +6212,7 @@ window.scrollTo(0, 0);
   if (p === 'admin' && window.renderRubrosAdminAlEntrar) { try { window.renderRubrosAdminAlEntrar(); } catch (e) {} }
   if (p === 'admin') { try { renderNovedadesAdmin(); } catch (e) {} }
   if (p === 'admin') { try { renderChatsAdmin(); } catch (e) {} }
+  if (p === 'admin') { try { iniciarListenerChatsAdmin(); pintarBadgeAdmin(); } catch (e) {} }
   const fabEl = document.querySelector('.fab');
   // En Administración el botón flotante tapaba las acciones de la lista de
   // rubros, y ahí no se cargan movimientos: se esconde, igual que en NortIA.
@@ -9131,6 +9132,57 @@ async function hbAResponder() {
   }
 }
 
+
+// ── DISTINTIVO DE ADMIN: Pioneros esperando respuesta ────────────
+// Mismo mecanismo que el punto rojo de los usuarios, pero del lado de Jaime.
+// Es en vivo y no por sondeo: la regla de `pioneroChat` deja al superadmin leer
+// el nodo entero, así que alcanza con un listener. La cuenta es de HILOS con
+// algo sin responder, no de mensajes: lo accionable es "cuánta gente espera".
+let adminChatSinResponder = 0;
+let _adminChatRef = null;
+
+function esElSuperAdminLocal() {
+  try { return (getSession() || {}).userId === 'RUO9uxaH26QZDC1eMVuA0kjMYkw2'; }
+  catch (e) { return false; }
+}
+
+function pintarBadgeAdmin() {
+  const b = document.getElementById('adminNavBadge');
+  if (!b) return;
+  if (!esElSuperAdminLocal() || adminChatSinResponder <= 0) { b.style.display = 'none'; return; }
+  b.textContent = adminChatSinResponder > 9 ? '9+' : String(adminChatSinResponder);
+  b.style.display = 'inline-flex';
+}
+
+function iniciarListenerChatsAdmin() {
+  if (!esElSuperAdminLocal()) {
+    // Si cambió la cuenta, hay que soltar el listener y limpiar: si no, el
+    // distintivo del superadmin le queda pegado al usuario siguiente.
+    if (_adminChatRef) { try { _adminChatRef.off(); } catch (e) {} _adminChatRef = null; }
+    adminChatSinResponder = 0;
+    pintarBadgeAdmin();
+    return;
+  }
+  if (_adminChatRef) return;
+  try {
+    _adminChatRef = firebase.database().ref('norteSync/pioneroChat');
+    _adminChatRef.on('value', function (snap) {
+      const obj = snap.val() || {};
+      adminChatSinResponder = Object.keys(obj).reduce(function (n, id) {
+        const hilo = obj[id] || {};
+        const visto = Number((hilo.meta || {}).adminVistoTs) || 0;
+        const hay = Object.values(hilo.mensajes || {}).some(function (m) {
+          return m && m.de === 'pionero' && (Number(m.ts) || 0) > visto;
+        });
+        return n + (hay ? 1 : 0);
+      }, 0);
+      pintarBadgeAdmin();
+      // Si el panel está abierto, que la lista también se refresque sola.
+      if (curPage === 'admin') { try { renderChatsAdmin(); } catch (e) {} }
+    }, function () { adminChatSinResponder = 0; pintarBadgeAdmin(); });
+  } catch (e) { _adminChatRef = null; }
+}
+
 // ── MODAL ────────────────────────────────────────────────────
 function populateRubros(tipo, selected) {
   const all = getAllRubros(tipo);
@@ -10974,7 +11026,7 @@ function closePlanModal(e) {
 }
 function iniciarListenerPlan() {
   const empresaId = curEmpresa();
-  try { iniciarListenerFX(); cargarGPSPioneros(); iniciarListenerNovedades(); } catch(e){}
+  try { iniciarListenerFX(); cargarGPSPioneros(); iniciarListenerNovedades(); iniciarListenerChatsAdmin(); } catch(e){}
   firebase.database().ref('norteSync/billing/' + empresaId).on('value', snap => {
     const v = snap.val();
     miPlanActual = (v && v.tier) || 'FOCO';
