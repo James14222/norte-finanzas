@@ -255,6 +255,28 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   border-left:3px solid var(--brand-accent); padding-left:11px; }
 .nv-cu b { color:var(--text); font-weight:700; }
 .nv-vacio { text-align:center; padding:40px 20px; color:var(--muted); font-size:14px; }
+.nv-fila { background:var(--card); border:1px solid var(--border); border-radius:14px;
+  padding:16px 18px; margin-bottom:11px; cursor:pointer; transition:border-color .15s, transform .06s; }
+.nv-fila:hover { border-color:var(--brand-accent); }
+.nv-fila:active { transform:scale(.995); }
+.nv-fila.leida { opacity:.72; }
+.nv-ftit { font-size:17px; font-weight:800; color:var(--text); letter-spacing:-0.25px; margin:5px 0 7px; }
+.nv-fila.leida .nv-ftit { font-weight:600; font-size:16px; color:var(--muted); }
+.nv-fpie { display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  font-size:12px; color:var(--muted); font-weight:600; }
+.nv-fpie .abrir { margin-left:auto; color:var(--brand-accent); font-weight:700; white-space:nowrap; }
+.nv-votado { color:#16a34a; font-weight:700; }
+.nv-voto-caja { border-top:1px solid var(--border); margin-top:20px; padding-top:18px; }
+.nv-voto-preg { font-size:15px; font-weight:700; color:var(--text); margin-bottom:12px; }
+.nv-voto-fila { display:flex; gap:8px; flex-wrap:wrap; }
+.nv-voto-b { flex:1 1 0; min-width:52px; height:46px; border:1.5px solid var(--border); background:var(--card);
+  border-radius:11px; font-size:16px; font-weight:800; color:var(--muted); cursor:pointer;
+  transition:all .13s; font-family:inherit; }
+.nv-voto-b:hover { border-color:var(--brand-accent); color:var(--text); }
+.nv-voto-b.sel { background:var(--brand-accent); border-color:var(--brand-accent); color:#fff; }
+.nv-voto-txt { font-size:13px; color:var(--muted); margin-top:10px; min-height:19px; line-height:1.5; }
+.nv-voto-txt b { color:var(--text); }
+
 /* Hablemos — hilo privado del Pionero */
 .hb-hilo { display:flex; flex-direction:column; gap:10px; max-height:420px; overflow-y:auto;
   padding:4px 2px 2px; margin-bottom:14px; }
@@ -3520,6 +3542,18 @@ tr:hover td { background: #fafbfc; }
 
 <!-- CONFIRM DELETE -->
 <!-- ── MODAL PAGAR TC ─────────────────────────────────────── -->
+<div class="overlay" id="novOverlay">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-title" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+      <span id="novDetTitulo" style="line-height:1.3"></span>
+      <button onclick="novCerrar()" aria-label="Cerrar" style="background:none;border:none;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px">×</button>
+    </div>
+    <div id="novDetCab" style="font-size:12px;color:var(--muted);font-weight:600;margin:-4px 0 14px"></div>
+    <div id="novDetCuerpo"></div>
+    <div id="novDetVoto"></div>
+  </div>
+</div>
+
 <div class="overlay" id="hbAOverlay">
   <div class="modal" style="max-width:600px">
     <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
@@ -3555,6 +3589,10 @@ tr:hover td { background: #fafbfc; }
     <div class="nva-campo">
       <label>Título</label>
       <input type="text" id="nvaEntTitulo" placeholder="Tu mes, ahora completo" maxlength="120">
+    </div>
+    <div class="nva-campo">
+      <label>Pregunta del voto (opcional)</label>
+      <input type="text" id="nvaPregunta" maxlength="200" placeholder="Si la dejás vacía: «¿Te sirvió este cambio?» si pusiste versión, «¿Esto te serviría?» si no.">
     </div>
     <div class="nva-campo">
       <label>Resumen (opcional)</label>
@@ -3738,7 +3776,7 @@ const getEmpresas    = ()  => JSON.parse(localStorage.getItem('fin_empresas') ||
 const saveEmpresas   = e   => localStorage.setItem('fin_empresas', JSON.stringify(e));
 const getSession     = ()  => JSON.parse(localStorage.getItem('fin_session')  || 'null');
 const setSession     = s   => localStorage.setItem('fin_session',  JSON.stringify(s));
-const clearSession   = () => { const conservar = ['firebase:', 'gpsUltimoCapVisto_', 'gpsCapLeido_', 'fin_onboarding_done_', 'norte_ia_captura_', 'norteInstallDismiss']; Object.keys(localStorage).forEach(k => { if (!conservar.some(p => k.startsWith(p))) localStorage.removeItem(k); }); };
+const clearSession   = () => { const conservar = ['firebase:', 'fin_lecturas_', 'gpsUltimoCapVisto_', 'gpsCapLeido_', 'fin_onboarding_done_', 'norte_ia_captura_', 'norteInstallDismiss']; Object.keys(localStorage).forEach(k => { if (!conservar.some(p => k.startsWith(p))) localStorage.removeItem(k); }); };
 
 // Current context helpers
 const curEmpresa     = ()  => getSession()?.empresaId || 'JLL';
@@ -8656,23 +8694,128 @@ function rbRefrescarPantallas() {
 }
 
 
+
+// ── QUÉ LEÍSTE Y QUÉ VOTASTE, POR USUARIO ────────────────────────
+// Antes cada "ya lo vi" vivía en el localStorage del navegador. Consecuencia:
+// leías la novedad en el celular, abrías la app en la compu y el puntito seguía
+// prendido, porque eran dos memorias sin relación. Ahora eso vive en la base,
+// colgado del uid, y te sigue a donde entres. La copia local queda sólo como
+// caché para pintar sin esperar a la red — y para que la app funcione offline.
+//
+// La regla ata el nodo al propio uid: nadie puede marcar como leído ni votar en
+// nombre de otro, así que no hace falta pasar por una Cloud Function.
+let lect = { nov: {}, votos: {}, novHasta: 0, chat: 0, caps: {}, capsVisto: 0 };
+let lectRef = null;
+let lectUid = null;
+
+function lectKeyLocal(uid) { return 'fin_lecturas_' + (uid || 'anon'); }
+
+function lectNormalizar(o) {
+  o = o || {};
+  return {
+    nov:       o.nov   || {},
+    votos:     o.votos || {},
+    novHasta:  Number(o.novHasta)  || 0,
+    chat:      Number(o.chat)      || 0,
+    caps:      o.caps  || {},
+    capsVisto: Number(o.capsVisto) || 0
+  };
+}
+
+// Lo que ya estaba guardado en este navegador no se tira: se convierte una vez.
+// Sin esto, al subir el cambio todos los Pioneros verían de golpe como "nuevo"
+// todo lo que ya habían leído.
+function lectMigrarDeLocal(uid) {
+  const m = { nov: {}, votos: {}, novHasta: 0, chat: 0, caps: {}, capsVisto: 0 };
+  try {
+    // El modelo viejo era un solo corte: "leí hasta acá". Se conserva tal cual
+    // en novHasta, y una entrada cuenta como leída si cae antes de ese corte.
+    m.novHasta  = Number(localStorage.getItem('fin_novedades_visto_' + uid) || 0) || 0;
+    m.chat      = Number(localStorage.getItem('fin_chat_visto_' + uid) || 0) || 0;
+    m.capsVisto = Number(localStorage.getItem('gpsUltimoCapVisto_' + uid) || 0) || 0;
+    for (let n = 1; n <= 4; n++) {
+      if (localStorage.getItem('gpsCapLeido_' + uid + '_' + n) === '1') m.caps[n] = true;
+    }
+  } catch (e) {}
+  return m;
+}
+
+function lectGuardarLocal() {
+  try { localStorage.setItem(lectKeyLocal(lectUid), JSON.stringify(lect)); } catch (e) {}
+}
+
+// Escribe el pedacito que cambió, no el objeto entero: dos dispositivos abiertos
+// a la vez no se pisan lo del otro.
+function lectEscribir(camino, valor) {
+  lectGuardarLocal();
+  if (!lectRef) return;
+  try { lectRef.child(camino).set(valor); } catch (e) {}
+}
+
+function iniciarLecturas() {
+  let uid;
+  try { uid = curUserId(); } catch (e) { uid = null; }
+  if (!uid || uid === 'desconocido') return;
+  if (lectUid === uid && lectRef) return;          // ya enganchado a este usuario
+
+  if (lectRef) { try { lectRef.off(); } catch (e) {} lectRef = null; }
+  lectUid = uid;
+
+  // Primero el caché, para pintar ya. Si no hay, lo que hubiera del modelo viejo.
+  let local = null;
+  try { local = JSON.parse(localStorage.getItem(lectKeyLocal(uid)) || 'null'); } catch (e) {}
+  lect = lectNormalizar(local || lectMigrarDeLocal(uid));
+
+  try {
+    lectRef = firebase.database().ref('norteSync/lecturas/' + uid);
+    lectRef.on('value', function (snap) {
+      const remoto = snap.val();
+      if (!remoto) {
+        // Primera vez en la nube: subimos lo que este dispositivo ya sabía.
+        try { lectRef.set(lect); } catch (e) {}
+      } else {
+        // Lo leído no se "deslee": ante la duda, gana haber leído. Así dos
+        // dispositivos que van y vienen nunca vuelven a encender el puntito.
+        const r = lectNormalizar(remoto);
+        lect = {
+          nov:       Object.assign({}, lect.nov,   r.nov),
+          votos:     Object.assign({}, lect.votos, r.votos),
+          novHasta:  Math.max(lect.novHasta,  r.novHasta),
+          chat:      Math.max(lect.chat,      r.chat),
+          caps:      Object.assign({}, lect.caps,  r.caps),
+          capsVisto: Math.max(lect.capsVisto, r.capsVisto)
+        };
+        lectGuardarLocal();
+      }
+      try { if (typeof window.gpsPintarBadgeTotal === 'function') window.gpsPintarBadgeTotal(); } catch (e) {}
+      if (typeof curPage !== 'undefined' && curPage === 'tugps') {
+        try { renderNovedades(); } catch (e) {}
+      }
+    }, function () { /* sin red: seguimos con el caché */ });
+  } catch (e) { lectRef = null; }
+}
+
 // ── NOVEDADES (bitácora de cambios) ──────────────────────────────
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.2.000';
+const APP_VERSION = 'v005.3.000';
 let novEntradas = [];
 
-function novKeyVisto() {
-  try { return 'fin_novedades_visto_' + (curUserId() || 'anon'); } catch (e) { return 'fin_novedades_visto'; }
+function novLeida(e) {
+  if (!e || !e.id) return false;
+  if (lect.nov && lect.nov[e.id]) return true;
+  // Compatibilidad con el modelo viejo, que guardaba un único corte temporal.
+  return Number(e.orden || 0) <= Number(lect.novHasta || 0);
 }
-function novUltimaVista() { return Number(localStorage.getItem(novKeyVisto()) || 0); }
+function novVotada(e) { return !!(e && e.id && lect.votos && lect.votos[e.id]); }
+
+// Pendiente no es sólo "no la leíste": también cuenta la que leíste y todavía no
+// dijiste qué te pareció. El puntito deja de ser un aviso y pasa a ser un
+// pedido — se apaga cuando votás, no cuando mirás.
 function novSinLeer() {
-  const visto = novUltimaVista();
-  return novEntradas.filter(function (e) { return Number(e.orden) > visto; }).length;
+  return novEntradas.filter(function (e) { return !novLeida(e) || !novVotada(e); }).length;
 }
-// Ya no hay distintivo propio: el aviso se suma al de GPS - Pioneros, que es
-// donde vive la bitácora. Un solo número en el menú, y adentro se ve qué es.
 function novPintarBadge() {
   try { if (typeof window.gpsPintarBadgeTotal === 'function') window.gpsPintarBadgeTotal(); } catch (e) {}
 }
@@ -8690,6 +8833,20 @@ function iniciarListenerNovedades() {
   } catch (e) { novEntradas = []; }
 }
 
+// Las etiquetas cambian según qué se esté preguntando: no es lo mismo opinar
+// sobre algo que ya está hecho que sobre algo que todavía no existe.
+const NOV_ESCALAS = {
+  propuesta: ['No lo usaría', 'Me da igual', 'Puede servirme', 'Lo usaría', 'Lo estaba esperando'],
+  hecho:     ['No me sirve', 'Me da igual', 'Algo me sirve', 'Me sirve', 'Me resuelve un problema']
+};
+function novEsPropuesta(e) { return !String((e && e.version) || '').trim(); }
+function novEscala(e) { return novEsPropuesta(e) ? NOV_ESCALAS.propuesta : NOV_ESCALAS.hecho; }
+function novPregunta(e) {
+  const p = String((e && e.pregunta) || '').trim();
+  if (p) return p;
+  return novEsPropuesta(e) ? '¿Esto te serviría?' : '¿Te sirvió este cambio?';
+}
+
 function renderNovedades() {
   const cont = document.getElementById('gpsNovWrap');
   if (!cont) return;
@@ -8697,8 +8854,8 @@ function renderNovedades() {
     '<div style="border-top:1px solid var(--border);padding-top:22px;margin-bottom:16px">' +
       '<div style="font-size:19px;font-weight:800;color:var(--text);letter-spacing:-0.3px">En qué estoy trabajando</div>' +
       '<div style="font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.55">' +
-        'Sos Pionero, así que te lo cuento acá primero: cada cosa que voy mejorando en Norte, ' +
-        'qué cambió y para qué te sirve.' +
+        'Sos Pionero, así que te lo cuento acá primero. Tocá cualquiera para leer el detalle ' +
+        'y decirme qué te parece — con un toque me alcanza.' +
       '</div>' +
     '</div>';
   if (!novEntradas.length) {
@@ -8707,35 +8864,97 @@ function renderNovedades() {
       'Apenas mejore algo, lo vas a leer acá antes que nadie.</div>';
     return;
   }
-  // El corte se calcula ANTES de marcar como visto: si no, al entrar ya nada
-  // aparecería como nuevo y el distintivo no habría servido de nada.
-  const corte = novUltimaVista();
-  cont.innerHTML = novEntradas.map(function (e) {
-    const nueva = Number(e.orden) > corte;
-    const cambios = (Array.isArray(e.cambios) ? e.cambios : []).map(function (c) {
+  // Ojo: acá ya no se marca nada como leído. Eso pasa recién al abrir el
+  // detalle — scrollear por los títulos no es haber leído.
+  cont.innerHTML = encabezado + novEntradas.map(function (e) {
+    const leida  = novLeida(e);
+    const votada = novVotada(e);
+    const n = (Array.isArray(e.cambios) ? e.cambios : []).length;
+    return '<div class="nv-fila' + (leida ? ' leida' : '') + '" onclick="novAbrir(' +
+        JSON.stringify(String(e.id || '')).replace(/"/g, '&quot;') + ')">' +
+      '<div class="nv-cab">' +
+        '<span class="nv-fecha">' + esc(novFechaLarga(e.fecha)) + '</span>' +
+        (e.version ? '<span class="nv-ver">' + esc(e.version) + '</span>' : '') +
+        (leida ? '' : '<span class="nv-nueva">NUEVO</span>') +
+      '</div>' +
+      '<div class="nv-ftit">' + esc(e.titulo || '') + '</div>' +
+      '<div class="nv-fpie">' +
+        '<span>' + n + (n === 1 ? ' novedad' : ' novedades') + '</span>' +
+        (votada ? '<span class="nv-votado">✓ Ya votaste</span>'
+                : (leida ? '<span style="color:#d97706">Falta tu voto</span>' : '')) +
+        '<span class="abrir">' + (leida ? 'Volver a leer' : 'Leer') + ' ›</span>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+  novPintarBadge();
+}
+
+// Abrir el detalle ES leerla. Ese es todo el cambio respecto de antes, cuando
+// alcanzaba con pisar la pantalla para que se diera por leído todo.
+function novAbrir(id) {
+  const e = novEntradas.find(function (x) { return String(x.id) === String(id); });
+  if (!e) return;
+  document.getElementById('novDetTitulo').textContent = e.titulo || '';
+  document.getElementById('novDetCab').innerHTML =
+    esc(novFechaLarga(e.fecha)) + (e.version ? ' · <span class="nv-ver">' + esc(e.version) + '</span>' : '');
+  document.getElementById('novDetCuerpo').innerHTML =
+    (e.resumen ? '<div class="nv-resumen">' + esc(e.resumen) + '</div>' : '') +
+    (Array.isArray(e.cambios) ? e.cambios : []).map(function (c) {
       return '<div class="nv-cambio">' +
         (c.titulo ? '<div class="nv-ct">' + esc(c.titulo) + '</div>' : '') +
         (c.beneficio ? '<div class="nv-cb">' + esc(c.beneficio) + '</div>' : '') +
         (c.comoSeUsa ? '<div class="nv-cu"><b>Cómo se usa:</b> ' + esc(c.comoSeUsa) + '</div>' : '') +
         '</div>';
     }).join('');
-    return '<div class="nv-entrada">' +
-      '<div class="nv-cab">' +
-        '<span class="nv-fecha">' + esc(novFechaLarga(e.fecha)) + '</span>' +
-        (e.version ? '<span class="nv-ver">' + esc(e.version) + '</span>' : '') +
-        (nueva ? '<span class="nv-nueva">NUEVO</span>' : '') +
-      '</div>' +
-      '<div class="nv-titulo">' + esc(e.titulo || '') + '</div>' +
-      (e.resumen ? '<div class="nv-resumen">' + esc(e.resumen) + '</div>' : '') +
-      cambios +
-      '</div>';
-  }).join('');
-  cont.innerHTML = encabezado + cont.innerHTML;
+  novPintarVoto(e);
+  document.getElementById('novOverlay').classList.add('show');
 
-  // Recién ahora queda todo marcado como leído — y sólo si estás en la pantalla.
-  if (!gpsEstaALaVista()) { novPintarBadge(); return; }
-  const masNueva = Math.max.apply(null, novEntradas.map(function (e) { return Number(e.orden) || 0; }));
-  try { localStorage.setItem(novKeyVisto(), String(masNueva)); } catch (e) {}
+  if (!novLeida(e)) {
+    lect.nov[e.id] = Date.now();
+    lectEscribir('nov/' + e.id, lect.nov[e.id]);
+  }
+  renderNovedades();
+  novPintarBadge();
+}
+function novCerrar() {
+  document.getElementById('novOverlay').classList.remove('show');
+}
+
+function novPintarVoto(e) {
+  const escala = novEscala(e);
+  const mio = Number((lect.votos || {})[e.id] || 0);
+  document.getElementById('novDetVoto').innerHTML =
+    '<div class="nv-voto-caja">' +
+      '<div class="nv-voto-preg">' + esc(novPregunta(e)) + '</div>' +
+      '<div class="nv-voto-fila">' +
+        escala.map(function (txt, i) {
+          const v = i + 1;
+          return '<button class="nv-voto-b' + (mio === v ? ' sel' : '') + '" title="' + esc(txt) + '" ' +
+            'onclick="novVotar(' + JSON.stringify(String(e.id)).replace(/"/g, '&quot;') + ',' + v + ')">' + v + '</button>';
+        }).join('') +
+      '</div>' +
+      '<div class="nv-voto-txt" id="novVotoTxt">' +
+        (mio ? 'Tu respuesta: <b>' + esc(escala[mio - 1]) + '</b>. Podés cambiarla cuando quieras.'
+             : '<b>1</b> ' + esc(escala[0]) + ' · <b>5</b> ' + esc(escala[4])) +
+      '</div>' +
+    '</div>';
+}
+
+function novVotar(id, valor) {
+  const e = novEntradas.find(function (x) { return String(x.id) === String(id); });
+  if (!e) return;
+  valor = Math.max(1, Math.min(5, Number(valor) || 0));
+  lect.votos[id] = valor;
+  // Dos destinos a propósito: el nodo de votos es el que lee Jaime para ver el
+  // resultado, y la copia en tus lecturas es la que pinta tu propio voto sin
+  // tener que ir a buscarlo.
+  lectEscribir('votos/' + id, valor);
+  try {
+    firebase.database().ref('norteSync/votos/' + id + '/' + curUserId())
+      .set({ valor: valor, ts: Date.now() });
+  } catch (err) {}
+  novPintarVoto(e);
+  renderNovedades();
   novPintarBadge();
 }
 
@@ -8790,7 +9009,14 @@ function renderNovedadesAdmin() {
   const cont = document.getElementById('nvaLista');
   if (!cont) return;
   try {
-    firebase.database().ref('norteSync/bitacora').once('value').then(function (snap) {
+    Promise.all([
+      firebase.database().ref('norteSync/bitacora').once('value'),
+      // Los votos los lee sólo el superadmin: la regla no deja que un Pionero
+      // vea lo que votaron los demás.
+      firebase.database().ref('norteSync/votos').once('value').catch(function () { return null; })
+    ]).then(function (res) {
+      const snap = res[0];
+      nvaVotos = (res[1] && res[1].val && res[1].val()) || {};
       const obj = snap.val() || {};
       nvaTodas = Object.keys(obj).map(function (k) { return obj[k]; })
         .sort(function (a, b) { return Number(b.orden || 0) - Number(a.orden || 0); });
@@ -8803,7 +9029,8 @@ function renderNovedadesAdmin() {
         return '<div class="nva-fila">' +
           '<span class="t">' + esc(e.titulo || '(sin título)') + '</span>' +
           (e.publicada === false ? '<span class="borrador">BORRADOR</span>' : '') +
-          '<span class="m">' + esc(e.version || '—') + ' · ' + esc(e.fecha || '') + ' · ' + n + ' cambio' + (n === 1 ? '' : 's') + '</span>' +
+          '<span class="m">' + esc(e.version || '—') + ' · ' + esc(e.fecha || '') + ' · ' + n + ' cambio' + (n === 1 ? '' : 's') +
+            ' · ' + nvaResumenVotos(e) + '</span>' +
           '<span class="acc">' +
             '<button onclick="nvaEditar(' + JSON.stringify(e.id).replace(/"/g, '&quot;') + ')" title="Editar">✏️</button>' +
             '<button onclick="nvaBorrar(' + JSON.stringify(e.id).replace(/"/g, '&quot;') + ')" title="Eliminar">🗑️</button>' +
@@ -8811,6 +9038,24 @@ function renderNovedadesAdmin() {
       }).join('');
     }).catch(function () {});
   } catch (e) {}
+}
+
+// Qué votaron los Pioneros en una entrada: cuántos, el promedio, y el reparto
+// crudo. Con cuatro personas el promedio solo engaña, así que van los dos.
+let nvaVotos = {};
+function nvaResumenVotos(e) {
+  const votos = Object.values((nvaVotos || {})[e.id] || {})
+    .map(function (v) { return Number(v && v.valor) || 0; })
+    .filter(function (v) { return v >= 1 && v <= 5; });
+  if (!votos.length) return '<span style="color:var(--muted)">sin votos</span>';
+  const suma = votos.reduce(function (a, b) { return a + b; }, 0);
+  const prom = (suma / votos.length).toFixed(1);
+  const reparto = [1, 2, 3, 4, 5].map(function (v) {
+    return votos.filter(function (x) { return x === v; }).length;
+  }).join('/');
+  return '<span style="color:#16a34a;font-weight:700">' + votos.length +
+    (votos.length === 1 ? ' voto' : ' votos') + ' · ' + prom + '</span>' +
+    '<span style="color:var(--muted)"> (' + reparto + ')</span>';
 }
 
 function nvaFilaCambio(c) {
@@ -8837,6 +9082,7 @@ function nvaAbrir(entrada) {
   document.getElementById('nvaVersion').value    = entrada.version || APP_VERSION;
   document.getElementById('nvaPublicada').value  = entrada.publicada === false ? '0' : '1';
   document.getElementById('nvaEntTitulo').value  = entrada.titulo || '';
+  document.getElementById('nvaPregunta').value   = entrada.pregunta || '';
   document.getElementById('nvaResumen').value    = entrada.resumen || '';
   document.getElementById('nvaError').style.display = 'none';
   const cont = document.getElementById('nvaCambios');
@@ -8875,6 +9121,7 @@ async function nvaGuardar() {
       fecha:     document.getElementById('nvaFecha').value,
       version:   document.getElementById('nvaVersion').value.trim(),
       titulo:    titulo,
+      pregunta:  document.getElementById('nvaPregunta').value.trim(),
       resumen:   document.getElementById('nvaResumen').value.trim(),
       publicada: document.getElementById('nvaPublicada').value === '1',
       cambios:   cambios
@@ -8916,10 +9163,7 @@ function gpsEstaALaVista() {
   catch (e) { return false; }
 }
 
-function hbKeyVisto() {
-  try { return 'fin_chat_visto_' + (curUserId() || 'anon'); } catch (e) { return 'fin_chat_visto'; }
-}
-function hbUltimaVista() { return Number(localStorage.getItem(hbKeyVisto()) || 0); }
+function hbUltimaVista() { return Number((lect && lect.chat) || 0); }
 // Sin leer = respuestas de Jaime posteriores a la última vez que abriste el GPS.
 function hbSinLeer() {
   const visto = hbUltimaVista();
@@ -8994,7 +9238,7 @@ function renderChatPionero() {
   const maxJaime = hbMensajes.reduce(function (mx, m) {
     return (m.de === 'jaime' && Number(m.ts) > mx) ? Number(m.ts) : mx;
   }, 0);
-  if (maxJaime) { try { localStorage.setItem(hbKeyVisto(), String(maxJaime)); } catch (e) {} }
+  if (maxJaime > Number((lect && lect.chat) || 0)) { lect.chat = maxJaime; lectEscribir('chat', maxJaime); }
 }
 
 async function hbEnviar() {
@@ -11053,7 +11297,7 @@ function closePlanModal(e) {
 }
 function iniciarListenerPlan() {
   const empresaId = curEmpresa();
-  try { iniciarListenerFX(); cargarGPSPioneros(); iniciarListenerNovedades(); iniciarListenerChatsAdmin(); } catch(e){}
+  try { iniciarLecturas(); iniciarListenerFX(); cargarGPSPioneros(); iniciarListenerNovedades(); iniciarListenerChatsAdmin(); } catch(e){}
   firebase.database().ref('norteSync/billing/' + empresaId).on('value', snap => {
     const v = snap.val();
     miPlanActual = (v && v.tier) || 'FOCO';
@@ -12728,7 +12972,7 @@ function subtituloRumbo() {
   var _gpsBadgeUid = null;
   var _gpsBadgeChecking = false;
 
-  function gpsKeyVisto() { try { return 'gpsUltimoCapVisto_' + ((getSession() || {}).userId || 'anon'); } catch (e) { return 'gpsUltimoCapVisto_anon'; } }
+  // El "hasta qué capítulo ya viste" vive con el resto de tus lecturas.
   function gpsMaxDisponible(p) { var max = 0; [1, 2, 3, 4].forEach(function (n) { if ((p.capitulos[n] || {}).disponible) max = n; }); return max; }
   // El distintivo de GPS - Pioneros cuenta dos cosas: capítulos recién liberados
   // y novedades de la bitácora sin leer. Se guarda el estado de cada una por
@@ -12749,7 +12993,8 @@ function subtituloRumbo() {
   };
 
   function gpsMarcarVisto(p) {
-    try { localStorage.setItem(gpsKeyVisto(), String(gpsMaxDisponible(p))); } catch (e) {}
+    var maxDisp = gpsMaxDisponible(p);
+    if (maxDisp > Number(lect.capsVisto || 0)) { lect.capsVisto = maxDisp; lectEscribir('capsVisto', maxDisp); }
     _gpsParticipa = true;
     _gpsCapPendiente = false;
     // Las novedades las marca renderNovedades cuando termina de pintarlas.
@@ -12772,7 +13017,7 @@ function subtituloRumbo() {
       _gpsParticipa = !!d.participa;
       if (!d.participa) { badge.style.display = 'none'; _gpsBadgeChecked = true; return; }
       var maxDisp = gpsMaxDisponible(d.programa);
-      var visto = parseInt(localStorage.getItem(gpsKeyVisto()) || '0', 10);
+      var visto = Number(lect.capsVisto || 0);
       _gpsCapPendiente = maxDisp > visto;
       window.gpsPintarBadgeTotal();
       _gpsBadgeChecked = true;
@@ -12883,11 +13128,10 @@ function subtituloRumbo() {
     try { iniciarChatPionero(); } catch (e) {}
   }
 
-  function gpsKeyLeido(n) { try { return 'gpsCapLeido_' + ((getSession() || {}).userId || 'anon') + '_' + n; } catch (e) { return 'gpsCapLeido_anon_' + n; } }
-  function gpsCapYaLeido(n) { try { return localStorage.getItem(gpsKeyLeido(n)) === '1'; } catch (e) { return false; } }
+  function gpsCapYaLeido(n) { try { return !!(lect.caps || {})[n]; } catch (e) { return false; } }
 
   window.gpsMarcarCapLeido = function (n) {
-    try { localStorage.setItem(gpsKeyLeido(n), '1'); } catch (e) {}
+    if (!(lect.caps || {})[n]) { lect.caps[n] = true; lectEscribir('caps/' + n, true); }
     var btn = document.getElementById('gpsCapQuizBtn');
     if (!btn || btn.getAttribute('data-listo') === '1') return;
     btn.setAttribute('data-listo', '1');
