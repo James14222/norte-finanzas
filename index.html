@@ -1195,7 +1195,7 @@ tr:hover td { background: #fafbfc; }
     }
 /* ── Mi Rumbo: dólar integrado + panel del año + cuenta (v005.1.069) ── */
 #sidebarUser{display:none!important}
-/* Ingreso masivo */
+/* Carga masiva */
 .mas-drop{border:2px dashed var(--border);border-radius:12px;padding:28px 18px;text-align:center;cursor:pointer;background:var(--bg)}
 .mas-drop:hover,.mas-drop.over{border-color:var(--brand-accent);background:#FFF6F2}
 .mas-drop b{display:block;font-size:14px;margin-bottom:4px}
@@ -1731,7 +1731,7 @@ tr:hover td { background: #fafbfc; }
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-secondary" onclick="clonarMesAnterior()" title="Copia todos los registros del mes anterior a este mes, con sus importes">📋 Clonar mes anterior</button>
-            <button class="btn btn-secondary" onclick="openMasivo()" title="Cargá muchos movimientos de una vez desde un Excel, mapeando tus columnas contra los datos de Norte">📊 Ingreso masivo</button>
+            <button class="btn btn-secondary" onclick="openMasivo()" title="Cargá muchos movimientos de una vez desde un Excel, mapeando tus columnas contra los datos de Norte">📊 Carga masiva</button>
             <button class="btn btn-secondary" onclick="replicarGastosFijos()" title="Crea el esqueleto de tus gastos fijos del mes anterior, sin importe, para no olvidarte de ninguno">🧩 Replicar gastos fijos</button>
             <div class="tc-bloque">
             <span class="tc-bloque-tit">Tarjetas</span>
@@ -2429,7 +2429,7 @@ tr:hover td { background: #fafbfc; }
             <h4>Tus rubros</h4>
             <p>Si ninguna categoría te cierra, elegí <strong>Personalizado...</strong> en el selector y escribí la tuya: queda guardada para siempre y disponible en toda la app.</p>
             <p>Y si querés ordenar la lista entera, está en <strong>Administración → Rubros</strong>. Ahí podés <strong>crear, renombrar y eliminar</strong> cualquier rubro, separados entre gastos e ingresos, y ver cuántos movimientos tiene cada uno antes de tocarlo.</p>
-            <div class="ayuda-tip">Esa lista es la que usa <strong>todo</strong> Norte: el selector al cargar, los filtros, el presupuesto, los reportes, el ingreso masivo desde Excel y NortIA. Por eso conviene tenerla corta y con tus palabras: cada rubro que no usás es una opción de más cada vez que cargás un gasto.</div>
+            <div class="ayuda-tip">Esa lista es la que usa <strong>todo</strong> Norte: el selector al cargar, los filtros, el presupuesto, los reportes, la carga masiva desde Excel y NortIA. Por eso conviene tenerla corta y con tus palabras: cada rubro que no usás es una opción de más cada vez que cargás un gasto.</div>
             <p>Al <strong>renombrar</strong> no perdés historia: los movimientos que ya tenías y los topes de presupuesto se reetiquetan solos. Al <strong>eliminar</strong>, si el rubro tiene movimientos, Norte te pregunta a cuál pasarlos — nunca se borra un dato tuyo por eliminar una categoría.</p>
             <p>Si preferís decidirlo después, mandalos a <strong>Sin clasificar</strong>: quedan juntos y a la vista, los reordenás cuando quieras desde Transacciones, y ese rubro desaparece solo cuando no queda ninguno.</p>
           </div>
@@ -2477,8 +2477,8 @@ tr:hover td { background: #fafbfc; }
             <p>Aparece sola en cuanto la barra original se va con el scroll, y se retira cuando cancelás la selección o volvés arriba.</p>
           </div>
           <div class="ayuda-bloque">
-            <h4>📊 Ingreso masivo desde Excel</h4>
-            <p>Si ya tenés los gastos armados en una planilla, no hace falta cargarlos de a uno. Con <strong>Ingreso masivo</strong> subís el Excel y Norte crea todos los movimientos juntos.</p>
+            <h4>📊 Carga masiva desde Excel</h4>
+            <p>Si ya tenés los gastos armados en una planilla, no hace falta cargarlos de a uno. Con <strong>Carga masiva</strong> subís el Excel y Norte crea todos los movimientos juntos.</p>
             <p><strong>No necesitás que tus columnas se llamen de una forma especial.</strong> Después de subir el archivo vas a ver una pantalla donde emparejás cada columna tuya con el dato de Norte que le corresponde. Norte intenta adivinarlo solo, y vos corregís lo que haga falta.</p>
             <div class="ayuda-ejemplo">
               <strong>Columnas obligatorias:</strong><br>
@@ -3036,7 +3036,7 @@ tr:hover td { background: #fafbfc; }
           <div class="ayuda-bloque">
             <h4>La lista de rubros de tu hogar</h4>
             <p>Acá administrás las categorías con las que clasificás tus movimientos: <strong>crear, renombrar y eliminar</strong> cualquiera, incluidos los que vienen de fábrica. Arriba elegís si estás mirando gastos o ingresos, y al lado de cada uno ves cuántos movimientos tiene antes de tocarlo.</p>
-            <div class="ayuda-tip">Es la lista que usa <strong>toda</strong> la aplicación —el selector al cargar, los filtros, el presupuesto, los reportes, el ingreso masivo y NortIA— y es la misma para todo el hogar y en todos tus dispositivos. Lo que cambies acá cambia en todos lados.</div>
+            <div class="ayuda-tip">Es la lista que usa <strong>toda</strong> la aplicación —el selector al cargar, los filtros, el presupuesto, los reportes, la carga masiva y NortIA— y es la misma para todo el hogar y en todos tus dispositivos. Lo que cambies acá cambia en todos lados.</div>
             <p>Ningún movimiento se pierde por tocar la lista: al renombrar, los que ya tenías y sus topes de presupuesto se reetiquetan solos; al eliminar un rubro con movimientos, Norte te pregunta a cuál pasarlos. El detalle completo está en la sección <strong>Carga de movimientos</strong> de esta ayuda.</p>
           </div>
 
@@ -3147,7 +3147,7 @@ tr:hover td { background: #fafbfc; }
       <div style="font-size:16px;font-weight:800;color:var(--text)">Los rubros de tu hogar</div>
       <div style="font-size:13px;color:var(--muted);margin:6px 0 16px;line-height:1.55">
         Esta es la lista que usa <strong>toda</strong> la aplicación: el selector al cargar un movimiento,
-        los filtros, el presupuesto, los reportes, el ingreso masivo desde Excel y NortIA. Lo que cambies acá
+        los filtros, el presupuesto, los reportes, la carga masiva desde Excel y NortIA. Lo que cambies acá
         cambia en todos lados.
       </div>
       <div class="rb-tabs">
@@ -3600,7 +3600,7 @@ tr:hover td { background: #fafbfc; }
 <div class="overlay" id="masivoOverlay">
   <div class="modal" style="max-width:820px">
     <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <span>📊 Ingreso masivo desde Excel</span>
+      <span>📊 Carga masiva desde Excel</span>
       <button onclick="closeMasivo()" aria-label="Cerrar" style="background:none;border:none;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px">×</button>
     </div>
 
@@ -4725,7 +4725,7 @@ const saveData = d => {
 // Antes había dos listas: 26 rubros fijos escritos en el código y una lista de
 // "personalizados" guardada aparte, que además NO se sincronizaba — vivía sólo
 // en el navegador donde la habías creado. Encima, varios lugares (NortIA, el
-// onboarding, el ingreso masivo) leían la lista fija y se salteaban los tuyos.
+// onboarding, la carga masiva) leían la lista fija y se salteaban los tuyos.
 // Ahora hay una sola lista por hogar, editable de punta a punta, que viaja con
 // el resto de los datos. RUBROS queda únicamente como semilla del primer uso.
 const RUBRO_SIN = 'Sin clasificar';
@@ -6087,14 +6087,25 @@ function applyRemoteSnapshot(remote) {
        caso del import de tarjeta, que se perdia la primera vez). */
     if (syncLocalDirty) { schedulePush(); return; }
   syncApplyingRemote = true;
+  /* Antes, si el snapshot remoto no traia una clave, la borrabamos localmente.
+     Eso convertia a cualquier cliente atrasado en destructor: un hogar sin
+     movimientos todavia no tiene `fin_data` en la nube, asi que una segunda
+     pestana o el celular podian subir un snapshot sin esa clave y hacer
+     desaparecer lo que acababas de cargar. Ahora la ausencia se interpreta al
+     reves: el que esta atrasado es el remoto, conservamos lo local y lo
+     subimos. Un borrado real igual viaja, porque queda como '[]' y no como
+     ausencia. */
+  let faltaEnLaNube = false;
   try {
     SYNC_KEYS.forEach(k => {
-      if (remote[k] != null) localStorage.setItem(k, remote[k]);
-      else localStorage.removeItem(k);
+      if (remote[k] != null) { localStorage.setItem(k, remote[k]); return; }
+      if (localStorage.getItem(k) == null) return;   // ninguno de los dos la tiene
+      faltaEnLaNube = true;
     });
   } finally {
     syncApplyingRemote = false;
   }
+  if (faltaEnLaNube) schedulePush();
 }
 
 function pushNow() {
@@ -9448,7 +9459,7 @@ function askDelete(id) {
 }
 
 
-// ── INGRESO MASIVO DESDE EXCEL ──────────────────────────────────
+// ── CARGA MASIVA DESDE EXCEL ────────────────────────────────────
 // Flujo: archivo -> mapeo de columnas -> validación fila por fila -> carga.
 // Si algo obligatorio falta, el botón de confirmar queda deshabilitado.
 const MAS_MAX_BYTES = 2 * 1024 * 1024;
@@ -9726,9 +9737,25 @@ function masImportar(){
   saveData([...getData(), ...nuevos]);
   try { pushNow(); } catch(e){}
   closeMasivo();
+
+  // El mes de cada movimiento sale de su fecha, no del mes que estas mirando.
+  // Si cargas una planilla de julio parado en septiembre, la pantalla no cambia
+  // y parece que no se guardo nada. Nos movemos al mes de lo importado y, si
+  // cayo en varios, lo decimos.
+  const nombreMes = k => MESES[Number(k.split('-')[1]) - 1] + ' ' + k.split('-')[0];
+  if (meses.indexOf(curKey()) === -1) {
+    curYear  = Number(meses[0].split('-')[0]);
+    curMonth = Number(meses[0].split('-')[1]) - 1;
+    selectedTx.clear();
+    updateMonthDisplay();
+  }
   render();
+  const aviso = meses.length === 1
+    ? 'Quedaron en ' + nombreMes(meses[0]) + '.'
+    : 'Quedaron repartidos en ' + meses.length + ' meses: ' + meses.map(nombreMes).join(', ') +
+      '. Estas viendo ' + nombreMes(curKey()) + '.';
   alert('Listo: ' + nuevos.length + ' movimiento' + (nuevos.length===1?'':'s') + ' cargado' +
-        (nuevos.length===1?'':'s') + ' desde ' + masNombreArch + '.');
+        (nuevos.length===1?'':'s') + ' desde ' + masNombreArch + '.\n\n' + aviso);
 }
 function masPlantilla(){
   if (typeof XLSX === 'undefined'){ alert('No se pudo cargar el generador de Excel. Probá de nuevo.'); return; }
@@ -9745,7 +9772,7 @@ function masPlantilla(){
   ws['!cols'] = [{wch:12},{wch:10},{wch:26},{wch:30},{wch:12},{wch:12},{wch:14},{wch:12},{wch:16}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Movimientos');
-  XLSX.writeFile(wb, 'Norte - plantilla de ingreso masivo.xlsx');
+  XLSX.writeFile(wb, 'Norte - plantilla de carga masiva.xlsx');
 }
 // Arrastrar y soltar sobre la zona
 (function(){
