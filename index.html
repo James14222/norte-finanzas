@@ -556,6 +556,7 @@ tr:hover td { background: #fafbfc; }
 .tgl-btn:last-child { border-right:none; }
 .tgl-btn.active { background:var(--primary); color:#fff; }
 .tgl-btn:hover:not(.active) { background:var(--card); color:var(--text); }
+.graf-hint { display:none; }
 .tc-summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; }
 .tc-bank-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
 .tc-bank-title { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px; }
@@ -728,6 +729,14 @@ tr:hover td { background: #fafbfc; }
   .cards-grid, .dash-grid, .reports-grid, .insights-grid, .budget-summary,
   .stat-cards, .scenarios-grid, .badges-grid, .progreso-top { grid-template-columns: 1fr !important; }
   .reports-grid > .full, .insight-card.full { grid-column: auto; }
+
+  /* El gráfico anual es el único bloque al que le damos ancho de más y carril
+     propio: apretado en 366px no se entiende, y con scroll se recorre el año
+     sin mover el resto de la pantalla. La altura se fija acá porque al soltar
+     la proporción del canvas hay que decirle cuánto medir. */
+  .graf-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .graf-scroll > .graf-ancho { min-width: 760px; height: 320px; }
+  .graf-hint { display: block; font-size: 11.5px; color: var(--muted); margin-top: 8px; }
 
   /* `1fr` es `minmax(auto, 1fr)`, y ese `auto` no baja del ancho mínimo del
      contenido: una tabla con `white-space:nowrap` adentro ensanchaba la grilla
@@ -1980,7 +1989,10 @@ tr:hover td { background: #fafbfc; }
           <!-- Gráfico mensual -->
           <div class="report-card full">
             <div class="report-title">📅 Ingresos vs Gastos — <span id="evolYear"></span></div>
-            <canvas id="evolChart" height="90"></canvas>
+            <div class="graf-scroll">
+              <div class="graf-ancho"><canvas id="evolChart" height="90"></canvas></div>
+            </div>
+            <div class="graf-hint">Deslizá el gráfico para recorrer el año →</div>
           </div>
           <!-- Tabla mes a mes -->
           <div class="report-card full">
@@ -7821,6 +7833,9 @@ function renderRepEvol() {
     data: { labels: MESES, datasets: evolDatasets },
     options: {
       responsive:true,
+      // En el celular el alto lo fija `.graf-ancho`; en la computadora se
+      // mantiene la proporción del canvas, como venía.
+      maintainAspectRatio: !evolAngosto,
       interaction: { mode:'index', intersect:false },
       plugins: {
         legend:{ position:'top' },
@@ -8939,7 +8954,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.4.001';
+const APP_VERSION = 'v005.4.002';
 let novEntradas = [];
 
 function novLeida(e) {
