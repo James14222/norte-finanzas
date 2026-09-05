@@ -158,7 +158,7 @@ Reglas:
   }
 </script>
 
-<style>html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}html,body{overflow-x:hidden;overflow-x:clip;max-width:100vw;}@media(max-width:880px){.rep-panel.active{overflow-x:auto;-webkit-overflow-scrolling:touch;}.tc-summary-grid,#tcDetalleTable,#desgloseRubroTable,#desgloseRubroChart{max-width:100%;}}
+<style>html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}html,body{overflow-x:hidden;overflow-x:clip;max-width:100vw;}@media(max-width:880px){.rep-panel.active{-webkit-overflow-scrolling:touch;}.rep-panel.active > .reports-grid{min-width:0;}.tc-summary-grid,#tcDetalleTable,#desgloseRubroTable,#desgloseRubroChart{max-width:100%;}}
 :root {
   --primary: #FF8A5C; --primary-dark: #E8714A;
   --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
@@ -757,6 +757,25 @@ tr:hover td { background: #fafbfc; }
   /* Reportes / Análisis tabs y selects */
   .rep-tabs { width:100%; overflow-x:auto; }
   .reports-grid { gap:14px; }
+
+  /* Resumen anual (Evolución): las cuatro cifras en dos columnas parejas.
+     Estaba armado con flex y un flex-basis calculado; con el gap, dos ítems
+     daban justo el 100% y cualquier subpíxel los tiraba a una sola columna,
+     mientras los importes largos —$12.292.926,46— se salían de su caja. */
+  #evolResumenAnual > div[style*="flex-wrap"] {
+    display:grid !important; grid-template-columns:1fr 1fr; gap:8px; }
+  #evolResumenAnual > div[style*="flex-wrap"] > div {
+    min-width:0 !important; padding:11px 12px !important; }
+  #evolResumenAnual > div[style*="flex-wrap"] > div > div { overflow-wrap:anywhere; }
+  #evolResumenAnual > div[style*="flex-wrap"] > div > div:nth-child(2) { font-size:15px !important; }
+
+  /* Totales por banco: una tarjeta por fila. En dos columnas el rótulo
+     "Principal rubro" se partía en tres renglones. */
+  .tc-summary-grid { grid-template-columns:1fr; gap:10px; }
+  .tc-bank-card { padding:13px 14px; }
+  .tc-bank-title, .tc-bank-total { overflow-wrap:anywhere; }
+  .tc-bank-row { gap:12px; flex-wrap:wrap; }
+  .tc-bank-row > span:last-child { text-align:right; }
 
   /* Chat IA */
   .consultas-layout { height:calc(100vh - 168px); }
@@ -4962,6 +4981,28 @@ const getBancoLabel= t => {
   const cfg = getBankConfigs().find(c => c.id === cfgId);
   return cfg ? `${cfg.banco} · ${cfg.tarjeta}` : b;
 };
+// El MISMO banco puede estar guardado de varias formas: con la clave vieja
+// ('BAPRO'), con el id de un config, o con el nombre escrito tal cual lo trajo
+// el resumen ('Banco Provincia'). Las tres dan el mismo banco en pantalla pero
+// son claves distintas, así que el resumen lo mostraba partido en varias
+// tarjetas iguales. De acá en más se agrupa por el NOMBRE, no por la clave.
+const bancoNombre = t => {
+  const b = getBanco(t);
+  if (!b || b === 'TARJETA') return 'Sin banco asignado';
+  return String(getBancoLabel(t)).split('·')[0].trim() || b;
+};
+// Clave de comparación: sin acentos, sin mayúsculas y sin dobles espacios, para
+// que 'BANCO PROVINCIA' y 'Banco  Provincia' caigan en el mismo grupo.
+const bancoClave = t => String(bancoNombre(t))
+  .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase().replace(/\s+/g, ' ').trim();
+// La tarjeta, cuando el label la trae: sirve para aclarar qué hay adentro del
+// grupo sin volver a partirlo.
+const bancoTarjeta = t => {
+  const p = String(getBancoLabel(t)).split('·');
+  return p.length > 1 ? p.slice(1).join('·').trim() : '';
+};
+
 // Devuelve <option> tags para todos los bancos conocidos (builtin + custom)
 function getBancosOptions(selectedVal='') {
   const opts = [
@@ -8134,24 +8175,36 @@ function renderRepTarjetas() {
     }).join('');
 
   // Banco filter: construido dinámicamente desde los datos reales
-  const allBancosYear = [...new Set(yearTC.map(t => getBanco(t)))].sort();
+  // Una opción por banco, no por cada forma en que quedó guardado: antes salían
+  // dos "Banco Provincia" en la lista y no había manera de saber cuál era cuál.
+  const bancosYear = new Map();
+  yearTC.forEach(t => { if (!bancosYear.has(bancoClave(t))) bancosYear.set(bancoClave(t), bancoNombre(t)); });
   bancoFilt.innerHTML = '<option value="">Todos los bancos</option>' +
-    allBancosYear.map(b => {
-      const label = getBancoLabel({banco: b});
-      return `<option value="${esc(b)}" ${b===prevBanco?'selected':''}>${esc(label)}</option>`;
-    }).join('');
+    [...bancosYear.entries()].sort((a,b)=>a[1].localeCompare(b[1])).map(([clave, nombre]) =>
+      `<option value="${esc(clave)}" ${clave===prevBanco?'selected':''}>${esc(nombre)}</option>`
+    ).join('');
 
   // Aplicar filtros (banco filter por campo banco, con compat formato viejo)
   const filtered = yearTC.filter(t =>
-    (!prevBanco || getBanco(t) === prevBanco) &&
+    (!prevBanco || bancoClave(t) === prevBanco) &&
     (!prevRubro || t.rubro === prevRubro) &&
     (!prevMes   || t.mes   === prevMes)
   );
 
   // Totales por banco — dinámico: detecta todos los bancos en filtered
-  const bancosEnFiltered = [...new Set(filtered.map(t => getBanco(t)))].sort();
-  const summaryCards = bancosEnFiltered.map(b => {
-    const items = filtered.filter(t => getBanco(t) === b);
+  const grupos = new Map();
+  filtered.forEach(t => {
+    const k = bancoClave(t);
+    if (!grupos.has(k)) grupos.set(k, { nombre: bancoNombre(t), items: [], tarjetas: new Set() });
+    const g = grupos.get(k);
+    g.items.push(t);
+    const tj = bancoTarjeta(t);
+    if (tj) g.tarjetas.add(tj);
+  });
+  const summaryCards = [...grupos.values()]
+    .sort((a, b) => a.nombre.localeCompare(b.nombre))
+    .map(g => {
+    const items = g.items;
     if (!items.length) return '';
     const totalARS = items.reduce((s,t)=>s+(Number(t.impPesos)||0),0);
     const totalUSD = items.reduce((s,t)=>s+(Number(t.impUSD)||0),0);
@@ -8160,8 +8213,12 @@ function renderRepTarjetas() {
       const top = Object.entries(rm).sort((a,b)=>b[1]-a[1])[0];
       return top ? top[0] : '—';
     })();
-    const isOrphan = !b || b === 'TARJETA';
-    const bLabel = isOrphan ? '⚠️ Sin banco asignado' : `🏦 ${getBancoLabel({banco: b})}`;
+    const isOrphan = g.nombre === 'Sin banco asignado';
+    // Si el banco tiene más de una tarjeta, van todas juntas después del "·":
+    // el total es del banco, y abajo se ve de qué está hecho.
+    const tarjetas = [...g.tarjetas].sort().join(' + ');
+    const bLabel = isOrphan ? '⚠️ Sin banco asignado'
+                            : `🏦 ${g.nombre}${tarjetas ? ' · ' + tarjetas : ''}`;
     const assignUI = isOrphan ? `
       <div style="margin-top:12px;border-top:1px dashed #f59e0b;padding-top:10px">
         <div style="font-size:11px;font-weight:600;color:#92400e;margin-bottom:6px">Asignar banco a estos registros:</div>
