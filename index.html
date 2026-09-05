@@ -1797,6 +1797,7 @@ tr:hover td { background: #fafbfc; }
             <button class="btn btn-secondary" onclick="clonarMesAnterior()" title="Copia todos los registros del mes anterior a este mes, con sus importes">📋 Clonar mes anterior</button>
             <button class="btn btn-secondary" onclick="openMasivo()" title="Cargá muchos movimientos de una vez desde un Excel, mapeando tus columnas contra los datos de Norte">📊 Carga masiva</button>
             <button class="btn btn-secondary" onclick="replicarGastosFijos()" title="Crea el esqueleto de tus gastos fijos del mes anterior, sin importe, para no olvidarte de ninguno">🧩 Replicar gastos fijos</button>
+            <button class="btn btn-secondary" onclick="replicarIngresosFijos()" title="Toma los ingresos que marcaste como Fijos el mes anterior y los copia a este mes sin importe, para completar cuando los cobres">🧩 Replicar ingresos fijos</button>
             <div class="tc-bloque">
             <span class="tc-bloque-tit">Tarjetas</span>
             <button class="btn btn-secondary" onclick="document.getElementById('tcFileInput').click()"
@@ -2146,7 +2147,7 @@ tr:hover td { background: #fafbfc; }
       <button class="qp-tipo-btn active" id="qpBtnGas" onclick="setQpTipo('Gasto')">🔴 Gasto</button>
     </div>
     <div class="qp-field" id="qpTipoGastoWrap" style="display:none">
-      <div class="qp-label">Tipo de gasto</div>
+      <div class="qp-label" id="qpTipoGastoLabel">Tipo de gasto</div>
       <div class="qp-tipo" style="margin-bottom:0">
         <button class="qp-tipo-btn active" id="qpBtnVar" onclick="setQpTipoGasto('Variable')">Variable</button>
         <button class="qp-tipo-btn" id="qpBtnFijo" onclick="setQpTipoGasto('Fijo')">Fijo</button>
@@ -2501,7 +2502,8 @@ tr:hover td { background: #fafbfc; }
             <h4>Atajos para no repetir trabajo</h4>
             <div class="ayuda-ejemplo">
               <strong>📋 Clonar mes anterior</strong> — crea todos los gastos <em>Fijos</em> del mes previo con importe $0 y vencimiento a fin de mes. Solo actualizás los montos cuando llegan las facturas.<br>
-              <strong>🧩 Replicar gastos fijos</strong> — repite un conjunto de fijos hacia adelante, útil cuando ya sabés los importes.<br>
+              <strong>🧩 Replicar gastos fijos</strong> — trae los gastos que marcaste como Fijos el mes pasado y los deja en este mes sin importe, para completarlos cuando lleguen los vencimientos.<br>
+              <strong>🧩 Replicar ingresos fijos</strong> — lo mismo con los ingresos: el sueldo, un alquiler que cobrás, una cuota que te pagan. Marcalos con <em>Tipo de ingreso = Fijo</em> una vez y después los traés mes a mes de un toque.<br>
               <strong>💳 Ingresar resumen de tarjeta</strong> — sube el resumen de tarjeta y carga todos los consumos de una (ver la sección Tarjetas).<br>
               <strong>✅ Pagar tarjeta</strong> — marca como pagado un resumen completo de tarjeta en un solo click.
             </div>
@@ -3420,7 +3422,7 @@ tr:hover td { background: #fafbfc; }
       </div>
 
       <div class="form-group" id="tipoGastoWrap" style="display:none">
-        <label>Tipo de gasto <span style="font-weight:400;text-transform:none;opacity:0.6">(fijo o variable)</span></label>
+        <label id="tipoGastoLabel">Tipo de gasto <span style="font-weight:400;text-transform:none;opacity:0.6">(fijo o variable)</span></label>
         <div class="tgl-group" style="width:fit-content">
           <button type="button" class="tgl-btn active" id="btnGVar" onclick="setTipoGasto('Variable')">Variable</button>
           <button type="button" class="tgl-btn" id="btnGFijo" onclick="setTipoGasto('Fijo')">Fijo</button>
@@ -6868,13 +6870,13 @@ function renderAlertas() {
   detectAusentes(allData, key).forEach(a => alertas.push({
     cls: 'info', ico: '🔔',
     title: `"${a.detalle}" no registrado este mes`,
-    sub: `Era fijo el mes anterior · Rubro: ${a.rubro}`
+    sub: `Era ${a.tipo === 'Ingreso' ? 'un ingreso' : 'un gasto'} fijo el mes anterior · Rubro: ${a.rubro}`
   }));
 
   const fijosPend = detectFijosPendientes(allData, key);
   if (fijosPend.length) alertas.push({
     cls: 'warn', ico: '🧩',
-    title: `${fijosPend.length} gasto${fijosPend.length===1?'':'s'} fijo${fijosPend.length===1?'':'s'} sin completar este mes`,
+    title: `${fijosPend.length} movimiento${fijosPend.length===1?'':'s'} fijo${fijosPend.length===1?'':'s'} sin completar este mes`,
     sub: `${fijosPend.slice(0,4).map(t=>esc(t.detalle)).join(' · ')}${fijosPend.length>4 ? ` y ${fijosPend.length-4} más` : ''} — completá el importe a medida que te lleguen`
   });
 
@@ -6961,8 +6963,10 @@ function detectUsdExposure(allData, key) {
   return { pct, usdPesos, usdAmt, tcImpl, totGas };
 }
 
+// Fijo ya no implica Gasto: un sueldo marcado como fijo y todavía sin importe
+// merece el mismo recordatorio que el alquiler.
 function detectFijosPendientes(allData, key) {
-  return allData.filter(t => t.mes === key && t.tipo === 'Gasto' && t.tipoGasto === 'Fijo' && (Number(t.impPesos)||0) === 0);
+  return allData.filter(t => t.mes === key && t.tipoGasto === 'Fijo' && (Number(t.impPesos)||0) === 0);
 }
 
 function detectAusentes(allData, key) {
@@ -6972,18 +6976,20 @@ function detectAusentes(allData, key) {
   if (pm <= 0) { pm += 12; py--; }
   const prevKey = `${py}-${String(pm).padStart(2,'0')}`;
 
-  // Conceptos fijos del mes anterior (únicos, excluye TC)
+  // Conceptos fijos del mes anterior (únicos, excluye TC). Se guarda también si
+  // era ingreso o gasto: el aviso lo dice, porque "falta cargar el sueldo" y
+  // "falta cargar el alquiler" no se leen igual.
   const fijosPrevMes = {};
   allData
-    .filter(t => t.mes === prevKey && t.tipo === 'Gasto' && t.tipoGasto === 'Fijo' && t.detalle)
-    .forEach(t => { fijosPrevMes[t.detalle] = t.rubro; });
+    .filter(t => t.mes === prevKey && t.tipoGasto === 'Fijo' && t.detalle)
+    .forEach(t => { fijosPrevMes[t.detalle] = { rubro: t.rubro, tipo: t.tipo }; });
 
-  // Conceptos ya registrados este mes (cualquier tipo)
-  const currDetalle = new Set(allData.filter(t => t.mes === key && t.tipo === 'Gasto').map(t => t.detalle));
+  // Un concepto cuenta como registrado si ya aparece este mes, sea del tipo que sea.
+  const currDetalle = new Set(allData.filter(t => t.mes === key).map(t => t.detalle));
 
   return Object.entries(fijosPrevMes)
     .filter(([d]) => !currDetalle.has(d))
-    .map(([d, rubro]) => ({ detalle: d, rubro, months: 1 }))
+    .map(([d, info]) => ({ detalle: d, rubro: info.rubro, tipo: info.tipo, months: 1 }))
     .slice(0, 5);
 }
 
@@ -7017,15 +7023,15 @@ function renderTx() {
   empty.style.display = 'none';
   tbody.innerHTML = rows.map(t => {
     const saldo = (Number(t.impPesos)||0) - (Number(t.pagado)||0);
-    const pendiente = t.tipo === 'Gasto' && t.tipoGasto === 'Fijo' && (Number(t.impPesos)||0) === 0;
+    const pendiente = t.tipoGasto === 'Fijo' && (Number(t.impPesos)||0) === 0;
     // Para TC: usar tcPagado como flag explícito (cubre ARS y USD)
     const isTCTx  = isTCOrigen(t);
     const tcPendiente = isTCTx && t.tcPagado === false;
     return `<tr${pendiente ? ' style="background:#fffbeb"' : ''}>
       <td><input type="checkbox" class="tx-check" data-id="${t.id}" ${selectedTx.has(t.id)?'checked':''} onchange="toggleSelectTx('${t.id}', this.checked)"></td>
-      <td><strong>${esc(t.detalle)}</strong>${pendiente ? ' <span title="Esqueleto de gasto fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de ${tcLabel(t)==='TD'?'Débito':'Crédito'}" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>${(t.origen === 'TARJETA' && t.creadoPorNombre) ? '<span style="font-size:10.5px;font-weight:600;color:#5B6B7C;background:rgba(91,107,124,0.10);border:1px solid rgba(91,107,124,0.22);border-radius:6px;padding:1px 6px;margin-left:6px;white-space:nowrap">\uD83D\uDC64 ' + t.creadoPorNombre + '</span>' : ''}` : ''}</td>
+      <td><strong>${esc(t.detalle)}</strong>${pendiente ? ' <span title="Esqueleto de movimiento fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de ${tcLabel(t)==='TD'?'Débito':'Crédito'}" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>${(t.origen === 'TARJETA' && t.creadoPorNombre) ? '<span style="font-size:10.5px;font-weight:600;color:#5B6B7C;background:rgba(91,107,124,0.10);border:1px solid rgba(91,107,124,0.22);border-radius:6px;padding:1px 6px;margin-left:6px;white-space:nowrap">\uD83D\uDC64 ' + t.creadoPorNombre + '</span>' : ''}` : ''}</td>
       <td><span class="badge badge-${t.tipo.toLowerCase()}">${t.tipo}</span></td>
-      <td><span class="rubro-tag">${esc(t.rubro||'-')}</span>${t.tipo==='Gasto' && t.tipoGasto ? `<span style="display:inline-block;margin-left:5px;font-size:10.5px;font-weight:600;color:var(--muted)">· <span class="tg-full">${t.tipoGasto}</span><span class="tg-abbr">${t.tipoGasto.charAt(0)}</span></span>` : ''}</td>
+      <td><span class="rubro-tag">${esc(t.rubro||'-')}</span>${t.tipoGasto ? `<span style="display:inline-block;margin-left:5px;font-size:10.5px;font-weight:600;color:var(--muted)">· <span class="tg-full">${t.tipoGasto}</span><span class="tg-abbr">${t.tipoGasto.charAt(0)}</span></span>` : ''}</td>
       <td>${t.cliente ? `<span style="font-size:12px;font-weight:600;color:var(--primary)">${esc(t.cliente)}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
       <td class="amt ${t.tipo==='Ingreso'?'positive':'negative'}">${fmtP(t.impPesos)}</td>
       <td style="color:var(--muted)">${fmtU(t.impUSD)}</td>
@@ -8879,7 +8885,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.3.000';
+const APP_VERSION = 'v005.4.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -9532,8 +9538,21 @@ function setTipoForm(tipo) {
   document.getElementById('btnGas').classList.toggle('active', tipo==='Gasto');
   populateRubros(tipo, '');
   document.getElementById('customRubroWrap').classList.remove('show');
-  document.getElementById('tipoGastoWrap').style.display = tipo === 'Gasto' ? 'block' : 'none';
-  if (tipo === 'Gasto') setTipoGasto(document.getElementById('txTipoGasto').value || 'Variable');
+  // Fijo/Variable ya no es sólo de gastos: un sueldo es tan fijo como un
+  // alquiler, y marcarlo es lo que después permite replicarlo al mes siguiente.
+  pintarTipoGastoWrap(tipo);
+  setTipoGasto(document.getElementById('txTipoGasto').value || 'Variable');
+}
+
+// El campo se sigue llamando `tipoGasto` en la base: renombrarlo obligaría a
+// migrar todos los movimientos ya cargados por un cambio puramente cosmético.
+// Lo que sí cambia es cómo se lo nombra en pantalla.
+function pintarTipoGastoWrap(tipo) {
+  const wrap = document.getElementById('tipoGastoWrap');
+  if (wrap) wrap.style.display = 'block';
+  const lab = document.getElementById('tipoGastoLabel');
+  if (lab) lab.innerHTML = (tipo === 'Ingreso' ? 'Tipo de ingreso' : 'Tipo de gasto') +
+    ' <span style="font-weight:400;text-transform:none;opacity:0.6">(fijo o variable)</span>';
 }
 
 function setTipoGasto(tg) {
@@ -9563,8 +9582,8 @@ function openModal(id) {
     document.getElementById('txTipo').value = t.tipo;
     document.getElementById('btnIng').classList.toggle('active', t.tipo==='Ingreso');
     document.getElementById('btnGas').classList.toggle('active', t.tipo==='Gasto');
-    document.getElementById('tipoGastoWrap').style.display = t.tipo === 'Gasto' ? 'block' : 'none';
-    if (t.tipo === 'Gasto') setTipoGasto(t.tipoGasto || 'Variable');
+    pintarTipoGastoWrap(t.tipo);
+    setTipoGasto(t.tipoGasto || 'Variable');
     populateRubros(t.tipo, isCustom ? 'Personalizado...' : t.rubro);
     if (isCustom) {
       document.getElementById('customRubroWrap').classList.add('show');
@@ -9603,7 +9622,7 @@ function saveTx(e) {
   }
   const impP   = Number(document.getElementById('txImpPesos').value) || 0;
   const pagado = Number(document.getElementById('txPagado').value)   || 0;
-  const tipoGasto = tipo === 'Gasto' ? (document.getElementById('txTipoGasto').value || 'Variable') : '';
+  const tipoGasto = document.getElementById('txTipoGasto').value || 'Variable';
 
   const mes = document.getElementById('txMes').value || curKey();
   const tx = {
@@ -10010,7 +10029,7 @@ function masParsear(){
       if (!rubro) errs.push('Rubro no reconocido');
     }
     const tgRaw = String(masVal(f,'tipoGasto') || '').trim();
-    const tipoGasto = tipo === 'Ingreso' ? '' : (/fij/i.test(tgRaw) ? 'Fijo' : 'Variable');
+    const tipoGasto = /fij/i.test(tgRaw) ? 'Fijo' : 'Variable';
     const pagRaw = masVal(f,'pagado');
     let pagado = (pagRaw === '' || pagRaw == null) ? (isNaN(p) ? 0 : p) : masNum(pagRaw);
     if (isNaN(pagado)) { pagado = 0; errs.push('Pagado $ no es un número'); }
@@ -10366,8 +10385,10 @@ function setQpTipo(tipo) {
   qpTipo = tipo;
   document.getElementById('qpBtnIng').classList.toggle('active', tipo==='Ingreso');
   document.getElementById('qpBtnGas').classList.toggle('active', tipo==='Gasto');
-  document.getElementById('qpTipoGastoWrap').style.display = tipo === 'Gasto' ? 'block' : 'none';
-  if (tipo === 'Gasto') setQpTipoGasto(qpTipoGasto || 'Variable');
+  document.getElementById('qpTipoGastoWrap').style.display = 'block';
+  const lab = document.getElementById('qpTipoGastoLabel');
+  if (lab) lab.textContent = tipo === 'Ingreso' ? 'Tipo de ingreso' : 'Tipo de gasto';
+  setQpTipoGasto(qpTipoGasto || 'Variable');
   populateQpRubros(tipo);
 }
 
@@ -10456,7 +10477,7 @@ function selectAc(i) {
   qpSetRubroDetectado(t.rubro || '');
   document.getElementById('qpPagado').value  = t.impPesos || '';
   setQpTipo(t.tipo || 'Gasto');
-  if (t.tipo === 'Gasto') setQpTipoGasto(t.tipoGasto || 'Variable');
+  setQpTipoGasto(t.tipoGasto || 'Variable');
   closeAc();
   document.getElementById('qpPesos').focus();
 }
@@ -10637,7 +10658,7 @@ function saveQuickTx() {
   if (!detalle || !pesos) { alert('Completá al menos Detalle e Importe $'); return; }
   const pagadoFinal = isNaN(parseFloat(document.getElementById('qpPagado').value)) ? pesos : pagado;
   const qpMes = document.getElementById('qpMes').value || curKey();
-  const tipoGasto = qpTipo === 'Gasto' ? (qpTipoGasto || 'Variable') : '';
+  const tipoGasto = qpTipoGasto || 'Variable';
   const dueno = qpDuenoResuelto();
   const tx = {
     id: uid(), mes: qpMes, tipo: qpTipo, rubro, tipoGasto, detalle,
@@ -10746,26 +10767,38 @@ function _bestMatch(fijo, curTxs) {
   return best;
 }
 
-function replicarGastosFijos() {
+// Las dos acciones son la misma con el tipo cambiado, así que se parametriza en
+// vez de duplicarse: el emparejado contra lo ya cargado, el modal de dudosos y
+// la confirmación valen igual para un sueldo que para un alquiler.
+const REPL = {
+  Gasto:   { sing:'gasto fijo',   plur:'gastos fijos',   campo:'Tipo de gasto',   art:'los' },
+  Ingreso: { sing:'ingreso fijo', plur:'ingresos fijos', campo:'Tipo de ingreso', art:'los' }
+};
+function replicarIngresosFijos() { return replicarFijos('Ingreso'); }
+function replicarGastosFijos()   { return replicarFijos('Gasto'); }
+
+function replicarFijos(tipo) {
+  const L = REPL[tipo] || REPL.Gasto;
   const prevM   = curMonth === 0 ? 11 : curMonth - 1;
   const prevY   = curMonth === 0 ? curYear - 1 : curYear;
   const prevKey = monthKey(prevY, prevM);
   const allData = getData();
-  const prevFijosAll = allData.filter(t => t.mes === prevKey && t.tipo === 'Gasto' && t.tipoGasto === 'Fijo');
-  // Excluir TC: se traen vía importación de resumen, no deben replicarse como esqueleto
+  const prevFijosAll = allData.filter(t => t.mes === prevKey && t.tipo === tipo && t.tipoGasto === 'Fijo');
+  // Excluir TC: se traen vía importación de resumen, no deben replicarse como
+  // esqueleto. Del lado de los ingresos no hay TC, así que no filtra nada.
   const prevFijosTc = prevFijosAll.filter(t => isTCOrigen(t));
   const prevFijos   = prevFijosAll.filter(t => !isTCOrigen(t));
 
   if (!prevFijosAll.length) {
-    alert(`No encontré gastos marcados como "Fijo" en ${MESES[prevM]} ${prevY}.\n\nMarcá tus gastos recurrentes con Tipo de gasto = Fijo para generar el esqueleto del próximo mes.`);
+    alert(`No encontré ${tipo === 'Ingreso' ? 'ingresos' : 'gastos'} marcados como "Fijo" en ${MESES[prevM]} ${prevY}.\n\nMarcá los que se repiten todos los meses con ${L.campo} = Fijo para generar el esqueleto del próximo mes.`);
     return;
   }
   if (!prevFijos.length) {
-    alert(`Los únicos gastos fijos de ${MESES[prevM]} ${prevY} son de Tarjeta de Crédito (${prevFijosTc.length}). Se traen automáticamente cuando importás el resumen — no hay nada que replicar manualmente.`);
+    alert(`Los únicos ${L.plur} de ${MESES[prevM]} ${prevY} son de Tarjeta de Crédito (${prevFijosTc.length}). Se traen automáticamente cuando importás el resumen — no hay nada que replicar manualmente.`);
     return;
   }
 
-  const curTxs  = allData.filter(t => t.mes === curKey() && t.tipo === 'Gasto');
+  const curTxs  = allData.filter(t => t.mes === curKey() && t.tipo === tipo);
   const skipList = [], fuzzyList = [], addList = [];
 
   prevFijos.forEach(fijo => {
@@ -10776,6 +10809,7 @@ function replicarGastosFijos() {
   });
 
   window._replicarTcCount = prevFijosTc.length;
+  window._replicarTipo = tipo;
 
   if (fuzzyList.length) {
     _showFuzzyModal({ skipList, fuzzyList, addList, prevM, prevY });
@@ -10838,13 +10872,18 @@ function _applyFuzzy(count) {
 }
 
 function _confirmarReplicar({ skipList, addList, prevM, prevY }) {
-  if (!addList.length) {
-    alert(`Todos los gastos fijos de ${MESES[prevM]} ${prevY} ya están cubiertos este mes. No hay nada nuevo para replicar.`);
+  const tipo = window._replicarTipo || 'Gasto';
+  const L = REPL[tipo] || REPL.Gasto;
+  const esIng = tipo === 'Ingreso';
+  const n = addList.length;
+  const plural = n === 1 ? L.sing : L.plur;
+  if (!n) {
+    alert(`Todos los ${L.plur} de ${MESES[prevM]} ${prevY} ya están cubiertos este mes. No hay nada nuevo para replicar.`);
     return;
   }
   const omitidos = skipList.length;
   const tcExcluidos = (window._replicarTcCount || 0);
-  const msg = `Esto va a crear ${addList.length} gasto${addList.length===1?'':'s'} fijo${addList.length===1?'':'s'} en ${MESES[curMonth]} ${curYear}, con importe $0 para completar cuando lleguen los vencimientos.`
+  const msg = `Esto va a crear ${n} ${plural} en ${MESES[curMonth]} ${curYear}, con importe $0 para completar ${esIng ? 'cuando los cobres' : 'cuando lleguen los vencimientos'}.`
     + (omitidos   ? `\n\n(${omitidos} ya cubierto${omitidos===1?'':'s'} este mes — se omiten)` : '')
     + (tcExcluidos ? `\n\n💳 ${tcExcluidos} gasto${tcExcluidos===1?'':'s'} fijo${tcExcluidos===1?'':'s'} de TC no se replica${tcExcluidos===1?'':'n'} — se trae${tcExcluidos===1?'':'n'} vía importación de resumen.` : '')
     + `\n\n¿Continuar?`;
@@ -10854,7 +10893,8 @@ function _confirmarReplicar({ skipList, addList, prevM, prevY }) {
   saveData([...allData, ...skeleton]);
   window._replicarTcCount = 0;
   render();
-  alert(`Listo: ${skeleton.length} gasto${skeleton.length===1?'':'s'} fijo${skeleton.length===1?'':'s'} creado${skeleton.length===1?'':'s'} para ${MESES[curMonth]}.\n\n⚠️ Quedan con importe $0 — completalos cuando lleguen los vencimientos.`);
+  const k = skeleton.length;
+  alert(`Listo: ${k} ${k === 1 ? L.sing : L.plur} creado${k===1?'':'s'} para ${MESES[curMonth]}.\n\n⚠️ Quedan con importe $0 — completalos ${esIng ? 'cuando los cobres' : 'cuando lleguen los vencimientos'}.`);
 }
 
 // ── NORTIA (Idea 9) ────────────────────────────────────
@@ -12271,7 +12311,7 @@ function subtituloRumbo() {
       test: function (t) { return /promedio hist|sobre el promedio|m[aá]s que el mes/i.test(t); } },
     { id: 'presupuesto', tit: 'Presupuesto', ico: '🎯', desc: 'Rubros que pasaron o están por pasar el tope que te pusiste',
       test: function (t) { return /presupuesto|l[ií]mite|tope/i.test(t); } },
-    { id: 'registro',    tit: 'Registro',    ico: '🔔', desc: 'Gastos fijos del mes pasado que todavía no cargaste',
+    { id: 'registro',    tit: 'Registro',    ico: '🔔', desc: 'Movimientos fijos del mes pasado que todavía no cargaste',
       test: function (t) { return /no registrado|no aparece|falta cargar/i.test(t); } }
   ];
 
