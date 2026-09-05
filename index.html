@@ -729,6 +729,16 @@ tr:hover td { background: #fafbfc; }
   .stat-cards, .scenarios-grid, .badges-grid, .progreso-top { grid-template-columns: 1fr !important; }
   .reports-grid > .full, .insight-card.full { grid-column: auto; }
 
+  /* `1fr` es `minmax(auto, 1fr)`, y ese `auto` no baja del ancho mínimo del
+     contenido: una tabla con `white-space:nowrap` adentro ensanchaba la grilla
+     entera y se llevaba puesto el ancho de la pantalla. Con `minmax(0, 1fr)` la
+     columna sí puede achicarse, y entonces el contenedor de la tabla —que ya
+     tiene su propio overflow— hace el scroll que le corresponde.
+     Además cada tarjeta scrollea sola: así nunca se arrastra el reporte
+     completo, que era lo molesto de antes. */
+  .reports-grid { grid-template-columns: minmax(0, 1fr) !important; }
+  .reports-grid > .report-card { min-width: 0; overflow-x: auto; }
+
   .card { padding:15px 16px; }
   .card-value { font-size:19px; }
 
