@@ -6993,6 +6993,26 @@ function detectAusentes(allData, key) {
     .slice(0, 5);
 }
 
+// 880px es el mismo corte que usa el resto de la app para pasar a una columna.
+function evolEsAngosto() {
+  try { return window.matchMedia('(max-width: 880px)').matches; } catch (e) { return false; }
+}
+// Al rotar el teléfono o achicar la ventana se cruza el umbral: Chart.js
+// redimensiona solo, pero el tipo de gráfico hay que rehacerlo.
+(function () {
+  try {
+    const mq = window.matchMedia('(max-width: 880px)');
+    const alCambiar = function () {
+      const panel = document.getElementById('rep-evol');
+      if (panel && panel.classList.contains('active') && typeof renderRepEvol === 'function') {
+        try { renderRepEvol(); } catch (e) {}
+      }
+    };
+    if (mq.addEventListener) mq.addEventListener('change', alCambiar);
+    else if (mq.addListener) mq.addListener(alCambiar);
+  } catch (e) {}
+})();
+
 // ── TRANSACCIONES ────────────────────────────────────────────
 function renderTx() {
   const all = getData().filter(t => t.mes === curKey());
@@ -7736,27 +7756,60 @@ function renderRepEvol() {
   for (let m = 0; m < 12; m++) {
     const k = monthKey(curYear, m);
     const mt = all.filter(t => t.mes === k);
+    const sinDatos = mt.length === 0;
     if (repMoneda === 'AMBAS') {
       const si = sumField(mt,'Ingreso'), sg = sumField(mt,'Gasto');
-      ings.push(si.ars); ingsUSD.push(si.usd);
-      gas.push(sg.ars);  gasUSD.push(sg.usd);
+      ings.push(sinDatos ? null : si.ars); ingsUSD.push(sinDatos ? null : si.usd);
+      gas.push(sinDatos ? null : sg.ars);  gasUSD.push(sinDatos ? null : sg.usd);
     } else {
-      ings.push(sumField(mt,'Ingreso'));
-      gas.push(sumField(mt,'Gasto'));
+      ings.push(sinDatos ? null : sumField(mt,'Ingreso'));
+      gas.push(sinDatos ? null : sumField(mt,'Gasto'));
     }
   }
 
   if (charts.evol) charts.evol.destroy();
   const isAmbas = repMoneda === 'AMBAS';
-  const evolDatasets = isAmbas ? [
-    { label:'Ingresos ARS', data:ings,    backgroundColor:'#10b98133', borderColor:'#10b981', borderWidth:2, borderRadius:5, yAxisID:'y'  },
-    { label:'Gastos ARS',   data:gas,     backgroundColor:'#ef444433', borderColor:'#ef4444', borderWidth:2, borderRadius:5, yAxisID:'y'  },
-    { label:'Ingresos USD', data:ingsUSD, backgroundColor:'#3b82f633', borderColor:'#3b82f6', borderWidth:2, borderRadius:5, yAxisID:'y1' },
-    { label:'Gastos USD',   data:gasUSD,  backgroundColor:'#f97b2233', borderColor:'#f97b22', borderWidth:2, borderRadius:5, yAxisID:'y1' },
-  ] : [
-    { label:'Ingresos', data:ings, backgroundColor:'#10b98133', borderColor:'#10b981', borderWidth:2, borderRadius:5 },
-    { label:'Gastos',   data:gas,  backgroundColor:'#ef444433', borderColor:'#ef4444', borderWidth:2, borderRadius:5 }
-  ];
+  // Líneas y no barras: con 12 meses y dos series eran 24 barras de 7px en un
+  // celular, ilegibles. Cada mes es un punto, así que el ancho deja de importar
+  // y se lee la tendencia, que es lo que este gráfico tiene que responder. El
+  // número exacto de cada mes está en la tabla que va justo abajo.
+  // En la computadora sobra ancho y las barras comparan mejor mes contra mes.
+  // En el celular, 12 meses por dos series son 24 barras de 7px: ahí gana la
+  // línea, donde cada mes es un punto y el ancho deja de importar. Mismo dato,
+  // la forma que corresponde a cada pantalla. El número exacto está siempre en
+  // la tabla de abajo.
+  const evolAngosto = evolEsAngosto();
+  const lineaBase = { borderWidth:2, tension:0.32, pointRadius:3, pointHoverRadius:6,
+                      pointBackgroundColor:'#fff', pointBorderWidth:2, spanGaps:true };
+  const barraBase = { borderWidth:2, borderRadius:5 };
+  let evolDatasets;
+  if (!evolAngosto) {
+    evolDatasets = isAmbas ? [
+      { ...barraBase, label:'Ingresos ARS', data:ings,    backgroundColor:'#10b98133', borderColor:'#10b981', yAxisID:'y'  },
+      { ...barraBase, label:'Gastos ARS',   data:gas,     backgroundColor:'#ef444433', borderColor:'#ef4444', yAxisID:'y'  },
+      { ...barraBase, label:'Ingresos USD', data:ingsUSD, backgroundColor:'#3b82f633', borderColor:'#3b82f6', yAxisID:'y1' },
+      { ...barraBase, label:'Gastos USD',   data:gasUSD,  backgroundColor:'#f97b2233', borderColor:'#f97b22', yAxisID:'y1' },
+    ] : [
+      { ...barraBase, label:'Ingresos', data:ings, backgroundColor:'#10b98133', borderColor:'#10b981' },
+      { ...barraBase, label:'Gastos',   data:gas,  backgroundColor:'#ef444433', borderColor:'#ef4444' }
+    ];
+  } else if (isAmbas) {
+    // El dólar sigue siendo barra aun en el celular: como suele haber consumo
+    // en USD sólo algunos meses, como línea caía a cero y volvía a subir,
+    // dibujando agujas verticales que tapaban las curvas de pesos.
+    evolDatasets = [
+      { ...lineaBase, label:'Ingresos ARS', data:ings, borderColor:'#10b981', backgroundColor:'#10b98133', fill:false, yAxisID:'y' },
+      { ...lineaBase, label:'Gastos ARS',   data:gas,  borderColor:'#ef4444', backgroundColor:'#ef444433', fill:false, yAxisID:'y' },
+      { type:'bar', ...barraBase, borderRadius:4, label:'Ingresos USD', data:ingsUSD, borderColor:'#3b82f6', backgroundColor:'#3b82f633', yAxisID:'y1' },
+      { type:'bar', ...barraBase, borderRadius:4, label:'Gastos USD',   data:gasUSD,  borderColor:'#f97b22', backgroundColor:'#f97b2233', yAxisID:'y1' },
+    ];
+  } else {
+    // Con dos series el área entre ambas ES el balance del mes: sale gratis.
+    evolDatasets = [
+      { ...lineaBase, label:'Ingresos', data:ings, borderColor:'#10b981', backgroundColor:'#10b98126', fill:true },
+      { ...lineaBase, label:'Gastos',   data:gas,  borderColor:'#ef4444', backgroundColor:'#ef444426', fill:true }
+    ];
+  }
   const evolScales = isAmbas ? {
     y:  { position:'left',  ticks:{ callback: v => fmtMShort(v) }, title:{ display:true, text:'ARS', color:'var(--muted)', font:{size:11} } },
     y1: { position:'right', ticks:{ callback: v => 'U$S '+(v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(0)) }, grid:{ drawOnChartArea:false }, title:{ display:true, text:'USD', color:'#3b82f6', font:{size:11} } }
@@ -7764,10 +7817,11 @@ function renderRepEvol() {
     y: { ticks:{ callback: v => fmtMShort(v) } }
   };
   charts.evol = new Chart(document.getElementById('evolChart').getContext('2d'), {
-    type: 'bar',
+    type: evolAngosto ? 'line' : 'bar',
     data: { labels: MESES, datasets: evolDatasets },
     options: {
       responsive:true,
+      interaction: { mode:'index', intersect:false },
       plugins: {
         legend:{ position:'top' },
         tooltip:{ callbacks:{ label: c => {
@@ -8885,7 +8939,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.4.000';
+const APP_VERSION = 'v005.4.001';
 let novEntradas = [];
 
 function novLeida(e) {
