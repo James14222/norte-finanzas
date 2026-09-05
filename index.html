@@ -227,6 +227,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* BULK SELECTION */
 .bulk-bar { display:none; align-items:center; gap:8px; padding:4px 4px 4px 12px; background:#FFF1EA; border:1px solid rgba(255,138,92,.45); border-radius:10px; }
 .bulk-bar #bulkCount { font-size:12.5px; font-weight:700; color:var(--text); white-space:nowrap; }
+/* El total de lo marcado, separado del contador por una línea fina: es otro
+   dato, no una continuación de la frase. */
+.bulk-tot { margin-left:10px; padding-left:11px; border-left:1px solid rgba(255,138,92,.5);
+  font-weight:600; color:var(--muted); }
+.bulk-tot b { font-weight:800; }
+.bulk-tot .gas { color:var(--danger); }
+.bulk-tot .ing { color:#16a34a; }
+@media (max-width:640px){
+  /* En pantalla angosta el total baja de renglón en vez de empujar los botones. */
+  .bulk-bar { flex-wrap:wrap; }
+  .bulk-tot { margin-left:0; padding-left:0; border-left:none; width:100%; }
+}
 .bulk-bar.show { display: flex; }
 /* Copia congelada de la barra de selección. Aparece pegada abajo de la barra
    superior sólo cuando la original ya se fue con el scroll. z-index 45: por
@@ -356,6 +368,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   font-size:13.5px; font-family:inherit; background:var(--card); color:var(--text); min-width:0; }
 .rb-nota { font-size:12.5px; color:var(--muted); line-height:1.5; margin-top:12px; }
 #bulkBarFija #bulkCountFija { font-size:12.5px; font-weight:700; color:var(--text); white-space:nowrap; }
+#bulkBarFija .bulk-tot { border-left-color:rgba(255,138,92,.55); }
 #bulkBarFija .bbf-acciones { margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; }
 @media (max-width:640px){
   #bulkBarFija { padding:8px 10px; gap:7px; flex-wrap:wrap; }
@@ -9653,7 +9666,9 @@ function clearSelectionTx() {
 
     var destino = document.getElementById('bulkCountFija');
     var fuente  = document.getElementById('bulkCount');
-    if (destino && fuente) destino.textContent = fuente.textContent;
+    // innerHTML y no textContent: el total viene con formato propio y con
+    // textContent llegaba como una tira de texto sin los colores.
+    if (destino && fuente) destino.innerHTML = fuente.innerHTML;
 
     anclaje(Math.round(top + f.getBoundingClientRect().height));
   };
@@ -9681,13 +9696,53 @@ function clearSelectionTx() {
   }
 })();
 
+// Cuánta plata suma lo que tenés marcado. Los dólares entran igual que en el
+// resto de la app: sólo si el interruptor está en "Pesos + dólares", y a la
+// misma cotización. Si sumáramos siempre, este número no coincidiría con los
+// totales del tablero y no habría forma de explicar la diferencia.
+function bulkTotalSel() {
+  let gas = 0, ing = 0, usd = 0;
+  try {
+    getData().forEach(function (t) {
+      if (!selectedTx.has(t.id)) return;
+      const p = (Number(t.impPesos) || 0) + (fxActivo() ? fxAPesos(t.impUSD) : 0);
+      if (t.tipo === 'Ingreso') ing += p; else gas += p;
+      usd += Number(t.impUSD) || 0;
+    });
+  } catch (e) {}
+  return { gas: gas, ing: ing, usd: usd };
+}
+
+// Con un solo tipo va un número solo. Si mezclaste ingresos y gastos van los dos
+// por separado: sumarlos daría un número que no significa nada, y restarlos
+// escondería de qué está hecho.
+function bulkTextoSel() {
+  const n = selectedTx.size;
+  const t = bulkTotalSel();
+  let tot;
+  if (t.gas && t.ing) {
+    tot = '<b class="gas">' + esc(fmtP(t.gas)) + '</b> en gastos · <b class="ing">' + esc(fmtP(t.ing)) + '</b> en ingresos';
+  } else if (t.ing) {
+    tot = '<b class="ing">' + esc(fmtP(t.ing)) + '</b>';
+  } else {
+    tot = '<b class="gas">' + esc(fmtP(t.gas)) + '</b>';
+  }
+  // Si hay importes en dólares y el interruptor está en "Solo pesos", el número
+  // no los cuenta: conviene decirlo antes de que alguien lo tome por un error.
+  const aclara = (t.usd > 0 && !fxActivo())
+    ? ' title="No incluye USD ' + esc(String(t.usd)) + ': tenés el tablero en «Solo pesos»."'
+    : '';
+  return esc(String(n)) + ' seleccionado' + (n === 1 ? '' : 's') +
+         '<span class="bulk-tot"' + aclara + '>' + tot + '</span>';
+}
+
 function updateBulkBar() {
   const bar = document.getElementById('bulkBar');
   const count = document.getElementById('bulkCount');
   if (!bar || !count) return;
   if (selectedTx.size > 0) {
     bar.classList.add('show');
-    count.textContent = `${selectedTx.size} seleccionado${selectedTx.size === 1 ? '' : 's'}`;
+    count.innerHTML = bulkTextoSel();
   } else {
     bar.classList.remove('show');
   }
