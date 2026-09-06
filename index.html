@@ -267,6 +267,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   border-left:3px solid var(--brand-accent); padding-left:11px; }
 .nv-cu b { color:var(--text); font-weight:700; }
 .nv-vacio { text-align:center; padding:40px 20px; color:var(--muted); font-size:14px; }
+/* Verde = ya lo podés usar. Ámbar = todavía no existe, te estoy consultando.
+   Sin esto no había forma de saber qué estabas leyendo. */
+.nv-tipo { font-size:10.5px; font-weight:800; letter-spacing:.04em; border-radius:20px;
+  padding:2px 9px; white-space:nowrap; text-transform:uppercase; }
+.nv-tipo.hecho     { color:#166534; background:rgba(22,163,74,.13); }
+.nv-tipo.propuesta { color:#92400e; background:rgba(217,119,6,.15); }
 .nv-fila { background:var(--card); border:1px solid var(--border); border-radius:14px;
   padding:16px 18px; margin-bottom:11px; cursor:pointer; transition:border-color .15s, transform .06s; }
 .nv-fila:hover { border-color:var(--brand-accent); }
@@ -279,7 +285,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .nv-fpie .abrir { margin-left:auto; color:var(--brand-accent); font-weight:700; white-space:nowrap; }
 .nv-votado { color:#16a34a; font-weight:700; }
 .nv-voto-caja { border-top:1px solid var(--border); margin-top:20px; padding-top:18px; }
-.nv-voto-preg { font-size:15px; font-weight:700; color:var(--text); margin-bottom:12px; }
+.nv-voto-preg { font-size:15px; font-weight:700; color:var(--text); margin-bottom:4px; }
+.nv-voto-ctx { font-size:12.5px; color:var(--muted); line-height:1.5; margin-bottom:12px; }
 .nv-voto-fila { display:flex; gap:8px; flex-wrap:wrap; }
 .nv-voto-b { flex:1 1 0; min-width:52px; height:46px; border:1.5px solid var(--border); background:var(--card);
   border-radius:11px; font-size:16px; font-weight:800; color:var(--muted); cursor:pointer;
@@ -3660,8 +3667,16 @@ tr:hover td { background: #fafbfc; }
       <input type="text" id="nvaEntTitulo" placeholder="Tu mes, ahora completo" maxlength="120">
     </div>
     <div class="nva-campo">
+      <label>Tipo de comunicación</label>
+      <select id="nvaTipo" onchange="nvaPintarTipo()" style="width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;font-family:inherit;background:var(--card);color:var(--text)">
+        <option value="hecho">Ya disponible &mdash; algo que ya pueden usar</option>
+        <option value="propuesta">Lo estoy pensando &mdash; todavía no existe</option>
+      </select>
+      <div id="nvaTipoAyuda" style="margin-top:7px;font-size:12px;color:var(--muted);line-height:1.5"></div>
+    </div>
+    <div class="nva-campo">
       <label>Pregunta del voto (opcional)</label>
-      <input type="text" id="nvaPregunta" maxlength="200" placeholder="Si la dejás vacía: «¿Te sirvió este cambio?» si pusiste versión, «¿Esto te serviría?» si no.">
+      <input type="text" id="nvaPregunta" maxlength="200" placeholder="Dejala vacía y sale la que corresponde al tipo.">
     </div>
     <div class="nva-campo">
       <label>Resumen (opcional)</label>
@@ -8967,7 +8982,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.4.003';
+const APP_VERSION = 'v005.4.004';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -9003,16 +9018,37 @@ function iniciarListenerNovedades() {
 
 // Las etiquetas cambian según qué se esté preguntando: no es lo mismo opinar
 // sobre algo que ya está hecho que sobre algo que todavía no existe.
-const NOV_ESCALAS = {
-  propuesta: ['No lo usaría', 'Me da igual', 'Puede servirme', 'Lo usaría', 'Lo estaba esperando'],
-  hecho:     ['No me sirve', 'Me da igual', 'Algo me sirve', 'Me sirve', 'Me resuelve un problema']
+// Dos clases de comunicación, y no se pregunta igual por cada una: por algo ya
+// hecho se pregunta cuánto sirvió; por algo que todavía no existe, cuánta
+// utilidad le ven. Antes esto se deducía de si la entrada tenía número de
+// versión — una heurística que se rompió apenas una propuesta llevó versión, y
+// terminó preguntando "¿te sirvió?" por algo que ni siquiera estaba hecho.
+const NOV_TIPOS = {
+  hecho: {
+    rotulo: 'Ya disponible',
+    pregunta: '¿Te sirvió este cambio?',
+    escala: ['No me sirve', 'Me da igual', 'Algo me sirve', 'Me sirve', 'Me resuelve un problema']
+  },
+  propuesta: {
+    rotulo: 'Lo estoy pensando',
+    pregunta: '¿Cuánta utilidad le ves?',
+    escala: ['Ninguna', 'Poca', 'Alguna', 'Bastante', 'Mucha, la necesito']
+  }
 };
-function novEsPropuesta(e) { return !String((e && e.version) || '').trim(); }
-function novEscala(e) { return novEsPropuesta(e) ? NOV_ESCALAS.propuesta : NOV_ESCALAS.hecho; }
+// Las entradas publicadas antes de que existiera el campo no tienen `tipo`:
+// para ésas se sigue usando la regla vieja, que para las tres que ya están
+// acierta.
+function novTipo(e) {
+  const t = String((e && e.tipo) || '').trim();
+  if (t === 'propuesta' || t === 'hecho') return t;
+  return String((e && e.version) || '').trim() ? 'hecho' : 'propuesta';
+}
+function novDef(e) { return NOV_TIPOS[novTipo(e)] || NOV_TIPOS.hecho; }
+function novEsPropuesta(e) { return novTipo(e) === 'propuesta'; }
+function novEscala(e) { return novDef(e).escala; }
 function novPregunta(e) {
   const p = String((e && e.pregunta) || '').trim();
-  if (p) return p;
-  return novEsPropuesta(e) ? '¿Esto te serviría?' : '¿Te sirvió este cambio?';
+  return p || novDef(e).pregunta;
 }
 
 function renderNovedades() {
@@ -9043,6 +9079,7 @@ function renderNovedades() {
       '<div class="nv-cab">' +
         '<span class="nv-fecha">' + esc(novFechaLarga(e.fecha)) + '</span>' +
         (e.version ? '<span class="nv-ver">' + esc(e.version) + '</span>' : '') +
+        '<span class="nv-tipo ' + novTipo(e) + '">' + esc(novDef(e).rotulo) + '</span>' +
         (leida ? '' : '<span class="nv-nueva">NUEVO</span>') +
       '</div>' +
       '<div class="nv-ftit">' + esc(e.titulo || '') + '</div>' +
@@ -9064,7 +9101,8 @@ function novAbrir(id) {
   if (!e) return;
   document.getElementById('novDetTitulo').textContent = e.titulo || '';
   document.getElementById('novDetCab').innerHTML =
-    esc(novFechaLarga(e.fecha)) + (e.version ? ' · <span class="nv-ver">' + esc(e.version) + '</span>' : '');
+    esc(novFechaLarga(e.fecha)) + (e.version ? ' · <span class="nv-ver">' + esc(e.version) + '</span>' : '') +
+    ' <span class="nv-tipo ' + novTipo(e) + '">' + esc(novDef(e).rotulo) + '</span>';
   document.getElementById('novDetCuerpo').innerHTML =
     (e.resumen ? '<div class="nv-resumen">' + esc(e.resumen) + '</div>' : '') +
     (Array.isArray(e.cambios) ? e.cambios : []).map(function (c) {
@@ -9094,6 +9132,9 @@ function novPintarVoto(e) {
   document.getElementById('novDetVoto').innerHTML =
     '<div class="nv-voto-caja">' +
       '<div class="nv-voto-preg">' + esc(novPregunta(e)) + '</div>' +
+      '<div class="nv-voto-ctx">' + (novEsPropuesta(e)
+        ? 'Todavía no está hecho: tu voto me ayuda a decidir si lo hago.'
+        : 'Ya lo podés usar: contame cuánto te sirvió en la práctica.') + '</div>' +
       '<div class="nv-voto-fila">' +
         escala.map(function (txt, i) {
           const v = i + 1;
@@ -9196,6 +9237,7 @@ function renderNovedadesAdmin() {
         const n = (e.cambios || []).length;
         return '<div class="nva-fila">' +
           '<span class="t">' + esc(e.titulo || '(sin título)') + '</span>' +
+          '<span class="nv-tipo ' + novTipo(e) + '">' + esc(novDef(e).rotulo) + '</span>' +
           (e.publicada === false ? '<span class="borrador">BORRADOR</span>' : '') +
           '<span class="m">' + esc(e.version || '—') + ' · ' + esc(e.fecha || '') + ' · ' + n + ' cambio' + (n === 1 ? '' : 's') +
             ' · ' + nvaResumenVotos(e) + '</span>' +
@@ -9250,6 +9292,10 @@ function nvaAbrir(entrada) {
   document.getElementById('nvaVersion').value    = entrada.version || APP_VERSION;
   document.getElementById('nvaPublicada').value  = entrada.publicada === false ? '0' : '1';
   document.getElementById('nvaEntTitulo').value  = entrada.titulo || '';
+  // Las entradas viejas no traen `tipo`: novTipo() aplica la regla de
+  // compatibilidad en vez de dejar el selector en cualquier cosa.
+  document.getElementById('nvaTipo').value       = entrada.id ? novTipo(entrada) : 'hecho';
+  nvaPintarTipo();
   document.getElementById('nvaPregunta').value   = entrada.pregunta || '';
   document.getElementById('nvaResumen').value    = entrada.resumen || '';
   document.getElementById('nvaError').style.display = 'none';
@@ -9258,6 +9304,17 @@ function nvaAbrir(entrada) {
   const cambios = (entrada.cambios && entrada.cambios.length) ? entrada.cambios : [{}];
   cambios.forEach(function (c) { nvaAgregarCambio(c); });
   document.getElementById('nvaOverlay').classList.add('show');
+}
+// Muestra debajo del selector exactamente lo que va a leer el Pionero. Elegir
+// el tipo a ciegas es lo que llevó a preguntar "¿te sirvió?" por algo que no
+// estaba hecho.
+function nvaPintarTipo() {
+  const cont = document.getElementById('nvaTipoAyuda');
+  if (!cont) return;
+  const d = NOV_TIPOS[document.getElementById('nvaTipo').value] || NOV_TIPOS.hecho;
+  cont.innerHTML =
+    'Van a ver el distintivo <b>' + esc(d.rotulo) + '</b> y la pregunta <b>' +
+    esc(d.pregunta) + '</b><br>1 = ' + esc(d.escala[0]) + ' · 5 = ' + esc(d.escala[4]);
 }
 function nvaNueva() { nvaAbrir(null); }
 function nvaEditar(id) { nvaAbrir(nvaTodas.find(function (e) { return e.id === id; }) || null); }
@@ -9289,6 +9346,7 @@ async function nvaGuardar() {
       fecha:     document.getElementById('nvaFecha').value,
       version:   document.getElementById('nvaVersion').value.trim(),
       titulo:    titulo,
+      tipo:      document.getElementById('nvaTipo').value,
       pregunta:  document.getElementById('nvaPregunta').value.trim(),
       resumen:   document.getElementById('nvaResumen').value.trim(),
       publicada: document.getElementById('nvaPublicada').value === '1',
