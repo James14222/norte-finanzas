@@ -1245,11 +1245,21 @@ tr:hover td { background: #fafbfc; }
     /* Bloque de tarjetas en Transacciones: se separa del resto de las
        acciones para que quede claro que es un circuito propio (ingresar
        el resumen primero, pagarlo después). */
-    .tc-bloque{position:relative;display:flex;align-items:center;gap:8px;margin-left:auto;
-      padding:8px 12px 8px 14px;border:1.5px solid var(--border);border-radius:12px;
+    /* Sin `margin-left:auto`: empujaba el bloque contra el borde derecho y
+       abría un hueco enorme que forzaba una fila entera para él solo. Ahora
+       todos los grupos fluyen en la misma línea. */
+    /* Una fila y no tres: con seis acciones sueltas y textos largos la barra se
+       comía tres renglones de pantalla antes de la primera transacción. Los
+       botones emparentados se agrupan bajo un rótulo —que ya dice el contexto,
+       así que el botón sólo necesita el verbo o el sustantivo— y acá se aprieta
+       un punto la tipografía, sin tocar los botones del resto de la app. */
+    .tx-acciones{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+    .tx-acciones .btn{font-size:12px;padding:7px 11px}
+    .tc-bloque,.act-bloque{position:relative;display:flex;align-items:center;gap:6px;
+      padding:6px 10px 6px 12px;border:1.5px solid var(--border);border-radius:12px;
       background:rgba(27,58,75,.03)}
-    .tc-bloque-tit{font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
-      color:var(--muted);white-space:nowrap}
+    .tc-bloque-tit,.act-bloque-tit{font-size:10px;font-weight:800;letter-spacing:1.2px;
+      text-transform:uppercase;color:var(--muted);white-space:nowrap}
     .tc-ayuda-btn{width:22px;height:22px;flex:0 0 22px;border-radius:50%;cursor:pointer;
       border:1.5px solid var(--border);background:var(--card);color:var(--muted);
       font-size:12px;font-weight:800;line-height:1;padding:0;transition:.15s}
@@ -1263,7 +1273,7 @@ tr:hover td { background: #fafbfc; }
     .tc-pop-nota{font-size:11.5px;color:var(--muted);line-height:1.5;padding-top:9px;
       border-top:1px solid var(--border)}
     @media (max-width:880px){
-      .tc-bloque{margin-left:0;width:100%;flex-wrap:wrap}
+      .tc-bloque,.act-bloque{flex-wrap:wrap;max-width:100%}
       .tc-pop{width:auto;left:0;right:0}
     }
 /* ── Mi Rumbo: dólar integrado + panel del año + cuenta (v005.1.069) ── */
@@ -1802,18 +1812,21 @@ tr:hover td { background: #fafbfc; }
             </div>
             <div id="autorSummary" style="width:100%;font-size:12px;color:#6b7f93;margin-top:2px"></div>
           </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-secondary" onclick="clonarMesAnterior()" title="Copia todos los registros del mes anterior a este mes, con sus importes">📋 Clonar mes anterior</button>
+          <div class="tx-acciones">
+            <button class="btn btn-secondary" onclick="clonarMesAnterior()" title="Copia todos los registros del mes anterior a este mes, con sus importes">📋 Clonar anterior</button>
             <button class="btn btn-secondary" onclick="openMasivo()" title="Cargá muchos movimientos de una vez desde un Excel, mapeando tus columnas contra los datos de Norte">📊 Carga masiva</button>
-            <button class="btn btn-secondary" onclick="replicarGastosFijos()" title="Crea el esqueleto de tus gastos fijos del mes anterior, sin importe, para no olvidarte de ninguno">🧩 Replicar gastos fijos</button>
-            <button class="btn btn-secondary" onclick="replicarIngresosFijos()" title="Toma los ingresos que marcaste como Fijos el mes anterior y los copia a este mes sin importe, para completar cuando los cobres">🧩 Replicar ingresos fijos</button>
+            <div class="act-bloque">
+              <span class="act-bloque-tit">Replicar fijos</span>
+              <button class="btn btn-secondary" onclick="replicarGastosFijos()" title="Crea el esqueleto de tus gastos fijos del mes anterior, sin importe, para no olvidarte de ninguno">Gastos</button>
+              <button class="btn btn-secondary" onclick="replicarIngresosFijos()" title="Toma los ingresos que marcaste como Fijos el mes anterior y los copia a este mes sin importe, para completar cuando los cobres">Ingresos</button>
+            </div>
             <div class="tc-bloque">
             <span class="tc-bloque-tit">Tarjetas</span>
             <button class="btn btn-secondary" onclick="document.getElementById('tcFileInput').click()"
-                    title="Subí el resumen en PDF de tu tarjeta de crédito — sirve para casi cualquier banco, Visa o Mastercard. Norte lee los consumos, las cuotas y los impuestos, y valida los totales contra el propio resumen.">💳 Ingresar resumen de tarjeta</button>
+                    title="Subí el resumen en PDF de tu tarjeta de crédito — sirve para casi cualquier banco, Visa o Mastercard. Norte lee los consumos, las cuotas y los impuestos, y valida los totales contra el propio resumen.">Resumen</button>
             <input type="file" id="tcFileInput" accept=".pdf,.xlsx,.xls" style="display:none" onchange="handleTCImport(this)">
             <button class="btn btn-secondary" onclick="openPagarTC()"
-                    title="Cuando te debitan el resumen, marcá como pagados todos los consumos de esa tarjeta de una sola vez.">✅ Pagar tarjeta</button>
+                    title="Cuando te debitan el resumen, marcá como pagados todos los consumos de esa tarjeta de una sola vez.">Pagar</button>
             <button type="button" class="tc-ayuda-btn" onclick="tcMiniAyuda(event)" aria-label="Cómo funciona" title="Cómo funciona">?</button>
             <div class="tc-pop" id="tcPop">
               <div class="tc-pop-tit">El circuito de una tarjeta, en dos pasos</div>
@@ -2513,11 +2526,11 @@ tr:hover td { background: #fafbfc; }
           <div class="ayuda-bloque">
             <h4>Atajos para no repetir trabajo</h4>
             <div class="ayuda-ejemplo">
-              <strong>📋 Clonar mes anterior</strong> — crea todos los gastos <em>Fijos</em> del mes previo con importe $0 y vencimiento a fin de mes. Solo actualizás los montos cuando llegan las facturas.<br>
-              <strong>🧩 Replicar gastos fijos</strong> — trae los gastos que marcaste como Fijos el mes pasado y los deja en este mes sin importe, para completarlos cuando lleguen los vencimientos.<br>
-              <strong>🧩 Replicar ingresos fijos</strong> — lo mismo con los ingresos: el sueldo, un alquiler que cobrás, una cuota que te pagan. Marcalos con <em>Tipo de ingreso = Fijo</em> una vez y después los traés mes a mes de un toque.<br>
-              <strong>💳 Ingresar resumen de tarjeta</strong> — sube el resumen de tarjeta y carga todos los consumos de una (ver la sección Tarjetas).<br>
-              <strong>✅ Pagar tarjeta</strong> — marca como pagado un resumen completo de tarjeta en un solo click.
+              <strong>📋 Clonar anterior</strong> — copia <em>todos</em> los movimientos del mes pasado a este mes, con sus importes. Sirve cuando tu mes se repite casi igual.<br>
+              <strong>Replicar fijos → Gastos</strong> — trae sólo los gastos que marcaste como <em>Fijos</em> el mes pasado y los deja acá con importe $0, para completarlos cuando lleguen los vencimientos. A diferencia de Clonar, no trae los montos ni los movimientos variables.<br>
+              <strong>Replicar fijos → Ingresos</strong> — lo mismo con los ingresos: el sueldo, un alquiler que cobrás, una cuota que te pagan. Marcalos con <em>Tipo de ingreso = Fijo</em> una vez y después los traés mes a mes de un toque.<br>
+              <strong>Tarjetas → Resumen</strong> — sube el resumen de tarjeta y carga todos los consumos de una (ver la sección Tarjetas).<br>
+              <strong>Tarjetas → Pagar</strong> — marca como pagado un resumen completo de tarjeta en un solo click.
             </div>
             <div class="ayuda-tip">Los gastos de tarjeta de crédito no se clonan: se importan de nuevo cada mes desde el archivo del banco, porque cambian todos los meses.</div>
           </div>
@@ -2634,7 +2647,7 @@ tr:hover td { background: #fafbfc; }
           </div>
           <div class="ayuda-bloque">
             <h4>El camino corto: el PDF del resumen</h4>
-            <p>Descargá de tu homebanking el <strong>resumen de la tarjeta en PDF</strong> — el mismo que te manda el banco todos los meses — y arrastralo a <strong>Transacciones → 💳 Ingresar resumen de tarjeta</strong>. Listo, no hay que configurar nada.</p>
+            <p>Descargá de tu homebanking el <strong>resumen de la tarjeta en PDF</strong> — el mismo que te manda el banco todos los meses — y arrastralo a <strong>Transacciones → Tarjetas → Resumen</strong>. Listo, no hay que configurar nada.</p>
             <div class="ayuda-ejemplo">
               Norte lo lee en menos de un segundo y reconoce solo:<br>
               • <strong>De qué banco es</strong> — no se lo tenés que decir<br>
@@ -2692,7 +2705,7 @@ tr:hover td { background: #fafbfc; }
           </div>
           <div class="ayuda-bloque">
             <h4>Pagar el resumen</h4>
-            <p>Cuando te debitan la tarjeta, usá <strong>✅ Pagar tarjeta</strong>. Norte agrupa lo pendiente por <strong>tarjeta + moneda</strong> — con el nombre que vos le pusiste al darla de alta — y te muestra el total de cada combinación:</p>
+            <p>Cuando te debitan la tarjeta, usá <strong>Tarjetas → Pagar</strong>. Norte agrupa lo pendiente por <strong>tarjeta + moneda</strong> — con el nombre que vos le pusiste al darla de alta — y te muestra el total de cada combinación:</p>
             <div class="ayuda-ejemplo">
               🏦 Galicia · Visa — ARS · 48 ítems · $1.459.786,61 → Marcar pagado<br>
               🏦 Galicia · Visa — USD · 12 ítems · U$S 439,06 → Marcar pagado<br>
@@ -3254,7 +3267,7 @@ tr:hover td { background: #fafbfc; }
           <div style="flex:1">
             <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">Para tarjetas de crédito ya no hace falta configurar nada</div>
             <p style="font-size:13px;color:var(--muted);margin:0 0 12px;line-height:1.6">
-              El camino recomendado es subir el <strong>PDF del resumen</strong> desde Transacciones → 💳 Ingresar resumen de tarjeta. Norte reconoce el banco, el titular y los adicionales, las cuotas y los impuestos, y valida los totales contra el propio resumen. Sin mapeo de columnas y sin configuración previa.
+              El camino recomendado es subir el <strong>PDF del resumen</strong> desde Transacciones → Tarjetas → Resumen. Norte reconoce el banco, el titular y los adicionales, las cuotas y los impuestos, y valida los totales contra el propio resumen. Sin mapeo de columnas y sin configuración previa.
             </p>
             <div style="font-size:12.5px;color:var(--text);line-height:1.6;padding-top:10px;border-top:1px solid rgba(255,138,92,0.15)">
               Esta sección sigue disponible para los dos casos que el PDF no cubre:<br>
@@ -8954,7 +8967,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.4.002';
+const APP_VERSION = 'v005.4.003';
 let novEntradas = [];
 
 function novLeida(e) {
