@@ -9908,7 +9908,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.6.004';
+const APP_VERSION = 'v005.6.005';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -14235,8 +14235,7 @@ function subtituloRumbo() {
   window.gpsPintarBadgeTotal = function () {
     var badge = document.getElementById('gpsNavBadge');
     if (!badge) return;
-    if (!_gpsParticipa) { badge.style.display = 'none'; return; }
-    var n = (_gpsCapPendiente ? 1 : 0);
+    var n = (_gpsParticipa && _gpsCapPendiente ? 1 : 0);
     try { if (typeof novSinLeer === 'function') n += novSinLeer(); } catch (e) {}
     try { if (typeof hbSinLeer === 'function') n += hbSinLeer(); } catch (e) {}
     badge.textContent = n > 9 ? '9+' : String(n);
@@ -14266,7 +14265,14 @@ function subtituloRumbo() {
     try {
       var d = await gpsLlamar('obtenerProgramaGuiado');
       _gpsParticipa = !!d.participa;
-      if (!d.participa) { badge.style.display = 'none'; _gpsBadgeChecked = true; return; }
+      if (!d.participa) {
+        // No es Pionero: no hay capítulos que avisar, pero sí novedades y
+        // mensajes. Se repinta en vez de apagar el distintivo.
+        _gpsCapPendiente = false;
+        window.gpsPintarBadgeTotal();
+        _gpsBadgeChecked = true;
+        return;
+      }
       var maxDisp = gpsMaxDisponible(d.programa);
       var visto = Number(lect.capsVisto || 0);
       _gpsCapPendiente = maxDisp > visto;
