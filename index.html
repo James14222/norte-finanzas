@@ -1986,6 +1986,16 @@ tr:hover td { background: #fafbfc; }
       </div>
     </div>
 
+    <!-- RESERVA -->
+    <div id="page-reserva" class="page">
+      <div style="padding:0 0 18px">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.55">
+          Lo que apartás para algo concreto. No sale de tu balance — apartar no es gastar.
+        </div>
+        <div id="reservaBody"></div>
+      </div>
+    </div>
+
     <!-- ANÁLISIS -->
     <div id="page-analisis" class="page">
       <div class="card" style="margin-bottom:16px">
@@ -3338,19 +3348,6 @@ tr:hover td { background: #fafbfc; }
     </div><!-- /ayuda-body -->
   </div><!-- /ayuda-panel -->
 </div><!-- /ayudaOverlay -->
-
-<!-- RESERVA -->
-<div id="page-reserva" class="page">
-  <div style="max-width:860px;margin:0 auto;padding:22px 24px 40px;display:flex;flex-direction:column">
-    <div style="margin-bottom:16px">
-      <div style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-0.5px">⚓ Reserva</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:4px;line-height:1.55">
-        Lo que apartás para algo concreto. No sale de tu balance — apartar no es gastar.
-      </div>
-    </div>
-    <div id="reservaBody"></div>
-  </div>
-</div>
 
 <div class="overlay" id="rsDstOverlay">
   <div class="modal" style="max-width:460px">
@@ -7339,7 +7336,7 @@ window.scrollTo(0, 0);
   const fabEl = document.querySelector('.fab');
   // En Administración el botón flotante tapaba las acciones de la lista de
   // rubros, y ahí no se cargan movimientos: se esconde, igual que en NortIA.
-  if (fabEl) fabEl.style.display = (p === 'consultas' || p === 'admin') ? 'none' : '';
+  if (fabEl) fabEl.style.display = (p === 'consultas' || p === 'admin' || p === 'reserva') ? 'none' : '';
   render();
   if (p === 'consultas') actualizarNortiaChatCounter();
 }
@@ -9907,7 +9904,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.6.001';
+const APP_VERSION = 'v005.6.003';
 let novEntradas = [];
 
 function novLeida(e) {
