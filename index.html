@@ -5484,6 +5484,10 @@ function rsRitmo(d, acum) {
 
 function rsNuevoId(pre) { return pre + '_' + uid().slice(-8); }
 
+// El nombre del mes que se está mirando. Sale de curKey() y no de curMonth
+// a propósito: curMonth es 0-based y leerlo mal corre todo un mes.
+function rsMesActual() { return MESES[Number(curKey().split('-')[1]) - 1]; }
+
 // El bloque de Reserva que ve NortIA. Devuelve '' cuando no hay ningún destino:
 // una sección vacía en el contexto sólo le enseña al modelo a hablar de algo
 // que el hogar todavía no tiene.
@@ -5502,7 +5506,7 @@ function rsContextoIA() {
   L.push('RESERVA (plata apartada para objetivos concretos; apartar NO es un gasto,'
        + ' no descuenta del balance del mes y no aparece en las transacciones):');
   L.push(`Total acumulado en la Reserva: ${pz(rsTotalAcumulado(r))}`);
-  L.push(`Apartado en ${MESES[curMonth - 1]}: ${pz(rsApartadoEnMes(curKey(), r))}`);
+  L.push(`Apartado en ${rsMesActual()}: ${pz(rsApartadoEnMes(curKey(), r))}`);
   activos.forEach(d => {
     let l = `  - ${d.nombre}: lleva ${pz(d.acumulado)} de ${pz(d.meta)} (${d.pct}%)`;
     if (d.cumplido) l += ' — completo, ya puede usarlo';
@@ -5609,7 +5613,7 @@ function rsPintarDash() {
   const mes = rsApartadoEnMes(curKey());
   body.innerHTML =
       '<div class="rs-cab">'
-    +   `<div><div class="l">Apartado en ${MESES[curMonth - 1]}</div>`
+    +   `<div><div class="l">Apartado en ${rsMesActual()}</div>`
     +     `<div class="v">${mes ? fmtPz(mes) : '—'}</div></div>`
     +   `<div><div class="l">Total acumulado</div>`
     +     `<div class="v ac">${fmtPz(rsTotalAcumulado())}</div></div>`
@@ -5650,7 +5654,7 @@ function renderReserva() {
   body.innerHTML =
       '<div class="card" style="margin-bottom:16px">'
     +   '<div class="rs-cab" style="margin-bottom:0">'
-    +     `<div><div class="l">Apartado en ${MESES[curMonth - 1]}</div>`
+    +     `<div><div class="l">Apartado en ${rsMesActual()}</div>`
     +       `<div class="v">${mes ? fmtPz(mes) : '—'}</div></div>`
     +     `<div><div class="l">Total acumulado</div>`
     +       `<div class="v ac">${fmtPz(rsTotalAcumulado(r))}</div></div>`
@@ -5922,7 +5926,7 @@ function rsAbrirApartar() {
   }
   const mes = curKey();
   const bal = rsBalanceDelMes();
-  document.getElementById('rsApMes').textContent = `${MESES[curMonth - 1]} ${curYear}`;
+  document.getElementById('rsApMes').textContent = `${rsMesActual()} ${curYear}`;
   document.getElementById('rsApBal').textContent = fmtPz(bal);
 
   document.getElementById('rsApFilas').innerHTML = activos.map(d => {
@@ -9904,7 +9908,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.6.003';
+const APP_VERSION = 'v005.6.004';
 let novEntradas = [];
 
 function novLeida(e) {
