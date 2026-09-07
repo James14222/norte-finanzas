@@ -2316,6 +2316,10 @@ tr:hover td { background: #fafbfc; }
       </div>
     </div>
     <div class="qp-field">
+      <div class="qp-label">Fecha <span style="font-weight:400;text-transform:none;opacity:0.7">(cuándo pasó)</span></div>
+      <input class="qp-input" id="qpFecha" type="date">
+    </div>
+    <div class="qp-field">
       <div class="qp-label">Período <span style="font-weight:400;text-transform:none;opacity:0.7">(mes de impacto)</span></div>
       <input class="qp-input" id="qpMes" type="month">
     </div>
@@ -3750,6 +3754,14 @@ tr:hover td { background: #fafbfc; }
           <input type="number" id="txImpUSD" placeholder="0" step="0.01" min="0">
         </div>
       </div>
+      <div class="form-group">
+        <label>Fecha <span style="font-weight:400;text-transform:none;opacity:0.6">(cuándo pasó)</span></label>
+        <input type="date" id="txFecha">
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.45">
+          Viene la de hoy. Cambiala si lo estás cargando después.
+        </div>
+      </div>
+
       <div class="form-row">
         <div class="form-group">
           <label>Período <span style="font-weight:400;text-transform:none;opacity:0.6">(mes de impacto)</span></label>
@@ -5273,6 +5285,25 @@ const getCustomRubros = () => ({ Gasto: [], Ingreso: [] });
 const uid      = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 const monthKey = (y, m) => `${y}-${String(m+1).padStart(2,'0')}`;
 const curKey   = () => monthKey(curYear, curMonth);
+
+// ── FECHA DEL MOVIMIENTO ─────────────────────────────────────────
+// `fecha` es CUÁNDO PASÓ; `venc` sigue siendo cuándo hay que pagarlo. Son cosas
+// distintas y mezclarlas rompería las dos: los gastos fijos tienen vencimiento
+// el último día del mes, y si eso se leyera como "cuándo pasó" todo análisis de
+// momentos del mes mostraría un pico falso el día 30.
+function hoyISO() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+         + '-' + String(d.getDate()).padStart(2, '0');
+}
+// Por defecto viene la de hoy, pero SÓLO si el período que se carga es el mes en
+// curso. Si alguien carga agosto en septiembre, poner hoy sería inventar el dato
+// —y justo el que después dice en qué momento del mes pasan las cosas—. Vacío es
+// honesto: se puede completar, y lo que quede vacío se cuenta aparte.
+function fechaPorDefecto(mes) {
+  const h = hoyISO();
+  return (String(mes || '') === h.slice(0, 7)) ? h : '';
+}
 // Helpers TC (soportan formato nuevo {origen:'TARJETA',banco:'BAPRO'} y viejo {origen:'TC-BAPRO'})
 const isTCOrigen   = t => t.origen === 'TARJETA' || (t.origen && t.origen.startsWith('TC'));
 const tcLabel = t => { if (t.cardTipo === 'TD' || t.cardTipo === 'TC') return t.cardTipo; const b = getBanco(t); if (!b || b === 'BAPRO' || b === 'SANTANDER') return 'TC'; const cfgId = b.startsWith('CUSTOM:') ? b.replace('CUSTOM:', '') : b; const cfg = getBankConfigs().find(c => c.id === cfgId); return (cfg && cfg.cardType === 'debito') ? 'TD' : 'TC'; }; const getBanco     = t => t.banco || (t.origen?.replace('TC-','') || '');
@@ -6972,6 +7003,10 @@ function confirmTCImport() {
       cliente:   '',
       impPesos:  impP,
       impUSD:    impU,
+      // El resumen trae la fecha de cada consumo: se leía en `fechaOrig` y se
+      // descartaba al guardar. Es la fuente más precisa que tiene Norte, porque
+      // no depende de que nadie se acuerde de nada.
+      fecha:     r.fechaOrig || '',
       venc:      '',
       pagado:    isPaid ? (r.esUSD ? 0 : impP) : 0,
       saldo:     isPaid ? 0 : impP,
@@ -9908,7 +9943,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.6.005';
+const APP_VERSION = 'v005.7.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -10663,12 +10698,14 @@ function openModal(id) {
     document.getElementById('txImpPesos').value = t.impPesos  || '';
     document.getElementById('txImpUSD').value   = t.impUSD    || '';
     document.getElementById('txMes').value      = t.mes       || curKey();
+    document.getElementById('txFecha').value    = t.fecha     || '';
     document.getElementById('txVenc').value     = t.venc      || '';
     document.getElementById('txPagado').value   = t.pagado    || '';
   } else {
     document.getElementById('txForm').reset();
     setTipoForm('Ingreso');
     document.getElementById('txMes').value = curKey();
+    document.getElementById('txFecha').value = fechaPorDefecto(curKey());
   }
   document.getElementById('modalOverlay').classList.add('show');
 }
@@ -10698,6 +10735,7 @@ function saveTx(e) {
     cliente: document.getElementById('txCliente').value.trim() || '',
     impPesos: impP,
     impUSD:   Number(document.getElementById('txImpUSD').value) || 0,
+    fecha:    document.getElementById('txFecha').value || '',
     venc:     document.getElementById('txVenc').value,
     pagado,
     saldo: impP - pagado
@@ -11175,6 +11213,8 @@ function masImportar(){
       cliente: f.cliente,
       impPesos: f.impPesos,
       impUSD: f.impUSD,
+      // La planilla ya traía la fecha y sólo se usaba para deducir el período.
+      fecha: y + '-' + String(m+1).padStart(2,'0') + '-' + String(f.fecha.getDate()).padStart(2,'0'),
       venc: y + '-' + String(m+1).padStart(2,'0') + '-' + String(f.fecha.getDate()).padStart(2,'0'),
       pagado: f.pagado,
       saldo: Math.max(0, f.impPesos - f.pagado),
@@ -11325,6 +11365,8 @@ function doCopiarMes(){
       const c = Object.assign({}, t);
       // Una copia proyectada no es un consumo de tarjeta: se limpia esa metadata
       delete c.origen; delete c.banco; delete c.tcPagado; delete c.cardTipo; delete c.mesResumen;
+      // La copia todavía no pasó: hereda el importe, no el día.
+      delete c.fecha;
       c.id     = uid();
       c.mes    = k;
       c.venc   = venc;
@@ -11502,6 +11544,7 @@ function resetQpForm() {
   document.getElementById('qpDuenoField').style.display = 'none';
   document.getElementById('qpCustomRubroWrap').classList.remove('show');
   document.getElementById('qpMes').value = curKey();
+  document.getElementById('qpFecha').value = fechaPorDefecto(curKey());
   actualizarQpIaContador();
   closeAc();
 }
@@ -11728,7 +11771,8 @@ function saveQuickTx() {
   const dueno = qpDuenoResuelto();
   const tx = {
     id: uid(), mes: qpMes, tipo: qpTipo, rubro, tipoGasto, detalle,
-    cliente: '', impPesos: pesos, impUSD: usd, venc: '',
+    cliente: '', impPesos: pesos, impUSD: usd,
+    fecha: (document.getElementById('qpFecha').value || ''), venc: '',
     pagado: pagadoFinal, saldo: Math.max(0, pesos - pagadoFinal),
     creadoPor: dueno.id, creadoPorNombre: dueno.nombre
   };
@@ -11791,6 +11835,8 @@ function clonarMesAnterior() {
     impUSD:   0,
     pagado:   0,
     saldo:    0,
+    // El clon todavía no ocurrió: tiene vencimiento, no fecha.
+    fecha:    '',
     venc:     vencMes,
   }));
   saveData([...allData, ...cloned]);
@@ -11955,7 +12001,9 @@ function _confirmarReplicar({ skipList, addList, prevM, prevY }) {
     + `\n\n¿Continuar?`;
   if (!confirm(msg)) return;
   const allData = getData();
-  const skeleton = addList.map(t => ({ ...t, id: uid(), mes: curKey(), impPesos: 0, impUSD: 0, venc: '', pagado: 0, saldo: 0 }));
+  // `fecha: ''` a propósito: el fijo replicado todavía no ocurrió, y heredar la
+  // fecha del mes anterior inventaría un día que nadie vivió.
+  const skeleton = addList.map(t => ({ ...t, id: uid(), mes: curKey(), impPesos: 0, impUSD: 0, fecha: '', venc: '', pagado: 0, saldo: 0 }));
   saveData([...allData, ...skeleton]);
   window._replicarTcCount = 0;
   render();
