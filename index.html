@@ -371,6 +371,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .rs-aviso.ok { background: rgba(22,163,74,.12); border-color: rgba(22,163,74,.35); }
 .rs-aviso.tarde { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.38); }
 
+.bal-apartar { display: none; width: 100%; margin-top: 12px; padding: 8px 12px;
+  font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer;
+  border-radius: 9px; border: 1px solid var(--border); background: var(--card);
+  color: var(--primary); }
+.bal-apartar:hover { border-color: var(--primary); }
+
 .rs-acc { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 11px; }
 .rs-acc button { font-size: 12px; padding: 5px 11px; border-radius: 8px; cursor: pointer;
   border: 1px solid var(--border); background: var(--card); color: var(--muted);
@@ -1824,6 +1830,10 @@ tr:hover td { background: #fafbfc; }
           <div class="card-label">Balance</div>
           <div class="card-vrow"><div class="card-value" id="d-bal">$0</div><div class="card-icon">⚖️</div></div>
           <div class="card-sub" id="d-bal-sub">Ingresos − Gastos</div>
+          <!-- El acceso a apartar vive acá porque acá está el número que hay que
+               mirar antes de apartar: cuánto sobró. En la pantalla de Reserva
+               ese número no se ve. -->
+          <button class="bal-apartar" id="dBalApartar" onclick="rsAbrirApartar()">⚓ Apartar para mi Reserva</button>
         </div>
         <div class="card k-pend">
           <div class="card-label" id="d-pend-lbl">Saldo pendiente</div>
@@ -2293,11 +2303,11 @@ tr:hover td { background: #fafbfc; }
     <div class="qp-row">
       <div class="qp-field">
         <div class="qp-label">Importe $</div>
-        <input class="qp-input" id="qpPesos" type="number" placeholder="0" step="0.01" min="0">
+        <input class="qp-input money" id="qpPesos" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
       </div>
       <div class="qp-field">
         <div class="qp-label">Importe USD</div>
-        <input class="qp-input" id="qpUSD" type="number" placeholder="0" step="0.01" min="0">
+        <input class="qp-input money" id="qpUSD" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
       </div>
     </div>
     <div class="qp-row">
@@ -2312,7 +2322,7 @@ tr:hover td { background: #fafbfc; }
         </div>
 <div class="qp-field">
         <div class="qp-label">Pagado $</div>
-        <input class="qp-input" id="qpPagado" type="number" placeholder="= Importe" step="0.01" min="0">
+        <input class="qp-input money" id="qpPagado" type="text" inputmode="decimal" autocomplete="off" placeholder="= Importe">
       </div>
     </div>
     <div class="qp-field">
@@ -3365,7 +3375,7 @@ tr:hover td { background: #fafbfc; }
     </div>
     <div class="nva-campo">
       <label>Cuánto necesitás</label>
-      <input type="number" id="rsDstMeta" min="0" step="any" placeholder="800000">
+      <input class="money" id="rsDstMeta" type="text" inputmode="decimal" autocomplete="off" placeholder="800.000">
     </div>
     <div class="nva-campo">
       <label>Para cuándo (opcional)</label>
@@ -3376,7 +3386,7 @@ tr:hover td { background: #fafbfc; }
     </div>
     <div class="nva-campo">
       <label>Ya venías juntando (opcional)</label>
-      <input type="number" id="rsDstSaldo" min="0" step="any" placeholder="0">
+      <input class="money" id="rsDstSaldo" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
       <div style="font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.45">
         Lo que ya tenías guardado antes de usar Norte. Sin esto arranca en cero y se siente falso.
         Si lo que apartaste está en algún lado que rinde, actualizá acá el total real cuando crezca.
@@ -3448,7 +3458,7 @@ tr:hover td { background: #fafbfc; }
     </div>
     <div class="nva-campo">
       <label>Cuánto sacaste</label>
-      <input type="number" id="rsRetMonto" min="0" step="any" placeholder="0">
+      <input class="money" id="rsRetMonto" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
     </div>
     <div class="nva-campo">
       <label>Para qué (opcional)</label>
@@ -3747,11 +3757,11 @@ tr:hover td { background: #fafbfc; }
       <div class="form-row">
         <div class="form-group">
           <label>Importe Pesos</label>
-          <input type="number" id="txImpPesos" placeholder="0" step="0.01" min="0">
+          <input class="money" id="txImpPesos" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
         </div>
         <div class="form-group">
           <label>Importe USD</label>
-          <input type="number" id="txImpUSD" placeholder="0" step="0.01" min="0">
+          <input class="money" id="txImpUSD" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
         </div>
       </div>
       <div class="form-group">
@@ -3776,7 +3786,7 @@ tr:hover td { background: #fafbfc; }
       <div class="form-row">
         <div class="form-group">
           <label>Monto Pagado</label>
-          <input type="number" id="txPagado" placeholder="0" step="0.01" min="0">
+          <input class="money" id="txPagado" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
         </div>
         <div class="form-group" style="display:flex;align-items:flex-end">
           <label style="display:none"></label>
@@ -4428,7 +4438,7 @@ function obNext() {
     }
   } else if (obCurrentStep === 1) {
     // Save first transaction (if amount provided)
-    const imp = parseFloat(document.getElementById('obImporte')?.value || '0');
+    const imp = numVal(document.getElementById('obImporte'));
     if (imp > 0) {
       const tipo  = document.getElementById('obTipo')?.value || 'Ingreso';
       const rubro = document.getElementById('obRubro')?.value || '';
@@ -4508,7 +4518,7 @@ function renderObS2() {
     </div>
     <div class="ob-field">
       <label class="ob-label">Importe ($)</label>
-      <input class="ob-input" id="obImporte" type="number" placeholder="0" min="0" step="any">
+      <input class="ob-input money" id="obImporte" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
     </div>
     <div class="ob-field">
       <label class="ob-label">Descripción (opcional)</label>
@@ -5375,6 +5385,72 @@ function assignBancoToOrphans(banco) {
 
 const lastDayOfMonth = (y, m) => new Date(y, m + 1, 0).getDate();
 
+
+// ── IMPORTES: separador de miles mientras se escribe ─────────────
+// Un <input type="number"> NO puede mostrar "120.000": el navegador rechaza
+// cualquier texto que no sea un número puro y deja el campo vacío. Por eso los
+// campos de importe pasan a type="text" con inputmode="decimal" —el teclado
+// numérico del celular sigue apareciendo igual— y el formato lo pone Norte.
+//
+// Consecuencia: leerlos con Number() da NaN. TODO el que lea un importe pasa
+// por numVal(), y todo el que escriba uno pasa por numSet().
+function numVal(x) {
+  const el = (typeof x === 'string') ? document.getElementById(x) : x;
+  const s = String((el && el.value !== undefined) ? el.value : (x == null ? '' : x)).trim();
+  if (!s) return 0;
+  let t = s.replace(/[^\d.,-]/g, '');
+  if (t.indexOf(',') >= 0) {
+    // Si hay coma, la coma es el decimal y los puntos son miles: "120.000,50".
+    t = t.replace(/\./g, '').replace(',', '.');
+  } else {
+    const p = t.split('.');
+    // Un punto solo con uno o dos dígitos detrás es un decimal pegado desde
+    // otro lado ("1234.5"); cualquier otro punto es separador de miles.
+    if (!(p.length === 2 && p[1].length > 0 && p[1].length <= 2)) t = t.replace(/\./g, '');
+  }
+  const n = parseFloat(t);
+  return isNaN(n) ? 0 : n;
+}
+function numFmtTexto(v) {
+  let t = String(v == null ? '' : v).replace(/[^\d,]/g, '');
+  const i = t.indexOf(',');
+  let ent = i >= 0 ? t.slice(0, i) : t;
+  const dec = i >= 0 ? t.slice(i + 1).replace(/,/g, '').slice(0, 2) : null;
+  ent = ent.replace(/^0+(?=\d)/, '');
+  const miles = ent.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return dec === null ? miles : miles + ',' + dec;
+}
+function numSet(x, v) {
+  const el = (typeof x === 'string') ? document.getElementById(x) : x;
+  if (!el) return;
+  const n = Number(v);
+  el.value = (v === '' || v == null || isNaN(n) || n === 0) ? '' : numFmtTexto(String(n).replace('.', ','));
+}
+// Para armar un input con su valor ya formateado desde un template string.
+function numAttr(v) {
+  const n = Number(v);
+  return (v === '' || v == null || isNaN(n) || n === 0) ? '' : numFmtTexto(String(n).replace('.', ','));
+}
+// Un solo listener delegado en vez de engancharlo campo por campo: los inputs
+// que se crean después —las filas de apartar, los topes del presupuesto, las
+// filas del resumen de tarjeta— quedan cubiertos sin acordarse de nada.
+document.addEventListener('input', function (e) {
+  const el = e.target;
+  if (!el || !el.classList || !el.classList.contains('money')) return;
+  const antes = el.value;
+  const fmt = numFmtTexto(antes);
+  if (fmt === antes) return;
+  const caret = el.selectionStart == null ? antes.length : el.selectionStart;
+  const digitos = antes.slice(0, caret).replace(/[^\d,]/g, '').length;
+  el.value = fmt;
+  // El cursor se recoloca contando dígitos, no posiciones: si se contaran
+  // posiciones, al insertarse un punto el cursor saltaría y escribir en el
+  // medio de un número sería imposible.
+  let pos = 0, vistos = 0;
+  while (pos < fmt.length && vistos < digitos) { if (/[\d,]/.test(fmt[pos])) vistos++; pos++; }
+  try { el.setSelectionRange(pos, pos); } catch (err) {}
+}, true);
+
 // ── PRESUPUESTO / META DE AHORRO ────────────────────────────
 const getBudgets  = ()  => JSON.parse(localStorage.getItem(`fin_budgets_${curEmpresa()}`) || '{}');
 const saveBudgets = b   => localStorage.setItem(`fin_budgets_${curEmpresa()}`, JSON.stringify(b));
@@ -5639,6 +5715,8 @@ function rsPintarDash() {
   if (!card || !body) return;
   const activos = rsDestinosActivos();
   const pausados = rsPausados();
+  const btnBal = document.getElementById('dBalApartar');
+  if (btnBal) btnBal.style.display = activos.some(d => !d.cumplido) ? 'block' : 'none';
   if (!activos.length && !pausados.length) { card.style.display = 'none'; return; }
   card.style.display = '';
   const mes = rsApartadoEnMes(curKey());
@@ -5749,9 +5827,9 @@ function rsAbrirDestino(id) {
   rsEditandoId = d.id || null;
   document.getElementById('rsDstTitulo').textContent = rsEditandoId ? 'Editar destino' : 'Nuevo destino';
   document.getElementById('rsDstNombre').value = d.nombre || '';
-  document.getElementById('rsDstMeta').value   = d.meta || '';
+  numSet('rsDstMeta', d.meta);
   document.getElementById('rsDstFecha').value  = d.fechaMeta || '';
-  document.getElementById('rsDstSaldo').value  = d.saldoInicial || '';
+  numSet('rsDstSaldo', d.saldoInicial);
   document.getElementById('rsDstError').style.display = 'none';
   document.getElementById('rsDstBorrar').style.display = rsEditandoId ? '' : 'none';
   document.getElementById('rsDstDejar').style.display =
@@ -5767,9 +5845,9 @@ function rsCerrarDestino() {
 function rsGuardarDestino() {
   const err    = document.getElementById('rsDstError');
   const nombre = document.getElementById('rsDstNombre').value.trim();
-  const meta   = Number(document.getElementById('rsDstMeta').value) || 0;
+  const meta   = numVal('rsDstMeta');
   const fecha  = document.getElementById('rsDstFecha').value || null;
-  const saldo  = Number(document.getElementById('rsDstSaldo').value) || 0;
+  const saldo  = numVal('rsDstSaldo');
   const fallar = m => { err.textContent = m; err.style.display = 'block'; };
 
   if (!nombre) return fallar('Poné un nombre — algo que reconozcas de un vistazo.');
@@ -5972,8 +6050,8 @@ function rsAbrirApartar() {
     return '<div class="ap-fila">'
       + `<div><div class="ap-nom">${esc(d.nombre)}</div>`
       +   `<div class="ap-sub">Llevás ${fmtPz(d.acumulado)} de ${fmtPz(d.meta)}${sug}</div></div>`
-      + `<input class="ap-inp rs-ap-monto" type="number" min="0" step="any" `
-      +   `data-id="${d.id}" value="${yaEste > 0 ? yaEste : ''}" placeholder="0" oninput="rsApRecalcular()">`
+      + `<input class="ap-inp rs-ap-monto money" type="text" inputmode="decimal" autocomplete="off" `
+      +   `data-id="${d.id}" value="${numAttr(yaEste)}" placeholder="0" oninput="rsApRecalcular()">`
       + '</div>';
   }).join('');
 
@@ -5983,22 +6061,34 @@ function rsAbrirApartar() {
 function rsCerrarApartar() { document.getElementById('rsApOverlay').classList.remove('show'); }
 
 // El balance del mes, para poder avisar si se aparta de más.
+//
+// Es EL MISMO número que muestra la tarjeta de Balance en Mi Rumbo, y tiene que
+// serlo: antes esta función sumaba sólo pesos, así que en un hogar con consumos
+// en dólares el modal decía "te sobraron" una cifra que no aparecía en ninguna
+// otra pantalla. Un número que no se puede rastrear a otro lado no se puede
+// verificar, y en una app de finanzas eso es peor que no mostrarlo.
 function rsBalanceDelMes() {
   const k = curKey();
-  let ing = 0, gas = 0;
+  let ingP = 0, gasP = 0, ingU = 0, gasU = 0;
   try {
     getData().forEach(t => {
       if (!t || t.mes !== k) return;
-      const p = Number(t.impPesos) || 0;
-      if (t.tipo === 'Ingreso') ing += p; else gas += p;
+      const p = Number(t.impPesos) || 0, u = Number(t.impUSD) || 0;
+      if (t.tipo === 'Ingreso') { ingP += p; ingU += u; } else { gasP += p; gasU += u; }
     });
   } catch (e) {}
-  return ing - gas;
+  // Si el hogar está mirando "Pesos + dólares", los dólares cuentan — igual que
+  // en el tablero. Si mira sólo pesos, no.
+  try {
+    fxCargarModo();
+    if (fxActivo()) return (ingP + fxAPesos(ingU)) - (gasP + fxAPesos(gasU));
+  } catch (e) {}
+  return ingP - gasP;
 }
 
 function rsApRecalcular() {
   let total = 0;
-  document.querySelectorAll('.rs-ap-monto').forEach(i => { total += Number(i.value) || 0; });
+  document.querySelectorAll('.rs-ap-monto').forEach(i => { total += numVal(i); });
   const bal = rsBalanceDelMes();
   document.getElementById('rsApTotal').textContent = fmtPz(total);
   document.getElementById('rsApQueda').textContent = fmtPz(bal - total);
@@ -6023,7 +6113,7 @@ function rsGuardarApartar() {
   let hubo = 0;
   document.querySelectorAll('.rs-ap-monto').forEach(inp => {
     const id = inp.getAttribute('data-id');
-    const monto = Number(inp.value) || 0;
+    const monto = numVal(inp);
     // Volver a apartar el mismo mes REEMPLAZA lo anterior, no lo suma: la
     // pantalla dice «llevás X» y si sumara, confirmar dos veces duplicaría en
     // silencio lo que la persona creía estar corrigiendo.
@@ -6068,7 +6158,7 @@ function rsCerrarRetiro() { rsRetiroId = null; document.getElementById('rsRetOve
 function rsGuardarRetiro() {
   if (!rsRetiroId) return;
   const err = document.getElementById('rsRetError');
-  const monto = Number(document.getElementById('rsRetMonto').value) || 0;
+  const monto = numVal('rsRetMonto');
   const r = getReserva();
   const disp = rsAcumulado(rsRetiroId, r);
   if (monto <= 0) { err.textContent = '¿Cuánto sacaste?'; err.style.display = 'block'; return; }
@@ -6868,10 +6958,10 @@ function tcSetTipo(i, tipo) { tcRows[i].tipoMov = tipo; tcRows[i].rubro = tcGues
       <td style="white-space:nowrap">
         ${r.esUSD
           ? `<span style="font-size:11px;color:var(--muted)">USD</span>
-             <input type="number" value="${r.monto}" min="0" step="0.01"
-                    oninput="tcRows[${i}].monto=parseFloat(this.value)||0;tcUpdateSummary()" style="width:80px">`
-          : `<input type="number" value="${r.monto}" min="0" step="0.01"
-                    oninput="tcRows[${i}].monto=parseFloat(this.value)||0;tcUpdateSummary()">`
+             <input type="text" inputmode="decimal" autocomplete="off" class="money" value="${numAttr(r.monto)}"
+                    oninput="tcRows[${i}].monto=numVal(this);tcUpdateSummary()" style="width:80px">`
+          : `<input type="text" inputmode="decimal" autocomplete="off" class="money" value="${numAttr(r.monto)}"
+                    oninput="tcRows[${i}].monto=numVal(this);tcUpdateSummary()">`
         }
       </td>
       <td>
@@ -8183,8 +8273,8 @@ function renderPresupuesto() {
             <span class="budget-rubro">${esc(r)}</span>
             <span class="budget-amounts">
               <strong>${fmtP(gastado)}</strong> gastado <span>de</span>
-              <input type="number" class="budget-input" value="${tieneLim ? Number(limite) : ''}" placeholder="Sin límite" min="0" step="1"
-                oninput="setBudget('${esc(r).replace(/'/g,"\\'")}', this.value)">
+              <input type="text" inputmode="decimal" autocomplete="off" class="budget-input money" value="${tieneLim ? numAttr(limite) : ''}" placeholder="Sin límite"
+                oninput="setBudget('${esc(r).replace(/'/g,"\\'")}', this.value === '' ? '' : numVal(this))">
             </span>
           </div>
           <div class="progress-bar-track"><div class="progress-bar-fill ${barCls}" style="width:${barWidth}%"></div></div>
@@ -9943,7 +10033,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.7.000';
+const APP_VERSION = 'v005.7.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -10695,12 +10785,12 @@ function openModal(id) {
     }
     document.getElementById('txDetalle').value  = t.detalle;
     document.getElementById('txCliente').value  = t.cliente   || '';
-    document.getElementById('txImpPesos').value = t.impPesos  || '';
-    document.getElementById('txImpUSD').value   = t.impUSD    || '';
+    numSet('txImpPesos', t.impPesos);
+    numSet('txImpUSD', t.impUSD);
     document.getElementById('txMes').value      = t.mes       || curKey();
     document.getElementById('txFecha').value    = t.fecha     || '';
     document.getElementById('txVenc').value     = t.venc      || '';
-    document.getElementById('txPagado').value   = t.pagado    || '';
+    numSet('txPagado', t.pagado);
   } else {
     document.getElementById('txForm').reset();
     setTipoForm('Ingreso');
@@ -10723,8 +10813,8 @@ function saveTx(e) {
     rubro = document.getElementById('txRubroCustom').value.trim() || 'Personalizado';
     persistCustomRubro(tipo, rubro); // guarda permanentemente en la lista
   }
-  const impP   = Number(document.getElementById('txImpPesos').value) || 0;
-  const pagado = Number(document.getElementById('txPagado').value)   || 0;
+  const impP   = numVal('txImpPesos');
+  const pagado = numVal('txPagado');
   const tipoGasto = document.getElementById('txTipoGasto').value || 'Variable';
 
   const mes = document.getElementById('txMes').value || curKey();
@@ -10734,7 +10824,7 @@ function saveTx(e) {
     detalle: document.getElementById('txDetalle').value,
     cliente: document.getElementById('txCliente').value.trim() || '',
     impPesos: impP,
-    impUSD:   Number(document.getElementById('txImpUSD').value) || 0,
+    impUSD:   numVal('txImpUSD'),
     fecha:    document.getElementById('txFecha').value || '',
     venc:     document.getElementById('txVenc').value,
     pagado,
@@ -11581,10 +11671,10 @@ function selectAc(i) {
   const t = acItems[i];
   if (!t) return;
   document.getElementById('qpDetalle').value = t.detalle;
-  document.getElementById('qpPesos').value   = t.impPesos || '';
-  document.getElementById('qpUSD').value     = t.impUSD   || '';
+  numSet('qpPesos', t.impPesos);
+  numSet('qpUSD', t.impUSD);
   qpSetRubroDetectado(t.rubro || '');
-  document.getElementById('qpPagado').value  = t.impPesos || '';
+  numSet('qpPagado', t.impPesos);
   setQpTipo(t.tipo || 'Gasto');
   setQpTipoGasto(t.tipoGasto || 'Variable');
   closeAc();
@@ -11741,8 +11831,8 @@ async function qpProcesarIA(base64, mimeType) {
     setQpTipo(datos.tipo === 'Ingreso' ? 'Ingreso' : 'Gasto');
     if (datos.tipo !== 'Ingreso') setQpTipoGasto('Variable');
     document.getElementById('qpDetalle').value = datos.detalle || '';
-    document.getElementById('qpPesos').value = datos.impPesos || '';
-    document.getElementById('qpUSD').value = datos.impUSD || '';
+    numSet('qpPesos', datos.impPesos);
+    numSet('qpUSD', datos.impUSD);
     qpSetRubroDetectado(datos.rubro || '');
     if (datos.confianza === 'baja' || datos.confianza === 'media') {
       statusEl.textContent = '⚠️ Revisá los datos antes de guardar' + (datos.nota ? ': ' + datos.nota : ' — no estamos seguros de haber leído todo bien.');
@@ -11756,16 +11846,18 @@ async function qpProcesarIA(base64, mimeType) {
 
 function saveQuickTx() {
   const detalle = document.getElementById('qpDetalle').value.trim();
-  const pesos   = parseFloat(document.getElementById('qpPesos').value)  || 0;
-  const usd     = parseFloat(document.getElementById('qpUSD').value)    || 0;
+  const pesos   = numVal('qpPesos');
+  const usd     = numVal('qpUSD');
   let rubro = document.getElementById('qpRubro').value;
   if (rubro === 'Personalizado...') {
     rubro = document.getElementById('qpRubroCustom').value.trim() || 'Personalizado';
     persistCustomRubro(qpTipo, rubro);
   }
-  const pagado  = parseFloat(document.getElementById('qpPagado').value) ?? pesos;
+  // Vacío significa "pagado completo", así que se mira el texto y no el número:
+  // con numVal() un campo vacío da 0 y se perdería esa diferencia.
+  const qpPagTexto = (document.getElementById('qpPagado').value || '').trim();
   if (!detalle || !pesos) { alert('Completá al menos Detalle e Importe $'); return; }
-  const pagadoFinal = isNaN(parseFloat(document.getElementById('qpPagado').value)) ? pesos : pagado;
+  const pagadoFinal = (qpPagTexto === '') ? pesos : numVal('qpPagado');
   const qpMes = document.getElementById('qpMes').value || curKey();
   const tipoGasto = qpTipoGasto || 'Variable';
   const dueno = qpDuenoResuelto();
