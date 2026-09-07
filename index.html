@@ -3219,24 +3219,24 @@ tr:hover td { background: #fafbfc; }
     </div>
 
     <!-- ── MENSAJES DE PIONEROS ── -->
-    <div class="admin-group-label" id="adminChatLabel" style="display:none">Mensajes de Pioneros</div>
+    <div class="admin-group-label" id="adminChatLabel" style="display:none">Mensajes de tus usuarios</div>
     <div class="card admin-section" id="adminChatSection" style="padding:22px 24px;display:none">
       <div style="font-size:16px;font-weight:800;color:var(--text)">Lo que te escriben</div>
       <div style="font-size:13px;color:var(--muted);margin:6px 0 16px;line-height:1.55">
-        Cada Pionero tiene un hilo privado con vos, adentro de Tu GPS. Los que esperan respuesta
+        Cada usuario tiene un hilo privado con vos, adentro de Novedades. Los que esperan respuesta
         aparecen primero. Abrir una conversación la marca como leída.
       </div>
       <div id="hbALista"></div>
     </div>
 
     <!-- ── NOVEDADES ── -->
-    <div class="admin-group-label" id="adminNovedadesLabel" style="display:none">Novedades para Pioneros</div>
+    <div class="admin-group-label" id="adminNovedadesLabel" style="display:none">Novedades para tus usuarios</div>
     <div class="card admin-section" id="adminNovedadesSection" style="padding:22px 24px;display:none">
-      <div style="font-size:16px;font-weight:800;color:var(--text)">Lo que leen tus Pioneros</div>
+      <div style="font-size:16px;font-weight:800;color:var(--text)">Lo que leen tus usuarios</div>
       <div style="font-size:13px;color:var(--muted);margin:6px 0 16px;line-height:1.55">
-        Aparece al instante dentro de <strong>Tu GPS</strong>, en «En qué estoy trabajando», y sólo lo ven
-        quienes están en el Club Pioneros. Escribilo en criollo y en primera persona: qué cambió,
-        para qué le sirve y, si hace falta, dónde lo encuentra.
+        Aparece al instante dentro de <strong>Novedades</strong>, en «En qué estoy trabajando», y ahora
+        lo ve cualquiera que tenga Norte — no sólo los Pioneros. Escribilo en criollo y en primera
+        persona: qué cambió, para qué le sirve y, si hace falta, dónde lo encuentra.
       </div>
       <div id="nvaLista" style="margin-bottom:14px"></div>
       <button class="btn btn-primary" onclick="nvaNueva()">+ Escribir una novedad</button>
@@ -8985,7 +8985,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.5.000';
+const APP_VERSION = 'v005.5.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -9061,7 +9061,7 @@ function renderNovedades() {
     '<div style="border-top:1px solid var(--border);padding-top:22px;margin-bottom:16px">' +
       '<div style="font-size:19px;font-weight:800;color:var(--text);letter-spacing:-0.3px">En qué estoy trabajando</div>' +
       '<div style="font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.55">' +
-        'Sos Pionero, así que te lo cuento acá primero. Tocá cualquiera para leer el detalle ' +
+        'Cada cambio que le hago a Norte lo cuento acá. Tocá cualquiera para leer el detalle ' +
         'y decirme qué te parece — con un toque me alcanza.' +
       '</div>' +
     '</div>';
@@ -9436,7 +9436,7 @@ function renderChatPionero() {
       '<div style="font-size:19px;font-weight:800;color:var(--text);letter-spacing:-0.3px">Hablemos</div>' +
       '<div style="font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.55">' +
         'Escribime por acá lo que quieras: algo que no te cierra, una idea, algo que te rompió. ' +
-        'Es una conversación privada entre vos y yo — ningún otro Pionero la ve.' +
+        'Es una conversación privada entre vos y yo — ningún otro usuario la ve.' +
       '</div>' +
     '</div>';
 
@@ -9535,7 +9535,7 @@ async function renderChatsAdmin() {
     const d = await hbALlamar('adminListarChatsPioneros');
     hbAHilos = d.hilos || [];
     if (!hbAHilos.length) {
-      cont.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:6px 0">Todavía no te escribió ningún Pionero.</div>';
+      cont.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:6px 0">Todavía no te escribió nadie.</div>';
       return;
     }
     cont.innerHTML = hbAHilos.map(function (h) {
