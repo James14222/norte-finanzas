@@ -325,6 +325,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   border-radius:20px; padding:2px 8px; white-space:nowrap; }
 .hbA-fila .f { font-size:11.5px; color:var(--muted); white-space:nowrap; }
 /* Editor de novedades */
+.obj-chip { font-size:10.5px; font-weight:700; letter-spacing:.02em; white-space:nowrap;
+  color:#0f5c52; background:rgba(111,224,204,.20); border-radius:20px; padding:2px 8px; }
 .nva-fila { display:flex; align-items:center; gap:10px; padding:10px 13px; border:1px solid var(--border);
   border-radius:10px; margin-bottom:8px; background:var(--card); }
 .nva-fila .t { flex:1; font-size:13.5px; font-weight:600; color:var(--text); min-width:0;
@@ -1681,7 +1683,7 @@ tr:hover td { background: #fafbfc; }
     <div class="nav-item" onclick="showPage('progreso')"><span class="ico">🏆</span> Progreso</div>
     <div class="nav-item" onclick="showPage('reportes')"><span class="ico">📈</span> Reportes</div>
     <div class="nav-item disabled nortia-item" id="navNortia"><span class="nortia-nav-icon" style="display:inline-block;background-image:var(--nortia-icon-url);background-size:72%;background-repeat:no-repeat;background-position:center;background-color:#fff;border-radius:6px;"></span> <strong>NortIA</strong> <span class="badge-soon" id="navNortiaBadge">Próximamente</span></div>
-        <div class="nav-item gps-nav-item" id="navTuGps" onclick="showPage('tugps')"><span class="ico">GPS</span> - Pioneros<span id="gpsNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
+        <div class="nav-item gps-nav-item" id="navTuGps" onclick="showPage('tugps')"><span class="ico">🧭</span> Novedades<span id="gpsNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
      <div class="nav-item" id="navAdmin" style="display:none" onclick="showPage('admin')"><span class="ico">⚙️</span> Admin<span id="adminNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
   </div>
   <div class="sidebar-user" id="sidebarUser"><strong id="sidebarUsername">—</strong><span id="sidebarEmpresa"></span></div>
@@ -2346,7 +2348,7 @@ tr:hover td { background: #fafbfc; }
         <div class="ayuda-nav-item" onclick="ayudaGo('progreso')"><span class="ai">🏆</span><span>Progreso</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('reportes')"><span class="ai">📈</span><span>Reportes</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('consultas')"><span class="ai" style="display:inline-block;width:16px;height:16px;background-image:var(--nortia-icon-url);background-size:contain;background-repeat:no-repeat;background-position:center"></span><span>NortIA</span></div>
-        <div class="ayuda-nav-item" onclick="ayudaGo('gps')"><span class="ai">🧭</span><span>GPS - Pioneros</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('gps')"><span class="ai">🧭</span><span>Novedades</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('hogares')"><span class="ai">👥</span><span>Mis hogares</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('plan')"><span class="ai">💎</span><span>Mi plan</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('cuenta')"><span class="ai">👤</span><span>Tu cuenta</span></div>
@@ -2394,7 +2396,7 @@ tr:hover td { background: #fafbfc; }
               <strong>🏆 Progreso</strong> — tu nivel, tu racha y tus medallas.<br>
               <strong>📈 Reportes</strong> — el año completo en seis vistas.<br>
               <strong>NortIA</strong> — hallazgos automáticos y chat sobre tus propios datos.<br>
-              <strong>GPS - Pioneros</strong> — el recorrido guiado del Club Pioneros (solo si sos parte).<br>
+              <strong>🧭 Novedades</strong> — qué cambió en Norte, tu voto y tu canal privado.<br>
               <strong>⚙️ Admin</strong> — configuración de bancos y tarjetas (solo administradores).
             </div>
           </div>
@@ -2940,15 +2942,16 @@ tr:hover td { background: #fafbfc; }
 
         <!-- GPS PIONEROS -->
         <div class="ayuda-section" id="ayuda-gps">
-          <h3>🧭 GPS - Pioneros</h3>
-          <p class="subtitulo">El recorrido guiado del Club Pioneros de Norte</p>
+          <h3>🧭 Novedades</h3>
+          <p class="subtitulo">Lo que cambia en Norte, y tu canal directo con quien la hace</p>
           <div class="ayuda-bloque">
             <h4>Qué es</h4>
-            <p>El <strong>Club Pioneros</strong> es el grupo fundador de Norte. Los Pioneros usan la aplicación completa sin pagar nada y, a cambio, hacen un recorrido guiado de cuatro semanas que les enseña a usar la herramienta a fondo y nos devuelve la mirada más valiosa que tenemos: la de alguien que la está usando en serio por primera vez.</p>
-            <div class="ayuda-tip">Este menú solo aparece si sos parte del Club Pioneros. Si no lo ves, es porque tu cuenta no está en el programa.</div>
+            <p>Cada mejora que le hacemos a Norte se cuenta acá, en criollo: qué cambió, para qué te sirve y dónde encontrarlo. Abajo de cada una podés <strong>votar del 1 al 5</strong> — un toque y listo, sin escribir nada. Eso es lo que decide en qué se trabaja después.</p>
+            <div class="ayuda-tip">Lo que votás lo ve solo quien hace Norte. Nadie más.</div>
           </div>
           <div class="ayuda-bloque">
-            <h4>Cómo funciona el recorrido</h4>
+            <h4>El recorrido guiado de cuatro semanas</h4>
+            <p>Esta parte es sólo para los <strong>Pioneros</strong>, el grupo fundador que entró antes de que Norte se vendiera. Si tu cuenta no está en el programa, no la vas a ver — y no te falta nada: es un recorrido de aprendizaje, no una función de la app.</p>
             <ol class="ayuda-steps">
               <li>Cada semana se te <strong>desbloquea un capítulo</strong> — son cuatro en total, uno cada 7 días</li>
               <li>Leés el capítulo completo dentro de la app (son cortos y prácticos)</li>
@@ -2969,7 +2972,7 @@ tr:hover td { background: #fafbfc; }
           <div class="ayuda-bloque">
             <h4>En qué estoy trabajando</h4>
             <p>Abajo de los capítulos vas a encontrar la <strong>bitácora de cambios</strong>: cada mejora que le vamos haciendo a Norte, contada en criollo — qué cambió, para qué te sirve y dónde encontrarlo.</p>
-            <div class="ayuda-tip">Esta sección es <strong>exclusiva del Club Pioneros</strong>. Te enterás de cada cambio antes que el resto de los usuarios, que no la ven.</div>
+            <div class="ayuda-tip">Antes esto era exclusivo del Club Pioneros. Ahora lo ve cualquiera que tenga Norte.</div>
           </div>
           <div class="ayuda-bloque">
             <h4>Hablemos</h4>
@@ -3073,7 +3076,7 @@ tr:hover td { background: #fafbfc; }
             <h4>Qué pasa si llegás al límite</h4>
             <p>Norte no borra ni bloquea nada. Si te quedás sin cargas de foto/voz o sin consultas de NortIA, esas dos funciones esperan al mes siguiente — el resto de la aplicación sigue funcionando igual, y la carga manual nunca tiene límite.</p>
           </div>
-          <div class="ayuda-tip">Si sos <strong>Pionero Vitalicio</strong>, tenés Norte FOCO gratis para siempre. Mirá la sección GPS - Pioneros.</div>
+          <div class="ayuda-tip">Si sos <strong>Pionero Vitalicio</strong>, tenés Norte FOCO gratis para siempre — el Club Pioneros ya está cerrado, pero lo que se prometió ahí sigue en pie.</div>
         </div>
 
         <!-- TU CUENTA -->
@@ -3204,7 +3207,7 @@ tr:hover td { background: #fafbfc; }
   </div><!-- /ayuda-panel -->
 </div><!-- /ayudaOverlay -->
 
-<!-- TU GPS PAGE --><div id="page-tugps" class="page"><div class="gps-wrap" style="max-width:760px;margin:0 auto;padding:8px 24px 40px;display:flex;flex-direction:column"><div class="gps-header"><div style="display:flex;align-items:center;gap:12px"><button class="menu-toggle gps-volver" onclick="toggleSidebar()" aria-label="Volver al menu" title="Volver al menu">&#9776;</button><div><div class="gps-header-title">Tu GPS</div><div class="gps-header-sub">Club Pioneros de Norte</div></div></div></div><div id="gpsBody" style="margin-top:16px;position:relative;z-index:1"><div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando...</div></div></div></div>
+<!-- TU GPS PAGE --><div id="page-tugps" class="page"><div class="gps-wrap" style="max-width:760px;margin:0 auto;padding:8px 24px 40px;display:flex;flex-direction:column"><div class="gps-header"><div style="display:flex;align-items:center;gap:12px"><button class="menu-toggle gps-volver" onclick="toggleSidebar()" aria-label="Volver al menu" title="Volver al menu">&#9776;</button><div><div class="gps-header-title">Novedades</div><div class="gps-header-sub">Lo que cambia en Norte, y tu canal conmigo</div></div></div></div><div id="gpsBody" style="margin-top:16px;position:relative;z-index:1"><div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando...</div></div></div></div>
 <!-- ADMIN PAGE -->
 <div id="page-admin" class="page">
   <div style="max-width:1400px;margin:0 auto;padding:28px 24px;display:flex;flex-direction:column">
@@ -8982,7 +8985,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.4.004';
+const APP_VERSION = 'v005.5.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -13051,6 +13054,14 @@ function subtituloRumbo() {
         return;
       }
 
+      // Los mismos valores que manda el formulario previo al pago. Si algún
+      // día se agrega una opción allá, se agrega acá y listo; una opción que
+      // no esté en esta tabla se muestra tal cual vino, no se pierde.
+      var OBJ_ROTULO = {
+        en_que_se_va: 'En qué se va', tarjeta: 'Tarjeta',
+        en_pareja: 'De a dos',        juntar: 'Juntar'
+      };
+
       var filas = us.map(function (u) {
         var hogar = (u.hogares && u.hogares[0]) ? u.hogares[0] : null;
         var chip = hogar
@@ -13072,6 +13083,18 @@ function subtituloRumbo() {
             '<button class="act-btn" title="' + (u.activo ? 'Quitar acceso' : 'Restablecer acceso') + '" style="font-size:12px" onclick="saToggle(\'' + u.uid + '\',' + (!u.activo) + ')">' + (u.activo ? '🚫' : '✅') + '</button>' +
             '<button class="act-btn" title="Eliminar cuenta" style="font-size:12px" onclick="saEliminar(\'' + u.uid + '\',\'' + esc(u.email).replace(/'/g, "\\'") + '\')">🗑️</button>';
 
+        // Ciudad y objetivos: lo que contestó antes de pagar. Las cuentas
+        // anteriores al formulario no lo tienen y muestran un guion — no se
+        // rellena con nada inventado.
+        var chips = (u.objetivos || []).map(function (o) {
+          return '<span class="obj-chip">' + esc(OBJ_ROTULO[o] || o) + '</span>';
+        }).join('');
+        var perfil =
+          (u.ciudad ? '<div style="font-size:12.5px;color:var(--text)">' + esc(u.ciudad) + '</div>'
+                    : '<div style="font-size:12px;color:var(--muted)">—</div>') +
+          (chips ? '<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">' + chips + '</div>' : '') +
+          (u.objetivoTexto ? '<div style="margin-top:4px;font-size:11.5px;color:var(--muted);max-width:220px;line-height:1.4">“' + esc(u.objetivoTexto) + '”</div>' : '');
+
         var selPlan = hogar
           ? '<select onchange="saPlan(\'' + hogar.id + '\', this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)">' +
               ['FOCO', 'PRO', 'TOP'].map(function (p) {
@@ -13084,6 +13107,7 @@ function subtituloRumbo() {
           '<td><strong>' + esc(u.nombre || '(sin nombre)') + '</strong>' + marca + manual + '</td>' +
           '<td style="font-size:12px;color:var(--muted)">' + esc(u.email) + '</td>' +
           '<td style="font-size:12px">' + chip + extra + '</td>' +
+          '<td>' + perfil + '</td>' +
           '<td>' + selPlan + '</td>' +
           '<td>' + estado + '</td>' +
           '<td style="font-size:12px;color:var(--muted);cursor:help" title="' + esc(detalleActividad(u)) + '">' + haceCuanto(u.ultimaActividad || u.ultimoAcceso) + '</td>' +
@@ -13093,7 +13117,7 @@ function subtituloRumbo() {
 
       body.innerHTML =
         '<div style="overflow-x:auto"><table class="admin-table" style="width:100%">' +
-          '<thead><tr><th>Nombre</th><th>Email</th><th>Hogar</th><th>Plan</th><th>Estado</th><th title="La más reciente entre la última carga de datos, la última vez que abrió la app y el último login. Pasá el mouse por cada fila para ver el detalle.">Última actividad</th><th></th></tr></thead>' +
+          '<thead><tr><th>Nombre</th><th>Email</th><th>Hogar</th><th title="Lo que contestó en el formulario, antes de pagar. Las cuentas anteriores a septiembre de 2026 no lo tienen.">Ciudad y objetivos</th><th>Plan</th><th>Estado</th><th title="La más reciente entre la última carga de datos, la última vez que abrió la app y el último login. Pasá el mouse por cada fila para ver el detalle.">Última actividad</th><th></th></tr></thead>' +
           '<tbody>' + filas + '</tbody>' +
         '</table></div>';
     } catch (e) {
@@ -13368,7 +13392,16 @@ function subtituloRumbo() {
       // heredar el distintivo del que estaba logueado antes en la misma pestaña.
       _gpsParticipa = false; _gpsCapPendiente = false;
       try { window.gpsPintarBadgeTotal(); } catch (e) {}
-      body.innerHTML = '<div class="card" style="padding:26px;text-align:center"><div style="font-size:17px;font-weight:700;margin-bottom:8px">Todavía no estás en el Club Pioneros</div><div style="font-size:14.5px;color:var(--muted)">Esta sección es para quienes están haciendo el mes de acompañamiento guiado.</div></div>';
+      // El Club Pioneros se cerró, pero las novedades y el canal privado no eran
+      // un premio del club: son la forma de enterarse de lo que cambia y de
+      // contestarme. Ahora los ve cualquiera que haya comprado Norte. Lo único
+      // que queda reservado es el programa guiado de cuatro semanas, que sólo
+      // tiene sentido para quienes ya lo arrancaron.
+      body.innerHTML =
+        '<div id="gpsNovWrap"></div>' +
+        '<div id="gpsChatWrap" style="margin-top:28px"></div>';
+      try { renderNovedades(); } catch (e) {}
+      try { iniciarChatPionero(); } catch (e) {}
       return;
     }
     var p = d.programa;
@@ -13421,9 +13454,10 @@ function subtituloRumbo() {
     body.innerHTML = banner +
       '<div class="gps-progress-card"><div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;margin-bottom:2px"><span>Tu progreso</span><span>' + (p.puntos || 0) + ' / 40 pts</span></div><div class="gps-progress-bar-track"><div class="gps-progress-bar-fill" style="width:' + pct + '%"></div></div></div>' +
       filas + cardAcceso +
-      // La bitácora es una comunicación exclusiva para Pioneros: vive acá abajo
-      // y no en una pantalla pública. Sólo se arma dentro de esta rama, que es
-      // la que corre cuando la persona efectivamente participa del programa.
+      // Las novedades y el canal privado van al pie, después del programa.
+      // Los arman las DOS ramas de esta función —ésta y la de quien no está en
+      // el programa guiado—, porque desde que se cerró el Club Pioneros los ve
+      // cualquiera que tenga Norte.
       '<div id="gpsNovWrap" style="margin-top:28px"></div>' +
       '<div id="gpsChatWrap" style="margin-top:28px"></div>';
     try { renderNovedades(); } catch (e) {}
