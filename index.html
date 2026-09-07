@@ -325,6 +325,89 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   border-radius:20px; padding:2px 8px; white-space:nowrap; }
 .hbA-fila .f { font-size:11.5px; color:var(--muted); white-space:nowrap; }
 /* Editor de novedades */
+/* ── RESERVA ─────────────────────────────────────────────────────
+   La barra de travesía: lo recorrido sólido, lo que falta punteado, un rombo
+   donde estás y la bandera en el destino. Es la misma gramática de la línea de
+   travesía del carrusel de Instagram — la marca se sostiene entre la publicidad
+   y el producto sin que haya que explicarlo. */
+.tv { position: relative; height: 22px; margin: 9px 0 6px; --tv-fin: 18px; }
+.tv-linea { position: absolute; left: 0; right: var(--tv-fin); top: 10px; height: 3px;
+  background-image: linear-gradient(90deg, var(--border) 0 6px, transparent 6px 12px);
+  background-size: 12px 3px; border-radius: 2px; }
+.tv-hecho { position: absolute; left: 0; top: 9px; height: 5px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--primary), #FFB088); }
+.tv-hecho.ok { background: linear-gradient(90deg, #16a34a, #4ade80); }
+/* El rombo se posiciona dentro del tramo útil y no sobre el ancho total: con
+   `left:95%` sobre el ancho entero se montaba encima de la bandera. */
+.tv-pos { position: absolute; top: 3px; width: 17px; height: 17px; margin-left: -8px;
+  border-radius: 4px; background: var(--primary); transform: rotate(45deg);
+  box-shadow: 0 0 0 3px var(--card); }
+.tv-pos.ok { background: #16a34a; }
+.tv-fin { position: absolute; right: -2px; top: -3px; font-size: 15px; line-height: 1; color: #E8C050; }
+
+.dst { position: relative; }
+.dst + .dst { margin-top: 16px; padding-top: 15px; border-top: 1px solid var(--border); }
+.dst-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.dst-nom { font-size: 14.5px; font-weight: 700; color: var(--text); }
+.dst-num { font-size: 13px; color: var(--muted); white-space: nowrap; }
+.dst-num b { font-size: 15px; color: var(--text); font-weight: 800; }
+.dst-pie { display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  font-size: 12px; color: var(--muted); }
+.dst-pct { font-weight: 800; color: var(--primary); font-size: 12.5px; white-space: nowrap; }
+.dst-pct.ok { color: #16a34a; }
+.dst-atraso { color: #b45309; font-weight: 600; }
+
+.rs-cab { display: flex; gap: 20px; flex-wrap: wrap; padding: 12px 14px; margin-bottom: 16px;
+  background: var(--bg); border-radius: 11px; }
+.rs-cab > div { min-width: 128px; }
+.rs-cab .l { font-size: 10.5px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); }
+.rs-cab .v { font-size: 20px; font-weight: 800; color: var(--text); margin-top: 2px; }
+.rs-cab .v.ac { color: var(--primary); }
+
+.rs-aviso { display: flex; gap: 9px; align-items: flex-start; margin-top: 15px;
+  border-radius: 10px; padding: 10px 13px; font-size: 13px; line-height: 1.5; color: var(--text);
+  background: rgba(232,192,80,.14); border: 1px solid rgba(232,192,80,.4); }
+.rs-aviso.ok { background: rgba(22,163,74,.12); border-color: rgba(22,163,74,.35); }
+.rs-aviso.tarde { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.38); }
+
+.rs-acc { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 11px; }
+.rs-acc button { font-size: 12px; padding: 5px 11px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--card); color: var(--muted);
+  font-family: inherit; font-weight: 600; }
+.rs-acc button:hover { border-color: var(--primary); color: var(--primary); }
+
+.rs-vacio { text-align: center; padding: 26px 18px; }
+.rs-vacio .ei { font-size: 34px; margin-bottom: 8px; }
+.rs-vacio p { font-size: 14px; color: var(--muted); line-height: 1.6; margin: 0 auto 16px; max-width: 380px; }
+
+.rs-usado { opacity: .62; }
+.rs-chip { font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+  border-radius: 20px; padding: 2px 8px; margin-left: 7px; white-space: nowrap; }
+.rs-chip.cumplido { color: #166534; background: rgba(22,163,74,.14); }
+.rs-chip.usado    { color: var(--muted); background: var(--bg); }
+.rs-chip.dejado   { color: var(--muted); background: var(--bg); }
+.rs-chip.pausa    { color: #92400e; background: rgba(245,158,11,.15); }
+/* En pausa la barra pierde el color: el destino sigue ahí, pero ya no empuja. */
+.rs-pausa .tv { filter: grayscale(1); opacity: .75; }
+
+/* El modal de apartar: una fila por destino, todos los montos a la vista */
+.ap-fila { display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 11px 0; border-bottom: 1px solid var(--border); }
+.ap-fila:last-of-type { border-bottom: none; }
+.ap-nom { font-size: 14px; font-weight: 600; color: var(--text); }
+.ap-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+.ap-sug { color: var(--primary); font-weight: 600; }
+.ap-inp { width: 128px; text-align: right; border: 1.5px solid var(--border); border-radius: 9px;
+  padding: 8px 11px; font-size: 14.5px; font-weight: 700; color: var(--text);
+  background: var(--card); font-family: inherit; }
+.ap-inp:focus { outline: none; border-color: var(--primary); }
+.ap-tot { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--muted);
+  padding-top: 12px; margin-top: 4px; border-top: 1px solid var(--border); }
+.ap-tot b { color: var(--text); font-size: 15px; }
+.ap-alerta { margin-top: 13px; background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.38);
+  border-radius: 10px; padding: 11px 13px; font-size: 12.8px; line-height: 1.55; color: var(--text); }
+
 .obj-chip { font-size:10.5px; font-weight:700; letter-spacing:.02em; white-space:nowrap;
   color:#0f5c52; background:rgba(111,224,204,.20); border-radius:20px; padding:2px 8px; }
 .nva-fila { display:flex; align-items:center; gap:10px; padding:10px 13px; border:1px solid var(--border);
@@ -1679,6 +1762,7 @@ tr:hover td { background: #fafbfc; }
     <div class="nav-item active" onclick="showPage('dashboard')"><span class="ico">📊</span> Mi Rumbo</div>
     <div class="nav-item" onclick="showPage('transacciones')"><span class="ico">📋</span> Transacciones</div>
     <div class="nav-item" onclick="showPage('presupuesto')"><span class="ico">🎯</span> Presupuesto</div>
+    <div class="nav-item" onclick="showPage('reserva')"><span class="ico">⚓</span> Reserva</div>
     <div class="nav-item" onclick="showPage('analisis')"><span class="ico">🔎</span> Análisis</div>
     <div class="nav-item" onclick="showPage('progreso')"><span class="ico">🏆</span> Progreso</div>
     <div class="nav-item" onclick="showPage('reportes')"><span class="ico">📈</span> Reportes</div>
@@ -1784,13 +1868,13 @@ tr:hover td { background: #fafbfc; }
           </div>
           <div id="d-presu"></div>
         </div>
-        <div class="card" id="metaAhorroDashCard" style="cursor:pointer;display:none" onclick="showPage('presupuesto')">
-                <div class="report-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-                          <span>🧭 Meta de ahorro</span>
-                                    <span style="font-size:12px;color:var(--primary);font-weight:600">Ajustar →</span>
+        <div class="card" id="reservaDashCard" style="display:none">
+          <div class="report-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <span>⚓ Reserva</span>
+            <span style="font-size:12px;color:var(--primary);font-weight:600;cursor:pointer" onclick="rsAbrirApartar()">Apartar este mes →</span>
           </div>
-          <div id="d-meta-dash"></div>
-                  </div>
+          <div id="d-reserva"></div>
+        </div>
                         </div>
                               <div class="card" style="cursor:pointer;margin-top:18px" onclick="showPage('progreso')">
                                       <div class="report-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -1934,13 +2018,9 @@ tr:hover td { background: #fafbfc; }
           <div class="streak-num-row"><span class="streak-num" id="rachaNum">0</span><span class="streak-label">meses en verde seguidos</span></div>
           <div class="streak-sub" id="rachaSub"></div>
         </div>
-        <div class="card goal-card">
-          <div class="card-label">Meta de ahorro mensual <span style="font-weight:400;text-transform:none;opacity:0.7">(opcional)</span></div>
-          <div class="goal-row">
-            <input type="number" class="goal-input" id="metaAhorroInput" placeholder="Ej: 200000" min="0" oninput="setMetaAhorro(this.value)">
-            <span style="font-size:13px;color:var(--muted)">$ / mes</span>
-          </div>
-          <div class="goal-status" id="metaAhorroStatus"></div>
+        <div class="card goal-card" style="cursor:pointer" onclick="showPage('reserva')">
+          <div class="card-label">Tu Reserva</div>
+          <div class="goal-status" id="reservaProgresoResumen"></div>
         </div>
       </div>
 
@@ -2344,6 +2424,7 @@ tr:hover td { background: #fafbfc; }
         <div class="ayuda-nav-item" onclick="ayudaGo('carga')"><span class="ai">⚡</span><span>Carga rápida</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('tarjetas')"><span class="ai">💳</span><span>Tarjetas TC / TD</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('presupuesto')"><span class="ai">🎯</span><span>Presupuesto</span></div>
+        <div class="ayuda-nav-item" onclick="ayudaGo('reserva')"><span class="ai">⚓</span><span>Reserva</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('analisis')"><span class="ai">🔎</span><span>Análisis</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('progreso')"><span class="ai">🏆</span><span>Progreso</span></div>
         <div class="ayuda-nav-item" onclick="ayudaGo('reportes')"><span class="ai">📈</span><span>Reportes</span></div>
@@ -2391,7 +2472,8 @@ tr:hover td { background: #fafbfc; }
             <div class="ayuda-ejemplo">
               <strong>📊 Mi Rumbo</strong> — el tablero del mes: ingresos, gastos, balance, pendientes y alertas.<br>
               <strong>📋 Transacciones</strong> — donde se cargan y editan todos los movimientos.<br>
-              <strong>🎯 Presupuesto</strong> — límites por rubro y meta de ahorro.<br>
+              <strong>🎯 Presupuesto</strong> — límites de gasto por rubro.<br>
+              <strong>⚓ Reserva</strong> — lo que apartás para objetivos concretos.<br>
               <strong>🔎 Análisis</strong> — conclusiones automáticas sobre tu mes.<br>
               <strong>🏆 Progreso</strong> — tu nivel, tu racha y tus medallas.<br>
               <strong>📈 Reportes</strong> — el año completo en seis vistas.<br>
@@ -2485,7 +2567,7 @@ tr:hover td { background: #fafbfc; }
             <p>Al lado del gráfico de rubros vas a ver el <strong>saldo neto de cada mes del año</strong>, de enero hasta el mes que estás mirando. Cada barra es un mes: <strong>arriba de la línea y en verde</strong> si cerró positivo, <strong>abajo y en rojo</strong> si cerró negativo. Arriba te decimos cuántos meses llevás de cada color.</p>
             <p>La curva que atraviesa las barras marca la tendencia, y si pasás el mouse (o tocás, en el celular) sobre cualquier mes te muestra los ingresos, los gastos y el neto de ese mes.</p>
             <div class="ayuda-tip">Esta vista es a propósito de alto nivel: es para saber <strong>cómo venís</strong>, no para revisar el detalle. Si querés el desglose completo del año, está en <strong>Reportes → Evolución</strong>. Y si buscás un movimiento puntual, en <strong>Transacciones</strong>.</div>
-            <p>Debajo quedan las tarjetas de acceso directo a <strong>Presupuesto</strong>, <strong>Meta de ahorro</strong> y <strong>Progreso</strong>.</p>
+            <p>Debajo quedan las tarjetas de acceso directo a <strong>Presupuesto</strong>, <strong>Reserva</strong> y <strong>Progreso</strong>.</p>
           </div>
           <div class="ayuda-bloque">
             <h4>Tu cuenta, en el menú de la izquierda</h4>
@@ -2736,7 +2818,7 @@ tr:hover td { background: #fafbfc; }
         <!-- PRESUPUESTO -->
         <div class="ayuda-section" id="ayuda-presupuesto">
           <h3>🎯 Presupuesto</h3>
-          <p class="subtitulo">Ponete un techo por rubro y una meta de ahorro — y enterate antes, no después</p>
+          <p class="subtitulo">Ponete un techo por rubro — y enterate antes, no después</p>
           <div class="ayuda-bloque">
             <h4>Para qué sirve</h4>
             <p>Registrar gastos te dice qué pasó. El presupuesto te deja <strong>decidir qué querés que pase</strong>. Es la diferencia entre mirar el mes por el espejo retrovisor y manejarlo mientras está ocurriendo.</p>
@@ -2756,13 +2838,63 @@ tr:hover td { background: #fafbfc; }
             <p>Los presupuestos se guardan por mes. Con <strong>📋 Copiar del mes anterior</strong> traés los mismos topes al mes nuevo sin volver a escribirlos.</p>
           </div>
           <div class="ayuda-bloque">
-            <h4>Meta de ahorro</h4>
-            <p>Definí cuánto querés que te sobre al final del mes. Norte compara tu balance actual contra esa meta y te dice si vas en camino.</p>
-            <div class="ayuda-ejemplo"><strong>Ejemplo:</strong> si tu meta es $200.000 y tu balance del mes va $180.000, Norte te avisa que te faltan $20.000 para llegar.</div>
+            <h4>¿Y la meta de ahorro?</h4>
+            <p>La meta de ahorro mensual quedó reemplazada por la <strong>⚓ Reserva</strong>. La meta miraba el balance del mes y lo llamaba ahorro; la Reserva muestra lo que vos dijiste que apartaste, y para qué. Lo primero se infería, lo segundo se sabe.</p>
           </div>
           <div class="ayuda-bloque">
             <h4>Qué pasa si te pasás</h4>
             <p>Norte <strong>no bloquea nada</strong>. La barra se pone roja, te muestra por cuánto te excediste y aparece una alerta en Mi Rumbo. La decisión sigue siendo tuya; lo que cambia es que ahora la tomás con el dato a la vista.</p>
+          </div>
+        </div>
+
+        <!-- RESERVA -->
+        <div class="ayuda-section" id="ayuda-reserva">
+          <h3>⚓ Reserva</h3>
+          <p class="subtitulo">Lo que apartás para algo concreto — sin que se mezcle con el mes</p>
+          <div class="ayuda-bloque">
+            <h4>Para qué sirve</h4>
+            <p>Ahorrar «en general» no dura. Lo que dura es juntar <strong>para algo</strong>: las vacaciones de enero, cambiar el auto, un curso. La Reserva es donde definís esos destinos y registrás cuánto apartaste para cada uno.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>La regla: apartar no es gastar</h4>
+            <p>Cuando apartás plata para un destino, Norte <strong>no genera ninguna transacción</strong> y tu balance del mes no cambia. Esa plata sigue siendo tuya, sólo que ahora tiene nombre. Por eso la Reserva no rompe la comparación entre meses: tu historial sigue midiendo lo mismo que medía antes.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Crear un destino</h4>
+            <ol class="ayuda-steps">
+              <li>Ponele nombre a lo que querés juntar y cuánta plata necesitás.</li>
+              <li>Si querés, una fecha: Norte te calcula cuánto tendrías que apartar por mes para llegar.</li>
+              <li>Si ya venías juntando antes de usar Norte, cargá ese monto en <strong>Ya venías juntando</strong>. Sin eso el destino arranca en cero y se siente falso.</li>
+            </ol>
+            <div class="ayuda-tip">Cualquiera del hogar puede crear y editar destinos, y todos ven lo mismo. La Reserva es del hogar, no de una persona.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Apartar, mes a mes</h4>
+            <p>Con <strong>Apartar este mes</strong> se abre una fila por destino para que escribas cuánto pusiste en cada uno. Arriba ves <strong>cuánto te sobró</strong> ese mes, para que el número que cargues tenga con qué compararse.</p>
+            <p>No hay nada automático: cada mes lo confirmás vos. Un mes puede aparecer un imprevisto y no apartás nada, o apartás en un destino y en otro no. Eso <strong>no es un error</strong>: es lo que pasa de verdad, y la Reserva tiene que poder mostrarlo.</p>
+            <div class="ayuda-tip">Si el destino tiene fecha, Norte te muestra al lado el ritmo que haría falta — pero <strong>no completa el campo por vos</strong>. El número tiene que ser el que apartaste, no el que deberías haber apartado.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Sacar plata</h4>
+            <p>Si tuviste que usar parte de lo apartado, registralo con <strong>Sacar plata de acá</strong>. El acumulado baja y el destino vuelve a decir la verdad. Tampoco genera un gasto: esa plata ya estaba en tu bolsillo.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Cuando llegás</h4>
+            <p>Al alcanzar la meta el destino queda marcado como completo. Cuando efectivamente lo uses, tocá <strong>Ya lo usé</strong>: sale del total acumulado y pasa a la historia. Si no lo marcaras, tu Reserva seguiría contando plata que ya gastaste.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Pausar, retomar y dejar</h4>
+            <p>Un objetivo no siempre termina, y no siempre termina bien. Si este mes no va, <strong>Pausar</strong>: el destino sigue siendo tuyo, la plata que llevás sigue contada en tu total, y Norte deja de pedirte ritmo hasta que lo retomes. Cuando lo retomás, la interrupción queda anotada.</p>
+            <p>Si ya no va más, <strong>Dejar este destino</strong> (está adentro de <em>Editar</em>). Sale de tu Reserva y pasa a tu <strong>Historia</strong>, junto con los que ya usaste. Si tenías plata apartada ahí, Norte te pregunta qué hacés con ella: pasarla a otro destino o darla por salida. Sin esa pregunta, tu total seguiría contando plata que ya no está.</p>
+            <div class="ayuda-tip"><strong>Borrar es otra cosa.</strong> Borrar es para lo que cargaste por error: se lleva el destino y todos sus movimientos, y no se puede deshacer. Si el destino existió de verdad, cerralo — no lo borres. Lo que se borra no se puede contar después.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Norte no calcula intereses</h4>
+            <p>La Reserva funciona como una alcancía: guarda lo que vos decís que apartaste, nada más. En la práctica es muy probable que esa plata la tengas en un plazo fijo, un fondo o algún otro instrumento que rinda — y está bien que así sea. Cuando ese monto crezca, <strong>editá el destino y actualizá el total</strong>. Por ahora el rendimiento lo ponés vos; que Norte lo siga solo es algo que puede venir más adelante.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Dónde la ves</h4>
+            <p>En <strong>Mi Rumbo</strong> tenés una tarjeta con el total acumulado, lo apartado en el mes y tus tres destinos principales. En <strong>Progreso</strong>, un resumen de una línea. Y <strong>NortIA</strong> conoce tus destinos: podés preguntarle cuánto te falta para cualquiera de ellos.</p>
           </div>
         </div>
 
@@ -2821,7 +2953,7 @@ tr:hover td { background: #fafbfc; }
               📅 <strong>Mes en verde</strong> — cerraste un mes con balance positivo<br>
               🔥 <strong>Racha de 3</strong> — 3 meses seguidos en verde<br>
               🛡️ <strong>Disciplina total</strong> — 6 meses seguidos en verde<br>
-              🎯 <strong>Meta cumplida</strong> — alcanzaste tu meta de ahorro mensual<br>
+              🎯 <strong>Meta cumplida</strong> — completaste un destino de tu Reserva<br>
               📊 <strong>Presupuesto bajo control</strong> — cerraste un mes sin pasarte de ningún límite<br>
               🏆 <strong>Año completo</strong> — 12 meses de historial registrado<br>
               👑 <strong>Leyenda</strong> — llegaste al nivel máximo
@@ -3206,6 +3338,128 @@ tr:hover td { background: #fafbfc; }
     </div><!-- /ayuda-body -->
   </div><!-- /ayuda-panel -->
 </div><!-- /ayudaOverlay -->
+
+<!-- RESERVA -->
+<div id="page-reserva" class="page">
+  <div style="max-width:860px;margin:0 auto;padding:22px 24px 40px;display:flex;flex-direction:column">
+    <div style="margin-bottom:16px">
+      <div style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-0.5px">⚓ Reserva</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px;line-height:1.55">
+        Lo que apartás para algo concreto. No sale de tu balance — apartar no es gastar.
+      </div>
+    </div>
+    <div id="reservaBody"></div>
+  </div>
+</div>
+
+<div class="overlay" id="rsDstOverlay">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <span id="rsDstTitulo">Nuevo destino</span>
+      <button onclick="rsCerrarDestino()" aria-label="Cerrar" style="background:none;border:none;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px">×</button>
+    </div>
+    <div class="nva-campo">
+      <label>Qué querés juntar</label>
+      <input type="text" id="rsDstNombre" maxlength="60" placeholder="Ej: Vacaciones enero 2027">
+    </div>
+    <div class="nva-campo">
+      <label>Cuánto necesitás</label>
+      <input type="number" id="rsDstMeta" min="0" step="any" placeholder="800000">
+    </div>
+    <div class="nva-campo">
+      <label>Para cuándo (opcional)</label>
+      <input type="date" id="rsDstFecha">
+      <div style="font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.45">
+        Si le ponés fecha, Norte te dice cuánto tendrías que apartar por mes para llegar.
+      </div>
+    </div>
+    <div class="nva-campo">
+      <label>Ya venías juntando (opcional)</label>
+      <input type="number" id="rsDstSaldo" min="0" step="any" placeholder="0">
+      <div style="font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.45">
+        Lo que ya tenías guardado antes de usar Norte. Sin esto arranca en cero y se siente falso.
+        Si lo que apartaste está en algún lado que rinde, actualizá acá el total real cuando crezca.
+      </div>
+    </div>
+    <div id="rsDstError" style="display:none;margin-top:12px;font-size:13px;color:var(--danger);font-weight:600"></div>
+    <div class="modal-actions" style="justify-content:space-between">
+      <button class="btn btn-secondary" id="rsDstDejar" onclick="rsDejarDesdeEditor()" style="display:none">Dejar este destino</button>
+      <button class="btn btn-secondary" id="rsDstBorrar" onclick="rsBorrarDestino()" style="display:none;color:var(--danger)">Borrar</button>
+      <span style="flex:1"></span>
+      <button class="btn btn-secondary" onclick="rsCerrarDestino()">Cancelar</button>
+      <button class="btn btn-primary" onclick="rsGuardarDestino()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="rsApOverlay">
+  <div class="modal" style="max-width:470px">
+    <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <span>Apartar este mes</span>
+      <button onclick="rsCerrarApartar()" aria-label="Cerrar" style="background:none;border:none;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px">×</button>
+    </div>
+    <div style="font-size:12.5px;color:var(--muted);margin:-6px 0 14px">
+      <span id="rsApMes"></span> · te sobraron <b style="color:var(--text)" id="rsApBal">—</b>
+    </div>
+    <div id="rsApFilas"></div>
+    <div class="ap-tot"><span>Total a apartar</span><b id="rsApTotal">$0</b></div>
+    <div class="ap-tot" style="border:none;padding-top:4px"><span>Te queda</span><b id="rsApQueda">$0</b></div>
+    <div class="ap-alerta" id="rsApAlerta" style="display:none"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="rsCerrarApartar()">Cancelar</button>
+      <button class="btn btn-primary" onclick="rsGuardarApartar()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="rsDejOverlay">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <span>Dejar este destino</span>
+      <button onclick="rsCerrarDejar()" aria-label="Cerrar" style="background:none;border:none;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px">×</button>
+    </div>
+    <div id="rsDejTexto" style="font-size:13px;color:var(--muted);margin:-6px 0 16px;line-height:1.6"></div>
+    <div id="rsDejPlata" style="display:none">
+      <div class="nva-campo">
+        <label>Llevás <span id="rsDejMonto"></span> apartados acá. ¿Qué hacés con esa plata?</label>
+        <select id="rsDejDestino" style="width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;background:var(--card);color:var(--text)"></select>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.45">
+          Si la pasás a otro destino, el traspaso queda registrado en los dos y el mes no se mueve.
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="rsCerrarDejar()">Cancelar</button>
+      <button class="btn btn-primary" onclick="rsGuardarDejar()">Dejar este destino</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="rsRetOverlay">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <span>Sacar plata</span>
+      <button onclick="rsCerrarRetiro()" aria-label="Cerrar" style="background:none;border:none;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px">×</button>
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin:-6px 0 14px;line-height:1.55">
+      De <b style="color:var(--text)" id="rsRetNombre"></b> · llevás
+      <b style="color:var(--text)" id="rsRetDisponible"></b>
+    </div>
+    <div class="nva-campo">
+      <label>Cuánto sacaste</label>
+      <input type="number" id="rsRetMonto" min="0" step="any" placeholder="0">
+    </div>
+    <div class="nva-campo">
+      <label>Para qué (opcional)</label>
+      <input type="text" id="rsRetNota" maxlength="80" placeholder="Ej: arreglo del auto">
+    </div>
+    <div id="rsRetError" style="display:none;margin-top:12px;font-size:13px;color:var(--danger);font-weight:600"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="rsCerrarRetiro()">Cancelar</button>
+      <button class="btn btn-primary" onclick="rsGuardarRetiro()">Guardar</button>
+    </div>
+  </div>
+</div>
 
 <!-- TU GPS PAGE --><div id="page-tugps" class="page"><div class="gps-wrap" style="max-width:760px;margin:0 auto;padding:8px 24px 40px;display:flex;flex-direction:column"><div class="gps-header"><div style="display:flex;align-items:center;gap:12px"><button class="menu-toggle gps-volver" onclick="toggleSidebar()" aria-label="Volver al menu" title="Volver al menu">&#9776;</button><div><div class="gps-header-title">Novedades</div><div class="gps-header-sub">Lo que cambia en Norte, y tu canal conmigo</div></div></div></div><div id="gpsBody" style="margin-top:16px;position:relative;z-index:1"><div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando...</div></div></div></div>
 <!-- ADMIN PAGE -->
@@ -3884,7 +4138,7 @@ async function runMigration() {
   }
 
     // 3) Copy existing flat data → JLL namespace (non-destructive)
-  const keys = ['fin_data', 'fin_budgets', 'fin_meta_ahorro', 'fin_rubros_custom'];
+  const keys = ['fin_data', 'fin_budgets', 'fin_meta_ahorro', 'fin_rubros_custom', 'fin_reservas'];
   keys.forEach(k => {
     const v = localStorage.getItem(k);
     if (v) localStorage.setItem(k + '_JLL', v);
@@ -5096,8 +5350,710 @@ const lastDayOfMonth = (y, m) => new Date(y, m + 1, 0).getDate();
 // ── PRESUPUESTO / META DE AHORRO ────────────────────────────
 const getBudgets  = ()  => JSON.parse(localStorage.getItem(`fin_budgets_${curEmpresa()}`) || '{}');
 const saveBudgets = b   => localStorage.setItem(`fin_budgets_${curEmpresa()}`, JSON.stringify(b));
+// La Meta de ahorro mensual quedó reemplazada por la Reserva (v005.6.000).
+// Las funciones siguen acá y la clave `fin_meta_ahorro_*` no se borra: si
+// alguien tenía una meta cargada, su número sigue en su dispositivo y en la
+// nube, y volver atrás es descomentar la tarjeta. Lo que se sacó es la interfaz,
+// no el dato — borrar datos de un usuario para simplificar código no se hace.
 const getMetaAhorro  = () => Number(localStorage.getItem(`fin_meta_ahorro_${curEmpresa()}`) || 0);
 const saveMetaAhorro = v  => localStorage.setItem(`fin_meta_ahorro_${curEmpresa()}`, String(Number(v)||0));
+
+// ── RESERVA ──────────────────────────────────────────────────
+// Destinos de ahorro y los movimientos con los que se llenan.
+//
+// LA REGLA QUE GOBIERNA TODO: apartar no es gastar. Un aporte NO genera una
+// transacción y NO descuenta del balance. Si descontara, el gráfico de
+// evolución dejaría de comparar lo mismo mes a mes y toda la historia anterior
+// del hogar quedaría rota. La Reserva es una capa de lectura por encima.
+//
+// El acumulado de un destino NO se guarda: se calcula sumando sus movimientos.
+// Un número guardado que se puede derivar es un número que en algún momento
+// queda desincronizado con los movimientos que lo formaron.
+const RESERVA_VACIA = { destinos: {}, movimientos: {} };
+
+function getReserva() {
+  try {
+    const r = JSON.parse(localStorage.getItem(`fin_reservas_${curEmpresa()}`) || 'null');
+    if (!r || typeof r !== 'object') return { destinos: {}, movimientos: {} };
+    return { destinos: r.destinos || {}, movimientos: r.movimientos || {} };
+  } catch (e) { return { destinos: {}, movimientos: {} }; }
+}
+function saveReserva(r) {
+  localStorage.setItem(`fin_reservas_${curEmpresa()}`, JSON.stringify({
+    destinos: (r && r.destinos) || {}, movimientos: (r && r.movimientos) || {}
+  }));
+  try { schedulePush(); } catch (e) {}
+}
+
+// Acumulado de un destino: saldo inicial + aportes − retiros.
+function rsAcumulado(destinoId, r) {
+  r = r || getReserva();
+  const d = r.destinos[destinoId];
+  if (!d) return 0;
+  let total = Number(d.saldoInicial) || 0;
+  Object.values(r.movimientos).forEach(m => {
+    if (!m || m.destinoId !== destinoId) return;
+    const monto = Number(m.monto) || 0;
+    total += (m.tipo === 'retiro' ? -monto : monto);
+  });
+  return Math.max(0, total);
+}
+
+// Lo apartado en un mes concreto, sumando todos los destinos. Los retiros
+// restan: si en el mismo mes apartaste y sacaste, lo que quedó es la resta.
+function rsApartadoEnMes(mes, r) {
+  r = r || getReserva();
+  let total = 0;
+  Object.values(r.movimientos).forEach(m => {
+    if (!m || m.mes !== mes) return;
+    const monto = Number(m.monto) || 0;
+    total += (m.tipo === 'retiro' ? -monto : monto);
+  });
+  return total;
+}
+
+// Los cuatro estados de un destino:
+//   activo      — en juego, con ritmo y presión
+//   pausado     — en espera; la plata SIGUE contada, pero no se le pide ritmo
+//   usado       — se consumió en lo que era: sale del acumulado, va a la historia
+//   abandonado  — la persona lo dejó: sale del acumulado, va a la historia
+// La plata de un pausado se sigue contando a propósito: está ahí, no se fue a
+// ningún lado. Sacarla del total al pausar sería la app diciendo una mentira
+// cómoda.
+const RS_FUERA = new Set(['usado', 'abandonado']);
+
+// Todo lo que todavía es plata en la Reserva: activos + pausados.
+function rsDestinosVivos(r) {
+  r = r || getReserva();
+  return Object.values(r.destinos)
+    .filter(d => d && !RS_FUERA.has(d.estado))
+    .map(d => {
+      const acum = rsAcumulado(d.id, r);
+      const meta = Number(d.meta) || 0;
+      return Object.assign({}, d, {
+        acumulado: acum,
+        falta: Math.max(0, meta - acum),
+        pct: meta > 0 ? Math.min(100, Math.round(acum / meta * 100)) : 0,
+        cumplido: meta > 0 && acum >= meta,
+        // Un destino en pausa no tiene ritmo: pedirle cuánto poner por mes a
+        // algo que la persona puso en espera es exactamente la presión que
+        // pausar viene a sacar.
+        ritmo: d.estado === 'pausado' ? null : rsRitmo(d, acum)
+      });
+    })
+    .sort((a, b) => b.pct - a.pct);
+}
+
+// Los que están en juego. Es lo que se muestra arriba y lo único a lo que se
+// le pide apartar cada mes.
+function rsDestinosActivos(r) {
+  return rsDestinosVivos(r).filter(d => d.estado !== 'pausado');
+}
+
+function rsPausados(r) {
+  return rsDestinosVivos(r).filter(d => d.estado === 'pausado');
+}
+
+// Los cerrados, del más reciente al más viejo. Nada se borra al cerrarse: es
+// el material del que va a salir el historial.
+function rsHistoria(r) {
+  r = r || getReserva();
+  return Object.values(r.destinos)
+    .filter(d => d && RS_FUERA.has(d.estado))
+    .map(d => Object.assign({}, d, { acumulado: rsAcumulado(d.id, r) }))
+    .sort((a, b) => String(b.cerrado || '').localeCompare(String(a.cerrado || '')));
+}
+
+// Total apartado hoy: activos y pausados. La plata en pausa sigue siendo plata.
+function rsTotalAcumulado(r) {
+  return rsDestinosVivos(r).reduce((s, d) => s + d.acumulado, 0);
+}
+
+// Cuánto habría que poner por mes para llegar a la fecha. Devuelve null si no
+// hay fecha: sin fecha no hay ritmo posible, y no se inventa uno.
+function rsRitmo(d, acum) {
+  if (!d || !d.fechaMeta) return null;
+  const meta = Number(d.meta) || 0;
+  const falta = Math.max(0, meta - acum);
+  if (falta <= 0) return { meses: 0, porMes: 0, vencido: false };
+  const fin = new Date(d.fechaMeta + 'T12:00:00');
+  if (isNaN(fin)) return null;
+  const hoy = new Date();
+  // Meses enteros que faltan, contando el mes en curso como disponible.
+  let meses = (fin.getFullYear() - hoy.getFullYear()) * 12 + (fin.getMonth() - hoy.getMonth());
+  if (meses <= 0) return { meses: 0, porMes: falta, vencido: true };
+  return { meses: meses, porMes: Math.ceil(falta / meses), vencido: false };
+}
+
+function rsNuevoId(pre) { return pre + '_' + uid().slice(-8); }
+
+// El bloque de Reserva que ve NortIA. Devuelve '' cuando no hay ningún destino:
+// una sección vacía en el contexto sólo le enseña al modelo a hablar de algo
+// que el hogar todavía no tiene.
+function rsContextoIA() {
+  const r = getReserva();
+  const activos = rsDestinosActivos(r);
+  const pausados = rsPausados(r);
+  const historia = rsHistoria(r);
+  if (!activos.length && !pausados.length && !historia.length) return '';
+  const pz = n => '$' + Math.round(Number(n) || 0).toLocaleString('es-AR');
+  // La fecha meta se manda en castellano: «2026-12-10» invita al modelo a
+  // hacer cuentas de calendario por su cuenta, y ahí es donde se equivoca.
+  const fch = f => { const p = String(f || '').split('-');
+    return p.length === 3 ? `${MESES[Number(p[1]) - 1]} de ${p[0]}` : String(f || ''); };
+  const L = [];
+  L.push('RESERVA (plata apartada para objetivos concretos; apartar NO es un gasto,'
+       + ' no descuenta del balance del mes y no aparece en las transacciones):');
+  L.push(`Total acumulado en la Reserva: ${pz(rsTotalAcumulado(r))}`);
+  L.push(`Apartado en ${MESES[curMonth - 1]}: ${pz(rsApartadoEnMes(curKey(), r))}`);
+  activos.forEach(d => {
+    let l = `  - ${d.nombre}: lleva ${pz(d.acumulado)} de ${pz(d.meta)} (${d.pct}%)`;
+    if (d.cumplido) l += ' — completo, ya puede usarlo';
+    else if (d.ritmo && d.ritmo.vencido) l += `, faltan ${pz(d.falta)} y la fecha meta (${fch(d.fechaMeta)}) ya pasó`;
+    else if (d.ritmo) l += `, faltan ${pz(d.falta)}; quedan ${d.ritmo.meses} meses hasta ${fch(d.fechaMeta)}, ${pz(d.ritmo.porMes)} por mes para llegar`;
+    else l += `, faltan ${pz(d.falta)}, sin fecha meta definida`;
+    L.push(l);
+  });
+  pausados.forEach(d => L.push(
+    `  - ${d.nombre}: EN PAUSA, lleva ${pz(d.acumulado)} de ${pz(d.meta)} (${d.pct}%).`
+    + ' La plata sigue contada pero no se le pide ritmo hasta que lo retomen.'));
+  const usados = historia.filter(d => d.estado === 'usado');
+  const dejados = historia.filter(d => d.estado === 'abandonado');
+  if (usados.length) L.push(`Destinos ya usados (fuera del acumulado): ${usados.map(d => d.nombre).join(', ')}`);
+  if (dejados.length) L.push(`Destinos que dejaron por el camino (fuera del acumulado): ${dejados.map(d => d.nombre).join(', ')}`);
+  L.push('Norte sólo lleva la cuenta de lo apartado: no calcula intereses ni rendimientos.');
+  return L.join('\n');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RESERVA — pantalla, tarjeta y modales
+//
+//  La acumulación es MANUAL y mes a mes, a propósito. No hay ningún
+//  automatismo que aparte plata solo, y el modal de «apartar» no
+//  precompleta los montos ni siquiera cuando el destino tiene un ritmo
+//  calculado: sólo lo muestra al lado del campo. Precompletar convierte
+//  el «sí, lo hice» en el gesto por defecto, y entonces el número deja de
+//  registrar lo que la persona apartó y pasa a registrar lo que Norte
+//  supuso — que es exactamente el número que después nadie mira.
+// ═══════════════════════════════════════════════════════════════
+
+function rsBarra(pct, cumplido) {
+  const p = Math.max(0, Math.min(100, Number(pct) || 0));
+  const hasta = `calc((100% - var(--tv-fin)) * ${(p / 100).toFixed(4)})`;
+  const ok = cumplido ? ' ok' : '';
+  return '<div class="tv"><div class="tv-linea"></div>'
+    + `<div class="tv-hecho${ok}" style="width:${hasta}"></div>`
+    + `<div class="tv-pos${ok}" style="left:${hasta}"></div>`
+    + '<div class="tv-fin">⚑</div></div>';
+}
+
+// El renglón de abajo de cada destino: es donde la fecha meta paga.
+function rsPie(d) {
+  if (d.estado === 'pausado')
+    return `En pausa · llevás ${fmtPz(d.acumulado)}`
+      + (d.cumplido ? ' · ya estaba completo' : ` · te faltaban ${fmtPz(d.falta)}`);
+  if (d.cumplido) return 'Llegaste. Ya podés usarlo.';
+  if (!d.ritmo)   return `Faltan ${fmtPz(d.falta)} · sin fecha definida`;
+  if (d.ritmo.vencido)
+    return `<span class="dst-atraso">Faltan ${fmtPz(d.falta)} y la fecha ya pasó</span>`;
+  return `Faltan ${fmtPz(d.falta)} · ${d.ritmo.meses} mes${d.ritmo.meses === 1 ? '' : 'es'}`
+       + ` · ${fmtPz(d.ritmo.porMes)} por mes`;
+}
+
+function rsFila(d, conAcciones) {
+  const pausa = d.estado === 'pausado';
+  const chip = pausa ? '<span class="rs-chip pausa">En pausa</span>'
+             : d.cumplido ? '<span class="rs-chip cumplido">Completo</span>' : '';
+  return '<div class="dst">'
+    + '<div class="dst-top">'
+    +   `<span class="dst-nom">${esc(d.nombre)}${chip}</span>`
+    +   `<span class="dst-num"><b>${fmtPz(d.acumulado)}</b> de ${fmtPz(d.meta)}</span>`
+    + '</div>'
+    + rsBarra(d.pct, d.cumplido)
+    + `<div class="dst-pie"><span>${rsPie(d)}</span>`
+    +   `<span class="dst-pct${d.cumplido ? ' ok' : ''}">${d.pct} %</span></div>`
+    + (conAcciones ? '<div class="rs-acc">'
+        + `<button onclick="rsAbrirDestino('${d.id}')">Editar</button>`
+        + (pausa
+            ? `<button onclick="rsRetomar('${d.id}')" style="border-color:var(--primary);color:var(--primary)">Retomar</button>`
+            : `<button onclick="rsAbrirRetiro('${d.id}')">Sacar plata de acá</button>`
+              + `<button onclick="rsPausar('${d.id}')">Pausar</button>`)
+        + (d.cumplido && !pausa ? `<button onclick="rsMarcarUsado('${d.id}')">Ya lo usé</button>` : '')
+      + '</div>' : '')
+    + '</div>';
+}
+
+// El aviso del 90 y del 100 por ciento. Uno solo, el más urgente: tres
+// franjas apiladas dejan de ser un aviso y pasan a ser decoración.
+function rsAviso(activos) {
+  const completo = activos.find(d => d.cumplido);
+  if (completo) return '<div class="rs-aviso ok"><span>⚑</span><span>'
+    + `<b>Llegaste.</b> ${esc(completo.nombre)} está completo — cuando lo uses, marcalo `
+    + 'para que la Reserva vuelva a decir la verdad.</span></div>';
+  const atrasado = activos.find(d => d.ritmo && d.ritmo.vencido);
+  if (atrasado) return '<div class="rs-aviso tarde"><span>⚑</span><span>'
+    + `La fecha de <b>${esc(atrasado.nombre)}</b> ya pasó y te faltan ${fmtPz(atrasado.falta)}. `
+    + 'Podés correr la fecha o bajar la meta.</span></div>';
+  const cerca = activos.find(d => d.pct >= 90 && !d.cumplido);
+  if (cerca) return '<div class="rs-aviso"><span>⚑</span><span>'
+    + `<b>Estás a un paso.</b> Te faltan ${fmtPz(cerca.falta)} para ${esc(cerca.nombre)}.</span></div>`;
+  return '';
+}
+
+// ── La tarjeta de Mi Rumbo ──────────────────────────────────────
+function rsPintarDash() {
+  const card = document.getElementById('reservaDashCard');
+  const body = document.getElementById('d-reserva');
+  if (!card || !body) return;
+  const activos = rsDestinosActivos();
+  const pausados = rsPausados();
+  if (!activos.length && !pausados.length) { card.style.display = 'none'; return; }
+  card.style.display = '';
+  const mes = rsApartadoEnMes(curKey());
+  body.innerHTML =
+      '<div class="rs-cab">'
+    +   `<div><div class="l">Apartado en ${MESES[curMonth - 1]}</div>`
+    +     `<div class="v">${mes ? fmtPz(mes) : '—'}</div></div>`
+    +   `<div><div class="l">Total acumulado</div>`
+    +     `<div class="v ac">${fmtPz(rsTotalAcumulado())}</div></div>`
+    + '</div>'
+    + activos.slice(0, 3).map(d => rsFila(d, false)).join('')
+    + (pausados.length
+        ? `<div style="font-size:12.5px;color:var(--muted);margin-top:${activos.length ? '12px' : '0'}">`
+          + `${pausados.length} destino${pausados.length === 1 ? '' : 's'} en pausa · `
+          + `<b style="color:var(--primary);cursor:pointer" onclick="showPage('reserva')">Ver →</b></div>`
+        : '')
+    + (activos.length > 3
+        ? `<div style="font-size:12.5px;color:var(--muted);margin-top:12px">`
+          + `y ${activos.length - 3} destino${activos.length - 3 === 1 ? '' : 's'} más · `
+          + `<b style="color:var(--primary);cursor:pointer" onclick="showPage('reserva')">Ver todos →</b></div>`
+        : '')
+    + rsAviso(activos);
+}
+
+// ── La página ───────────────────────────────────────────────────
+function renderReserva() {
+  const body = document.getElementById('reservaBody');
+  if (!body) return;
+  const r = getReserva();
+  const activos = rsDestinosActivos(r);
+  const pausados = rsPausados(r);
+  const historia = rsHistoria(r);
+
+  if (!activos.length && !pausados.length && !historia.length) {
+    body.innerHTML = '<div class="card rs-vacio"><div class="ei">⚓</div>'
+      + '<p>Todavía no tenés ningún destino. Un destino es algo concreto que querés '
+      + 'juntar — unas vacaciones, cambiar el auto, un curso — con cuánta plata necesitás.</p>'
+      + '<button class="btn btn-primary" onclick="rsAbrirDestino()">Crear mi primer destino</button></div>'
+      + rsNotaInstrumentos();
+    return;
+  }
+
+  const mes = rsApartadoEnMes(curKey(), r);
+  body.innerHTML =
+      '<div class="card" style="margin-bottom:16px">'
+    +   '<div class="rs-cab" style="margin-bottom:0">'
+    +     `<div><div class="l">Apartado en ${MESES[curMonth - 1]}</div>`
+    +       `<div class="v">${mes ? fmtPz(mes) : '—'}</div></div>`
+    +     `<div><div class="l">Total acumulado</div>`
+    +       `<div class="v ac">${fmtPz(rsTotalAcumulado(r))}</div></div>`
+    +     `<div><div class="l">Destinos activos</div><div class="v">${activos.length}</div></div>`
+    +     (pausados.length
+            ? `<div><div class="l">En pausa</div><div class="v">${pausados.length}</div></div>` : '')
+    +   '</div>'
+    +   '<div class="rs-acc" style="margin-top:14px">'
+    +     '<button onclick="rsAbrirApartar()" style="border-color:var(--primary);color:var(--primary)">Apartar este mes</button>'
+    +     '<button onclick="rsAbrirDestino()">Nuevo destino</button>'
+    +   '</div>'
+    + '</div>'
+    + (activos.length
+        ? '<div class="card" style="margin-bottom:16px">'
+          + activos.map(d => rsFila(d, true)).join('')
+          + rsAviso(activos)
+          + '</div>'
+        : '')
+    + (pausados.length
+        ? '<div class="card rs-pausa" style="margin-bottom:16px">'
+          + '<div class="report-title" style="margin-bottom:4px">En pausa</div>'
+          + '<div style="font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.5">'
+          +   'Siguen siendo tuyos y la plata sigue contada. No se les pide ritmo hasta que los retomes.'
+          + '</div>'
+          + pausados.map(d => rsFila(d, true)).join('')
+          + '</div>'
+        : '')
+    + (historia.length
+        ? '<div class="card rs-usado"><div class="report-title" style="margin-bottom:12px">Historia</div>'
+          + historia.map(d => {
+              const dejado = d.estado === 'abandonado';
+              return '<div class="dst"><div class="dst-top">'
+                + `<span class="dst-nom">${esc(d.nombre)}`
+                +   `<span class="rs-chip ${dejado ? 'dejado' : 'usado'}">${dejado ? 'Dejado' : 'Usado'}</span></span>`
+                + `<span class="dst-num">${dejado ? `llegó a ${fmtPz(d.cerradoCon != null ? d.cerradoCon : d.acumulado)} de ` : ''}${fmtPz(d.meta)}</span>`
+                + '</div></div>';
+            }).join('')
+          + '</div>'
+        : '')
+    + rsNotaInstrumentos();
+}
+
+// Norte guarda lo que la persona dice que apartó y nada más. En la Argentina
+// esa plata casi nunca duerme quieta, así que la nota lo reconoce en vez de
+// hacer de cuenta que el mundo se termina en la alcancía.
+function rsNotaInstrumentos() {
+  return '<div style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:16px;padding:0 2px">'
+    + 'Norte lleva la cuenta como una alcancía: guarda lo que apartaste, sin calcular intereses. '
+    + 'Si esa plata la tenés en un plazo fijo, un fondo o cualquier instrumento que rinda, mejor todavía — '
+    + 'cuando crezca, editá el destino y actualizá el total.'
+    + '</div>';
+}
+
+// ── Crear y editar un destino ───────────────────────────────────
+// Cualquiera del hogar puede: la Reserva es de la casa, no del titular.
+let rsEditandoId = null;
+
+function rsAbrirDestino(id) {
+  const r = getReserva();
+  const d = (id && r.destinos[id]) || {};
+  rsEditandoId = d.id || null;
+  document.getElementById('rsDstTitulo').textContent = rsEditandoId ? 'Editar destino' : 'Nuevo destino';
+  document.getElementById('rsDstNombre').value = d.nombre || '';
+  document.getElementById('rsDstMeta').value   = d.meta || '';
+  document.getElementById('rsDstFecha').value  = d.fechaMeta || '';
+  document.getElementById('rsDstSaldo').value  = d.saldoInicial || '';
+  document.getElementById('rsDstError').style.display = 'none';
+  document.getElementById('rsDstBorrar').style.display = rsEditandoId ? '' : 'none';
+  document.getElementById('rsDstDejar').style.display =
+    (rsEditandoId && !RS_FUERA.has(d.estado)) ? '' : 'none';
+  document.getElementById('rsDstOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('rsDstNombre').focus(), 80);
+}
+function rsCerrarDestino() {
+  rsEditandoId = null;
+  document.getElementById('rsDstOverlay').classList.remove('show');
+}
+
+function rsGuardarDestino() {
+  const err    = document.getElementById('rsDstError');
+  const nombre = document.getElementById('rsDstNombre').value.trim();
+  const meta   = Number(document.getElementById('rsDstMeta').value) || 0;
+  const fecha  = document.getElementById('rsDstFecha').value || null;
+  const saldo  = Number(document.getElementById('rsDstSaldo').value) || 0;
+  const fallar = m => { err.textContent = m; err.style.display = 'block'; };
+
+  if (!nombre) return fallar('Poné un nombre — algo que reconozcas de un vistazo.');
+  if (meta <= 0) return fallar('¿Cuánta plata necesitás juntar?');
+
+  const r = getReserva();
+  if (rsEditandoId) {
+    const d = r.destinos[rsEditandoId];
+    if (!d) return fallar('Ese destino ya no existe.');
+    // Bajar la meta por debajo de lo acumulado deja el destino cumplido en el
+    // acto. Se avisa antes de guardar: es un cambio de estado, no un ajuste.
+    const acum = rsAcumulado(rsEditandoId, r);
+    if (meta < acum && !confirm(
+        `Ya llevás ${fmtPz(acum)} en «${d.nombre}» y la meta nueva es ${fmtPz(meta)}.\n\n`
+        + 'El destino va a quedar completo en el acto. ¿Lo guardo igual?')) return;
+    Object.assign(d, { nombre, meta, fechaMeta: fecha, saldoInicial: saldo });
+  } else {
+    const id = rsNuevoId('d');
+    r.destinos[id] = {
+      id, nombre, meta, moneda: 'ARS', fechaMeta: fecha, saldoInicial: saldo,
+      creado: new Date().toISOString(), estado: 'activo', cerrado: null
+    };
+  }
+  saveReserva(r);
+  rsCerrarDestino();
+  render();
+  try { track(rsEditandoId ? 'reserva_destino_editado' : 'reserva_destino_creado'); } catch (e) {}
+}
+
+function rsBorrarDestino() {
+  if (!rsEditandoId) return;
+  const r = getReserva();
+  const d = r.destinos[rsEditandoId];
+  if (!d) return;
+  const movs = Object.values(r.movimientos).filter(m => m && m.destinoId === rsEditandoId).length;
+  // Mismo patrón que borrar un rubro: se dice cuántos movimientos se lleva
+  // puestos antes de preguntar, porque el número es lo que cambia la respuesta.
+  if (!confirm(`Borrar «${d.nombre}» también borra sus ${movs} movimiento${movs === 1 ? '' : 's'} `
+    + 'y no se puede deshacer.\n\nBorrar es para lo que cargaste por error. Si el destino existió '
+    + 'de verdad conviene cerrarlo, no borrarlo: «Ya lo usé» si lo usaste, «Dejar este destino» si '
+    + 'no va más. En los dos casos queda en tu historia.\n\n¿Lo borro igual?')) return;
+  delete r.destinos[rsEditandoId];
+  Object.keys(r.movimientos).forEach(k => {
+    if (r.movimientos[k] && r.movimientos[k].destinoId === rsEditandoId) delete r.movimientos[k];
+  });
+  saveReserva(r);
+  rsCerrarDestino();
+  render();
+}
+
+function rsMarcarUsado(id) {
+  const r = getReserva();
+  const d = r.destinos[id];
+  if (!d) return;
+  if (!confirm(`«${d.nombre}» sale del total acumulado y se va a la historia.\n\n`
+    + 'Es el momento en que el número vuelve a decir la verdad: esa plata ya no la tenés.\n\n'
+    + '¿Lo marco como usado?')) return;
+  d.estado = 'usado';
+  d.cerrado = new Date().toISOString();
+  d.cerradoCon = rsAcumulado(id, r);
+  saveReserva(r);
+  render();
+  try { track('reserva_destino_usado'); } catch (e) {}
+}
+
+// Pausar no toca la plata: sólo saca el destino de la lista de los que piden
+// ritmo. Es la salida que faltaba para el mes en que un objetivo se posterga
+// sin abandonarse — sin ella, la única salida era borrarlo, y borrarlo se
+// llevaba puesta toda su historia.
+function rsPausar(id) {
+  const r = getReserva();
+  const d = r.destinos[id];
+  if (!d) return;
+  if (!confirm(`«${d.nombre}» queda en pausa.\n\nLo que llevás apartado se sigue contando y el `
+    + 'destino te espera. Norte deja de pedirte ritmo para él hasta que lo retomes.\n\n¿Lo pauso?')) return;
+  d.estado = 'pausado';
+  d.pausadoEn = new Date().toISOString();
+  saveReserva(r);
+  render();
+  try { track('reserva_destino_pausado'); } catch (e) {}
+}
+
+function rsRetomar(id) {
+  const r = getReserva();
+  const d = r.destinos[id];
+  if (!d) return;
+  d.estado = 'activo';
+  // La interrupción queda anotada. Es el dato que no se puede reconstruir
+  // después: si no se guarda ahora, el historial nunca va a poder contarla.
+  if (d.pausadoEn) {
+    d.pausas = Array.isArray(d.pausas) ? d.pausas : [];
+    d.pausas.push({ desde: d.pausadoEn, hasta: new Date().toISOString() });
+    d.pausadoEn = null;
+  }
+  saveReserva(r);
+  render();
+  try { track('reserva_destino_retomado'); } catch (e) {}
+}
+
+// ── Dejar un destino ────────────────────────────────────────────
+// Dejarlo no es usarlo: la plata no se gastó en lo que era. Si sigue en la
+// Reserva tiene que ir a otro destino, y si no, salió. Preguntarlo es lo que
+// evita que el total siga contando plata que ya no está.
+let rsDejId = null;
+
+function rsAbrirDejar(id) {
+  const r = getReserva();
+  const d = r.destinos[id];
+  if (!d) return;
+  rsDejId = id;
+  const acum = rsAcumulado(id, r);
+  const otros = rsDestinosVivos(r).filter(x => x.id !== id);
+  document.getElementById('rsDejTexto').innerHTML =
+    `<b>${esc(d.nombre)}</b> sale de tu Reserva y pasa a tu historia. No se borra: vas a poder `
+    + 'ver que existió, hasta dónde llegó y cuándo lo dejaste.';
+  const conPlata = acum > 0;
+  document.getElementById('rsDejPlata').style.display = conPlata ? '' : 'none';
+  if (conPlata) {
+    document.getElementById('rsDejMonto').textContent = fmtPz(acum);
+    document.getElementById('rsDejDestino').innerHTML =
+      '<option value="">La saqué — ya no está en la Reserva</option>'
+      + otros.map(x => `<option value="${x.id}">Pasarla a «${esc(x.nombre)}»</option>`).join('');
+  }
+  document.getElementById('rsDejOverlay').classList.add('show');
+}
+function rsCerrarDejar() {
+  rsDejId = null;
+  document.getElementById('rsDejOverlay').classList.remove('show');
+}
+
+function rsGuardarDejar() {
+  if (!rsDejId) return;
+  const r = getReserva();
+  const d = r.destinos[rsDejId];
+  if (!d) return rsCerrarDejar();
+  const acum = rsAcumulado(rsDejId, r);
+  const hacia = acum > 0 ? (document.getElementById('rsDejDestino').value || '') : '';
+  const ahora = new Date().toISOString();
+
+  // El traspaso se registra de los dos lados. Anotar sólo la entrada haría que
+  // el mes dijera que apartaste plata nueva, y no apartaste nada: la moviste.
+  if (hacia && r.destinos[hacia]) {
+    const mes = curKey();
+    const idR = rsNuevoId('m');
+    r.movimientos[idR] = { id: idR, destinoId: rsDejId, mes, tipo: 'retiro', monto: acum,
+                           nota: `pasó a ${r.destinos[hacia].nombre}`, ts: ahora };
+    const idA = rsNuevoId('m');
+    r.movimientos[idA] = { id: idA, destinoId: hacia, mes, tipo: 'aporte', monto: acum,
+                           nota: `vino de ${d.nombre}`, ts: ahora };
+  }
+
+  d.cerradoCon = acum;
+  d.estado = 'abandonado';
+  d.cerrado = ahora;
+  d.destinoFinal = hacia || null;
+  if (d.pausadoEn) {
+    d.pausas = Array.isArray(d.pausas) ? d.pausas : [];
+    d.pausas.push({ desde: d.pausadoEn, hasta: ahora });
+    d.pausadoEn = null;
+  }
+  saveReserva(r);
+  rsCerrarDejar();
+  rsCerrarDestino();
+  render();
+  try { track('reserva_destino_dejado', { conTraspaso: hacia ? 1 : 0 }); } catch (e) {}
+}
+
+// Desde el editor: se cierra el modal de edición y se abre el de dejar.
+function rsDejarDesdeEditor() {
+  const id = rsEditandoId;
+  if (!id) return;
+  document.getElementById('rsDstOverlay').classList.remove('show');
+  rsAbrirDejar(id);
+}
+
+// ── Apartar el mes ──────────────────────────────────────────────
+function rsAbrirApartar() {
+  const r = getReserva();
+  const activos = rsDestinosActivos(r).filter(d => !d.cumplido);
+  if (!activos.length) {
+    alert(Object.keys(r.destinos).length
+      ? 'No te queda ningún destino por completar. Creá uno nuevo o marcá como usados los que ya cumpliste.'
+      : 'Primero creá un destino: algo concreto que quieras juntar.');
+    return;
+  }
+  const mes = curKey();
+  const bal = rsBalanceDelMes();
+  document.getElementById('rsApMes').textContent = `${MESES[curMonth - 1]} ${curYear}`;
+  document.getElementById('rsApBal').textContent = fmtPz(bal);
+
+  document.getElementById('rsApFilas').innerHTML = activos.map(d => {
+    // Lo ya apartado en ESTE mes para ESTE destino: editar el mes es volver a
+    // abrir la misma pantalla, así que el campo arranca con lo que ya hay.
+    const yaEste = Object.values(r.movimientos)
+      .filter(m => m && m.destinoId === d.id && m.mes === mes)
+      .reduce((s, m) => s + (m.tipo === 'retiro' ? -1 : 1) * (Number(m.monto) || 0), 0);
+    // El ritmo se MUESTRA, no se completa. Ver el comentario del encabezado.
+    const sug = (d.ritmo && d.ritmo.porMes > 0 && !yaEste)
+      ? ` · <span class="ap-sug">sugerido ${fmtPz(d.ritmo.porMes)}</span>` : '';
+    return '<div class="ap-fila">'
+      + `<div><div class="ap-nom">${esc(d.nombre)}</div>`
+      +   `<div class="ap-sub">Llevás ${fmtPz(d.acumulado)} de ${fmtPz(d.meta)}${sug}</div></div>`
+      + `<input class="ap-inp rs-ap-monto" type="number" min="0" step="any" `
+      +   `data-id="${d.id}" value="${yaEste > 0 ? yaEste : ''}" placeholder="0" oninput="rsApRecalcular()">`
+      + '</div>';
+  }).join('');
+
+  rsApRecalcular();
+  document.getElementById('rsApOverlay').classList.add('show');
+}
+function rsCerrarApartar() { document.getElementById('rsApOverlay').classList.remove('show'); }
+
+// El balance del mes, para poder avisar si se aparta de más.
+function rsBalanceDelMes() {
+  const k = curKey();
+  let ing = 0, gas = 0;
+  try {
+    getData().forEach(t => {
+      if (!t || t.mes !== k) return;
+      const p = Number(t.impPesos) || 0;
+      if (t.tipo === 'Ingreso') ing += p; else gas += p;
+    });
+  } catch (e) {}
+  return ing - gas;
+}
+
+function rsApRecalcular() {
+  let total = 0;
+  document.querySelectorAll('.rs-ap-monto').forEach(i => { total += Number(i.value) || 0; });
+  const bal = rsBalanceDelMes();
+  document.getElementById('rsApTotal').textContent = fmtPz(total);
+  document.getElementById('rsApQueda').textContent = fmtPz(bal - total);
+  const al = document.getElementById('rsApAlerta');
+  // Avisa pero deja pasar. Hay un caso que un candado no contempla: apartar
+  // plata que ya tenías de antes de usar Norte. Si la app obliga a inventar un
+  // ingreso para dejarte aportar, el usuario ensucia sus propios datos y todos
+  // los reportes mienten un poco. El aviso dice lo que hay que decir.
+  if (total > bal) {
+    al.style.display = '';
+    al.innerHTML = `Estás apartando <b>${fmtPz(total - bal)}</b> más de lo que te sobró este mes. `
+      + 'Si esa plata vino de otro lado está bien; si es de este mes, conviene cargarla como '
+      + 'ingreso para que tus reportes cierren.';
+  } else {
+    al.style.display = 'none';
+  }
+}
+
+function rsGuardarApartar() {
+  const r = getReserva();
+  const mes = curKey();
+  let hubo = 0;
+  document.querySelectorAll('.rs-ap-monto').forEach(inp => {
+    const id = inp.getAttribute('data-id');
+    const monto = Number(inp.value) || 0;
+    // Volver a apartar el mismo mes REEMPLAZA lo anterior, no lo suma: la
+    // pantalla dice «llevás X» y si sumara, confirmar dos veces duplicaría en
+    // silencio lo que la persona creía estar corrigiendo.
+    Object.keys(r.movimientos).forEach(k => {
+      const m = r.movimientos[k];
+      if (m && m.destinoId === id && m.mes === mes && m.tipo === 'aporte') delete r.movimientos[k];
+    });
+    if (monto > 0) {
+      const mid = rsNuevoId('m');
+      r.movimientos[mid] = { id: mid, destinoId: id, mes, tipo: 'aporte', monto,
+                             nota: '', ts: new Date().toISOString() };
+      hubo++;
+    }
+  });
+  saveReserva(r);
+  rsCerrarApartar();
+  render();
+  try { track('reserva_apartado', { destinos: hubo }); } catch (e) {}
+}
+
+// ── Retirar ─────────────────────────────────────────────────────
+// Sin retiros, la primera vez que la vida pasa —sacaste plata de «Vacaciones»
+// para arreglar el auto— el número queda mintiendo para siempre y la persona
+// deja de mirarlo. Norte no ve la cuenta bancaria: lo único que puede hacer es
+// dejar que se lo corrija.
+let rsRetiroId = null;
+function rsAbrirRetiro(id) {
+  const r = getReserva();
+  const d = r.destinos[id];
+  if (!d) return;
+  rsRetiroId = id;
+  document.getElementById('rsRetNombre').textContent = d.nombre;
+  document.getElementById('rsRetDisponible').textContent = fmtPz(rsAcumulado(id, r));
+  document.getElementById('rsRetMonto').value = '';
+  document.getElementById('rsRetNota').value = '';
+  document.getElementById('rsRetError').style.display = 'none';
+  document.getElementById('rsRetOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('rsRetMonto').focus(), 80);
+}
+function rsCerrarRetiro() { rsRetiroId = null; document.getElementById('rsRetOverlay').classList.remove('show'); }
+
+function rsGuardarRetiro() {
+  if (!rsRetiroId) return;
+  const err = document.getElementById('rsRetError');
+  const monto = Number(document.getElementById('rsRetMonto').value) || 0;
+  const r = getReserva();
+  const disp = rsAcumulado(rsRetiroId, r);
+  if (monto <= 0) { err.textContent = '¿Cuánto sacaste?'; err.style.display = 'block'; return; }
+  if (monto > disp) {
+    err.textContent = `No podés sacar más de lo que hay: llevás ${fmtPz(disp)}.`;
+    err.style.display = 'block'; return;
+  }
+  const mid = rsNuevoId('m');
+  r.movimientos[mid] = { id: mid, destinoId: rsRetiroId, mes: curKey(), tipo: 'retiro',
+                         monto, nota: document.getElementById('rsRetNota').value.trim(),
+                         ts: new Date().toISOString() };
+  saveReserva(r);
+  rsCerrarRetiro();
+  render();
+  try { track('reserva_retiro'); } catch (e) {}
+}
+
 const MP_PRESET = { id:'preset-mercadopago', pais:'Argentina', banco:'MercadoPago', tarjeta:'Débito', cardType:'debito', preset:true, parser:{ headerRow:3, colRoles:{'0':'fecha','1':'desc','2':'skip','3':'importeARS','4':'skip'}, skipPatterns:['PAGO EN PESOS','PAGO EN USD','ACREDITACION','NOTA DE CR','SU PAGO'], debitNegative:true } }; const getBankConfigs = () => { const eid = curEmpresa(); if (!eid) return []; const k = 'fin_bankconfigs_' + eid; let arr = []; try { arr = JSON.parse(localStorage.getItem(k) || '[]'); } catch (e) { arr = []; } const sk = 'fin_seedmp_' + eid; if (!localStorage.getItem(sk)) { localStorage.setItem(sk, '1'); const yaEsta = arr.some(c => String(c.banco || '').toLowerCase().split(' ').join('') === 'mercadopago'); if (!yaEsta) { arr = arr.concat([MP_PRESET]); localStorage.setItem(k, JSON.stringify(arr)); } } return arr; };
 const saveBankConfigs = c  => localStorage.setItem(`fin_bankconfigs_${curEmpresa()}`, JSON.stringify(c));
 
@@ -5116,6 +6072,7 @@ function exportarDatos() {
     fin_data:         localStorage.getItem(`fin_data_${eid}`)         || '[]',
     fin_budgets:      localStorage.getItem(`fin_budgets_${eid}`)      || '{}',
     fin_meta_ahorro:  localStorage.getItem(`fin_meta_ahorro_${eid}`)  || '0',
+    fin_reservas:     localStorage.getItem(`fin_reservas_${eid}`)     || '{}',
   };
   const json = JSON.stringify(backup, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
@@ -5140,6 +6097,7 @@ function importarDatos(input) {
       const finData    = backup.fin_data        || (Array.isArray(backup) ? JSON.stringify(backup) : null);
       const finBudgets = backup.fin_budgets      || null;
       const finMeta    = backup.fin_meta_ahorro  || null;
+      const finReservas = backup.fin_reservas    || null;
 
       if (!finData) { alert('El archivo no parece ser un backup válido de Norte.'); return; }
 
@@ -5150,6 +6108,7 @@ function importarDatos(input) {
       localStorage.setItem(`fin_data_${eid}`, finData);
       if (finBudgets) localStorage.setItem(`fin_budgets_${eid}`, finBudgets);
       if (finMeta)    localStorage.setItem(`fin_meta_ahorro_${eid}`, finMeta);
+      if (finReservas) localStorage.setItem(`fin_reservas_${eid}`, finReservas);
 
       render();
 
@@ -6188,7 +7147,10 @@ function getSyncKeys() {
   // fin_rubros: antes la lista de rubros propios no sincronizaba, así que un
   // rubro creado en la notebook no existía en el celular ni para el otro
   // integrante del hogar. Ahora viaja como un dato más.
-  return [`fin_data_${eid}`, `fin_budgets_${eid}`, `fin_meta_ahorro_${eid}`, `fin_bankconfigs_${eid}`, `fin_rubros_${eid}`];
+  // fin_reservas: la Reserva es del hogar, no de la persona ni del aparato —
+  // si uno aparta desde el celular, el otro lo tiene que ver en la notebook.
+  return [`fin_data_${eid}`, `fin_budgets_${eid}`, `fin_meta_ahorro_${eid}`,
+          `fin_bankconfigs_${eid}`, `fin_rubros_${eid}`, `fin_reservas_${eid}`];
 }
 function getSyncPath() { return `norteSync/empresas/${curEmpresa()}`; }
 // Compat aliases (se sobreescriben después del login)
@@ -6362,9 +7324,12 @@ window.scrollTo(0, 0);
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.getElementById(`page-${p}`).classList.add('active');
   toggleSidebar(false);
-  const navIdx = ['dashboard','transacciones','presupuesto','analisis','progreso','reportes','consultas'].indexOf(p);
+  // El orden tiene que coincidir con el de los .nav-item del menú: se marca el
+  // activo por posición. Al insertar Reserva entre Presupuesto y Análisis, sin
+  // esta línea se subrayaba el ítem equivocado de ahí para abajo.
+  const navIdx = ['dashboard','transacciones','presupuesto','reserva','analisis','progreso','reportes','consultas'].indexOf(p);
   if (navIdx >= 0) document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
-  document.getElementById('pageTitle').textContent = {dashboard:'Mi Rumbo',transacciones:'Transacciones',presupuesto:'Presupuesto',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',consultas:'NortIA',admin:'Administración',tugps:'Tu GPS'}[p] || p;
+  document.getElementById('pageTitle').textContent = {dashboard:'Mi Rumbo',transacciones:'Transacciones',presupuesto:'Presupuesto',reserva:'Reserva',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',consultas:'NortIA',admin:'Administración',tugps:'Novedades'}[p] || p;
   curPage = p;
   if (p === 'reportes') initReportesFiltros();
   if (p === 'admin' && window.renderRubrosAdminAlEntrar) { try { window.renderRubrosAdminAlEntrar(); } catch (e) {} }
@@ -6416,6 +7381,7 @@ function render() { if (curPage !== 'dashboard') { const _mn = document.querySel
   if      (curPage === 'dashboard')     renderDash();
   else if (curPage === 'transacciones') renderTx();
   else if (curPage === 'presupuesto')   renderPresupuesto();
+  else if (curPage === 'reserva')       renderReserva();
   else if (curPage === 'analisis')      renderAnalisis();
   else if (curPage === 'progreso')      renderProgreso();
   else if (curPage === 'reportes')      renderReportes();
@@ -6803,24 +7769,9 @@ function renderDash() {
         const rHeader = document.getElementById('rumboHeader');
           if (rHeader && !rHeader.dataset.done) { rHeader.dataset.done = '1'; rHeader.outerHTML = `<div id="rumboHeader" data-done="1" style="position:relative;z-index:1;background:#0c1c2b;border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px"><div style="display:flex;align-items:baseline;gap:10px"><button class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menu" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff">☰</button><span style="color:#fff;font-size:23px;font-weight:700;letter-spacing:-0.3px">MI RUMBO</span><span style="color:#E3A67E;font-size:12px">${subtituloRumbo()}</span></div><div id="rumboHeaderRight" style="display:flex;align-items:center"></div></div>`; } const rHeaderRight = document.getElementById('rumboHeaderRight'); const monthNavEl = document.querySelector('.month-nav'); if (rHeaderRight && monthNavEl && !rHeaderRight.contains(monthNavEl)) { monthNavEl.querySelectorAll('button').forEach(b => { b.style.background = 'rgba(255,255,255,.12)'; b.style.borderColor = 'rgba(255,255,255,.3)'; b.style.color = '#fff'; }); const md = document.getElementById('monthDisplay'); if (md) { md.style.color = '#fff'; md.style.fontWeight = '600'; } rHeaderRight.appendChild(monthNavEl); }
           
-            // Mini-resumen Meta de ahorro
-              const metaDashCard = document.getElementById('metaAhorroDashCard');
-                const metaVal = getMetaAhorro();
-                  if (metaDashCard) {
-                      if (!metaVal) {
-                            metaDashCard.style.display = 'none';
-                                } else {
-                                      metaDashCard.style.display = '';
-                                            const pctM = Math.round(Math.min(100, Math.max(0, bal / metaVal * 100)));
-                                                  const clsM = pctM >= 100 ? 'pbf-ok' : pctM >= 50 ? 'pbf-warn' : 'pbf-over';
-                                                        document.getElementById('d-meta-dash').innerHTML = `
-                                                                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
-                                                                          <span><strong>${fmtP(Math.max(0,bal))}</strong> de ${fmtP(metaVal)} ahorrados</span>
-                                                                                    <span style="color:var(--muted)">${pctM}%</span>
-                                                                                            </div>
-                                                                                                    <div class="progress-bar-track"><div class="progress-bar-fill ${clsM}" style="width:${pctM}%"></div></div>`;
-                                                                                                        }
-                                                                                                          }
+            // Mini-resumen de la Reserva. Si el hogar no tiene ningún destino la
+            // tarjeta no aparece: nada de estados vacíos pidiendo que configures algo.
+            try { rsPintarDash(); } catch (e) {}
                                                                                                           
                                                                                                             // Mini-resumen Progreso
   const rProg = computeRacha(getData(), curKey());
@@ -7452,24 +8403,24 @@ function renderProgreso() {
     ? `Balance positivo desde hace ${r.streak} mes(es) consecutivos · ${r.enVerde} de ${r.total} meses en verde en total`
     : `Tu balance no está en verde este mes · ${r.enVerde} de ${r.total} meses en verde en total`;
 
-  // Meta de ahorro
-  const meta = getMetaAhorro();
-  const metaInput = document.getElementById('metaAhorroInput');
-  if (document.activeElement !== metaInput) metaInput.value = meta || '';
-  const sum = (arr,f) => arr.reduce((s,t)=>s+(Number(t[f])||0),0);
-  const curData = allData.filter(t=>t.mes===key);
-  const curBal = sum(curData.filter(t=>t.tipo==='Ingreso'),'impPesos') - sum(curData.filter(t=>t.tipo==='Gasto'),'impPesos');
-  const metaStatus = document.getElementById('metaAhorroStatus');
-  if (!meta) {
-    metaStatus.textContent = 'Definí una meta para ver tu progreso mensual hacia el ahorro.';
-    metaStatus.style.color = 'var(--muted)';
-  } else if (curBal >= meta) {
-    metaStatus.innerHTML = `✅ ¡Meta cumplida este mes! Ahorraste ${fmtP(curBal)} de una meta de ${fmtP(meta)}.`;
-    metaStatus.style.color = '#047857';
-  } else {
-    const falta = meta - curBal;
-    metaStatus.innerHTML = `Vas por ${fmtP(Math.max(0,curBal))} de ${fmtP(meta)} — te faltan ${fmtP(falta)} para cumplir la meta de este mes.`;
-    metaStatus.style.color = '#b45309';
+  // La Reserva reemplazó a la Meta de ahorro mensual. La diferencia de fondo:
+  // la meta miraba el BALANCE del mes y lo llamaba ahorro; la Reserva muestra
+  // lo que la persona dijo que apartó. Lo primero se infiere, lo segundo se
+  // sabe — y por eso uno se puede mirar y el otro no.
+  const rsProg = document.getElementById('reservaProgresoResumen');
+  if (rsProg) {
+    const act = rsDestinosVivos();
+    if (!act.length) {
+      rsProg.innerHTML = 'Todavía no tenés ningún destino. <b style="color:var(--primary)">Creá el primero →</b>';
+      rsProg.style.color = 'var(--muted)';
+    } else {
+      const mes = rsApartadoEnMes(key);
+      rsProg.innerHTML = `Llevás <b>${fmtPz(rsTotalAcumulado())}</b> apartados en `
+        + `${act.length} destino${act.length === 1 ? '' : 's'}`
+        + (mes > 0 ? ` · ${fmtPz(mes)} este mes` : ' · nada apartado este mes')
+        + ' <b style="color:var(--primary)">Ver →</b>';
+      rsProg.style.color = 'var(--muted)';
+    }
   }
 
   // Evolución de balance (últimos 12 meses con datos hasta el mes actual)
@@ -7513,9 +8464,15 @@ function renderProgreso() {
       return Object.entries(lims).every(([rubro, lim]) => (map[rubro]||0) <= Number(lim));
     });
   })();
+  // La medalla que antes miraba la Meta de ahorro ahora mira la Reserva. Se
+  // conserva la condición vieja para que a quien ya la tenía no se le apague:
+  // una medalla que desaparece es peor que una medalla imperfecta.
   const metaCumplidaAlgunaVez = (() => {
-    if (!meta) return false;
-    return r.balances.some(b => b.bal >= meta);
+    if (meta && r.balances.some(b => b.bal >= meta)) return true;
+    const res = getReserva();
+    return Object.values(res.destinos).some(d => d && (
+      d.estado === 'usado' || (Number(d.meta) > 0 && rsAcumulado(d.id, res) >= Number(d.meta))
+    ));
   })();
 
   const badges = [
@@ -7523,7 +8480,7 @@ function renderProgreso() {
     { ico:'📅', name:'Mes en verde', desc:'Cerraste un mes con balance positivo.', unlocked: r.enVerde >= 1 },
     { ico:'🔥', name:'Racha de 3', desc:'3 meses seguidos con balance positivo.', unlocked: r.streak >= 3 || maxStreak(r.balances) >= 3 },
     { ico:'🛡️', name:'Disciplina total', desc:'6 meses seguidos con balance positivo.', unlocked: r.streak >= 6 || maxStreak(r.balances) >= 6 },
-    { ico:'🎯', name:'Meta cumplida', desc:'Alcanzaste tu meta de ahorro mensual.', unlocked: metaCumplidaAlgunaVez },
+    { ico:'🎯', name:'Meta cumplida', desc:'Completaste un destino de tu Reserva.', unlocked: metaCumplidaAlgunaVez },
     { ico:'📊', name:'Presupuesto bajo control', desc:'Cerraste un mes sin pasarte de ningún límite definido.', unlocked: presupuestoCumplido },
     { ico:'🏆', name:'Año completo', desc:'Acumulaste 12 meses de historial registrado.', unlocked: totalMesesConDatos >= 12 },
     { ico:'👑', name:'Leyenda', desc:'Alcanzaste el nivel máximo: 30 meses en verde.', unlocked: r.enVerde >= 30 }
@@ -7544,45 +8501,10 @@ function maxStreak(balances) {
   return max;
 }
 
-function setMetaAhorro(v) {
-  saveMetaAhorro(v);
-  const meta = getMetaAhorro();
-  const allData = getData();
-  const key = curKey();
-  const sum = (arr,f) => arr.reduce((s,t)=>s+(Number(t[f])||0),0);
-  const curData = allData.filter(t=>t.mes===key);
-  const curBal = sum(curData.filter(t=>t.tipo==='Ingreso'),'impPesos') - sum(curData.filter(t=>t.tipo==='Gasto'),'impPesos');
-  const metaStatus = document.getElementById('metaAhorroStatus');
-  if (!meta) {
-    metaStatus.textContent = 'Definí una meta para ver tu progreso mensual hacia el ahorro.';
-    metaStatus.style.color = 'var(--muted)';
-  } else if (curBal >= meta) {
-    metaStatus.innerHTML = `✅ ¡Meta cumplida este mes! Ahorraste ${fmtP(curBal)} de una meta de ${fmtP(meta)}.`;
-    metaStatus.style.color = '#047857';
-  } else {
-    const falta = meta - curBal;
-    metaStatus.innerHTML = `Vas por ${fmtP(Math.max(0,curBal))} de ${fmtP(meta)} — te faltan ${fmtP(falta)} para cumplir la meta de este mes.`;
-    metaStatus.style.color = '#b45309';
-  }
-  // refrescar nivel/badges sin redibujar el chart ni perder foco del input
-  const r = computeRacha(allData, key);
-  let lvlIdx = 0;
-  for (let i = 0; i < NIVELES.length; i++) if (r.enVerde >= NIVELES[i].min) lvlIdx = i;
-  const lvl = NIVELES[lvlIdx];
-  const next = NIVELES[lvlIdx+1];
-  const progPct = next ? Math.min(100, Math.round((r.enVerde - lvl.min) / (next.min - lvl.min) * 100)) : 100;
-  document.getElementById('lvlProgFill').style.width = progPct + '%';
-  const C = 251.2;
-  document.getElementById('lvlRingFill').style.strokeDashoffset = C - (C * progPct/100);
-
-  const metaCumplidaAlgunaVez = meta && r.balances.some(b => b.bal >= meta);
-  const badgeCards = document.querySelectorAll('#badgesGrid .badge-card');
-  if (badgeCards[4]) {
-    badgeCards[4].classList.toggle('unlocked', !!metaCumplidaAlgunaVez);
-    badgeCards[4].classList.toggle('locked', !metaCumplidaAlgunaVez);
-    badgeCards[4].querySelector('.badge-check').innerHTML = metaCumplidaAlgunaVez ? '✓ Desbloqueado' : '🔒 Bloqueado';
-  }
-}
+// La pantalla de Meta de ahorro ya no existe: la reemplazó la Reserva. Se va
+// la función que la pintaba —apuntaba a nodos del DOM que se borraron— pero
+// getMetaAhorro/saveMetaAhorro y la clave fin_meta_ahorro_* se quedan: los
+// hogares que definieron una meta siguen teniendo su medalla.
 
 // ── REPORTES ─────────────────────────────────────────────────
 let curRepTab = 'evol';
@@ -8985,7 +9907,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.5.001';
+const APP_VERSION = 'v005.6.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -11305,7 +12227,8 @@ RESUMEN MENSUAL:
 ${resumen || 'Sin datos'}
 
 DETALLE DE TRANSACCIONES:
-${detalle || 'Sin transacciones'}`;
+${detalle || 'Sin transacciones'}
+${rsContextoIA()}`;
 }
 
 // ── CHAT HISTORY ──────────────────────────────────────────────
@@ -11373,6 +12296,8 @@ function buildResumenCalculado() {
   } else {
     lines.push(`Sin desv\u00edos significativos detectados vs. promedio hist\u00f3rico.`);
   }
+  const rsCtx = rsContextoIA();
+  if (rsCtx) { lines.push(''); lines.push(rsCtx); }
   return lines.join('\n');
 }
 
@@ -11938,7 +12863,6 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAyuda()
     // Presupuesto y metas
     wrap('setBudget',                    function () { track('presupuesto_definido'); });
     wrap('copiarPresupuestoMesAnterior', function () { track('presupuesto_copiado'); });
-    wrap('setMetaAhorro',                function () { track('meta_ahorro_definida'); });
 
     // Rubros (base maestra, en Administración)
     wrap('rbAgregar',         function () { track('rubro_creado'); });
