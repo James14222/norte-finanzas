@@ -10033,7 +10033,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.7.001';
+const APP_VERSION = 'v005.8.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -14306,6 +14306,349 @@ function subtituloRumbo() {
     try { if (esSuper()) saRender(); } catch (e) {}
     return r;
   };
+/* PANEL SUPERADMIN: BACKLOG DE PRODUCTO */ (function () {
+  var BK_UID = 'RUO9uxaH26QZDC1eMVuA0kjMYkw2';
+  var BK_PATH = 'norteSync/backlog';
+  var BK_ESTADOS = ['Pendiente', 'En curso', 'Bloqueado', 'Listo'];
+  var BK_PRIOS = ['Crítica', 'Alta', 'Media', 'Baja'];
+  var BK_TIPOS = ['Mejora', 'Corrección'];
+  var BK_AREAS = { TEC: 'Técnico', ADM: 'Administración', TRX: 'Transacciones', DRV: 'Deriva', NIA: 'NortIA', RES: 'Reserva', UX: 'Interfaz', MKT: 'Marketing', DEM: 'Demo', GEN: 'General' };
+  var BK_CEST = { 'Pendiente': '#64748b', 'En curso': '#0ea5e9', 'Bloqueado': '#b45309', 'Listo': '#16a34a' };
+  var BK_CPRI = { 'Crítica': '#dc2626', 'Alta': '#ea580c', 'Media': '#0891b2', 'Baja': '#94a3b8' };
+  var BK_OPRI = { 'Crítica': 0, 'Alta': 1, 'Media': 2, 'Baja': 3 };
+  var BK_OEST = { 'Bloqueado': 0, 'En curso': 1, 'Pendiente': 2, 'Listo': 3 };
+
+  var BK_SEMILLA = [
+{"cod":"TEC-001","tit":"Migrar las Cloud Functions a Node 22","desc":"Node 20 se decomisiona el 30/10/2026. Después de esa fecha no se puede desplegar ninguna función, ni siquiera para corregir un error.","fun":"Toda la capa de Functions: pagos, altas de cuenta, mails, panel de admin.","ben":"Que Norte siga siendo desplegable. Es el único pendiente con fecha dura.","tipo":"Corrección","prio":"Crítica","est":"Pendiente"},
+{"cod":"TEC-002","tit":"Probar el flujo de compra de punta a punta","desc":"Landing → MercadoPago → alta de cuenta → primer ingreso a la app. Nunca se verificó completo con una compra real.","fun":"Registro de compra, webhook de MP, creación de hogar, acceso.","ben":"Saber que se puede cobrar antes de mover tráfico pago. Un fallo acá cuesta el cliente y la plata.","tipo":"Corrección","prio":"Crítica","est":"Pendiente"},
+{"cod":"ADM-001","tit":"El reseteo de contraseña del panel no hace nada","desc":"El ícono 🔑 de Admin → Usuarios calcula un hash y lo guarda en un campo que el login real no usa. Nunca toca Firebase Auth. La función adminResetPassword existe pero no está cableada.","fun":"Admin → Usuarios.","ben":"Poder ayudar de verdad a alguien que no puede entrar, en vez de creer que se resolvió.","tipo":"Corrección","prio":"Alta","est":"Pendiente"},
+{"cod":"TRX-001","tit":"Mostrar la fecha del movimiento en la lista","desc":"Desde el 07/09 cada movimiento guarda su fecha, pero la columna que se ve en Transacciones sigue siendo Vencimiento.","fun":"Transacciones.","ben":"Si el dato no se ve, nadie corrige el que esté mal — y sobre esa fecha se apoya toda Deriva.","tipo":"Mejora","prio":"Alta","est":"Pendiente"},
+{"cod":"TRX-002","tit":"Señalar los movimientos sin fecha y poder completarlos","desc":"Los movimientos anteriores al 07/09 no tienen fecha, a propósito. Falta una forma de verlos juntos y completarlos si alguien quiere.","fun":"Transacciones, filtros.","ben":"Recuperar historia para los análisis por día sin inventar ningún dato.","tipo":"Mejora","prio":"Media","est":"Pendiente"},
+{"cod":"DRV-001","tit":"Decidir dónde vive Deriva y en qué plan","desc":"¿Es una pantalla propia del menú o una sección de NortIA? ¿Entra en FOCO o es la razón para pasar a PRO? Define de qué presupuesto de IA sale y si el usuario la pide o la encuentra.","fun":"Deriva, NortIA, planes.","ben":"Sin esta definición no se puede empezar a construir. Es la decisión que bloquea al resto.","tipo":"Mejora","prio":"Alta","est":"Bloqueado"},
+{"cod":"DRV-002","tit":"Deriva — primer hábito: comer afuera","desc":"Una sola tarjeta bien hecha: la tira de puntos con las veces por mes, el ritmo viejo contra el nuevo, el peso sobre los ingresos y la pregunta abierta.","fun":"Deriva.","ben":"Valida la funcionalidad entera con una semana de trabajo en vez de dos meses. Si nadie dice “no tenía idea”, mejor saberlo temprano.","tipo":"Mejora","prio":"Alta","est":"Pendiente"},
+{"cod":"DRV-003","tit":"Subrubro persistido con clasificación por IA","desc":"Un campo nuevo, opcional, que se completa al cargar o importar un movimiento y que el usuario puede corregir. La IA clasifica UNA vez y se guarda; después no se vuelve a pagar.","fun":"Carga, importadores, Deriva, reportes.","ben":"Separa delivery de supermercado adentro del mismo rubro. Sin esto, Deriva sólo puede hablar de rubros gruesos.","tipo":"Mejora","prio":"Alta","est":"Pendiente"},
+{"cod":"DRV-004","tit":"Deriva — inercia: suscripciones y su costo anual","desc":"Detección de lo recurrente por texto + importe + repetición mensual. Sin IA y sin subrubro: es determinístico.","fun":"Deriva.","ben":"Es el hallazgo más fuerte y el más barato. Nadie cancela por $4.800; alguien cancela por $57.600 al año.","tipo":"Mejora","prio":"Alta","est":"Pendiente"},
+{"cod":"DRV-005","tit":"Deriva — constelaciones por parentesco de rubro","desc":"Agrupar cruzando rubros con una tabla de correspondencia: “el auto” junta Auto + seguro + patente + nafta; “comer” junta súper + delivery + restaurantes.","fun":"Deriva.","ben":"Contesta “¿cuánto me cuesta el auto?”, que la gente se pregunta y hoy ninguna app responde porque no cruza sus propias categorías.","tipo":"Mejora","prio":"Media","est":"Pendiente"},
+{"cod":"DRV-006","tit":"Deriva — lo que vuelve cada varios meses","desc":"Detectar la periodicidad (cada 2, 3, 6 o 12 meses) y avisar cuándo caen juntos: patente, seguro, matrícula, service.","fun":"Deriva.","ben":"Es lo único que sirve ANTES de que pase. En la Argentina son los gastos que rompen un mes entero.","tipo":"Mejora","prio":"Media","est":"Pendiente"},
+{"cod":"NIA-001","tit":"Guardrail anti-alucinación de números en NortIA","desc":"Verificar que todo número que NortIA menciona salga del resumen calculado y no del modelo. Hoy el resumen ya se calcula aparte, falta la comprobación de salida.","fun":"NortIA (chat y hallazgos).","ben":"Un número inventado no cuesta una funcionalidad: cuesta la confianza en todas las demás.","tipo":"Mejora","prio":"Alta","est":"Pendiente"},
+{"cod":"NIA-002","tit":"Cachear el diagnóstico de NortIA","desc":"Guardar el resultado y regenerarlo sólo cuando cambia la firma de los datos del mes.","fun":"NortIA — hallazgos.","ben":"Baja el costo por hogar y hace que la pantalla abra al instante en vez de esperar al modelo.","tipo":"Mejora","prio":"Media","est":"Pendiente"},
+{"cod":"NIA-003","tit":"Resumen semanal por mail","desc":"Un digest corto con lo que pasó en la semana, usando Resend y las funciones programadas que ya funcionan.","fun":"NortIA, notificaciones.","ben":"Trae a la gente de vuelta a la app sin depender de push, que en iOS sólo anda si la PWA está instalada.","tipo":"Mejora","prio":"Baja","est":"Pendiente"},
+{"cod":"RES-001","tit":"Historial y reporte anual de la Reserva","desc":"Qué juntaste en el año, qué cumpliste, qué quedó por la mitad y qué dejaste, con filtros. Los datos ya se guardan desde el 07/09: creación, pausas, cierre y hasta dónde llegó.","fun":"Reserva.","ben":"El recorrido dice más de cómo venís que la foto de hoy. Y ya hay materia prima para contarlo.","tipo":"Mejora","prio":"Media","est":"Pendiente"},
+{"cod":"RES-002","tit":"Reflejar rendimientos en la Reserva","desc":"Hoy es una alcancía: no calcula intereses y el total se actualiza a mano. Un tipo de movimiento “rendimiento” sería el paso siguiente.","fun":"Reserva.","ben":"Reconoce lo que la gente hace de verdad con esa plata. No urge: el texto ya lo dice sin letra chica.","tipo":"Mejora","prio":"Baja","est":"Pendiente"},
+{"cod":"ADM-002","tit":"Iniciar una conversación con un usuario que nunca escribió","desc":"El panel de Admin lista sólo los hilos existentes, así que no se puede escribirle primero a alguien. El backend ya lo permite: falta el botón.","fun":"Admin → Hablemos.","ben":"Poder buscar feedback en vez de esperarlo. Hoy el canal sólo funciona si el otro arranca.","tipo":"Mejora","prio":"Media","est":"Pendiente"},
+{"cod":"ADM-003","tit":"Panel de votos de Novedades","desc":"Ver quién votó qué, avisar cuando hay votos nuevos y mostrar etiquetas legibles del reparto en vez de números sueltos.","fun":"Admin → Novedades.","ben":"Convierte los votos en algo accionable. Hoy se publica y no se sabe bien qué volvió.","tipo":"Mejora","prio":"Media","est":"Pendiente"},
+{"cod":"ADM-004","tit":"Mostrar el usuario de Instagram en el panel","desc":"El dato ya se guarda al comprar, pero no se muestra en la lista de usuarios.","fun":"Admin → Usuarios.","ben":"Poder cerrar el círculo entre quien compró y con quién se habló por DM.","tipo":"Mejora","prio":"Baja","est":"Pendiente"},
+{"cod":"UX-001","tit":"Los cuatro modales viejos sin CSS","desc":"modal-header, modal-close y modal-footer no existen en la hoja de estilos. Se usan en 4 modales: la × cae debajo del título y los botones quedan a la izquierda.","fun":"Varios modales heredados.","ben":"Sacar cuatro pantallas rotas que hoy cualquiera puede encontrar. Es un rato corto.","tipo":"Corrección","prio":"Baja","est":"Pendiente"},
+{"cod":"MKT-001","tit":"Publicar el carrusel C10 y la historia de la Reserva","desc":"Las dos piezas están armadas y verificadas: 8 placas y un video de 47 s. Falta subirlas.","fun":"Instagram.","ben":"La Reserva ya está en producción y todavía no se comunicó a nadie fuera de la app.","tipo":"Mejora","prio":"Alta","est":"Pendiente"},
+{"cod":"MKT-002","tit":"Publicar la propuesta “El año de tu Reserva”","desc":"La segunda entrada de la bitácora, tipo “Lo estoy pensando”. Va unos días después de la que ya se publicó, no pegada.","fun":"Novedades.","ben":"Mide interés antes de construir el historial. Pegadas, las dos compiten por el mismo voto.","tipo":"Mejora","prio":"Media","est":"Pendiente"},
+{"cod":"MKT-003","tit":"Rehacer el carrusel C9 con el sello adentro de la zona segura","desc":"El feed recorta a 4:5 y deja visible y=285…1635. El sello de marca está a y=252: quedó cortado al medio en las seis placas del medio del C9, que ya está publicado.","fun":"Instagram.","ben":"La marca aparece entera. El generador ya está corregido en el C10: son dos minutos.","tipo":"Corrección","prio":"Media","est":"Pendiente"},
+{"cod":"MKT-004","tit":"Poner la carga de resúmenes de tarjeta al frente de la landing","desc":"Hoy es una línea perdida adentro de la sección vieja. Es lo más diferencial del producto y lo que más preguntas espontáneas genera.","fun":"Landing.","ben":"Explicar en tres segundos por qué Norte no es una planilla.","tipo":"Mejora","prio":"Alta","est":"Pendiente"},
+{"cod":"MKT-005","tit":"Sacar Audience Network antes de reactivar la pauta","desc":"De ahí salen los clics accidentales. Y cuando el píxel tenga días, optimizar por vistas de página de destino en vez de clics.","fun":"Campañas de Meta.","ben":"Dejar de pagar por tráfico que no mira nada.","tipo":"Corrección","prio":"Media","est":"Bloqueado"},
+{"cod":"MKT-006","tit":"Programa de referidos","desc":"Tarea vieja, nunca empezada.","fun":"App y landing.","ben":"El canal más barato que puede tener un producto de suscripción.","tipo":"Mejora","prio":"Baja","est":"Pendiente"},
+{"cod":"MKT-007","tit":"Arreglar el link de la bio de Instagram","desc":"Desde el celular no abre bien. Y la portada del destacado “¿A dónde fue?” quedó sin armar.","fun":"Instagram.","ben":"Es el único camino de la cuenta al producto.","tipo":"Corrección","prio":"Baja","est":"Pendiente"},
+{"cod":"TEC-003","tit":"Notificaciones: push o mail","desc":"El service worker no tiene handlers de push y no está cargado firebase-messaging: unos 3 a 5 días. En iOS sólo funciona con la PWA instalada. La alternativa por mail es un día.","fun":"Service worker, Functions.","ben":"Recordarle a la gente que cargue, que es el momento donde se pierde el hábito.","tipo":"Mejora","prio":"Media","est":"Pendiente"},
+{"cod":"TEC-004","tit":"Limpiar la carpeta del proyecto","desc":"La landing vieja, dos copias de index, un GIF duplicado de 4,2 MB, temporales de Word y 1,4 GB en carruseles.","fun":"Repositorio local.","ben":"Que el que abre la carpeta —hoy o en seis meses— sepa cuál es el archivo bueno.","tipo":"Mejora","prio":"Baja","est":"Pendiente"},
+{"cod":"DEM-001","tit":"Mantener completa la cuenta demo","desc":"Se le cargaron destinos de Reserva y los ingresos que faltaban en agosto y septiembre. Conviene revisarla antes de cada pieza: es la fuente de todas las capturas.","fun":"Hogar García (demo).","ben":"Nunca usar datos reales de Jaime en marketing, y que el demo se vea como un hogar plausible.","tipo":"Mejora","prio":"Media","est":"En curso"},
+{"cod":"RES-000","tit":"Reserva — destinos, apartar, pausar y dejar","desc":"Pantalla completa, tarjeta en Mi Rumbo, cuatro estados por destino, historia, y NortIA que la conoce. Reemplazó a la Meta de ahorro mensual.","fun":"Reserva.","ben":"Ahorrar “en general” no dura; juntar para algo concreto sí.","tipo":"Mejora","prio":"Alta","est":"Listo"},
+{"cod":"TRX-000","tit":"Fecha en cada movimiento","desc":"Campo fecha distinto de venc, con la de hoy por defecto sólo si el período es el mes en curso. Se recuperaron las fechas del resumen de tarjeta y de la carga masiva.","fun":"Carga, importadores.","ben":"Sin esto Deriva no puede hablar nunca de momentos del mes. Y la historia no se reconstruye hacia atrás.","tipo":"Mejora","prio":"Crítica","est":"Listo"},
+{"cod":"UX-000","tit":"Separador de miles al escribir importes","desc":"Los catorce campos de importe pasaron a texto con teclado numérico. Se escribe 120000 y se ve 120.000.","fun":"Toda la app.","ben":"Sacar la duda de si sobró o faltó un cero, que es el error más caro al cargar a mano.","tipo":"Mejora","prio":"Media","est":"Listo"}
+  ];
+
+  var _bkItems = null;
+  var _bkFil = { est: '', pri: '', tipo: '', area: '', q: '' };
+  var _bkCargando = false;
+
+  function bkEsSuper() { try { return (getSession() || {}).userId === BK_UID; } catch (e) { return false; } }
+  function bkRef() { return firebase.database().ref(BK_PATH); }
+  function bkAreaCod(cod) { return String(cod || '').split('-')[0].toUpperCase(); }
+  function bkAreaNom(cod) { return BK_AREAS[bkAreaCod(cod)] || 'General'; }
+  function bkLista() {
+    var out = [];
+    for (var k in (_bkItems || {})) { if (Object.prototype.hasOwnProperty.call(_bkItems, k)) out.push(_bkItems[k]); }
+    out.sort(function (a, b) {
+      var d = (BK_OEST[a.est] === undefined ? 9 : BK_OEST[a.est]) - (BK_OEST[b.est] === undefined ? 9 : BK_OEST[b.est]);
+      if (d) return d;
+      d = (BK_OPRI[a.prio] === undefined ? 9 : BK_OPRI[a.prio]) - (BK_OPRI[b.prio] === undefined ? 9 : BK_OPRI[b.prio]);
+      if (d) return d;
+      return String(a.cod).localeCompare(String(b.cod));
+    });
+    return out;
+  }
+  function bkPasa(it) {
+    if (_bkFil.est && it.est !== _bkFil.est) return false;
+    if (_bkFil.pri && it.prio !== _bkFil.pri) return false;
+    if (_bkFil.tipo && it.tipo !== _bkFil.tipo) return false;
+    if (_bkFil.area && bkAreaCod(it.cod) !== _bkFil.area) return false;
+    if (_bkFil.q) {
+      var q = _bkFil.q.toLowerCase();
+      var blob = [it.cod, it.tit, it.desc, it.fun, it.ben].join(' ').toLowerCase();
+      if (blob.indexOf(q) < 0) return false;
+    }
+    return true;
+  }
+  function bkPill(txt, color) {
+    return '<span style="display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;padding:3px 9px;border-radius:20px;white-space:nowrap;color:' + color + ';background:' + color + '1f">' + esc(txt) + '</span>';
+  }
+  function bkOpts(arr, sel) {
+    return arr.map(function (v) { return '<option value="' + esc(v) + '"' + (v === sel ? ' selected' : '') + '>' + esc(v) + '</option>'; }).join('');
+  }
+
+  function bkContenedor() {
+    if (document.getElementById('bkSection')) return true;
+    var page = document.querySelector('#page-admin > div');
+    if (!page) return false;
+    var wrap = document.createElement('div');
+    wrap.id = 'bkWrap';
+    wrap.innerHTML = '<div class="admin-group-label">Backlog de producto</div>' +
+      '<div class="card admin-section" id="bkSection" style="margin-bottom:8px">' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px">' +
+          '<div><div style="font-size:15px;font-weight:700;color:var(--text)">&#128203; Lo que falta hacer</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:3px">Un tema por fila. Tocá cualquiera para ver el detalle y cambiarle el estado.</div></div>' +
+          '<div style="display:flex;gap:6px"><button class="btn" style="font-size:12px;padding:6px 12px" onclick="bkNuevo()">+ Nuevo tema</button>' +
+          '<button class="btn" style="font-size:12px;padding:6px 12px" onclick="bkRender(true)" title="Volver a leer desde el servidor">&#8635;</button></div>' +
+        '</div>' +
+        '<div id="bkBody"><div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando...</div></div>' +
+      '</div>';
+    var ref = document.getElementById('wbWrap') || document.getElementById('pnWrap') || document.getElementById('saWrap');
+    if (ref && ref.parentNode === page) { page.insertBefore(wrap, ref.nextSibling); }
+    else { page.insertBefore(wrap, page.children[1] || null); }
+    return true;
+  }
+
+  function bkChip(txt, n, color, activo, onclick) {
+    return '<button type="button" onclick="' + onclick + '" style="cursor:pointer;border:1px solid ' + (activo ? color : 'var(--border)') +
+      ';background:' + (activo ? color + '1f' : 'var(--card)') + ';border-radius:10px;padding:7px 12px;display:flex;align-items:center;gap:8px;font-family:inherit">' +
+      '<span style="font-size:17px;font-weight:800;color:' + color + ';line-height:1">' + n + '</span>' +
+      '<span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">' + esc(txt) + '</span></button>';
+  }
+
+  function bkReporte(todos, visibles) {
+    var cE = {}, cP = {};
+    todos.forEach(function (it) { cE[it.est] = (cE[it.est] || 0) + 1; cP[it.prio] = (cP[it.prio] || 0) + 1; });
+    var h = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">' +
+      BK_ESTADOS.map(function (e) { return bkChip(e, cE[e] || 0, BK_CEST[e], _bkFil.est === e, 'bkFiltrar(\'est\',\'' + e + '\')'); }).join('') + '</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">' +
+      BK_PRIOS.map(function (p) { return bkChip(p, cP[p] || 0, BK_CPRI[p], _bkFil.pri === p, 'bkFiltrar(\'pri\',\'' + p + '\')'); }).join('') + '</div>';
+
+    var areas = {};
+    todos.forEach(function (it) { areas[bkAreaCod(it.cod)] = true; });
+    var listaAreas = Object.keys(areas).sort();
+    h += '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px">' +
+      '<select id="bkFilArea" onchange="bkFiltrar(\'area\', this.value)" style="font-size:12.5px;padding:6px 9px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text)">' +
+        '<option value="">Todas las áreas</option>' +
+        listaAreas.map(function (a) { return '<option value="' + a + '"' + (_bkFil.area === a ? ' selected' : '') + '>' + esc(BK_AREAS[a] || a) + '</option>'; }).join('') +
+      '</select>' +
+      '<select id="bkFilTipo" onchange="bkFiltrar(\'tipo\', this.value)" style="font-size:12.5px;padding:6px 9px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text)">' +
+        '<option value="">Mejoras y correcciones</option>' + bkOpts(BK_TIPOS, _bkFil.tipo) +
+      '</select>' +
+      '<input id="bkFilQ" type="text" placeholder="Buscar..." value="' + esc(_bkFil.q) + '" oninput="bkBuscar(this.value)" style="font-size:12.5px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);min-width:150px;flex:1;max-width:240px">' +
+      (( _bkFil.est || _bkFil.pri || _bkFil.tipo || _bkFil.area || _bkFil.q ) ? '<button class="btn" style="font-size:12px;padding:6px 12px" onclick="bkLimpiar()">Limpiar filtros</button>' : '') +
+      '<span id="bkConteo" style="font-size:12px;color:var(--muted);margin-left:auto">' + visibles + ' de ' + todos.length + '</span>' +
+    '</div>';
+
+    var _d = document.getElementById('bkDet'); var abierto = !!(_d && _d.open);
+    h += '<details id="bkDet"' + (abierto ? ' open' : '') + ' style="margin-bottom:14px">' +
+      '<summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Conteo por área</summary>' +
+      '<div id="bkMatriz" style="overflow-x:auto;margin-top:10px"><table class="data-table" style="width:100%;min-width:420px"><thead><tr><th>Área</th>' +
+      BK_ESTADOS.map(function (e) { return '<th>' + esc(e) + '</th>'; }).join('') + '<th>Total</th></tr></thead><tbody>' +
+      listaAreas.map(function (a) {
+        var fila = todos.filter(function (it) { return bkAreaCod(it.cod) === a; });
+        return '<tr><td>' + esc(BK_AREAS[a] || a) + '</td>' +
+          BK_ESTADOS.map(function (e) {
+            var n = fila.filter(function (it) { return it.est === e; }).length;
+            return '<td style="color:' + (n ? BK_CEST[e] : 'var(--border)') + ';font-weight:' + (n ? '700' : '400') + '">' + n + '</td>';
+          }).join('') + '<td style="font-weight:800">' + fila.length + '</td></tr>';
+      }).join('') +
+      '<tr style="background:var(--bg)"><td style="font-weight:800">Total</td>' +
+      BK_ESTADOS.map(function (e) { var n = todos.filter(function (it) { return it.est === e; }).length; return '<td style="font-weight:800">' + n + '</td>'; }).join('') +
+      '<td style="font-weight:800">' + todos.length + '</td></tr>' +
+      '</tbody></table></div></details>';
+    return h;
+  }
+
+  function bkFila(it) {
+    return '<div onclick="bkDetalle(\'' + esc(it.cod) + '\')" style="cursor:pointer;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 12px;border:1px solid var(--border);border-radius:11px;margin-bottom:7px;background:var(--card)">' +
+      '<span style="font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.03em;flex:0 0 auto;min-width:62px">' + esc(it.cod) + '</span>' +
+      '<span style="flex:1 1 220px;min-width:0;font-size:13.5px;font-weight:600;color:var(--text)">' + esc(it.tit) +
+        '<span style="display:block;font-size:11.5px;color:var(--muted);font-weight:400;margin-top:2px">' + esc(bkAreaNom(it.cod)) + ' · ' + esc(it.tipo || '') + '</span></span>' +
+      '<span style="flex:0 0 auto">' + bkPill(it.prio || '-', BK_CPRI[it.prio] || '#94a3b8') + '</span>' +
+      '<span style="flex:0 0 auto">' + bkPill(it.est || '-', BK_CEST[it.est] || '#64748b') + '</span>' +
+    '</div>';
+  }
+
+  window.bkFiltrar = function (campo, valor) {
+    _bkFil[campo] = (_bkFil[campo] === valor) ? '' : valor;
+    bkPintar();
+  };
+  window.bkBuscar = function (v) {
+    _bkFil.q = v || '';
+    var todos = bkLista();
+    var vis = todos.filter(bkPasa);
+    var cont = document.getElementById('bkTabla');
+    if (cont) cont.innerHTML = vis.length ? vis.map(bkFila).join('') : '<div style="font-size:13px;color:var(--muted);padding:14px 0">Ningún tema coincide con el filtro.</div>';
+    var cnt = document.getElementById('bkConteo');
+    if (cnt) cnt.textContent = vis.length + ' de ' + todos.length;
+  };
+  window.bkLimpiar = function () { _bkFil = { est: '', pri: '', tipo: '', area: '', q: '' }; bkPintar(); };
+
+  function bkPintar() {
+    var body = document.getElementById('bkBody');
+    if (!body) return;
+    var todos = bkLista();
+    if (!todos.length) { body.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0">El backlog está vacío.</div>'; return; }
+    var vis = todos.filter(bkPasa);
+    body.innerHTML = bkReporte(todos, vis.length) +
+      '<div id="bkTabla">' + (vis.length ? vis.map(bkFila).join('') : '<div style="font-size:13px;color:var(--muted);padding:14px 0">Ningún tema coincide con el filtro.</div>') + '</div>';
+  }
+
+  window.bkRender = async function (forzar) {
+    if (!bkEsSuper()) return;
+    if (!bkContenedor()) return;
+    if (_bkItems && !forzar) { bkPintar(); return; }
+    if (_bkCargando) return;
+    _bkCargando = true;
+    var body = document.getElementById('bkBody');
+    body.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando...</div>';
+    try {
+      var snap = await bkRef().once('value');
+      var v = snap.val();
+      if (!v || !Object.keys(v).length) {
+        var semilla = {};
+        BK_SEMILLA.forEach(function (it) { semilla[it.cod] = Object.assign({ notas: '', act: Date.now() }, it); });
+        await bkRef().set(semilla);
+        v = semilla;
+      }
+      _bkItems = v;
+      bkPintar();
+    } catch (e) {
+      body.innerHTML = '<div style="font-size:13px;color:#ef4444;padding:12px 0">No pudimos cargar el backlog: ' + esc(e.message) + '</div>';
+    }
+    _bkCargando = false;
+  };
+
+  function bkCampo(etq, id, valor, filas) {
+    return '<div style="margin-bottom:12px"><label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">' + esc(etq) + '</label>' +
+      '<textarea id="' + id + '" rows="' + (filas || 2) + '" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:13px;line-height:1.5;padding:9px 11px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);resize:vertical">' + esc(valor || '') + '</textarea></div>';
+  }
+
+  function bkModal() {
+    var ov = document.getElementById('bkOverlay');
+    if (!ov) {
+      ov = document.createElement('div');
+      ov.id = 'bkOverlay';
+      ov.className = 'overlay';
+      ov.innerHTML = '<div class="modal" style="max-width:620px;max-height:88vh;overflow-y:auto">' +
+        '<div class="modal-title" id="bkModalTit">Detalle del tema</div>' +
+        '<div id="bkModalBody"></div>' +
+        '<div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:18px;flex-wrap:wrap">' +
+          '<button class="btn" id="bkBtnBorrar" style="font-size:12.5px;color:#ef4444" onclick="bkBorrar()">Eliminar</button>' +
+          '<div style="display:flex;gap:8px;margin-left:auto">' +
+            '<button class="btn" onclick="bkCerrar()">Cerrar</button>' +
+            '<button class="btn btn-primary" onclick="bkGuardar()">Guardar</button>' +
+          '</div>' +
+        '</div></div>';
+      document.body.appendChild(ov);
+    }
+    ov.style.display = 'flex';
+    return ov;
+  }
+
+  var _bkEditando = null;
+  var _bkEsNuevo = false;
+
+  function bkPintarModal(it, nuevo) {
+    _bkEditando = it.cod;
+    _bkEsNuevo = !!nuevo;
+    bkModal();
+    document.getElementById('bkModalTit').textContent = nuevo ? 'Nuevo tema del backlog' : (it.cod + ' — detalle');
+    document.getElementById('bkBtnBorrar').style.display = nuevo ? 'none' : '';
+    var sel = 'font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text);width:100%;box-sizing:border-box;font-family:inherit';
+    var h = '';
+    if (nuevo) {
+      h += '<div style="margin-bottom:12px"><label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Código</label>' +
+        '<input id="bkfCod" type="text" value="' + esc(it.cod) + '" style="' + sel + '"><div style="font-size:11.5px;color:var(--muted);margin-top:4px">El prefijo define el área: ' +
+        Object.keys(BK_AREAS).map(function (a) { return a + '=' + BK_AREAS[a]; }).join(' · ') + '</div></div>';
+    } else {
+      h += '<div style="font-size:12px;color:var(--muted);margin-bottom:12px">' + esc(it.cod) + ' · ' + esc(bkAreaNom(it.cod)) + '</div>';
+    }
+    h += '<div style="margin-bottom:12px"><label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Título</label>' +
+      '<input id="bkfTit" type="text" value="' + esc(it.tit || '') + '" style="' + sel + '"></div>';
+    h += bkCampo('Descripción', 'bkfDesc', it.desc, 4);
+    h += bkCampo('Funcionalidad', 'bkfFun', it.fun, 2);
+    h += bkCampo('Beneficio', 'bkfBen', it.ben, 3);
+    h += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">' +
+      '<div style="flex:1;min-width:130px"><label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Tipo</label><select id="bkfTipo" style="' + sel + '">' + bkOpts(BK_TIPOS, it.tipo) + '</select></div>' +
+      '<div style="flex:1;min-width:130px"><label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Prioridad</label><select id="bkfPrio" style="' + sel + '">' + bkOpts(BK_PRIOS, it.prio) + '</select></div>' +
+      '<div style="flex:1;min-width:130px"><label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Estado</label><select id="bkfEst" style="' + sel + '">' + bkOpts(BK_ESTADOS, it.est) + '</select></div>' +
+    '</div>';
+    h += bkCampo('Notas', 'bkfNotas', it.notas, 2);
+    if (it.act) h += '<div style="font-size:11.5px;color:var(--muted)">Última edición: ' + new Date(it.act).toLocaleString('es-AR') + '</div>';
+    document.getElementById('bkModalBody').innerHTML = h;
+  }
+
+  window.bkDetalle = function (cod) {
+    var it = (_bkItems || {})[cod];
+    if (!it) return;
+    bkPintarModal(it, false);
+  };
+
+  window.bkNuevo = function () {
+    var pref = _bkFil.area || 'GEN';
+    var n = 1;
+    for (var k in (_bkItems || {})) {
+      if (bkAreaCod(k) === pref) { var m = String(k).split('-')[1]; if (m && Number(m) >= n) n = Number(m) + 1; }
+    }
+    bkPintarModal({ cod: pref + '-' + String(n).padStart(3, '0'), tit: '', desc: '', fun: '', ben: '', tipo: 'Mejora', prio: 'Media', est: 'Pendiente', notas: '' }, true);
+  };
+
+  window.bkCerrar = function () { var ov = document.getElementById('bkOverlay'); if (ov) ov.style.display = 'none'; _bkEditando = null; };
+
+  window.bkGuardar = async function () {
+    var cod = _bkEsNuevo ? (document.getElementById('bkfCod').value || '').trim().toUpperCase() : _bkEditando;
+    if (!cod) { alert('Falta el código.'); return; }
+    if (_bkEsNuevo && (_bkItems || {})[cod]) { alert('Ya existe un tema con el código ' + cod + '.'); return; }
+    var tit = (document.getElementById('bkfTit').value || '').trim();
+    if (!tit) { alert('Falta el título.'); return; }
+    var obj = {
+      cod: cod, tit: tit,
+      desc: (document.getElementById('bkfDesc').value || '').trim(),
+      fun: (document.getElementById('bkfFun').value || '').trim(),
+      ben: (document.getElementById('bkfBen').value || '').trim(),
+      tipo: document.getElementById('bkfTipo').value,
+      prio: document.getElementById('bkfPrio').value,
+      est: document.getElementById('bkfEst').value,
+      notas: (document.getElementById('bkfNotas').value || '').trim(),
+      act: Date.now()
+    };
+    try {
+      await bkRef().child(cod).set(obj);
+      if (!_bkItems) _bkItems = {};
+      _bkItems[cod] = obj;
+      bkCerrar();
+      bkPintar();
+    } catch (e) { alert('No pudimos guardarlo: ' + e.message); }
+  };
+
+  window.bkBorrar = async function () {
+    var cod = _bkEditando;
+    if (!cod) return;
+    if (!confirm('¿Eliminar ' + cod + ' del backlog?\n\nNo se puede deshacer.')) return;
+    try {
+      await bkRef().child(cod).remove();
+      delete _bkItems[cod];
+      bkCerrar();
+      bkPintar();
+    } catch (e) { alert('No pudimos eliminarlo: ' + e.message); }
+  };
+
+  var _origRenderAdminBk = window.renderAdmin;
+  window.renderAdmin = function () {
+    var r = (typeof _origRenderAdminBk === 'function') ? _origRenderAdminBk.apply(this, arguments) : undefined;
+    try { if (bkEsSuper()) bkRender(); } catch (e) {}
+    return r;
+  };
+})();
+
 })();
 /* TU GPS: progreso del programa guiado (Club Pioneros) */
 (function () {
