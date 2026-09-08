@@ -10033,7 +10033,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.8.001';
+const APP_VERSION = 'v005.8.002';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -14312,14 +14312,14 @@ function subtituloRumbo() {
   var BK_ESTADOS = ['Pendiente', 'En curso', 'Bloqueado', 'Listo'];
   var BK_PRIOS = ['Crítica', 'Alta', 'Media', 'Baja'];
   var BK_TIPOS = ['Mejora', 'Corrección'];
-  var BK_AREAS = { TEC: 'Técnico', ADM: 'Administración', TRX: 'Transacciones', DRV: 'Deriva', NIA: 'NortIA', RES: 'Reserva', UX: 'Interfaz', MKT: 'Marketing', DEM: 'Demo', GEN: 'General' };
+  var BK_AREAS = { TEC: 'Técnico', ADM: 'Administración', TRX: 'Transacciones', DRV: 'Deriva', NIA: 'NortIA', RES: 'Reserva', UX: 'Interfaz', MKT: 'Marketing', DEM: 'Demo', CUA: 'Cuaderno', GEN: 'General' };
   var BK_CEST = { 'Pendiente': '#64748b', 'En curso': '#0ea5e9', 'Bloqueado': '#b45309', 'Listo': '#16a34a' };
   var BK_CPRI = { 'Crítica': '#dc2626', 'Alta': '#ea580c', 'Media': '#0891b2', 'Baja': '#94a3b8' };
   var BK_OPRI = { 'Crítica': 0, 'Alta': 1, 'Media': 2, 'Baja': 3 };
   var BK_OEST = { 'Bloqueado': 0, 'En curso': 1, 'Pendiente': 2, 'Listo': 3 };
 
   var BK_SEMILLA = [
-{"cod":"TEC-001","tit":"Migrar las Cloud Functions a Node 22","desc":"Node 20 se decomisiona el 30/10/2026. Después de esa fecha no se puede desplegar ninguna función, ni siquiera para corregir un error.","fun":"Toda la capa de Functions: pagos, altas de cuenta, mails, panel de admin.","ben":"Que Norte siga siendo desplegable. Es el único pendiente con fecha dura.","tipo":"Corrección","prio":"Crítica","est":"Listo","notas":"Hecho el 08/09/2026 con firebase-tools 15.29.0. Las 33 funciones corren en Node 22 (1ra generación); no hubo que migrar a 2da generación ni tocar ninguna URL. El runtime estaba fijado en DOS lugares: el engines de functions/package.json y el campo runtime de firebase.json — este último gana, y por no verlo el primer deploy salió en Node 20 igual. firebase-functions quedó en v5 a propósito: el CLI insiste en actualizar a v6, pero ahí el require('firebase-functions') pasa a devolver la API v2 y se rompen los 33 exports."},
+{"cod":"TEC-001","tit":"Migrar las Cloud Functions a Node 22","desc":"Node 20 se decomisiona el 30/10/2026. Después de esa fecha no se puede desplegar ninguna función, ni siquiera para corregir un error.","fun":"Toda la capa de Functions: pagos, altas de cuenta, mails, panel de admin.","ben":"Que Norte siga siendo desplegable. Es el único pendiente con fecha dura.","tipo":"Corrección","prio":"Crítica","est":"Pendiente"},
 {"cod":"TEC-002","tit":"Probar el flujo de compra de punta a punta","desc":"Landing → MercadoPago → alta de cuenta → primer ingreso a la app. Nunca se verificó completo con una compra real.","fun":"Registro de compra, webhook de MP, creación de hogar, acceso.","ben":"Saber que se puede cobrar antes de mover tráfico pago. Un fallo acá cuesta el cliente y la plata.","tipo":"Corrección","prio":"Crítica","est":"Pendiente"},
 {"cod":"ADM-001","tit":"El reseteo de contraseña del panel no hace nada","desc":"El ícono 🔑 de Admin → Usuarios calcula un hash y lo guarda en un campo que el login real no usa. Nunca toca Firebase Auth. La función adminResetPassword existe pero no está cableada.","fun":"Admin → Usuarios.","ben":"Poder ayudar de verdad a alguien que no puede entrar, en vez de creer que se resolvió.","tipo":"Corrección","prio":"Alta","est":"Pendiente"},
 {"cod":"TRX-001","tit":"Mostrar la fecha del movimiento en la lista","desc":"Desde el 07/09 cada movimiento guarda su fecha, pero la columna que se ve en Transacciones sigue siendo Vencimiento.","fun":"Transacciones.","ben":"Si el dato no se ve, nadie corrige el que esté mal — y sobre esa fecha se apoya toda Deriva.","tipo":"Mejora","prio":"Alta","est":"Pendiente"},
@@ -14362,6 +14362,12 @@ function subtituloRumbo() {
   function bkRef() { return firebase.database().ref(BK_PATH); }
   function bkAreaCod(cod) { return String(cod || '').split('-')[0].toUpperCase(); }
   function bkAreaNom(cod) { return BK_AREAS[bkAreaCod(cod)] || 'General'; }
+  // Un tema escrito 'Correccion' sin tilde caia afuera de los dos grupos y
+  // desaparecia de la vista sin avisar. Se compara sin tildes y sin mayusculas.
+  function bkNormTipo(t) {
+    var x = String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    return x.indexOf('correc') === 0 ? 'Corrección' : 'Mejora';
+  }
   function bkLista() {
     var out = [];
     for (var k in (_bkItems || {})) { if (Object.prototype.hasOwnProperty.call(_bkItems, k)) out.push(_bkItems[k]); }
@@ -14377,7 +14383,7 @@ function subtituloRumbo() {
   function bkPasa(it) {
     if (_bkFil.est && it.est !== _bkFil.est) return false;
     if (_bkFil.pri && it.prio !== _bkFil.pri) return false;
-    if (_bkFil.tipo && it.tipo !== _bkFil.tipo) return false;
+    if (_bkFil.tipo && bkNormTipo(it.tipo) !== _bkFil.tipo) return false;
     if (_bkFil.area && bkAreaCod(it.cod) !== _bkFil.area) return false;
     if (_bkFil.q) {
       var q = _bkFil.q.toLowerCase();
@@ -14438,9 +14444,6 @@ function subtituloRumbo() {
         '<option value="">Todas las áreas</option>' +
         listaAreas.map(function (a) { return '<option value="' + a + '"' + (_bkFil.area === a ? ' selected' : '') + '>' + esc(BK_AREAS[a] || a) + '</option>'; }).join('') +
       '</select>' +
-      '<select id="bkFilTipo" onchange="bkFiltrar(\'tipo\', this.value)" style="font-size:12.5px;padding:6px 9px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text)">' +
-        '<option value="">Mejoras y correcciones</option>' + bkOpts(BK_TIPOS, _bkFil.tipo) +
-      '</select>' +
       '<input id="bkFilQ" type="text" placeholder="Buscar..." value="' + esc(_bkFil.q) + '" oninput="bkBuscar(this.value)" style="font-size:12.5px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);min-width:150px;flex:1;max-width:240px">' +
       (( _bkFil.est || _bkFil.pri || _bkFil.tipo || _bkFil.area || _bkFil.q ) ? '<button class="btn" style="font-size:12px;padding:6px 12px" onclick="bkLimpiar()">Limpiar filtros</button>' : '') +
       '<span id="bkConteo" style="font-size:12px;color:var(--muted);margin-left:auto">' + visibles + ' de ' + todos.length + '</span>' +
@@ -14470,9 +14473,37 @@ function subtituloRumbo() {
     return '<div onclick="bkDetalle(\'' + esc(it.cod) + '\')" style="cursor:pointer;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 12px;border:1px solid var(--border);border-radius:11px;margin-bottom:7px;background:var(--card)">' +
       '<span style="font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.03em;flex:0 0 auto;min-width:62px">' + esc(it.cod) + '</span>' +
       '<span style="flex:1 1 220px;min-width:0;font-size:13.5px;font-weight:600;color:var(--text)">' + esc(it.tit) +
-        '<span style="display:block;font-size:11.5px;color:var(--muted);font-weight:400;margin-top:2px">' + esc(bkAreaNom(it.cod)) + ' · ' + esc(it.tipo || '') + '</span></span>' +
+        '<span style="display:block;font-size:11.5px;color:var(--muted);font-weight:400;margin-top:2px">' + esc(bkAreaNom(it.cod)) + '</span></span>' +
       '<span style="flex:0 0 auto">' + bkPill(it.prio || '-', BK_CPRI[it.prio] || '#94a3b8') + '</span>' +
       '<span style="flex:0 0 auto">' + bkPill(it.est || '-', BK_CEST[it.est] || '#64748b') + '</span>' +
+    '</div>';
+  }
+
+  // Dos grupos en paralelo, no una lista sola: una correccion urgente y una
+  // mejora urgente no compiten por el mismo puesto, son dos colas distintas.
+  // Cada columna se ordena sola, asi que puede haber una Critica arriba de cada
+  // una al mismo tiempo. Es lo que antes tapaba el filtro de tipo.
+  function bkColumna(titulo, items, total, color) {
+    return '<div style="min-width:0">' +
+      '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid ' + color + '">' +
+        '<span style="font-size:12px;font-weight:800;color:' + color + ';text-transform:uppercase;letter-spacing:.06em">' + esc(titulo) + '</span>' +
+        '<span style="font-size:12px;color:var(--muted)">' + items.length + (items.length === total ? '' : ' de ' + total) + '</span>' +
+      '</div>' +
+      (items.length ? items.map(bkFila).join('')
+                    : '<div style="font-size:12.5px;color:var(--muted);padding:10px 0">Nada acá.</div>') +
+    '</div>';
+  }
+
+  function bkListado(vis, todos) {
+    var mejV = vis.filter(function (i) { return bkNormTipo(i.tipo) === 'Mejora'; });
+    var corV = vis.filter(function (i) { return bkNormTipo(i.tipo) === 'Corrección'; });
+    var mejT = todos.filter(function (i) { return bkNormTipo(i.tipo) === 'Mejora'; }).length;
+    var corT = todos.filter(function (i) { return bkNormTipo(i.tipo) === 'Corrección'; }).length;
+    if (!vis.length) return '<div style="font-size:13px;color:var(--muted);padding:14px 0">Ningún tema coincide con el filtro.</div>';
+    var dos = window.innerWidth > 880;
+    return '<div style="display:grid;grid-template-columns:' + (dos ? '1fr 1fr' : '1fr') + ';gap:22px;align-items:start">' +
+      bkColumna('Mejoras', mejV, mejT, 'var(--primary)') +
+      bkColumna('Correcciones y ajustes', corV, corT, '#dc2626') +
     '</div>';
   }
 
@@ -14485,7 +14516,7 @@ function subtituloRumbo() {
     var todos = bkLista();
     var vis = todos.filter(bkPasa);
     var cont = document.getElementById('bkTabla');
-    if (cont) cont.innerHTML = vis.length ? vis.map(bkFila).join('') : '<div style="font-size:13px;color:var(--muted);padding:14px 0">Ningún tema coincide con el filtro.</div>';
+    if (cont) cont.innerHTML = bkListado(vis, todos);
     var cnt = document.getElementById('bkConteo');
     if (cnt) cnt.textContent = vis.length + ' de ' + todos.length;
   };
@@ -14498,7 +14529,7 @@ function subtituloRumbo() {
     if (!todos.length) { body.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0">El backlog está vacío.</div>'; return; }
     var vis = todos.filter(bkPasa);
     body.innerHTML = bkReporte(todos, vis.length) +
-      '<div id="bkTabla">' + (vis.length ? vis.map(bkFila).join('') : '<div style="font-size:13px;color:var(--muted);padding:14px 0">Ningún tema coincide con el filtro.</div>') + '</div>';
+      '<div id="bkTabla">' + bkListado(vis, todos) + '</div>';
   }
 
   window.bkRender = async function (forzar) {
