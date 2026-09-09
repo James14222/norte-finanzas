@@ -10033,7 +10033,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.8.005';
+const APP_VERSION = 'v005.8.007';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -14360,7 +14360,7 @@ function subtituloRumbo() {
   ];
 
   var _bkItems = null;
-  var _bkFil = { est: '', pri: '', tipo: '', area: '', q: '', proy: '' };
+  var _bkFil = { est: '', pri: '', tipo: '', area: '', q: '', proy: '', ped: false };
   var _bkCargando = false;
   var _bkSub = null;
 
@@ -14393,6 +14393,9 @@ function subtituloRumbo() {
     var out = [];
     for (var k in (_bkItems || {})) { if (Object.prototype.hasOwnProperty.call(_bkItems, k)) out.push(_bkItems[k]); }
     out.sort(function (a, b) {
+      // Lo pedido va arriba de todo: la cola tiene que verse sin filtrar nada.
+      var pd = (b.pedido ? 1 : 0) - (a.pedido ? 1 : 0);
+      if (pd) return pd;
       var d = (BK_OEST[a.est] === undefined ? 9 : BK_OEST[a.est]) - (BK_OEST[b.est] === undefined ? 9 : BK_OEST[b.est]);
       if (d) return d;
       d = (BK_OPRI[a.prio] === undefined ? 9 : BK_OPRI[a.prio]) - (BK_OPRI[b.prio] === undefined ? 9 : BK_OPRI[b.prio]);
@@ -14407,6 +14410,7 @@ function subtituloRumbo() {
     if (_bkFil.tipo && bkNormTipo(it.tipo) !== _bkFil.tipo) return false;
     if (_bkFil.area && bkAreaCod(it.cod) !== _bkFil.area) return false;
     if (_bkFil.proy && it.proy !== _bkFil.proy) return false;
+    if (_bkFil.ped && !it.pedido) return false;
     if (_bkFil.q) {
       var q = _bkFil.q.toLowerCase();
       var blob = [it.cod, it.tit, it.desc, it.fun, it.ben].join(' ').toLowerCase();
@@ -14453,8 +14457,10 @@ function subtituloRumbo() {
   function bkReporte(todos, visibles) {
     var cE = {}, cP = {};
     todos.forEach(function (it) { cE[it.est] = (cE[it.est] || 0) + 1; cP[it.prio] = (cP[it.prio] || 0) + 1; });
+    var nPed = todos.filter(function (i) { return i.pedido; }).length;
     var h = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">' +
-      BK_ESTADOS.map(function (e) { return bkChip(e, cE[e] || 0, BK_CEST[e], _bkFil.est === e, 'bkFiltrar(\'est\',\'' + e + '\')'); }).join('') + '</div>' +
+      BK_ESTADOS.map(function (e) { return bkChip(e, cE[e] || 0, BK_CEST[e], _bkFil.est === e, 'bkFiltrar(\'est\',\'' + e + '\')'); }).join('') +
+      (nPed ? bkChip('⚑ Pedidos', nPed, 'var(--primary)', _bkFil.ped, 'bkSoloPedidos()') : '') + '</div>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">' +
       BK_PRIOS.map(function (p) { return bkChip(p, cP[p] || 0, BK_CPRI[p], _bkFil.pri === p, 'bkFiltrar(\'pri\',\'' + p + '\')'); }).join('') + '</div>';
 
@@ -14472,7 +14478,7 @@ function subtituloRumbo() {
         listaAreas.map(function (a) { return '<option value="' + a + '"' + (_bkFil.area === a ? ' selected' : '') + '>' + esc(BK_AREAS[a] || a) + '</option>'; }).join('') +
       '</select>' +
       '<input id="bkFilQ" type="text" placeholder="Buscar..." value="' + esc(_bkFil.q) + '" oninput="bkBuscar(this.value)" style="font-size:12.5px;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);min-width:150px;flex:1;max-width:240px">' +
-      (( _bkFil.est || _bkFil.pri || _bkFil.tipo || _bkFil.area || _bkFil.q || _bkFil.proy ) ? '<button class="btn" style="font-size:12px;padding:6px 12px" onclick="bkLimpiar()">Limpiar filtros</button>' : '') +
+      (( _bkFil.est || _bkFil.pri || _bkFil.tipo || _bkFil.area || _bkFil.q || _bkFil.proy || _bkFil.ped ) ? '<button class="btn" style="font-size:12px;padding:6px 12px" onclick="bkLimpiar()">Limpiar filtros</button>' : '') +
       '<span id="bkConteo" style="font-size:12px;color:var(--muted);margin-left:auto">' + visibles + ' de ' + todos.length + '</span>' +
     '</div>';
 
@@ -14501,8 +14507,12 @@ function subtituloRumbo() {
       '<span style="font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.03em;flex:0 0 auto;min-width:62px">' + esc(it.cod) + '</span>' +
       '<span style="flex:1 1 220px;min-width:0;font-size:13.5px;font-weight:600;color:var(--text)">' + esc(it.tit) +
         '<span style="display:block;font-size:11.5px;color:var(--muted);font-weight:400;margin-top:2px">' + esc(bkAreaNom(it.cod)) + '</span></span>' +
+      (it.pedido ? '<span style="flex:0 0 auto">' + bkPill('Pedido', 'var(--primary)') + '</span>' : '') +
       '<span style="flex:0 0 auto">' + bkPill(it.prio || '-', BK_CPRI[it.prio] || '#94a3b8') + '</span>' +
       '<span style="flex:0 0 auto">' + bkPill(it.est || '-', BK_CEST[it.est] || '#64748b') + '</span>' +
+      // Se marca de un toque, sin abrir el detalle: la idea es poder pedirlo
+      // desde el celular en el momento en que se te ocurre.
+      '<button type="button" title="' + (it.pedido ? 'Sacar de lo pedido' : 'Pedirlo') + '" onclick="event.stopPropagation();bkPedir(\'' + esc(it.cod) + '\')" style="flex:0 0 auto;cursor:pointer;border:0;background:none;padding:4px 2px;font-size:15px;line-height:1;color:' + (it.pedido ? 'var(--primary)' : 'var(--border)') + '">&#9873;</button>' +
     '</div>';
   }
 
@@ -14577,6 +14587,19 @@ function subtituloRumbo() {
     '</div>';
   }
 
+  window.bkPedir = async function (cod) {
+    var it = (_bkItems || {})[cod];
+    if (!it) return;
+    var v = !it.pedido;
+    try {
+      await bkRef().child(cod).update({ pedido: v, act: Date.now() });
+      _bkItems[cod] = Object.assign({}, it, { pedido: v });
+      bkPintar();
+    } catch (e) { alert('No pudimos marcarlo: ' + e.message); }
+  };
+
+  window.bkSoloPedidos = function () { _bkFil.ped = !_bkFil.ped; bkPintar(); };
+
   window.bkFiltrar = function (campo, valor) {
     _bkFil[campo] = (_bkFil[campo] === valor) ? '' : valor;
     bkPintar();
@@ -14590,7 +14613,7 @@ function subtituloRumbo() {
     var cnt = document.getElementById('bkConteo');
     if (cnt) cnt.textContent = vis.length + ' de ' + todos.length;
   };
-  window.bkLimpiar = function () { _bkFil = { est: '', pri: '', tipo: '', area: '', q: '', proy: '' }; bkPintar(); };
+  window.bkLimpiar = function () { _bkFil = { est: '', pri: '', tipo: '', area: '', q: '', proy: '', ped: false }; bkPintar(); };
 
   function bkPintar() {
     var body = document.getElementById('bkBody');
@@ -14683,6 +14706,9 @@ function subtituloRumbo() {
       '<div style="flex:1;min-width:130px"><label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Prioridad</label><select id="bkfPrio" style="' + sel + '">' + bkOpts(BK_PRIOS, it.prio) + '</select></div>' +
       '<div style="flex:1;min-width:130px"><label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Estado</label><select id="bkfEst" style="' + sel + '">' + bkOpts(BK_ESTADOS, it.est) + '</select></div>' +
     '</div>';
+    h += '<label style="display:flex;align-items:center;gap:9px;margin-bottom:14px;cursor:pointer;font-size:13px;color:var(--text)">' +
+      '<input type="checkbox" id="bkfPedido"' + (it.pedido ? ' checked' : '') + ' style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer">' +
+      '<span>⚑ Pedido — lo quiero avanzar en la próxima sesión</span></label>';
     h += bkCampo('Notas', 'bkfNotas', it.notas, 2);
     if (it.act) h += '<div style="font-size:11.5px;color:var(--muted)">Última edición: ' + new Date(it.act).toLocaleString('es-AR') + '</div>';
     document.getElementById('bkModalBody').innerHTML = h;
@@ -14724,6 +14750,9 @@ function subtituloRumbo() {
       notas: (document.getElementById('bkfNotas').value || '').trim(),
       act: Date.now()
     };
+    // Un tema terminado no sigue en la cola de pedidos: se saca solo.
+    var ped = document.getElementById('bkfPedido');
+    obj.pedido = (obj.est === 'Listo') ? false : !!(ped && ped.checked);
     try {
       // update y no set: el editor solo conoce ocho campos, y un set borraba
       // todo lo demas que el tema pudiera tener (proyecto, orden, motivo, y
