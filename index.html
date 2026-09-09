@@ -10033,7 +10033,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.8.004';
+const APP_VERSION = 'v005.8.005';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -14362,6 +14362,22 @@ function subtituloRumbo() {
   var _bkItems = null;
   var _bkFil = { est: '', pri: '', tipo: '', area: '', q: '', proy: '' };
   var _bkCargando = false;
+  var _bkSub = null;
+
+  // Suscripcion viva al backlog. Antes se leia UNA vez y la pantalla se
+  // quedaba con esa foto para siempre: si algo cambiaba desde el celular u
+  // otra pestaña, acá no se veía — y peor, el editor abria datos viejos y al
+  // guardar los escribia encima de los nuevos. Con el listener, lo que se ve
+  // es siempre lo que hay en el servidor.
+  function bkEscuchar() {
+    if (_bkSub) return;
+    _bkSub = bkRef().on('value', function (snap) {
+      var v = snap.val();
+      if (!v || !Object.keys(v).length) return;
+      _bkItems = v;
+      if (document.getElementById('bkSection')) bkPintar();
+    });
+  }
 
   function bkEsSuper() { try { return (getSession() || {}).userId === BK_UID; } catch (e) { return false; } }
   function bkRef() { return firebase.database().ref(BK_PATH); }
@@ -14589,7 +14605,7 @@ function subtituloRumbo() {
   window.bkRender = async function (forzar) {
     if (!bkEsSuper()) return;
     if (!bkContenedor()) return;
-    if (_bkItems && !forzar) { bkPintar(); return; }
+    if (_bkItems && !forzar) { bkPintar(); bkEscuchar(); return; }
     if (_bkCargando) return;
     _bkCargando = true;
     var body = document.getElementById('bkBody');
@@ -14605,6 +14621,7 @@ function subtituloRumbo() {
       }
       _bkItems = v;
       bkPintar();
+      bkEscuchar();
     } catch (e) {
       body.innerHTML = '<div style="font-size:13px;color:#ef4444;padding:12px 0">No pudimos cargar el backlog: ' + esc(e.message) + '</div>';
     }
@@ -14673,7 +14690,9 @@ function subtituloRumbo() {
 
   window.bkDetalle = function (cod) {
     var it = (_bkItems || {})[cod];
-    if (!it) return;
+    // Si el tema no esta en memoria es que la pantalla quedo vieja: antes esto
+    // era un return mudo y el click no hacia nada. Ahora se relee y se abre.
+    if (!it) { bkRender(true).then(function () { var x = (_bkItems || {})[cod]; if (x) bkPintarModal(x, false); }); return; }
     bkPintarModal(it, false);
   };
 
@@ -14706,9 +14725,13 @@ function subtituloRumbo() {
       act: Date.now()
     };
     try {
-      await bkRef().child(cod).set(obj);
+      // update y no set: el editor solo conoce ocho campos, y un set borraba
+      // todo lo demas que el tema pudiera tener (proyecto, orden, motivo, y
+      // cualquier campo que se agregue despues). Guardar el estado no puede
+      // ser una forma de perder informacion.
+      await bkRef().child(cod).update(obj);
       if (!_bkItems) _bkItems = {};
-      _bkItems[cod] = obj;
+      _bkItems[cod] = Object.assign({}, _bkItems[cod] || {}, obj);
       bkCerrar();
       bkPintar();
     } catch (e) { alert('No pudimos guardarlo: ' + e.message); }
