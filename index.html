@@ -499,6 +499,10 @@ tr:hover td { background: #fafbfc; }
       #page-transacciones th, #page-transacciones td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       #page-transacciones td:nth-child(2) { white-space: normal; }
       #page-transacciones thead th { position: sticky; top: var(--tbh, 56px); background: #f8fafc; z-index: 30; box-shadow: inset 0 -1px 0 var(--border); }
+      /* Reportes crece después de pintarse (se crean los gráficos) y el
+         navegador conserva la posición visual: la pantalla arrancaba scrolleada
+         y las pestañas quedaban cortadas debajo de la barra del título. */
+      #page-reportes { overflow-anchor: none; }
     }
 
 /* BADGES */
@@ -7468,6 +7472,60 @@ window.scrollTo(0, 0);
   if (fabEl) fabEl.style.display = (p === 'consultas' || p === 'admin' || p === 'reserva') ? 'none' : '';
   render();
   if (p === 'consultas') actualizarNortiaChatCounter();
+  if (p === 'reportes') fijarArribaAlEntrar();
+}
+
+// Corrige el arranque corrido de Reportes en el celular.
+//
+// Pasa sólo en el celular porque sólo ahí el gráfico anual tiene carril propio
+// (.graf-scroll, con min-width 760px y alto fijo), y ese bloque termina de
+// dimensionarse DESPUÉS de que la página se pintó. showPage() ya mandó el
+// scroll arriba en su primera línea, así que para cuando el alto cambia ese
+// scroll ya pasó y la pantalla queda corrida: las pestañas se ven cortadas
+// debajo de la barra del título. La segunda vez no crece nada y se ve bien.
+//
+// La corrección se ata al crecimiento y no a tiempos fijos: mira cuándo cambia
+// el alto de la pantalla y recién ahí endereza.
+//
+// Dos frenos, para que no se vuelva molesta: sólo endereza desvíos chicos —el
+// accidental, no un scroll de verdad— y si el usuario tocó, scrolleó o apretó
+// una tecla, no se lo mueve más. Nada peor que una pantalla que te devuelve
+// arriba mientras estás leyendo.
+function fijarArribaAlEntrar() {
+  var pagina = document.getElementById('page-reportes');
+  if (!pagina) return;
+  var tocado = false, listo = false;
+  var eventos = ['wheel', 'touchstart', 'keydown', 'pointerdown'];
+  var marcar = function () { tocado = true; };
+  var obs = null;
+
+  function corregir() {
+    if (tocado || listo) return;
+    if (window.scrollY > 0 && window.scrollY < 240) window.scrollTo(0, 0);
+  }
+  function terminar() {
+    if (listo) return;
+    listo = true;
+    if (obs) obs.disconnect();
+    eventos.forEach(function (e) { window.removeEventListener(e, marcar); });
+  }
+
+  eventos.forEach(function (e) { window.addEventListener(e, marcar, { passive: true }); });
+
+  if (typeof ResizeObserver === 'function') {
+    obs = new ResizeObserver(corregir);
+    obs.observe(pagina);
+  }
+  // La barra de direcciones del celular al plegarse también cambia el viewport.
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', corregir);
+
+  requestAnimationFrame(corregir);
+  setTimeout(corregir, 300);
+  setTimeout(function () {
+    corregir();
+    terminar();
+    if (window.visualViewport) window.visualViewport.removeEventListener('resize', corregir);
+  }, 1800);
 }
 
 let _nortiaHallazgosLoaded = false;
@@ -10040,7 +10098,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.8.008';
+const APP_VERSION = 'v005.8.009';
 let novEntradas = [];
 
 function novLeida(e) {
