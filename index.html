@@ -479,7 +479,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .table-wrap { background: var(--card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
     .tx-scroll { overflow-x: auto; }
 .table-head { padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); gap: 12px; flex-wrap: wrap; }
-.filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; flex: 1 1 auto; }
+.tx-pend { display: flex; align-items: baseline; gap: 8px; margin-left: auto; white-space: nowrap; }
+.tx-pend-lbl { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.tx-pend-val { font-size: 21px; font-weight: 800; line-height: 1; }
+.tx-pend-ico { font-size: 15px; opacity: .75; }
 .tgl-group { display: flex; background: var(--bg); border-radius: 8px; padding: 3px; }
 .tgl-btn { padding: 5px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; background: transparent; color: var(--muted); transition: all 0.15s; white-space: nowrap; }
 .tgl-btn.active { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
@@ -864,6 +868,8 @@ tr:hover td { background: #fafbfc; }
   table th, table td, .data-table th, .data-table td { padding:8px 9px; white-space:nowrap; }
   .table-head { flex-direction:column; align-items:stretch; gap:10px; }
   .table-head .filters { flex-wrap:wrap; }
+  .tx-pend { margin-left:0; width:100%; justify-content:space-between; }
+  .tx-pend-val { font-size:19px; }
   .table-head > div[style*="display:flex"] { flex-wrap:wrap; }
 
   /* Modal a pantalla completa */
@@ -1493,10 +1499,7 @@ tr:hover td { background: #fafbfc; }
   .cards-grid .card.k-bal{order:2}
   .cards-grid .card.k-gas{order:3;grid-column:1 / -1}
   .cards-grid .card.k-pend{order:4;grid-column:1 / -1}
-  /* En Transacciones la caja va sola, no dentro de la grilla de cuatro: sin
-     tope se estiraría de lado a lado y el número quedaría perdido a la izquierda. */
-  .tx-pend-wrap{max-width:360px;margin-bottom:14px}
-  @media (max-width:880px){.tx-pend-wrap{max-width:none}}
+
 }
 
   </style>
@@ -1905,17 +1908,6 @@ tr:hover td { background: #fafbfc; }
 
     <!-- TRANSACCIONES -->
     <div id="page-transacciones" class="page">
-      <!-- La misma caja de Mi Rumbo, repetida acá: mientras se van marcando los
-           pagos el número baja a la vista, sin cambiar de pantalla. Usa las
-           mismas clases para que sea la misma caja y no un parecido. -->
-      <div class="tx-pend-wrap">
-        <div class="card k-pend">
-          <div class="card-label" id="tx-pend-lbl">Saldo pendiente</div>
-          <div class="card-vrow"><div class="card-value warning-c" id="tx-pend">$0</div><div class="card-icon">⏳</div></div>
-          <div class="card-sub">Por pagar</div>
-          <div id="tx-pend-cmp"></div>
-        </div>
-      </div>
       <div class="table-wrap">
         <div class="table-head">
           <div class="filters">
@@ -1931,6 +1923,14 @@ tr:hover td { background: #fafbfc; }
             <div class="tgl-group" id="autorFilterGroup">
               <button class="tgl-btn active" onclick="setAutorFilter('Todos',this)">Todos</button>
               <button class="tgl-btn" onclick="setAutorFilter('yo',this)">Solo yo</button>
+            </div>
+            <!-- El saldo pendiente aprovecha el hueco que ya dejaba la línea de
+                 filtros: en su propia banda gastaba una franja entera de alto
+                 para mostrar un número. Baja solo al ir marcando pagos. -->
+            <div class="tx-pend" id="txPend" title="Lo que registraste y todavía no terminaste de pagar, en el mes que estás viendo">
+              <span class="tx-pend-lbl" id="tx-pend-lbl">Saldo pendiente</span>
+              <span class="tx-pend-val warning-c" id="tx-pend">$0</span>
+              <span class="tx-pend-ico">⏳</span>
             </div>
             <div id="autorSummary" style="width:100%;font-size:12px;color:#6b7f93;margin-top:2px"></div>
           </div>
@@ -7884,8 +7884,10 @@ function pintarPendienteTx() {
   val.textContent = fmtP(total);
   const lbl = document.getElementById('tx-pend-lbl');
   if (lbl) lbl.textContent = (on && usdPend) ? 'Saldo pendiente · total en pesos' : 'Saldo pendiente';
-  const cmp = document.getElementById('tx-pend-cmp');
-  if (cmp) cmp.innerHTML = (on && usdPend) ? cmpHTML('Por pagar en pesos', pend, usdPend) : '';
+  const caja = document.getElementById('txPend');
+  if (caja) caja.title = (on && usdPend)
+    ? 'Incluye ' + fmtU(usdPend) + ' pendientes, valuados en pesos'
+    : 'Lo que registraste y todavía no terminaste de pagar, en el mes que estás viendo';
 }
 
 function renderDash() {
@@ -10136,7 +10138,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.9.000';
+const APP_VERSION = 'v005.9.001';
 let novEntradas = [];
 
 function novLeida(e) {
