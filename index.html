@@ -9781,7 +9781,9 @@ function renderProgreso() {
         '<div class="pg-hbar-t"><span>' + (n.next
             ? 'Te faltan <b>' + mil(n.nextMin - d.pts.total) + ' puntos</b> para <b>' + esc(n.next) + '</b>'
             : 'Llegaste al nivel máximo') + '</span>' +
-          '<span>' + mil(d.pts.total) + (n.nextMin ? ' / ' + mil(n.nextMin) : '') + '</span></div>' +
+          '<span>' + (n.next
+            ? mil(d.pts.total - n.min) + ' de ' + mil(n.nextMin - n.min) + ' en este nivel'
+            : mil(d.pts.total) + ' puntos') + '</span></div>' +
         '<div class="pg-hbar-track"><div class="pg-hbar-fill" style="width:' + n.pct + '%"></div></div>' +
       '</div>' +
       '<div class="pg-leyenda">' + leyenda + '</div>' +
@@ -11796,7 +11798,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.12.006';
+const APP_VERSION = 'v005.12.007';
 let novEntradas = [];
 
 function novLeida(e) {
