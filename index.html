@@ -9440,6 +9440,13 @@ function renderRepTarjetas() {
   }
 
   // Gráfico mensual (barras por banco)
+  // Esta lista se había perdido cuando los totales de arriba pasaron a agruparse
+  // por monograma: quedó el uso de más abajo sin su declaración, la función
+  // cortaba acá con un ReferenceError y ni el gráfico ni el detalle llegaban a
+  // dibujarse — por eso se veían los totales y nada más. Va con getBanco() y no
+  // con bancoClave() a propósito: es la misma clave que compara sumBanco() y la
+  // que espera getBancoLabel().
+  const bancosEnFiltered = [...new Set(filtered.map(t => getBanco(t)))].sort();
   const months12 = [];
   for (let m=0;m<12;m++) months12.push(monthKey(curYear,m));
   const sumBanco = (k, b) => filtered.filter(t=>t.mes===k&&getBanco(t)===b)
@@ -10033,7 +10040,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.8.007';
+const APP_VERSION = 'v005.8.008';
 let novEntradas = [];
 
 function novLeida(e) {
