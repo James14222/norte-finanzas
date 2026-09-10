@@ -1742,6 +1742,34 @@ tr:hover td { background: #fafbfc; }
 
 }
 
+/* ── CALCULADORA EN EL CAMPO ───────────────────────────────── */
+.calc-wrap{position:relative}
+.calc-tabs{display:flex;gap:3px;position:absolute;right:0;top:-25px;background:var(--bg);border-radius:8px;padding:2px;z-index:2}
+.calc-tab{border:none;background:none;border-radius:6px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.02em;color:var(--muted);padding:3px 9px;line-height:1.5}
+.calc-tab.on{background:var(--card);color:var(--primary-dark);box-shadow:0 1px 3px rgba(15,35,51,.14)}
+.calc-wrap.en-cuenta input{border-color:var(--primary)!important;background:rgba(255,138,92,.05)!important;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+/* La tirita de operadores existe por el celular: ahi el signo + esta enterrado
+   en el teclado numerico, y sin estos botones la funcion se puede escribir pero
+   no se puede usar con una mano. */
+.calc-ops{display:none;gap:5px;margin-top:6px;flex-wrap:wrap}
+.calc-wrap.en-cuenta .calc-ops{display:flex}
+.calc-ops button{flex:1 1 0;min-width:34px;height:34px;border:1px solid var(--border);background:var(--card);border-radius:8px;font-family:inherit;font-size:15px;font-weight:700;color:var(--text);cursor:pointer;line-height:1}
+.calc-ops button:hover{border-color:var(--primary);color:var(--primary)}
+@media (max-width:640px){.calc-ops .calc-par{display:none}}
+/* El resultado y el «listo», pegados al campo. En modo 123 no ocupan nada:
+   la pantalla queda exactamente igual que hoy. */
+.calc-res{display:none;align-items:center;gap:10px;margin-top:6px;min-height:24px}
+.calc-wrap.en-cuenta .calc-res{display:flex}
+.calc-eco{flex:1 1 auto;min-width:0;font-size:12.5px;font-weight:800}
+.calc-eco.ok{color:#0b7a5b}
+.calc-eco.mal{color:#c2410c;font-weight:600}
+.calc-listo{flex:none;border:1px solid var(--primary);background:var(--primary);color:#fff;border-radius:7px;font-family:inherit;font-size:12px;font-weight:800;padding:4px 12px;cursor:pointer;line-height:1.4}
+.calc-listo:hover{opacity:.88}
+.calc-expr{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--muted)}
+.calc-expr span{font-family:ui-monospace,Menlo,monospace;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:2px 8px}
+.calc-expr button{border:none;background:none;color:var(--muted);cursor:pointer;font-size:12px;line-height:1;padding:2px 4px}
+.calc-expr button:hover{color:#ef4444}
+
   </style>
 </head>
 <body>
@@ -4135,7 +4163,7 @@ tr:hover td { background: #fafbfc; }
         </div>
         <div class="form-group" style="display:flex;align-items:flex-end">
           <label style="display:none"></label>
-          <button type="button" class="btn btn-secondary" style="width:100%;font-size:12px" onclick="document.getElementById('txPagado').value=document.getElementById('txImpPesos').value">= Total (pagado completo)</button>
+          <button type="button" class="btn btn-secondary" style="width:100%;font-size:12px" onclick="calcAsentar('txImpPesos');numSet('txPagado',numVal('txImpPesos'))">= Total (pagado completo)</button>
         </div>
       </div>
 
@@ -5795,6 +5823,303 @@ document.addEventListener('input', function (e) {
   while (pos < fmt.length && vistos < digitos) { if (/[\d,]/.test(fmt[pos])) vistos++; pos++; }
   try { el.setSelectionRange(pos, pos); } catch (err) {}
 }, true);
+
+// ── CALCULADORA EN EL CAMPO ─────────────────────────────────
+// El interruptor «123 / Cuenta» convierte un campo de importe en uno que opera.
+// El estado vive en el propio input (dataset.cuenta) y no en una variable
+// global: en el formulario de transacciones hay tres campos de importe y tienen
+// que ser independientes —podés estar sumando en Pesos y escribiendo un número
+// suelto en Pagado.
+//
+// Nada de eval(). Un parser propio de + − × ÷ y paréntesis: es el campo de la
+// propia persona y el riesgo es bajo, pero meter eval en una app que guarda
+// datos financieros es una costumbre que no conviene empezar.
+
+// Entiende el formato de acá y no el de JavaScript: la coma es decimal y el
+// punto es separador de miles. '1.234,50 + 2.000' son 3.234,50.
+function calcTokenizar(txt) {
+  const t = String(txt || '').replace(/[×xX]/g, '*').replace(/[÷]/g, '/').replace(/\s+/g, '');
+  const out = [];
+  let i = 0;
+  while (i < t.length) {
+    const c = t[i];
+    if ('+-*/()'.indexOf(c) >= 0) { out.push(c); i++; continue; }
+    if (/[\d.,]/.test(c)) {
+      let j = i;
+      while (j < t.length && /[\d.,]/.test(t[j])) j++;
+      const n = parseFloat(t.slice(i, j).replace(/\./g, '').replace(',', '.'));
+      if (isNaN(n)) return null;
+      out.push(n);
+      i = j;
+      continue;
+    }
+    return null;                        // cualquier otra cosa invalida la cuenta
+  }
+  return out;
+}
+
+// Descenso recursivo: expr → term (+|- term)* ; term → factor (*|/ factor)* ;
+// factor → número | ( expr ) | -factor
+function calcEvaluar(txt) {
+  const tk = calcTokenizar(txt);
+  if (!tk || !tk.length) return null;
+  let p = 0;
+  const ver = () => tk[p];
+  function factor() {
+    if (ver() === '-') { p++; const v = factor(); return v === null ? null : -v; }
+    if (ver() === '+') { p++; return factor(); }
+    if (ver() === '(') {
+      p++;
+      const v = expr();
+      if (tk[p] !== ')') return null;
+      p++;
+      return v;
+    }
+    if (typeof ver() === 'number') return tk[p++];
+    return null;
+  }
+  function term() {
+    let v = factor();
+    if (v === null) return null;
+    while (ver() === '*' || ver() === '/') {
+      const op = tk[p++], r = factor();
+      if (r === null) return null;
+      if (op === '/' && r === 0) return null;       // dividir por cero no es un resultado
+      v = op === '*' ? v * r : v / r;
+    }
+    return v;
+  }
+  function expr() {
+    let v = term();
+    if (v === null) return null;
+    while (ver() === '+' || ver() === '-') {
+      const op = tk[p++], r = term();
+      if (r === null) return null;
+      v = op === '+' ? v + r : v - r;
+    }
+    return v;
+  }
+  const v = expr();
+  if (v === null || p !== tk.length || !isFinite(v)) return null;
+  return Math.round(v * 100) / 100;
+}
+
+// La cuenta escrita como se lee, no como se tecleó: si un número entró con
+// puntos de miles y el otro no, guardada diría «47.000+3500». Se reformatean
+// todos igual y los signos se escriben con los de verdad.
+function calcLinda(expr) {
+  return String(expr || '')
+    .replace(/[\d.,]+/g, m => numFmtTexto(m))
+    .replace(/\*/g, ' × ').replace(/\//g, ' ÷ ')
+    .replace(/\+/g, ' + ').replace(/(?!^)-/g, ' − ')
+    .replace(/\s+/g, ' ').trim();
+}
+
+// Prende y apaga el modo cuenta de UN campo.
+function calcModo(id, prender, sinFoco) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const caja = el.closest('.calc-wrap');
+  if (!caja) return;
+  if (prender) {
+    el.dataset.cuenta = '1';
+    el.classList.remove('money');          // que el formateador deje de borrar los signos
+    el.setAttribute('inputmode', 'text');
+    caja.classList.add('en-cuenta');
+  } else {
+    // Al volver a número se resuelve lo que haya: nadie quiere perder la cuenta
+    // que estaba escribiendo por tocar el botón.
+    const crudo = el.value.trim();
+    const v = calcEvaluar(crudo);
+    delete el.dataset.cuenta;
+    el.classList.add('money');
+    el.setAttribute('inputmode', 'decimal');
+    caja.classList.remove('en-cuenta');
+    if (v !== null) {
+      if (/[+\-*\/×÷]/.test(crudo)) el.dataset.expr = crudo; else delete el.dataset.expr;
+      numSet(el, v);
+    }
+    const eco = caja.querySelector('.calc-eco');
+    if (eco) { eco.textContent = ''; eco.className = 'calc-eco'; }
+    calcPintarExpr(caja, el);
+  }
+  caja.querySelectorAll('.calc-tab').forEach(b => {
+    b.classList.toggle('on', (b.dataset.modo === 'cuenta') === !!prender);
+  });
+  if (!sinFoco) el.focus();
+}
+
+// La cuenta guardada, abajo del campo. Con una ✕ para descartarla: si te
+// arrepentís, el número queda igual y la cuenta se va.
+function calcPintarExpr(caja, el) {
+  let n = caja.querySelector('.calc-expr');
+  if (!el.dataset.expr) { if (n) n.remove(); return; }
+  if (!n) { n = document.createElement('div'); n.className = 'calc-expr'; caja.appendChild(n); }
+  n.innerHTML = '<span>𝑓 ' + esc(calcLinda(el.dataset.expr)) + '</span>' +
+    '<button type="button" title="Olvidar la cuenta" onclick="calcOlvidar(\'' + el.id + '\')">✕</button>';
+}
+function calcOlvidar(id) {
+  const el = document.getElementById(id);
+  if (!el || !el.closest('.calc-wrap')) return;
+  delete el.dataset.expr;
+  calcPintarExpr(el.closest('.calc-wrap'), el);
+}
+
+// El eco: mientras escribís, abajo del campo se ve cuánto da. Es lo que hace
+// que no tengas que confiar — ves el resultado antes de aceptarlo.
+function calcEco(el, exigir) {
+  const caja = el && el.closest ? el.closest('.calc-wrap') : null;
+  if (!caja) return;
+  const eco = caja.querySelector('.calc-eco');
+  if (!eco) return;
+  const txt = el.value.trim();
+  if (!el.dataset.cuenta || !txt) { eco.textContent = ''; eco.className = 'calc-eco'; return; }
+  const v = calcEvaluar(txt);
+  if (v === null) {
+    // Si todavía está a mitad de escribir ('12000+') no se le grita: se calla.
+    // Salvo que venga de un guardado —ahí ya no hay «después», tiene que cerrar.
+    eco.textContent = (!exigir && /[+\-*\/×÷(]\s*$/.test(txt)) ? '' : 'No se entiende la cuenta';
+    eco.className = 'calc-eco mal';
+  } else {
+    eco.textContent = '= ' + numFmtTexto(String(v).replace('.', ','));
+    eco.className = 'calc-eco ok';
+  }
+}
+
+// Insertar un operador desde la tirita, sin perder el lugar del cursor.
+function calcOp(id, op) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (!el.dataset.cuenta) calcModo(id, true);
+  const a = el.selectionStart == null ? el.value.length : el.selectionStart;
+  const b = el.selectionEnd == null ? a : el.selectionEnd;
+  el.value = el.value.slice(0, a) + op + el.value.slice(b);
+  const pos = a + op.length;
+  try { el.setSelectionRange(pos, pos); } catch (e) {}
+  el.focus();
+  calcEco(el);
+}
+
+// Dejar el campo en condiciones de ser leído por numVal(): si quedó una cuenta
+// escrita, se resuelve. Devuelve false si la cuenta no cierra —ahí el que
+// llama tiene que frenar el guardado en vez de leer un número inventado.
+function calcAsentar(id) {
+  const el = document.getElementById(id);
+  if (!el || !el.dataset || !el.dataset.cuenta) return true;
+  if (!el.value.trim()) return true;
+  if (calcEvaluar(el.value) === null) return false;
+  calcModo(id, false, true);
+  return true;
+}
+
+// La cuenta de un campo, SÓLO si sigue explicando el importe que se va a
+// guardar. Si el número se editó a mano después, la cuenta ya no es cierta y
+// se descarta acá: preferimos no tener el dato antes que tenerlo mal.
+function calcCuentaDe(id, valor) {
+  const el = document.getElementById(id);
+  const e = el && el.dataset ? (el.dataset.expr || '') : '';
+  if (!e) return '';
+  const v = calcEvaluar(e);
+  return (v !== null && Math.abs(v - Number(valor || 0)) < 0.005) ? e : '';
+}
+
+// Poner (o limpiar) la cuenta guardada al abrir un registro para editarlo.
+function calcPonerExpr(id, expr) {
+  const el = document.getElementById(id);
+  if (!el || !el.closest('.calc-wrap')) return;
+  if (expr) el.dataset.expr = String(expr); else delete el.dataset.expr;
+  calcPintarExpr(el.closest('.calc-wrap'), el);
+}
+// Volver un campo a cero: sin cuenta guardada y en modo número.
+function calcReset(id) {
+  const el = document.getElementById(id);
+  if (!el || !el.closest('.calc-wrap')) return;
+  delete el.dataset.expr;
+  calcModo(id, false, true);
+  calcPintarExpr(el.closest('.calc-wrap'), el);
+}
+
+// ── envolver un campo que ya existe ─────────────────────────
+// No se toca el HTML de los formularios: se envuelve el input que ya está.
+function calcEnvolver(id, etiqueta) {
+  const el = document.getElementById(id);
+  if (!el || el.closest('.calc-wrap')) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'calc-wrap';
+  el.parentNode.insertBefore(wrap, el);
+  wrap.appendChild(el);
+
+  const tabs = document.createElement('div');
+  tabs.className = 'calc-tabs';
+  tabs.innerHTML =
+    '<button type="button" class="calc-tab on" data-modo="num" onclick="calcModo(\'' + id + '\',false)">123</button>' +
+    '<button type="button" class="calc-tab" data-modo="cuenta" onclick="calcModo(\'' + id + '\',true)">± ' +
+      (etiqueta || 'Cuenta') + '</button>';
+  wrap.insertBefore(tabs, el);
+
+  // El resultado va primero, pegado al campo: es lo único que la persona está
+  // mirando mientras escribe. La tirita de operadores va abajo.
+  const res = document.createElement('div');
+  res.className = 'calc-res';
+  res.innerHTML = '<div class="calc-eco"></div>' +
+    '<button type="button" class="calc-listo" onclick="calcModo(\'' + id + '\',false)">= listo</button>';
+  wrap.appendChild(res);
+
+  const ops = document.createElement('div');
+  ops.className = 'calc-ops';
+  [['+', '+', ''], ['−', '-', ''], ['×', '*', ''], ['÷', '/', ''],
+   ['(', '(', ' calc-par'], [')', ')', ' calc-par']].forEach(function (o) {
+    ops.innerHTML += '<button type="button" class="' + o[2].trim() + '" onclick="calcOp(\'' +
+      id + '\',\'' + o[1] + '\')">' + o[0] + '</button>';
+  });
+  wrap.appendChild(ops);
+}
+
+// ── modo implícito, sólo con teclado de verdad ──────────────
+// Si escribís un signo estando en modo número, se pasa solo a cuenta. En el
+// celular NO: ahí el signo está enterrado en el teclado numérico y nadie lo
+// escribe sin querer, así que la magia no aporta y sí puede asustar. Se detecta
+// con (pointer: fine), que es «hay mouse o teclado de verdad» y no «la pantalla
+// es grande»: una tablet con teclado también cuenta.
+// El − y los paréntesis quedan afuera a propósito: un menos al principio es un
+// error de tipeo mucho más común que una resta.
+document.addEventListener('beforeinput', function (e) {
+  const el = e.target;
+  if (!el || !el.classList || !el.classList.contains('money')) return;
+  if (!el.closest || !el.closest('.calc-wrap')) return;
+  if (el.dataset.cuenta) return;
+  try { if (!window.matchMedia('(pointer: fine)').matches) return; } catch (err) {}
+  const d = e.data;
+  if (!d || '+*/×÷'.indexOf(d) < 0) return;
+  e.preventDefault();
+  calcModo(el.id, true);
+  calcOp(el.id, d === '×' ? '*' : d === '÷' ? '/' : d);
+}, true);
+
+// Enter resuelve y vuelve a número: es el gesto de «listo, ya está». Se frena
+// acá antes de que el formulario lo tome como enviar.
+document.addEventListener('keydown', function (e) {
+  const el = e.target;
+  if (!el || !el.dataset || !el.dataset.cuenta) return;
+  if (e.key === 'Enter')  { e.preventDefault(); calcModo(el.id, false); }
+  if (e.key === 'Escape') { e.preventDefault(); el.value = ''; calcEco(el); }
+}, true);
+
+document.addEventListener('input', function (e) {
+  const el = e.target;
+  if (el && el.dataset && el.dataset.cuenta) calcEco(el);
+});
+
+// Al salir del campo se resuelve solo. Nadie debería poder guardar un
+// movimiento que dice '47000*3' en vez de un número.
+document.addEventListener('focusout', function (e) {
+  const el = e.target;
+  if (el && el.dataset && el.dataset.cuenta && el.value.trim()) {
+    if (calcEvaluar(el.value) !== null) calcModo(el.id, false, true);
+  }
+}, true);
+
+const CALC_TX = ['txImpPesos', 'txImpUSD', 'txPagado'];
 
 // ── PRESUPUESTO / META DE AHORRO ────────────────────────────
 const getBudgets  = ()  => JSON.parse(localStorage.getItem(`fin_budgets_${curEmpresa()}`) || '{}');
@@ -10056,7 +10381,11 @@ function cuEditar(id) {
 function cuAbrirForm(d) {
   document.getElementById('cuFormTitulo').textContent = _cuEditando ? 'Editar la anotación' : 'Anotar un precio';
   document.getElementById('cuProd').value   = d.prod || '';
+  calcEnvolver('cuPrecio');
+  calcReset('cuPrecio');
   numSet('cuPrecio', d.precio);
+  // Acá el registro tiene un solo importe, así que la cuenta va plana.
+  calcPonerExpr('cuPrecio', d.cta);
   document.getElementById('cuLugar').value  = d.lugar || '';
   document.getElementById('cuFecha').value  = d.fecha || cuHoy();
   document.getElementById('cuNota').value   = d.nota || '';
@@ -10096,10 +10425,12 @@ function cuSetSello(v) {
 function cuGuardar() {
   const err  = document.getElementById('cuFormError');
   const prod = document.getElementById('cuProd').value.trim();
+
+  function fallar(m) { err.textContent = m; err.style.display = 'block'; }
+  if (!calcAsentar('cuPrecio')) return fallar('Revisá la cuenta del precio: no se entiende.');
   const precio = numVal('cuPrecio');
   const fecha = document.getElementById('cuFecha').value;
 
-  function fallar(m) { err.textContent = m; err.style.display = 'block'; }
   if (!prod)        return fallar('Poné qué es. Sin nombre no hay con qué comparar después.');
   if (precio <= 0)  return fallar('Poné cuánto salió.');
   if (!fecha)       return fallar('Poné la fecha.');
@@ -10120,6 +10451,8 @@ function cuGuardar() {
     creadoAt: antes.creadoAt || Date.now(),
     act: Date.now()
   };
+  const _cta = calcCuentaDe('cuPrecio', precio);
+  if (_cta) c.items[id].cta = _cta;
   cuSave(c);
   _cuEditando = null;
   cuCerrarForm();
@@ -11433,7 +11766,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.11.006';
+const APP_VERSION = 'v005.12.003';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -12165,6 +12498,9 @@ function handleRubroChange(v) {
 function openModal(id) {
   document.getElementById('modalTitle').textContent = id ? 'Editar transacción' : 'Nueva transacción';
   document.getElementById('txId').value = id || '';
+  // Los tres campos de importe pasan a tener el interruptor 123/Cuenta.
+  // calcEnvolver() no hace nada si ya estaban envueltos.
+  CALC_TX.forEach(c => calcEnvolver(c));
 
   if (id) {
     const t = getData().find(x => x.id === id);
@@ -12191,8 +12527,15 @@ function openModal(id) {
     document.getElementById('txFecha').value    = t.fecha     || '';
     document.getElementById('txVenc').value     = t.venc      || '';
     numSet('txPagado', t.pagado);
+    // La cuenta con la que se llegó a cada importe, si quedó guardada.
+    const _cta = t.cta || {};
+    calcPonerExpr('txImpPesos', _cta.impPesos);
+    calcPonerExpr('txImpUSD',   _cta.impUSD);
+    calcPonerExpr('txPagado',   _cta.pagado);
   } else {
     document.getElementById('txForm').reset();
+    // reset() limpia los valores pero no sabe nada de la calculadora.
+    CALC_TX.forEach(c => calcReset(c));
     setTipoForm('Ingreso');
     document.getElementById('txMes').value = curKey();
     document.getElementById('txFecha').value = fechaPorDefecto(curKey());
@@ -12213,7 +12556,18 @@ function saveTx(e) {
     rubro = document.getElementById('txRubroCustom').value.trim() || 'Personalizado';
     persistCustomRubro(tipo, rubro); // guarda permanentemente en la lista
   }
+  // Si algún campo quedó con una cuenta escrita, se resuelve antes de leerlo.
+  // Si la cuenta no cierra no se guarda nada: se marca el campo y se para acá,
+  // porque leerlo igual daría un número inventado.
+  const _malo = CALC_TX.find(c => !calcAsentar(c));
+  if (_malo) {
+    const _el = document.getElementById(_malo);
+    calcEco(_el, true);
+    _el.focus();
+    return;
+  }
   const impP   = numVal('txImpPesos');
+  const impU   = numVal('txImpUSD');
   const pagado = numVal('txPagado');
   const tipoGasto = document.getElementById('txTipoGasto').value || 'Variable';
 
@@ -12224,12 +12578,19 @@ function saveTx(e) {
     detalle: document.getElementById('txDetalle').value,
     cliente: document.getElementById('txCliente').value.trim() || '',
     impPesos: impP,
-    impUSD:   numVal('txImpUSD'),
+    impUSD:   impU,
     fecha:    document.getElementById('txFecha').value || '',
     venc:     document.getElementById('txVenc').value,
     pagado,
     saldo: impP - pagado
   };
+
+  // La cuenta de cada importe, si sigue explicando ese número. Objeto ralo: la
+  // enorme mayoría de los movimientos no lo va a tener y no ocupa nada.
+  const cta = {};
+  [['impPesos', 'txImpPesos', impP], ['impUSD', 'txImpUSD', impU], ['pagado', 'txPagado', pagado]]
+    .forEach(function (f) { const e = calcCuentaDe(f[1], f[2]); if (e) cta[f[0]] = e; });
+  if (Object.keys(cta).length) tx.cta = cta;
 
   const data = getData();
   if (id) {
