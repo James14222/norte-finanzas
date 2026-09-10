@@ -6052,24 +6052,30 @@ function calcEnvolver(id, etiqueta) {
   const tabs = document.createElement('div');
   tabs.className = 'calc-tabs';
   tabs.innerHTML =
-    '<button type="button" class="calc-tab on" data-modo="num" onclick="calcModo(\'' + id + '\',false)">123</button>' +
-    '<button type="button" class="calc-tab" data-modo="cuenta" onclick="calcModo(\'' + id + '\',true)">± ' +
-      (etiqueta || 'Cuenta') + '</button>';
+    '<button type="button" class="calc-tab on" data-modo="num" onmousedown="event.preventDefault()"' +
+    ' onclick="calcModo(\'' + id + '\',false)">123</button>' +
+    '<button type="button" class="calc-tab" data-modo="cuenta" onmousedown="event.preventDefault()"' +
+    ' onclick="calcModo(\'' + id + '\',true)">± ' + (etiqueta || 'Cuenta') + '</button>';
   wrap.insertBefore(tabs, el);
 
   // El resultado va primero, pegado al campo: es lo único que la persona está
   // mirando mientras escribe. La tirita de operadores va abajo.
   const res = document.createElement('div');
   res.className = 'calc-res';
+  // onmousedown que cancela: si no, apretar el botón le saca el foco al campo,
+  // el focusout resuelve la cuenta, la tirita se esconde y el click se pierde
+  // en el aire. Es la barra de herramientas de siempre.
   res.innerHTML = '<div class="calc-eco"></div>' +
-    '<button type="button" class="calc-listo" onclick="calcModo(\'' + id + '\',false)">= listo</button>';
+    '<button type="button" class="calc-listo" onmousedown="event.preventDefault()"' +
+    ' onclick="calcModo(\'' + id + '\',false)">= listo</button>';
   wrap.appendChild(res);
 
   const ops = document.createElement('div');
   ops.className = 'calc-ops';
   [['+', '+', ''], ['−', '-', ''], ['×', '*', ''], ['÷', '/', ''],
    ['(', '(', ' calc-par'], [')', ')', ' calc-par']].forEach(function (o) {
-    ops.innerHTML += '<button type="button" class="' + o[2].trim() + '" onclick="calcOp(\'' +
+    ops.innerHTML += '<button type="button" class="' + o[2].trim() +
+      '" onmousedown="event.preventDefault()" onclick="calcOp(\'' +
       id + '\',\'' + o[1] + '\')">' + o[0] + '</button>';
   });
   wrap.appendChild(ops);
@@ -6110,13 +6116,37 @@ document.addEventListener('input', function (e) {
   if (el && el.dataset && el.dataset.cuenta) calcEco(el);
 });
 
+// Mientras el dedo (o el mouse) está apoyado sobre un control de la cajita, lo
+// que pase con el foco no cuenta como salir del campo. Hace falta además de
+// relatedTarget porque en el iPhone los botones no reciben foco al tocarlos y
+// relatedTarget viene vacío.
+let _calcTocando = null;
+document.addEventListener('pointerdown', function (e) {
+  const caja = (e.target && e.target.closest) ? e.target.closest('.calc-wrap') : null;
+  if (!caja) return;
+  _calcTocando = caja;
+}, true);
+// Se levanta el dedo: el gesto terminó. A partir de acá salir del campo vuelve
+// a ser salir del campo. El plazo largo es sólo por si algún navegador se come
+// el pointerup (se cancela el gesto, se apaga la pantalla).
+['pointerup', 'pointercancel'].forEach(function (ev) {
+  document.addEventListener(ev, function () { _calcTocando = null; }, true);
+});
+
 // Al salir del campo se resuelve solo. Nadie debería poder guardar un
 // movimiento que dice '47000*3' en vez de un número.
+//
+// Pero moverse a un botón de la MISMA cajita no es salir: es seguir usando la
+// calculadora. Si esto resolviera ahí, la tirita se escondería antes de que el
+// click llegue y el botón no haría nada. Eso fue exactamente el bug de la
+// v005.12.003: apretabas «×» y el campo volvía a ser un número, sin cuenta.
 document.addEventListener('focusout', function (e) {
   const el = e.target;
-  if (el && el.dataset && el.dataset.cuenta && el.value.trim()) {
-    if (calcEvaluar(el.value) !== null) calcModo(el.id, false, true);
-  }
+  if (!el || !el.dataset || !el.dataset.cuenta || !el.value.trim()) return;
+  const caja = el.closest ? el.closest('.calc-wrap') : null;
+  if (caja && (_calcTocando === caja ||
+              (e.relatedTarget && caja.contains(e.relatedTarget)))) return;
+  if (calcEvaluar(el.value) !== null) calcModo(el.id, false, true);
 }, true);
 
 const CALC_TX = ['txImpPesos', 'txImpUSD', 'txPagado'];
@@ -11766,7 +11796,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.12.003';
+const APP_VERSION = 'v005.12.006';
 let novEntradas = [];
 
 function novLeida(e) {
