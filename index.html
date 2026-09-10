@@ -7808,6 +7808,13 @@ window.scrollTo(0, 0);
   if (navIdx >= 0) document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
   document.getElementById('pageTitle').textContent = {dashboard:'Mi Rumbo',transacciones:'Transacciones',presupuesto:'Presupuesto',reserva:'Reserva',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',cuaderno:'El Cuaderno',consultas:'NortIA',admin:'Administración',tugps:'Novedades'}[p] || p;
   curPage = p;
+  /* El selector de meses sólo tiene sentido donde los datos son de un mes.
+     En estas pantallas no filtra nada —está verificado, ninguna lee el mes— y
+     Progreso a propósito siempre habla de hoy. Un control que se puede tocar y
+     no hace nada confunde más que no estar. */
+  const SIN_MES = ['cuaderno', 'progreso', 'consultas', 'tugps', 'admin'];
+  const _mnav = document.querySelector('.month-nav');
+  if (_mnav) _mnav.style.display = SIN_MES.indexOf(p) >= 0 ? 'none' : '';
   if (p === 'reportes') initReportesFiltros();
   if (p === 'admin' && window.renderRubrosAdminAlEntrar) { try { window.renderRubrosAdminAlEntrar(); } catch (e) {} }
   if (p === 'admin') { try { renderNovedadesAdmin(); } catch (e) {} }
@@ -9027,9 +9034,17 @@ function progRachaActual(claves) {
   return n;
 }
 
+// El mes de verdad, no al que navegaste. Progreso mide todo tu historial hasta
+// hoy: si tomara el mes del selector, retroceder te bajaría los puntos y el
+// nivel, que es exactamente lo que este cálculo promete que no pasa.
+function progKeyHoy() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+
 function progCalcular() {
   const all = getData();
-  const key = curKey();
+  const key = progKeyHoy();
   const r = computeRacha(all, key);
 
   // ── semanas y meses ───────────────────────────────────────────────────
@@ -9387,7 +9402,7 @@ function renderProgreso() {
   // El gráfico de evolución sigue abajo: es lo único de la pantalla vieja que
   // no se superpone con nada nuevo y sirve para ver el largo plazo de un vistazo.
   try {
-    const r2 = computeRacha(getData(), curKey());
+    const r2 = computeRacha(getData(), progKeyHoy());
     const last12 = r2.balances.slice(-12);
     const cvs = document.getElementById('progresoEvolChart');
     const vacio = document.getElementById('progresoEvolEmpty');
@@ -11334,7 +11349,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.11.003';
+const APP_VERSION = 'v005.11.004';
 let novEntradas = [];
 
 function novLeida(e) {
