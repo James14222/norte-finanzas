@@ -1493,6 +1493,10 @@ tr:hover td { background: #fafbfc; }
   .cards-grid .card.k-bal{order:2}
   .cards-grid .card.k-gas{order:3;grid-column:1 / -1}
   .cards-grid .card.k-pend{order:4;grid-column:1 / -1}
+  /* En Transacciones la caja va sola, no dentro de la grilla de cuatro: sin
+     tope se estiraría de lado a lado y el número quedaría perdido a la izquierda. */
+  .tx-pend-wrap{max-width:360px;margin-bottom:14px}
+  @media (max-width:880px){.tx-pend-wrap{max-width:none}}
 }
 
   </style>
@@ -1901,6 +1905,17 @@ tr:hover td { background: #fafbfc; }
 
     <!-- TRANSACCIONES -->
     <div id="page-transacciones" class="page">
+      <!-- La misma caja de Mi Rumbo, repetida acá: mientras se van marcando los
+           pagos el número baja a la vista, sin cambiar de pantalla. Usa las
+           mismas clases para que sea la misma caja y no un parecido. -->
+      <div class="tx-pend-wrap">
+        <div class="card k-pend">
+          <div class="card-label" id="tx-pend-lbl">Saldo pendiente</div>
+          <div class="card-vrow"><div class="card-value warning-c" id="tx-pend">$0</div><div class="card-icon">⏳</div></div>
+          <div class="card-sub">Por pagar</div>
+          <div id="tx-pend-cmp"></div>
+        </div>
+      </div>
       <div class="table-wrap">
         <div class="table-head">
           <div class="filters">
@@ -7848,6 +7863,31 @@ function cargarGPSPioneros(){
 }
 
 // ── DASHBOARD ───────────────────────────────────────────────
+// El saldo pendiente del mes vive en una sola función: lo muestran Mi Rumbo y
+// Transacciones, y dos cajas que dicen lo mismo no pueden calcularlo cada una
+// por su lado sin terminar, algún día, diciendo cosas distintas.
+function saldoPendienteDelMes() {
+  const all     = getData().filter(t => t.mes === curKey());
+  fxCargarModo();
+  const pend    = all.reduce((s, t) => s + (Number(t.saldo) || 0), 0);
+  const usdPend = fxUsdPendiente(all);
+  const on      = fxActivo();
+  return { pend, usdPend, on, total: on ? pend + fxAPesos(usdPend) : pend };
+}
+
+// Pinta la caja repetida en Transacciones. Se llama desde renderTx(), así que
+// cada vez que se marca un pago y la pantalla se repinta, el número baja solo.
+function pintarPendienteTx() {
+  const val = document.getElementById('tx-pend');
+  if (!val) return;
+  const { pend, usdPend, on, total } = saldoPendienteDelMes();
+  val.textContent = fmtP(total);
+  const lbl = document.getElementById('tx-pend-lbl');
+  if (lbl) lbl.textContent = (on && usdPend) ? 'Saldo pendiente · total en pesos' : 'Saldo pendiente';
+  const cmp = document.getElementById('tx-pend-cmp');
+  if (cmp) cmp.innerHTML = (on && usdPend) ? cmpHTML('Por pagar en pesos', pend, usdPend) : '';
+}
+
 function renderDash() {
   const all  = getData().filter(t => t.mes === curKey());
   const ings = all.filter(t => t.tipo === 'Ingreso');
@@ -7859,12 +7899,9 @@ function renderDash() {
   const totIngU = sum(ings, 'impUSD');
   const totGasU = sum(gas,  'impUSD');
   const bal     = totIngP - totGasP;
-  const pend    = all.reduce((s,t) => s + (Number(t.saldo)||0), 0);
 
   // ── Dólar integrado ───────────────────────────────────────
-  fxCargarModo();
-  const usdPend  = fxUsdPendiente(all);
-  const on       = fxActivo();
+  const { pend, usdPend, on } = saldoPendienteDelMes();
   const ingT     = on ? totIngP + fxAPesos(totIngU) : totIngP;
   const gasT     = on ? totGasP + fxAPesos(totGasU) : totGasP;
   const balT     = ingT - gasT;
@@ -8193,6 +8230,7 @@ function evolEsAngosto() {
 
 // ── TRANSACCIONES ────────────────────────────────────────────
 function renderTx() {
+  pintarPendienteTx();
   const all = getData().filter(t => t.mes === curKey());
 
   // Poblar filtro de rubros
@@ -10098,7 +10136,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.8.009';
+const APP_VERSION = 'v005.9.000';
 let novEntradas = [];
 
 function novLeida(e) {
