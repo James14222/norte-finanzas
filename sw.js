@@ -3,7 +3,7 @@
  * Estrategia: Cache-first para el app shell, network-first para Firebase/APIs.
  */
 
-const CACHE_NAME = 'norte-v72';
+const CACHE_NAME = 'norte-v74';
 const BASE = '';
 
 // Recursos del app shell que se cachean en la instalación
@@ -13,13 +13,18 @@ const APP_SHELL = [
   BASE + '/manifest.json',
   BASE + '/icons/icon-192.png',
   BASE + '/icons/icon-512.png',
+  BASE + '/cuaderno-fondo.webp',
 ];
 
 // ── INSTALL: cachear el app shell ─────────────────────────────
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
+      .then(cache => Promise.all(
+        APP_SHELL.map(url => cache.add(url).catch(err => {
+          console.warn('[sw] no se pudo cachear', url, err);
+        }))
+      ))
       .then(() => self.skipWaiting())
   );
 });
