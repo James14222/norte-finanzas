@@ -547,6 +547,38 @@ tr:hover td { background: #fafbfc; }
 .cu-hero-ico { font-size: 28px; }
 .cu-hero-sub { font-size: 13.5px; color: var(--muted); margin-top: 3px; }
 
+/* Volver a ver el tutorial. Uno que se ve una sola vez y no se puede
+   recuperar es una nota perdida. */
+.cu-comofunciona {
+  background: none; border: none; padding: 0; margin-top: 7px; cursor: pointer;
+  font-family: inherit; font-size: 12.5px; font-weight: 600;
+  color: var(--primary-dark, #E8714A);
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.cu-comofunciona:hover { color: var(--primary); }
+
+/* El distintivo del menú. A propósito no es el contador naranja de Novedades:
+   ese cuenta cosas sin leer y acá no hay nada que contar. Es una palabra, más
+   apagada, y se apaga sola. */
+.badge-nuevo {
+  margin-left: auto; font-size: 9px; font-weight: 800; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--brand-accent-soft);
+  background: rgba(255,138,92,.18); border-radius: 6px; padding: 2px 6px;
+}
+
+/* El tutorial reusa la caja del asistente de bienvenida (.ob-*): misma
+   cabecera, mismos puntitos, mismos botones. No hace falta estética nueva,
+   la persona ya vio esta caja el primer día. */
+#cuTutoOverlay {
+  position: fixed; inset: 0; z-index: 3000;
+  background: rgba(8,18,30,.88);
+  backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+#cuTutoOverlay.hidden { display: none; }
+.cu-tuto-txt { font-size: 14px; line-height: 1.62; color: var(--text); }
+.cu-tuto-nota { margin-top: 16px; font-size: 12.5px; color: var(--muted); }
+
 /* El aviso. Es la promesa fuerte de esta pantalla, así que se ve como un
    aviso y no como una nota al pie. */
 .cu-aviso {
@@ -1917,7 +1949,7 @@ tr:hover td { background: #fafbfc; }
     <div class="nav-item" onclick="showPage('analisis')"><span class="ico">🔎</span> Análisis</div>
     <div class="nav-item" onclick="showPage('progreso')"><span class="ico">🏆</span> Progreso</div>
     <div class="nav-item" onclick="showPage('reportes')"><span class="ico">📈</span> Reportes</div>
-    <div class="nav-item" onclick="showPage('cuaderno')"><span class="ico">📒</span> El Cuaderno</div>
+    <div class="nav-item" onclick="showPage('cuaderno')"><span class="ico">📒</span> El Cuaderno<span class="badge-nuevo" id="navCuNuevo" style="display:none">nuevo</span></div>
     <div class="nav-item disabled nortia-item" id="navNortia"><span class="nortia-nav-icon" style="display:inline-block;background-image:var(--nortia-icon-url);background-size:72%;background-repeat:no-repeat;background-position:center;background-color:#fff;border-radius:6px;"></span> <strong>NortIA</strong> <span class="badge-soon" id="navNortiaBadge">Próximamente</span></div>
         <div class="nav-item gps-nav-item" id="navTuGps" onclick="showPage('tugps')"><span class="ico">🧭</span> Novedades<span id="gpsNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
      <div class="nav-item" id="navAdmin" style="display:none" onclick="showPage('admin')"><span class="ico">⚙️</span> Admin<span id="adminNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
@@ -2400,6 +2432,7 @@ tr:hover td { background: #fafbfc; }
         <div class="cu-hero-txt">
           <div class="cu-hero-tit"><span class="cu-hero-ico">📒</span> El Cuaderno</div>
           <div class="cu-hero-sub">La libreta de precios del hogar</div>
+          <button class="cu-comofunciona" onclick="cuTutoAbrir()">¿Cómo funciona?</button>
         </div>
       </div>
       <div class="cu-cab">
@@ -2478,6 +2511,26 @@ tr:hover td { background: #fafbfc; }
         <div id="cuDetalleBody"></div>
         <div style="text-align:right;margin-top:16px">
           <button class="btn" style="border:1px solid var(--border);color:var(--muted)" onclick="cuCerrarDetalle()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- El tutorial de primera vez de El Cuaderno -->
+    <div id="cuTutoOverlay" class="hidden">
+      <div class="ob-card">
+        <div class="ob-header">
+          <div class="ob-steps" id="cuTutoDots"></div>
+          <div class="ob-step-ico"   id="cuTutoIco"></div>
+          <div class="ob-step-title" id="cuTutoTit"></div>
+          <div class="ob-step-sub"   id="cuTutoSub"></div>
+        </div>
+        <div class="ob-body">
+          <div class="cu-tuto-txt"  id="cuTutoTxt"></div>
+          <div class="cu-tuto-nota" id="cuTutoNota"></div>
+          <div class="ob-actions">
+            <button class="ob-btn-skip" onclick="cuTutoCerrar()">Saltar</button>
+            <button class="ob-btn-next" id="cuTutoNext" onclick="cuTutoSiguiente()">Siguiente</button>
+          </div>
         </div>
       </div>
     </div>
@@ -7819,7 +7872,7 @@ function render() { if (curPage !== 'dashboard') { const _mn = document.querySel
   else if (curPage === 'analisis')      renderAnalisis();
   else if (curPage === 'progreso')      renderProgreso();
   else if (curPage === 'reportes')      renderReportes();
-  else if (curPage === 'cuaderno')      renderCuaderno();
+  else if (curPage === 'cuaderno')    { renderCuaderno(); cuTutoQuizas(); }
   else if (curPage === 'admin')         renderAdmin();
   // consultas no necesita re-render al cambiar mes
 }
@@ -8928,6 +8981,11 @@ function renderProgreso() {
   // conserva la condición vieja para que a quien ya la tenía no se le apague:
   // una medalla que desaparece es peor que una medalla imperfecta.
   const metaCumplidaAlgunaVez = (() => {
+    /* `meta` se usaba sin declarar: la declaración se fue con la pantalla de
+       Meta de ahorro y quedó el uso. Lanzaba ReferenceError acá mismo y
+       renderProgreso abortaba, así que las medallas nunca se dibujaban. El
+       getter siguió existiendo todo este tiempo; sólo faltaba llamarlo. */
+    const meta = getMetaAhorro();
     if (meta && r.balances.some(b => b.bal >= meta)) return true;
     const res = getReserva();
     return Object.values(res.destinos).some(d => d && (
@@ -9316,6 +9374,90 @@ function renderCuaderno() {
         (g.rubro ? ' · ' + esc(g.rubro) : '') + '</div>' +
       '<div class="cu-pie">' + pie + '</div>' +
     '</div>';
+  }).join('');
+}
+
+/* ── EL CUADERNO · presentación de primera vez ───────────────────────────
+   Dos cosas atadas a una sola marca: el distintivo "nuevo" del menú y el
+   tutorial. La marca se prende cuando la persona CIERRA el tutorial, no
+   cuando pisa la pantalla: así "visto" quiere decir visto. Quien entra y
+   cierra la pestaña sin mirarlo lo vuelve a tener, que es lo correcto.
+
+   Vive en norteSync/lecturas/<uid>, el mismo registro por persona que usan
+   las Novedades. Una vez por persona, no una vez por navegador. */
+const CU_NUEVO_HASTA = Date.parse('2026-10-31T23:59:59-03:00');
+
+const CU_TUTO = [
+  { ico: '📒', tit: 'Un cuaderno, no una cuenta',
+    sub: 'Acá anotás lo que te cobran: la garrafa, el service, lo que te presupuestó el plomero.',
+    txt: '<b>Nada de lo que anotes acá entra en tu Balance, tu Presupuesto ni tus Reportes.</b> '
+       + 'No es plata que gastaste: es plata que te <i>pidieron</i>. Por eso vive aparte.' },
+  { ico: '🏷️', tit: 'Comprado o relevado',
+    sub: 'Dos formas de saber un precio, y no se mezclan.',
+    txt: '<b>Comprado</b> es lo que pagaste. <b>Relevado</b> es un precio que te pasaron y todavía '
+       + 'no aceptaste. Norte los compara por separado: un presupuesto contra un presupuesto, una '
+       + 'compra contra una compra. Mezclarlos te daría diferencias que no son reales.' },
+  { ico: '📈', tit: 'La gracia está en la segunda vez',
+    sub: 'La primera anotación es solo un dato suelto.',
+    txt: 'Cuando vuelvas a anotar lo mismo, Norte te dice <b>cuánto cambió y hace cuánto</b>: '
+       + '«la vez anterior, hace 3 meses: $27.900 · +16%». Ahí es donde el cuaderno empieza a '
+       + 'pagar: cuando te dicen un precio, ya sabés si es caro.' }
+];
+let cuTutoPaso = 0;
+
+function cuPintarNuevo() {
+  const el = document.getElementById('navCuNuevo');
+  if (!el) return;
+  const mostrar = lectListo && !lect.cuTuto && Date.now() < CU_NUEVO_HASTA;
+  el.style.display = mostrar ? '' : 'none';
+}
+
+/* Se llama al entrar a la pantalla. Si la nube todavía no contestó no decide
+   nada: cuando conteste, el propio listener vuelve a llamar acá. */
+function cuTutoQuizas() {
+  if (!lectListo || lect.cuTuto) return;
+  const ov = document.getElementById('cuTutoOverlay');
+  if (!ov || !ov.classList.contains('hidden')) return;
+  cuTutoAbrir();
+}
+
+function cuTutoAbrir() {
+  cuTutoPaso = 0;
+  const ov = document.getElementById('cuTutoOverlay');
+  if (!ov) return;
+  ov.classList.remove('hidden');
+  cuTutoPintar();
+}
+
+function cuTutoCerrar() {
+  const ov = document.getElementById('cuTutoOverlay');
+  if (ov) ov.classList.add('hidden');
+  if (!lect.cuTuto) {
+    lect.cuTuto = Date.now();
+    try { lectEscribir('cuTuto', lect.cuTuto); } catch (e) {}
+  }
+  cuPintarNuevo();
+}
+
+function cuTutoSiguiente() {
+  if (cuTutoPaso >= CU_TUTO.length - 1) { cuTutoCerrar(); return; }
+  cuTutoPaso++;
+  cuTutoPintar();
+}
+
+function cuTutoPintar() {
+  const p = CU_TUTO[cuTutoPaso];
+  const ult = cuTutoPaso === CU_TUTO.length - 1;
+  document.getElementById('cuTutoIco').textContent = p.ico;
+  document.getElementById('cuTutoTit').innerHTML   = p.tit;
+  document.getElementById('cuTutoSub').innerHTML   = p.sub;
+  document.getElementById('cuTutoTxt').innerHTML   = p.txt;
+  document.getElementById('cuTutoNota').innerHTML  = ult
+    ? 'Podés volver a ver esto cuando quieras desde <b>¿Cómo funciona?</b>, arriba en el encabezado.'
+    : '';
+  document.getElementById('cuTutoNext').textContent = ult ? 'Empezar' : 'Siguiente';
+  document.getElementById('cuTutoDots').innerHTML = CU_TUTO.map(function (_, i) {
+    return '<div class="ob-step-dot ' + (i === cuTutoPaso ? 'active' : (i < cuTutoPaso ? 'done' : '')) + '"></div>';
   }).join('');
 }
 
@@ -10638,7 +10780,10 @@ function rbRefrescarPantallas() {
 //
 // La regla ata el nodo al propio uid: nadie puede marcar como leído ni votar en
 // nombre de otro, así que no hace falta pasar por una Cloud Function.
-let lect = { nov: {}, votos: {}, novHasta: 0, chat: 0, caps: {}, capsVisto: 0 };
+let lect = { nov: {}, votos: {}, novHasta: 0, chat: 0, caps: {}, capsVisto: 0, cuTuto: 0 };
+let lectListo = false;   // ¿ya contestó la nube? Hasta que conteste no se
+                         // decide nada: en un dispositivo nuevo el caché
+                         // está vacío y el tutorial saldría de nuevo.
 let lectRef = null;
 let lectUid = null;
 
@@ -10652,7 +10797,8 @@ function lectNormalizar(o) {
     novHasta:  Number(o.novHasta)  || 0,
     chat:      Number(o.chat)      || 0,
     caps:      o.caps  || {},
-    capsVisto: Number(o.capsVisto) || 0
+    capsVisto: Number(o.capsVisto) || 0,
+    cuTuto:    Number(o.cuTuto)    || 0
   };
 }
 
@@ -10717,10 +10863,18 @@ function iniciarLecturas() {
           novHasta:  Math.max(lect.novHasta,  r.novHasta),
           chat:      Math.max(lect.chat,      r.chat),
           caps:      Object.assign({}, lect.caps,  r.caps),
-          capsVisto: Math.max(lect.capsVisto, r.capsVisto)
+          capsVisto: Math.max(lect.capsVisto, r.capsVisto),
+          cuTuto:    Math.max(lect.cuTuto,    r.cuTuto)
         };
         lectGuardarLocal();
       }
+      lectListo = true;
+      try {
+        cuPintarNuevo();
+        // Si la persona ya estaba parada en El Cuaderno cuando llegó la
+        // respuesta, se resuelve ahora en vez de perder el turno.
+        if (typeof curPage !== 'undefined' && curPage === 'cuaderno') cuTutoQuizas();
+      } catch (e) {}
       try { if (typeof window.gpsPintarBadgeTotal === 'function') window.gpsPintarBadgeTotal(); } catch (e) {}
       if (typeof curPage !== 'undefined' && curPage === 'tugps') {
         try { renderNovedades(); } catch (e) {}
@@ -10733,7 +10887,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.10.006';
+const APP_VERSION = 'v005.10.007';
 let novEntradas = [];
 
 function novLeida(e) {
