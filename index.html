@@ -608,7 +608,7 @@ tr:hover td { background: #fafbfc; }
 
 .cu-hoja {
   background: #F5F1E9; border: 1px solid #e6e2d9; border-radius: 14px;
-  padding: 2px 20px 330px; position: relative; overflow: hidden; isolation: isolate;
+  padding: 2px 20px 470px; position: relative; overflow: hidden; isolation: isolate;
   min-height: 300px;
 }
 /* La hoja escrita a mano, abajo y a la derecha, atras de los renglones. Se
@@ -620,11 +620,11 @@ tr:hover td { background: #fafbfc; }
    quedaria fuera de cuadro. El `isolation: isolate` es para que la mezcla no
    se escape a lo que haya arriba en el apilado. */
 .cu-hoja::after {
-  content: ""; position: absolute; right: 16px; bottom: 14px; z-index: 0;
-  width: 76%; max-width: 700px; height: 296px;
+  content: ""; position: absolute; right: 0; bottom: 0; z-index: 0;
+  width: 97%; height: 448px;
   background: url('cuaderno-fondo.webp') no-repeat right bottom;
   background-size: contain;
-  mix-blend-mode: multiply; opacity: .11; pointer-events: none;
+  mix-blend-mode: multiply; opacity: .13; pointer-events: none;
 }
 .cu-fila, .cu-vacio { position: relative; z-index: 1; }
 .cu-hoja::before {
@@ -690,13 +690,18 @@ tr:hover td { background: #fafbfc; }
 @media (max-width: 880px) {
   #page-cuaderno .cu-cab .f-search { width: 100%; }
   .cu-conteo { margin-left: 0; }
-  .cu-hoja { padding: 2px 14px 200px; }
+  .cu-hoja { padding: 2px 14px 305px; }
   /* En el celular la caja es angosta: con `cover` la letra se agranda tanto que
      tapa los renglones. Con `contain` entra la hoja completa y vuelve a ser fondo. */
   /* Misma foto y mismo encuadre que en la compu: el espiral baja por el borde
      izquierdo. Solo baja la intensidad, porque en pantalla chica el mismo gris
      pesa mas sobre menos texto. */
-  .cu-hoja::after { right: 8px; bottom: 10px; width: 92%; height: 178px; opacity: .1; }
+  /* En el celular la caja es angosta y `contain` la achica por el ancho, no por
+     el alto: la hoja quedaba chiquita en un rincón. Se la deja crecer más allá
+     del borde derecho —el panel la recorta— anclándola a la izquierda, que es
+     donde está el espiral. Se ve grande y se sigue leyendo como cuaderno. */
+  .cu-hoja::after { left: 0; right: auto; width: 150%; height: 288px;
+                    background-position: left bottom; opacity: .12; }
   .cu-fila:hover { margin: 0 -14px; padding-left: 14px; padding-right: 14px; }
   .cu-hito-p { font-size: 12px; }
 }
@@ -955,38 +960,106 @@ tr:hover td { background: #fafbfc; }
 .insight-tip.tip-info { background:#e0e7ff; color:#3730a3; }
 
 /* PROGRESO */
-.progreso-top { display:flex; gap:18px; margin-bottom:18px; flex-wrap:wrap; }
-.level-card { display:flex; align-items:center; gap:22px; flex:1.4; min-width:280px; }
-.level-ring { position:relative; width:92px; height:92px; flex-shrink:0; }
-.level-ring svg { width:92px; height:92px; transform:rotate(-90deg); }
-.level-ring .l-bg   { fill:none; stroke:#eef1f4; stroke-width:8; }
-.level-ring .l-fill { fill:none; stroke:var(--brand-accent); stroke-width:8; stroke-linecap:round; stroke-dasharray:251.2; transition:stroke-dashoffset 0.6s ease; }
-.level-num { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-.level-num .ln-ico { font-size:22px; line-height:1; }
-.level-num .ln-name { font-size:10px; font-weight:700; color:var(--muted); margin-top:2px; }
-.level-right { flex:1; min-width:0; }
-.level-title { font-size:16px; font-weight:700; margin-bottom:4px; }
-.level-sub { font-size:12.5px; color:var(--muted); margin-bottom:9px; }
-.level-progress-track { height:8px; border-radius:5px; background:#eef1f4; overflow:hidden; }
-.level-progress-fill { height:100%; border-radius:5px; background:linear-gradient(90deg, var(--brand-accent), var(--brand-accent-soft)); transition:width 0.5s ease; }
-.streak-card { flex:1; min-width:200px; }
-.streak-num-row { display:flex; align-items:baseline; gap:8px; }
-.streak-num { font-size:34px; font-weight:800; color:var(--brand-navy); }
-.streak-label { font-size:13px; color:var(--muted); }
-.streak-sub { font-size:12px; color:var(--muted); margin-top:6px; }
-.goal-card { flex:1; min-width:220px; }
-.goal-row { display:flex; gap:8px; align-items:center; margin-top:8px; }
-.goal-input { flex:1; padding:8px 11px; border:1px solid var(--border); border-radius:8px; font-size:13.5px; outline:none; background:var(--bg); }
-.goal-input:focus { border-color:var(--primary); background:white; }
-.goal-status { font-size:12px; margin-top:8px; font-weight:600; }
-.badges-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
-.badge-card { border-radius:12px; padding:16px 14px; text-align:center; border:1px solid var(--border); transition:all 0.15s; }
-.badge-card.unlocked { background:#f0fdf4; border-color:#bbf7d0; }
-.badge-card.locked { opacity:0.5; filter:grayscale(0.6); }
-.badge-ico-big { font-size:28px; margin-bottom:8px; }
-.badge-name { font-size:12.5px; font-weight:700; margin-bottom:3px; }
-.badge-desc { font-size:11px; color:var(--muted); line-height:1.4; }
-.badge-check { font-size:11px; font-weight:700; color:#059669; margin-top:6px; }
+/* La pantalla se dibuja entera por JS: acá va sólo la piel. */
+.pg-pantalla { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; box-shadow: 0 4px 22px rgba(15,35,51,.06); }
+
+.pg-hero { background: radial-gradient(120% 130% at 80% -10%, #2c5a76 0%, #1B3A4B 45%, #0e2233 100%); color: #fff; padding: 28px 30px 26px; position: relative; overflow: hidden; }
+.pg-hero::after { content: ""; position: absolute; left: -40px; bottom: -90px; width: 260px; height: 260px; border-radius: 50%; background: radial-gradient(circle, rgba(255,138,92,.20), transparent 70%); }
+.pg-hfila { display: flex; align-items: center; gap: 26px; position: relative; z-index: 1; flex-wrap: wrap; }
+.pg-hero-esc { flex-shrink: 0; filter: drop-shadow(0 6px 18px rgba(0,0,0,.35)); }
+.pg-htxt { flex: 1 1 240px; min-width: 0; }
+.pg-hk { font-size: 10px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; color: var(--brand-accent-soft); }
+.pg-hnom { font-size: 31px; font-weight: 800; letter-spacing: -.025em; line-height: 1.05; margin: 2px 0 5px; }
+.pg-hsub { font-size: 13.5px; color: rgba(255,255,255,.62); line-height: 1.5; max-width: 46ch; }
+.pg-hpts-big { flex: 0 0 auto; text-align: right; }
+.pg-hpts-big b { font-size: 34px; font-weight: 800; letter-spacing: -.03em; display: block; line-height: 1; }
+.pg-hpts-big span { font-size: 10px; color: rgba(255,255,255,.5); font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+.pg-hbar { position: relative; z-index: 1; margin-top: 20px; }
+.pg-hbar-t { display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,.6); margin-bottom: 7px; gap: 12px; flex-wrap: wrap; }
+.pg-hbar-t b { color: #fff; }
+.pg-hbar-track { height: 10px; border-radius: 6px; background: rgba(255,255,255,.13); overflow: hidden; }
+.pg-hbar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, #FF8A5C, #FFC38F 70%, #FFE3C4); box-shadow: 0 0 18px rgba(255,138,92,.6); transition: width .6s ease; }
+.pg-leyenda { display: flex; flex-wrap: wrap; gap: 7px 14px; margin-top: 16px; position: relative; z-index: 1; }
+.pg-lg { display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(255,255,255,.62); }
+.pg-lg i { width: 8px; height: 8px; border-radius: 2px; display: block; }
+.pg-lg b { color: rgba(255,255,255,.9); font-weight: 700; }
+
+.pg-reglas { padding: 22px 24px 4px; }
+.pg-rt { font-size: 16px; font-weight: 800; letter-spacing: -.01em; margin-bottom: 3px; }
+.pg-rs { font-size: 13px; color: var(--muted); margin-bottom: 14px; max-width: 72ch; }
+.pg-motores { display: flex; gap: 13px; flex-wrap: wrap; }
+.pg-motor { flex: 1 1 280px; min-width: 0; border: 1px solid var(--border); border-radius: 14px; padding: 15px 17px; background: var(--bg); }
+.pg-motor.eje { background: linear-gradient(135deg, rgba(249,115,22,.09), rgba(249,115,22,.02)); border-color: rgba(249,115,22,.32); }
+.pg-mk { font-size: 9.5px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; color: var(--muted); }
+.pg-motor.eje .pg-mk { color: #C2410C; }
+.pg-mn { font-size: 15.5px; font-weight: 800; letter-spacing: -.01em; margin: 2px 0 6px; }
+.pg-md { font-size: 13px; color: #3c4a58; line-height: 1.55; margin-bottom: 11px; }
+.pg-tarifa { display: flex; flex-direction: column; gap: 5px; }
+.pg-tarifa div { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; border-top: 1px dashed var(--border); padding-top: 5px; }
+.pg-tarifa div:first-child { border-top: none; padding-top: 0; }
+.pg-tarifa b { white-space: nowrap; font-weight: 800; }
+.pg-motor.eje .pg-tarifa b { color: #C2410C; }
+
+.pg-reparto { margin-top: 16px; border: 1px solid var(--border); border-radius: 14px; padding: 14px 17px 15px; background: var(--card); }
+.pg-rpt { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 9px; }
+.pg-rpbar { height: 13px; border-radius: 7px; overflow: hidden; display: flex; background: var(--border); }
+.pg-rpbar i { display: block; height: 100%; }
+.pg-rpl { display: flex; gap: 18px; margin-top: 9px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.pg-rpl span { display: flex; align-items: center; gap: 6px; }
+.pg-rpl i { width: 9px; height: 9px; border-radius: 3px; display: block; }
+.pg-rpl b { color: var(--text); font-weight: 800; }
+
+.pg-cuerpo { padding: 8px 24px 26px; }
+.pg-tiras { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
+.pg-tira { flex: 1 1 150px; min-width: 0; border: 1px solid var(--border); border-radius: 13px; padding: 13px 15px; background: var(--bg); }
+.pg-tl { font-size: 9.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.pg-tv { font-size: 22px; font-weight: 800; letter-spacing: -.02em; margin-top: 2px; display: flex; align-items: baseline; gap: 5px; }
+.pg-tv small { font-size: 12px; font-weight: 600; color: var(--muted); }
+.pg-ts { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.pg-llamas { display: flex; gap: 3px; margin-top: 6px; }
+.pg-llama { width: 100%; height: 5px; border-radius: 3px; background: var(--border); }
+
+.pg-fam { margin-top: 26px; }
+.pg-fcab { display: flex; align-items: center; gap: 9px; margin-bottom: 9px; flex-wrap: wrap; }
+.pg-fpt { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.pg-fnom { font-size: 16px; font-weight: 800; letter-spacing: -.015em; }
+.pg-flema { font-size: 12.5px; color: var(--muted); }
+.pg-frango { margin-left: auto; font-size: 11.5px; font-weight: 800; color: var(--text); white-space: nowrap; }
+.pg-frango i { font-style: normal; font-weight: 600; color: var(--muted); }
+.pg-fbar { height: 6px; border-radius: 4px; background: var(--border); overflow: hidden; margin-bottom: 13px; }
+.pg-fbar i { display: block; height: 100%; border-radius: 4px; transition: width .5s ease; }
+.pg-grilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(212px, 1fr)); gap: 12px; }
+.pg-hito { border: 1px solid var(--border); border-radius: 14px; padding: 13px 14px; background: var(--card); }
+.pg-hito.ok { box-shadow: 0 3px 12px rgba(15,35,51,.08); border-color: #e8edf2; }
+.pg-hito.lock { background: var(--bg); opacity: .78; }
+.pg-hcab { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+.pg-esc { flex-shrink: 0; }
+.pg-hrango { line-height: 1.15; }
+.pg-hrango b { font-size: 13px; font-weight: 800; letter-spacing: .06em; display: block; }
+.pg-hrango span { font-size: 9.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.pg-hpts { margin-left: auto; font-size: 11.5px; font-weight: 800; color: var(--muted); }
+.pg-hn { font-size: 13.5px; font-weight: 800; letter-spacing: -.01em; line-height: 1.25; }
+.pg-hito.lock .pg-hn { color: var(--muted); }
+.pg-hd { font-size: 11.5px; color: var(--muted); line-height: 1.45; margin-top: 3px; }
+.pg-hprog { margin-top: 9px; height: 5px; border-radius: 3px; background: var(--border); overflow: hidden; }
+.pg-hprog i { display: block; height: 100%; border-radius: 3px; }
+.pg-hprog-t { font-size: 10.5px; color: var(--muted); margin-top: 4px; font-weight: 700; }
+
+.pg-spoiler { margin-top: 28px; border: 1.5px dashed rgba(255,138,92,.55); background: linear-gradient(135deg, rgba(255,138,92,.08), rgba(255,138,92,.02)); border-radius: 16px; padding: 20px 22px; display: flex; gap: 17px; align-items: center; flex-wrap: wrap; }
+.pg-spoiler svg { flex-shrink: 0; }
+.pg-spt { flex: 1 1 260px; min-width: 0; }
+.pg-spt b { font-size: 15.5px; font-weight: 800; display: block; margin-bottom: 3px; }
+.pg-spt p { font-size: 13px; color: #3c4a58; line-height: 1.55; }
+
+/* La ficha del pie del menú es la puerta a Progreso: ya mostraba el nivel y la
+   barra, sólo que no se podía tocar. Ahora abre. */
+.acct-prog { cursor: pointer; margin-top: 10px; padding: 9px 11px 10px; border-radius: 11px;
+  background: linear-gradient(135deg, rgba(255,138,92,.20), rgba(255,255,255,.05));
+  border: 1px solid rgba(255,177,153,.32); }
+.acct-prog:hover { background: linear-gradient(135deg, rgba(255,138,92,.30), rgba(255,255,255,.09)); }
+.acct-prog .acct-val { display: flex; align-items: center; gap: 8px; }
+.acct-prog-cta { font-size: 10.5px; font-weight: 700; color: var(--brand-accent-soft); margin-top: 8px; display: flex; align-items: center; gap: 5px; }
+.acct-prog-esc { width: 26px; height: 26px; flex-shrink: 0; vertical-align: middle; }
 
 /* ───────────────────────── MOBILE (≤ 880px) ───────────────────────── */
 @media (max-width: 880px) {
@@ -1003,7 +1076,7 @@ tr:hover td { background: #fafbfc; }
 
   /* Grids → 1 columna */
   .cards-grid, .dash-grid, .reports-grid, .insights-grid, .budget-summary,
-  .stat-cards, .scenarios-grid, .badges-grid, .progreso-top { grid-template-columns: 1fr !important; }
+  .stat-cards, .scenarios-grid { grid-template-columns: 1fr !important; }
   .reports-grid > .full, .insight-card.full { grid-column: auto; }
 
   /* El gráfico anual es el único bloque al que le damos ancho de más y carril
@@ -1031,7 +1104,6 @@ tr:hover td { background: #fafbfc; }
   .health-card { flex-direction:column; align-items:flex-start; gap:14px; }
   .health-bars { grid-template-columns:1fr 1fr; }
 
-  .level-card { flex-direction:column; align-items:flex-start; }
 
   /* Tablas: scroll horizontal + tipografía compacta */
   table, .data-table { font-size:12px; }
@@ -1079,7 +1151,6 @@ tr:hover td { background: #fafbfc; }
   .chat-msg { max-width:92%; }
 
   /* Badges en grilla más compacta */
-  .badges-grid { grid-template-columns: 1fr 1fr !important; }
 
   /* Tablero Mi Rumbo: KPIs en 2 columnas, mas grandes y compactos */
   .cards-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
@@ -1090,7 +1161,6 @@ tr:hover td { background: #fafbfc; }
 }
 
 /* Transacciones y Reportes en mobile: tarjetas en vez de tabla apretada */ @media (max-width: 880px) { #page-transacciones .tx-scroll { overflow-x: visible; } #page-transacciones .tx-scroll table { display: block; width: 100%; } #page-transacciones colgroup { display: none; } #page-transacciones thead { display: none; } #page-transacciones tbody { display: block; } #page-transacciones tbody tr { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px 12px; margin-bottom: 12px; } #page-transacciones tbody tr td { display: block; border: none; padding: 0; white-space: normal; font-size: 14px; } #page-transacciones tbody tr td:nth-child(1) { order: 0; flex: 0 0 auto; } #page-transacciones tbody tr td:nth-child(2) { order: 0; flex: 1 1 auto; min-width: 0; font-size: 16px; } #page-transacciones tbody tr td:nth-child(2) strong { font-size: 16px; } #page-transacciones tbody tr td:nth-child(3) { order: 1; flex: 0 0 auto; } #page-transacciones tbody tr td:nth-child(4) { order: 1; flex: 1 1 auto; text-align: right; } #page-transacciones tbody tr td:nth-child(6) { order: 2; flex: 0 0 auto; font-size: 20px; font-weight: 800; } #page-transacciones tbody tr td:nth-child(7) { order: 2; flex: 1 1 auto; text-align: right; margin-left: auto; font-size: 13px; } #page-transacciones tbody tr td:nth-child(9) { order: 3; flex: 0 0 auto; font-size: 13px; } #page-transacciones tbody tr td:nth-child(9)::before { content: "Pagado "; color: var(--muted); font-size: 11px; } #page-transacciones tbody tr td:nth-child(10) { order: 3; flex: 1 1 auto; text-align: right; margin-left: auto; font-size: 13px; } #page-transacciones tbody tr td:nth-child(5) { order: 4; flex: 0 0 auto; font-size: 12.5px; color: var(--muted); } #page-transacciones tbody tr td:nth-child(8) { order: 4; flex: 1 1 auto; text-align: right; margin-left: auto; font-size: 12.5px; color: var(--muted); } #page-transacciones tbody tr td:nth-child(11) { order: 5; flex: 0 0 100%; display: flex; justify-content: flex-end; gap: 18px; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--border); } #page-transacciones tbody tr td:nth-child(11) button { font-size: 18px; padding: 4px 8px; } #desgloseRubroTable table { font-size: 14px !important; } #desgloseRubroTable thead { display: none !important; } #desgloseRubroTable tbody tr:not(:last-child) { display: flex !important; flex-wrap: wrap !important; align-items: center !important; gap: 4px 8px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; padding: 12px 14px !important; margin-bottom: 8px !important; } #desgloseRubroTable tbody tr:not(:last-child) td { display: block !important; padding: 0 !important; white-space: normal !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(1) { order: 1 !important; flex: 0 0 auto !important; font-size: 12px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(2) { order: 1 !important; flex: 1 1 auto !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(2) span { font-size: 15px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(3) { order: 2 !important; flex: 0 0 auto !important; font-size: 16px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(4) { order: 2 !important; flex: 1 1 auto !important; text-align: right !important; font-size: 13px !important; margin-left: auto !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(5) { order: 3 !important; flex: 0 0 100% !important; padding-top: 6px !important; width: auto !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(5) div { height: 8px !important; } #desgloseRubroTable tbody tr:last-child { display: flex !important; justify-content: space-between !important; align-items: center !important; background: var(--bg) !important; border-radius: 10px !important; padding: 12px 14px !important; border-top: none !important; } #desgloseRubroTable tbody tr:last-child td { display: inline !important; padding: 0 !important; } #desgloseRubroTable tbody tr:last-child td:nth-child(1) { font-size: 14px !important; } #desgloseRubroTable tbody tr:last-child td:nth-child(2) { font-size: 16px !important; } #desgloseRubroTable tbody tr:last-child td:nth-child(3), #desgloseRubroTable tbody tr:last-child td:nth-child(4) { display: none !important; } table, .data-table { font-size: 13.5px !important; } table th, table td, .data-table th, .data-table td { padding: 10px 10px !important; } } @media (max-width: 880px) { #rubroMesTable { display: block !important; max-width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; border-radius: 12px !important; } #rubroMesTable thead, #rubroMesTable tbody { display: table !important; width: 100% !important; } #rubroMesTable th, #rubroMesTable td { white-space: nowrap !important; font-size: 14px !important; padding: 10px 14px !important; } #rubroMesTable th:first-child, #rubroMesTable td:first-child { position: sticky !important; left: 0 !important; background: var(--card) !important; z-index: 1 !important; font-weight: 600 !important; } #rubroMesTable tbody tr:last-child td { font-weight: 800 !important; background: var(--bg) !important; } #ingDetalleTable table { font-size: 14px !important; } #ingDetalleTable thead { display: none !important; } #ingDetalleTable tbody tr:has(td[colspan]) td { font-size: 12.5px !important; font-weight: 700 !important; padding: 14px 4px 6px !important; } #ingDetalleTable tbody tr.ing-total-row { display: flex !important; justify-content: space-between !important; align-items: center !important; background: var(--bg) !important; border-radius: 8px !important; padding: 8px 12px !important; margin-bottom: 8px !important; } #ingDetalleTable tbody tr.ing-total-row td { padding: 0 !important; font-size: 13px !important; font-weight: 700 !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) { display: flex !important; flex-wrap: wrap !important; align-items: center !important; gap: 4px 10px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; padding: 10px 12px !important; margin-bottom: 6px !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) td { display: block !important; padding: 0 !important; border: none !important; white-space: normal !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) td:nth-child(1) { order: 0 !important; flex: 1 1 auto !important; font-weight: 600 !important; font-size: 14px !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) td:nth-child(4) { order: 0 !important; flex: 0 0 auto !important; margin-left: auto !important; font-weight: 800 !important; font-size: 15px !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) td:nth-child(2) { order: 1 !important; flex: 0 0 auto !important; font-size: 11.5px !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) td:nth-child(3) { order: 1 !important; flex: 1 1 auto !important; text-align: right !important; margin-left: auto !important; font-size: 11.5px !important; color: var(--muted) !important; } #tcDetalleTable table { font-size: 14px !important; } #tcDetalleTable thead { display: none !important; } #tcDetalleTable tbody tr:has(td[colspan]) { display: block !important; text-align: center !important; padding: 20px !important; color: var(--muted) !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) { display: flex !important; flex-wrap: wrap !important; align-items: center !important; gap: 4px 10px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; padding: 10px 12px !important; margin-bottom: 6px !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td { display: block !important; padding: 0 !important; border: none !important; white-space: normal !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(1) { order: 0 !important; flex: 1 1 auto !important; font-weight: 600 !important; font-size: 14px !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(4) { order: 0 !important; flex: 0 0 auto !important; margin-left: auto !important; font-weight: 800 !important; font-size: 15px !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(2) { order: 1 !important; flex: 0 0 auto !important; font-size: 11.5px !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(3) { order: 1 !important; flex: 1 1 auto !important; text-align: right !important; margin-left: auto !important; font-size: 11.5px !important; color: var(--muted) !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(6) { order: 2 !important; flex: 0 0 auto !important; font-size: 11px !important; color: var(--muted) !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(5) { order: 2 !important; flex: 1 1 auto !important; text-align: right !important; margin-left: auto !important; font-size: 11px !important; color: var(--muted) !important; } } @media (max-width: 880px) { .rep-tabs { gap: 4px !important; } .rep-tab { padding: 6px 9px !important; font-size: 11.5px !important; white-space: nowrap !important; } #desgloseRubroChart { max-width: 200px !important; max-height: 200px !important; width: 200px !important; height: 200px !important; margin: 0 auto !important; display: block !important; } } @media (max-width: 880px) { .rep-tab { padding: 7px 12px !important; font-size: 14px !important; } #desgloseRubroChart { max-width: 150px !important; max-height: 150px !important; width: 150px !important; height: 150px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(1) { font-size: 13px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(2) span { font-size: 16px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(3) { font-size: 17px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(4) { font-size: 14px !important; } } @media (max-width: 480px) {
-  .badges-grid { grid-template-columns: 1fr !important; }
   .health-bars { grid-template-columns: 1fr; }
   .cards-grid.budget-summary, .stat-cards { grid-template-columns: 1fr !important; }
   .month-display { min-width:96px; }
@@ -1951,7 +2021,6 @@ tr:hover td { background: #fafbfc; }
     <div class="nav-item" onclick="showPage('presupuesto')"><span class="ico">🎯</span> Presupuesto</div>
     <div class="nav-item" onclick="showPage('reserva')"><span class="ico">⚓</span> Reserva</div>
     <div class="nav-item" onclick="showPage('analisis')"><span class="ico">🔎</span> Análisis</div>
-    <div class="nav-item" onclick="showPage('progreso')"><span class="ico">🏆</span> Progreso</div>
     <div class="nav-item" onclick="showPage('reportes')"><span class="ico">📈</span> Reportes</div>
     <div class="nav-item" onclick="showPage('cuaderno')"><span class="ico">📒</span> El Cuaderno<span class="badge-nuevo" id="navCuNuevo" style="display:none">nuevo</span></div>
     <div class="nav-item disabled nortia-item" id="navNortia"><span class="nortia-nav-icon" style="display:inline-block;background-image:var(--nortia-icon-url);background-size:72%;background-repeat:no-repeat;background-position:center;background-color:#fff;border-radius:6px;"></span> <strong>NortIA</strong> <span class="badge-soon" id="navNortiaBadge">Próximamente</span></div>
@@ -2211,42 +2280,14 @@ tr:hover td { background: #fafbfc; }
 
     <!-- PROGRESO -->
     <div id="page-progreso" class="page">
-      <div class="progreso-top">
-        <div class="card level-card">
-          <div class="level-ring">
-            <svg viewBox="0 0 90 90"><circle class="l-bg" cx="45" cy="45" r="40"/><circle class="l-fill" id="lvlRingFill" cx="45" cy="45" r="40"/></svg>
-            <div class="level-num"><span class="ln-ico" id="lvlIco">🌱</span><span class="ln-name" id="lvlShort"></span></div>
-          </div>
-          <div class="level-right">
-            <div class="level-title" id="lvlTitle">Nivel: —</div>
-            <div class="level-sub" id="lvlSub"></div>
-            <div class="level-progress-track"><div class="level-progress-fill" id="lvlProgFill" style="width:0%"></div></div>
-          </div>
-        </div>
-        <div class="card streak-card">
-          <div class="card-label">Racha actual</div>
-          <div class="streak-num-row"><span class="streak-num" id="rachaNum">0</span><span class="streak-label">meses en verde seguidos</span></div>
-          <div class="streak-sub" id="rachaSub"></div>
-        </div>
-        <div class="card goal-card" style="cursor:pointer" onclick="showPage('reserva')">
-          <div class="card-label">Tu Reserva</div>
-          <div class="goal-status" id="reservaProgresoResumen"></div>
-        </div>
-      </div>
-
-      <div class="card" style="margin-bottom:16px">
+      <div id="progresoBody"></div>
+      <div class="card" style="margin-top:16px">
         <div class="report-title">📈 Evolución de tu balance mensual</div>
         <canvas id="progresoEvolChart" height="80"></canvas>
         <div id="progresoEvolEmpty" class="empty" style="display:none"><div class="ei">📭</div><p>Aún no hay historial suficiente</p></div>
       </div>
-
-      <div class="card">
-        <div class="report-title">Logros y niveles</div>
-        <div class="badges-grid" id="badgesGrid"></div>
-      </div>
     </div>
 
-    <!-- REPORTES -->
     <div id="page-reportes" class="page">
       <div id="repFiltrosBar" style="display:none;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:12px">
         <div id="repHogarWrap" style="display:none;align-items:center;gap:8px">
@@ -7763,7 +7804,7 @@ window.scrollTo(0, 0);
   // El orden tiene que coincidir con el de los .nav-item del menú: se marca el
   // activo por posición. Al insertar Reserva entre Presupuesto y Análisis, sin
   // esta línea se subrayaba el ítem equivocado de ahí para abajo.
-  const navIdx = ['dashboard','transacciones','presupuesto','reserva','analisis','progreso','reportes','cuaderno','consultas'].indexOf(p);
+  const navIdx = ['dashboard','transacciones','presupuesto','reserva','analisis','reportes','cuaderno','consultas'].indexOf(p);
   if (navIdx >= 0) document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
   document.getElementById('pageTitle').textContent = {dashboard:'Mi Rumbo',transacciones:'Transacciones',presupuesto:'Presupuesto',reserva:'Reserva',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',cuaderno:'El Cuaderno',consultas:'NortIA',admin:'Administración',tugps:'Novedades'}[p] || p;
   curPage = p;
@@ -8125,13 +8166,14 @@ function renderAcctBox(){
                + '<div class="acct-bar"><i style="width:' + (pts/40*100) + '%"></i></div>';
   } else {
     try {
-      const r = computeRacha(getData(), curKey());
-      let idx = 0;
-      for (let i = 0; i < NIVELES.length; i++) if (r.enVerde >= NIVELES[i].min) idx = i;
-      const lvl = NIVELES[idx], next = NIVELES[idx+1];
-      const pct = next ? Math.min(100, Math.round((r.enVerde - lvl.min) / (next.min - lvl.min) * 100)) : 100;
-      ultimaFila = '<div class="acct-lbl">Tu nivel</div><div class="acct-val">' + lvl.ico + ' ' + esc(lvl.nombre) + '</div>'
-                 + '<div class="acct-bar"><i style="width:' + pct + '%"></i></div>';
+      // Mismo escudo y mismo número que va a ver adentro: la ficha es un
+      // adelanto de la pantalla, no otro cálculo.
+      const d = progCalcular();
+      ultimaFila = '<div class="acct-prog" onclick="showPage(\'progreso\')" title="Ver tu progreso">'
+                 + '<div class="acct-val">' + progEscudoNivel(d.familias, 26, 47, 11).replace('pg-hero-esc', 'acct-prog-esc')
+                 + '<span>' + esc(d.nivel.nombre) + ' · nivel ' + (d.nivel.idx + 1) + '</span></div>'
+                 + '<div class="acct-bar"><i style="width:' + d.nivel.pct + '%"></i></div>'
+                 + '<div class="acct-prog-cta">Ver tu progreso →</div></div>';
     } catch(e){ ultimaFila = ''; }
   }
   box.innerHTML =
@@ -8289,18 +8331,20 @@ function renderDash() {
             try { rsPintarDash(); } catch (e) {}
                                                                                                           
                                                                                                             // Mini-resumen Progreso
-  const rProg = computeRacha(getData(), curKey());
-  let lvlIdx2 = 0;
-  for (let i = 0; i < NIVELES.length; i++) if (rProg.enVerde >= NIVELES[i].min) lvlIdx2 = i;
-  const lvl2 = NIVELES[lvlIdx2];
-  document.getElementById('d-progreso').innerHTML = `
-    <div style="display:flex;align-items:center;gap:14px">
-      <div style="font-size:30px">${lvl2.ico}</div>
-      <div>
-        <div style="font-weight:700;font-size:14px">Nivel ${lvl2.nombre}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">🔥 ${rProg.streak} mes(es) en verde seguidos · ${rProg.enVerde} en total</div>
-      </div>
-    </div>`;
+  // Mismo cálculo que la pantalla y que la ficha del pie: un solo lugar decide
+  // el nivel. Antes acá se recalculaba con la regla vieja y podían discrepar.
+  try {
+    const dp = progCalcular();
+    document.getElementById('d-progreso').innerHTML =
+      '<div style="display:flex;align-items:center;gap:14px">' +
+        progEscudoNivel(dp.familias, 46, 47, 10) +
+        '<div><div style="font-weight:700;font-size:14px">Nivel ' + esc(dp.nivel.nombre) + '</div>' +
+        '<div style="font-size:12px;color:var(--muted);margin-top:2px">' +
+          dp.pts.total.toLocaleString('es-AR') + ' puntos · ' + dp.hitos.ok + ' de ' + dp.hitos.total + ' hitos' +
+          (dp.nivel.next ? ' · faltan ' + (dp.nivel.nextMin - dp.pts.total).toLocaleString('es-AR') + ' para ' + esc(dp.nivel.next) : '') +
+        '</div></div>' +
+      '</div>';
+  } catch (e) {}
 }
 
 // ── SEMÁFORO DE SALUD ────────────────────────────────────────
@@ -8882,138 +8926,480 @@ function computeRacha(allData, uptoKey) {
   return { streak, enVerde, total: balances.length, balances };
 }
 
-const NIVELES = [
-  { min:0,  ico:'🌱', short:'Inicial',   nombre:'Explorador', sub:'Estás dando tus primeros pasos.' },
-  { min:2,  ico:'🌿', short:'Constante', nombre:'Constante',  sub:'Ya le agarraste la mano al registro mensual.' },
-  { min:5,  ico:'📊', short:'Estratega', nombre:'Estratega',  sub:'Tomás decisiones basadas en tus números.' },
-  { min:9,  ico:'🧭', short:'Experto',   nombre:'Experto',    sub:'Tu manejo del dinero es sólido y consistente.' },
-  { min:14, ico:'🛡️', short:'Maestro',   nombre:'Maestro',    sub:'Pocas sorpresas: controlás tus finanzas de cerca.' },
-  { min:20, ico:'👑', short:'Líder',     nombre:'Líder',      sub:'Referente: tu disciplina financiera es ejemplar.' },
-  { min:30, ico:'🏆', short:'Leyenda',   nombre:'Leyenda',    sub:'Constancia de largo plazo. ¡Nivel máximo!' }
+// La tabla vieja de niveles (por «meses en verde») quedó reemplazada por
+// PROG_NIVELES, que se mueve con los puntos. Se saca para que no haya dos
+// fuentes de verdad sobre el mismo número.
+
+// ── PROGRESO ─────────────────────────────────────────────────────────────
+// Una sola moneda: puntos. Antes había dos sistemas que no se hablaban —el
+// nivel miraba «meses en verde» y las medallas no sumaban nada—, así que la
+// mitad de lo que hacía la persona no movía la aguja.
+//
+// Los puntos salen de dos motores:
+//   · CONSTANCIA, que se cobra siempre. Premia aparecer, no gastar bien: no se
+//     puede perder por tener un mal mes, sólo por no venir. Es lo único que se
+//     sostiene todas las semanas y es lo que termina instalando el hábito.
+//   · HITOS, que se cobran una vez. Ocho familias, tres rangos cada una.
+//
+// Regla que gobierna todo el cálculo: los puntos NUNCA bajan. Por eso cada
+// condición se mide sobre el histórico completo (la mejor racha de siempre, no
+// la actual) y nunca sobre un saldo que pueda achicarse. Un tablero que un día
+// te resta lo que ayer te dio no motiva a nadie.
+const PROG_NIVELES = [
+  { min: 0,    nombre: 'Explorador', sub: 'Estás dando tus primeros pasos.' },
+  { min: 250,  nombre: 'Constante',  sub: 'Ya le agarraste la mano al registro.' },
+  { min: 600,  nombre: 'Estratega',  sub: 'Tomás decisiones mirando tus números, no la sensación.' },
+  { min: 1200, nombre: 'Experto',    sub: 'Tu manejo del dinero es sólido y consistente.' },
+  { min: 2200, nombre: 'Maestro',    sub: 'Pocas sorpresas: controlás tus finanzas de cerca.' },
+  { min: 3600, nombre: 'Líder',      sub: 'Referente: tu disciplina financiera es ejemplar.' },
+  { min: 5500, nombre: 'Leyenda',    sub: 'Constancia de largo plazo. Nivel máximo.' }
 ];
+const PROG_PTS   = [25, 60, 150];
+const PROG_METAL = [
+  { a: '#E8A87C', b: '#C77B45', n: 'Bronce' },
+  { a: '#DDE4EA', b: '#93A2AE', n: 'Plata'  },
+  { a: '#FBE08A', b: '#D9A312', n: 'Oro'    }
+];
+const PROG_GLIFOS = {
+  registro:   '<path d="M13 14h14M13 20h14M13 26h9" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>',
+  constancia: '<path d="M20 10c3.8 3.9 6.5 7.2 6.5 10.9a6.5 6.5 0 0 1-13 0c0-2.4 1.3-4.4 2.8-6.1.3 1.7 1.1 2.8 2.2 3.2.2-3.2 1.5-5.8 1.5-8z" fill="#fff"/>',
+  verde:      '<path d="m13 20.5 4.6 4.6L27 15" stroke="#fff" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+  control:    '<circle cx="20" cy="20" r="8" fill="none" stroke="#fff" stroke-width="2.4"/><circle cx="20" cy="20" r="3.4" fill="#fff"/>',
+  reserva:    '<path d="M20 11.5a2.6 2.6 0 1 1 0 5.2 2.6 2.6 0 0 1 0-5.2zM20 16.7V29M14 21h12M13.5 23.5c0 4.2 3 6.5 6.5 6.5s6.5-2.3 6.5-6.5" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/>',
+  tarjetas:   '<rect x="11" y="14" width="18" height="12" rx="2.4" fill="#fff"/><path d="M11 18.4h18" stroke="#4F46E5" stroke-width="2.2"/><circle cx="25" cy="22.5" r="1.5" fill="#4F46E5"/>',
+  cuaderno:   '<rect x="14" y="12" width="14" height="17" rx="2" fill="#fff"/><path d="M12 15.5h3.5M12 19.5h3.5M12 23.5h3.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
+  hogar:      '<circle cx="16" cy="17" r="3.4" fill="#fff"/><circle cx="24.5" cy="18.5" r="2.8" fill="#fff"/><path d="M10 28c0-3.6 2.7-5.6 6-5.6s6 2 6 5.6zM22.5 28c0-2.8 2-4.4 4.4-4.4S31 25.2 31 28z" fill="#fff"/>'
+};
 
-function renderProgreso() {
-  const allData = getData();
+// El lunes de la semana de una fecha. Se ancla al mediodía para que ningún
+// cambio de horario mueva el día.
+function progLunes(f) {
+  if (!f) return null;
+  const d = new Date(String(f).slice(0, 10) + 'T12:00:00');
+  if (isNaN(d.getTime())) return null;
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function progMasDias(clave, n) {
+  const d = new Date(clave + 'T12:00:00');
+  d.setDate(d.getDate() + n);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+// La racha más larga de semanas consecutivas que hubo alguna vez.
+function progMejorRacha(claves) {
+  if (!claves.length) return 0;
+  const orden = claves.slice().sort();
+  let mejor = 1, act = 1;
+  for (let i = 1; i < orden.length; i++) {
+    act = (orden[i] === progMasDias(orden[i - 1], 7)) ? act + 1 : 1;
+    if (act > mejor) mejor = act;
+  }
+  return mejor;
+}
+function progRachaActual(claves) {
+  if (!claves.length) return 0;
+  const set = new Set(claves);
+  let cur = progLunes(new Date().toISOString().slice(0, 10));
+  // Si todavía no cargaste nada esta semana la racha no se corta: se mide desde
+  // la anterior. Cortarla un lunes a la mañana sería un castigo por el reloj.
+  if (!set.has(cur)) cur = progMasDias(cur, -7);
+  let n = 0;
+  while (set.has(cur)) { n++; cur = progMasDias(cur, -7); }
+  return n;
+}
+
+function progCalcular() {
+  const all = getData();
   const key = curKey();
-  const r = computeRacha(allData, key);
+  const r = computeRacha(all, key);
 
-  // Nivel según meses en verde acumulados
-  let lvlIdx = 0;
-  for (let i = 0; i < NIVELES.length; i++) if (r.enVerde >= NIVELES[i].min) lvlIdx = i;
-  const lvl = NIVELES[lvlIdx];
-  const next = NIVELES[lvlIdx+1];
-  const progPct = next ? Math.min(100, Math.round((r.enVerde - lvl.min) / (next.min - lvl.min) * 100)) : 100;
+  // ── semanas y meses ───────────────────────────────────────────────────
+  const semanas = new Set();
+  all.forEach(t => {
+    const l = progLunes(t.fecha) || progLunes((t.mes || '') + '-15');
+    if (l) semanas.add(l);
+  });
+  const semArr  = [...semanas];
+  const mejorSem = progMejorRacha(semArr);
 
-  document.getElementById('lvlIco').textContent = lvl.ico;
-  document.getElementById('lvlShort').textContent = lvl.short;
-  document.getElementById('lvlTitle').textContent = `Nivel: ${lvl.nombre}`;
-  document.getElementById('lvlSub').textContent = next
-    ? `${lvl.sub} Te faltan ${next.min - r.enVerde} mes(es) en verde para llegar a ${next.nombre}.`
-    : `${lvl.sub} Alcanzaste el nivel máximo.`;
-  document.getElementById('lvlProgFill').style.width = progPct + '%';
-  const C = 251.2;
-  document.getElementById('lvlRingFill').style.strokeDashoffset = C - (C * progPct/100);
+  // Un mes está completo si todas las semanas que arrancan dentro de él tienen
+  // al menos un movimiento. El mes en curso no cuenta: le faltan semanas.
+  const mesesCompletos = (() => {
+    const porMes = {};
+    semArr.forEach(l => { const m = l.slice(0, 7); (porMes[m] = porMes[m] || []).push(l); });
+    let n = 0;
+    Object.keys(porMes).forEach(m => {
+      if (m >= key) return;
+      const [a, mm] = m.split('-').map(Number);
+      let esperadas = 0;
+      const d = new Date(a, mm - 1, 1, 12);
+      while (d.getMonth() === mm - 1) { if (d.getDay() === 1) esperadas++; d.setDate(d.getDate() + 1); }
+      if (esperadas > 0 && porMes[m].length >= esperadas) n++;
+    });
+    return n;
+  })();
 
-  document.getElementById('rachaNum').textContent = r.streak;
-  document.getElementById('rachaSub').textContent = r.streak > 0
-    ? `Balance positivo desde hace ${r.streak} mes(es) consecutivos · ${r.enVerde} de ${r.total} meses en verde en total`
-    : `Tu balance no está en verde este mes · ${r.enVerde} de ${r.total} meses en verde en total`;
+  // El bonus se calcula sobre la MEJOR racha, no sobre la actual: si se
+  // calculara sobre la actual, romperla te sacaría puntos ya cobrados.
+  let bonus = 0;
+  for (let i = 1; i <= Math.floor(mejorSem / 4); i++) bonus += (i === 1 ? 10 : i === 2 ? 15 : 20);
+  const ptsConstancia = semArr.length * 5 + mesesCompletos * 20 + bonus;
 
-  // La Reserva reemplazó a la Meta de ahorro mensual. La diferencia de fondo:
-  // la meta miraba el BALANCE del mes y lo llamaba ahorro; la Reserva muestra
-  // lo que la persona dijo que apartó. Lo primero se infiere, lo segundo se
-  // sabe — y por eso uno se puede mirar y el otro no.
-  const rsProg = document.getElementById('reservaProgresoResumen');
-  if (rsProg) {
-    const act = rsDestinosVivos();
-    if (!act.length) {
-      rsProg.innerHTML = 'Todavía no tenés ningún destino. <b style="color:var(--primary)">Creá el primero →</b>';
-      rsProg.style.color = 'var(--muted)';
-    } else {
-      const mes = rsApartadoEnMes(key);
-      rsProg.innerHTML = `Llevás <b>${fmtPz(rsTotalAcumulado())}</b> apartados en `
-        + `${act.length} destino${act.length === 1 ? '' : 's'}`
-        + (mes > 0 ? ` · ${fmtPz(mes)} este mes` : ' · nada apartado este mes')
-        + ' <b style="color:var(--primary)">Ver →</b>';
-      rsProg.style.color = 'var(--muted)';
+  // ── insumos de las familias ───────────────────────────────────────────
+  const budgets = (() => { try { return getBudgets(); } catch (e) { return {}; } })();
+  const mesesConTope = Object.keys(budgets).filter(k => budgets[k] && Object.keys(budgets[k]).length);
+  const mesesBajoTope = mesesConTope.filter(k => {
+    if (k >= key) return false;                         // el mes en curso no cerró
+    const gasto = {};
+    all.filter(t => t.mes === k && t.tipo === 'Gasto')
+       .forEach(t => { gasto[t.rubro] = (gasto[t.rubro] || 0) + (Number(t.impPesos) || 0); });
+    return Object.entries(budgets[k]).every(([ru, lim]) => (gasto[ru] || 0) <= Number(lim));
+  }).sort();
+  const mejorBajoTope = (() => {
+    if (!mesesBajoTope.length) return 0;
+    let mejor = 1, act = 1;
+    for (let i = 1; i < mesesBajoTope.length; i++) {
+      const [a, m] = mesesBajoTope[i - 1].split('-').map(Number);
+      const sig = (m === 12) ? (a + 1) + '-01' : a + '-' + String(m + 1).padStart(2, '0');
+      act = (mesesBajoTope[i] === sig) ? act + 1 : 1;
+      if (act > mejor) mejor = act;
     }
-  }
-
-  // Evolución de balance (últimos 12 meses con datos hasta el mes actual)
-  const last12 = r.balances.slice(-12);
-  const evolEl = document.getElementById('progresoEvolEmpty');
-  const cvs = document.getElementById('progresoEvolChart');
-  if (last12.length < 2) {
-    evolEl.style.display = 'block'; cvs.style.display = 'none';
-  } else {
-    evolEl.style.display = 'none'; cvs.style.display = '';
-    if (charts.progEvol) charts.progEvol.destroy();
-    charts.progEvol = new Chart(cvs.getContext('2d'), {
-      type: 'bar',
-      data: {
-        labels: last12.map(b => { const [y,m] = b.key.split('-'); return `${MESES[Number(m)-1].slice(0,3)} ${y.slice(2)}`; }),
-        datasets: [{
-          label: 'Balance mensual',
-          data: last12.map(b => b.bal),
-          backgroundColor: last12.map(b => b.bal >= 0 ? '#10b98155' : '#ef444455'),
-          borderColor: last12.map(b => b.bal >= 0 ? '#10b981' : '#ef4444'),
-          borderWidth: 2, borderRadius: 5
-        }]
-      },
-      options: {
-        responsive:true,
-        plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>` ${fmtP(c.raw)}`}} },
-        scales: { y: { ticks:{ callback: v => fmtShort(v) } } }
-      }
-    });
-  }
-
-  // Logros / Badges
-  const totalMesesConDatos = r.total;
-  const presupuestoCumplido = (() => {
-    const budgets = getBudgets();
-    return Object.entries(budgets).some(([k, lims]) => {
-      if (!Object.keys(lims).length) return false;
-      const mt = allData.filter(t=>t.mes===k && t.tipo==='Gasto');
-      const map = {};
-      mt.forEach(t => { map[t.rubro] = (map[t.rubro]||0)+(Number(t.impPesos)||0); });
-      return Object.entries(lims).every(([rubro, lim]) => (map[rubro]||0) <= Number(lim));
-    });
-  })();
-  // La medalla que antes miraba la Meta de ahorro ahora mira la Reserva. Se
-  // conserva la condición vieja para que a quien ya la tenía no se le apague:
-  // una medalla que desaparece es peor que una medalla imperfecta.
-  const metaCumplidaAlgunaVez = (() => {
-    /* `meta` se usaba sin declarar: la declaración se fue con la pantalla de
-       Meta de ahorro y quedó el uso. Lanzaba ReferenceError acá mismo y
-       renderProgreso abortaba, así que las medallas nunca se dibujaban. El
-       getter siguió existiendo todo este tiempo; sólo faltaba llamarlo. */
-    const meta = getMetaAhorro();
-    if (meta && r.balances.some(b => b.bal >= meta)) return true;
-    const res = getReserva();
-    return Object.values(res.destinos).some(d => d && (
-      d.estado === 'usado' || (Number(d.meta) > 0 && rsAcumulado(d.id, res) >= Number(d.meta))
-    ));
+    return mejor;
   })();
 
-  const badges = [
-    { ico:'🥇', name:'Primer paso', desc:'Registraste tu primer mes de movimientos.', unlocked: totalMesesConDatos >= 1 },
-    { ico:'📅', name:'Mes en verde', desc:'Cerraste un mes con balance positivo.', unlocked: r.enVerde >= 1 },
-    { ico:'🔥', name:'Racha de 3', desc:'3 meses seguidos con balance positivo.', unlocked: r.streak >= 3 || maxStreak(r.balances) >= 3 },
-    { ico:'🛡️', name:'Disciplina total', desc:'6 meses seguidos con balance positivo.', unlocked: r.streak >= 6 || maxStreak(r.balances) >= 6 },
-    { ico:'🎯', name:'Meta cumplida', desc:'Completaste un destino de tu Reserva.', unlocked: metaCumplidaAlgunaVez },
-    { ico:'📊', name:'Presupuesto bajo control', desc:'Cerraste un mes sin pasarte de ningún límite definido.', unlocked: presupuestoCumplido },
-    { ico:'🏆', name:'Año completo', desc:'Acumulaste 12 meses de historial registrado.', unlocked: totalMesesConDatos >= 12 },
-    { ico:'👑', name:'Leyenda', desc:'Alcanzaste el nivel máximo: 30 meses en verde.', unlocked: r.enVerde >= 30 }
+  const res = (() => { try { return getReserva(); } catch (e) { return { destinos: {}, movimientos: {} }; } })();
+  const destinos = Object.values(res.destinos || {}).filter(Boolean);
+  // Se mira TODOS los destinos, no sólo los vivos: uno que completaste y ya
+  // usaste sale de la lista, y con él se iría una medalla ya ganada.
+  const algunCumplido = destinos.some(d => {
+    if (d.estado === 'usado') return true;
+    const meta = Number(d.meta) || 0;
+    return meta > 0 && rsAcumulado(d.id, res) >= meta;
+  });
+  // Total APARTADO histórico: los retiros no restan. Si restaran, usar la
+  // Reserva para lo que fue creada te bajaría el puntaje.
+  const aportado = destinos.reduce((s, d) => s + (Number(d.saldoInicial) || 0), 0)
+    + Object.values(res.movimientos || {}).reduce((s, m) =>
+        s + ((m && m.tipo !== 'retiro') ? (Number(m.monto) || 0) : 0), 0);
+  const gastoMensual = (() => {
+    const porMes = {};
+    all.filter(t => t.tipo === 'Gasto').forEach(t => { porMes[t.mes] = (porMes[t.mes] || 0) + (Number(t.impPesos) || 0); });
+    const ult = Object.keys(porMes).sort().slice(-6);
+    if (!ult.length) return 0;
+    return ult.reduce((s, k) => s + porMes[k], 0) / ult.length;
+  })();
+  const mesesDeAire = gastoMensual > 0 ? aportado / gastoMensual : 0;
+
+  const resumenes = new Set();
+  all.forEach(t => { try { if (isTCOrigen(t)) resumenes.add(getBanco(t) + '|' + t.mes); } catch (e) {} });
+
+  const cuad = (() => { try { return Object.values(cuGet().items || {}); } catch (e) { return []; } })();
+  const cuGrupos2 = {};
+  cuad.forEach(i => { try { const c = cuClave(i.prod); cuGrupos2[c] = (cuGrupos2[c] || 0) + 1; } catch (e) {} });
+  const cuProductos = Object.keys(cuGrupos2).length;
+  const cuConHistoria = Object.values(cuGrupos2).filter(n => n >= 2).length;
+
+  const autores = new Set();
+  const autoresPorMes = {};
+  all.forEach(t => {
+    const a = t.creadoPor;
+    if (!a || a === 'legacy') return;
+    autores.add(a);
+    (autoresPorMes[t.mes] = autoresPorMes[t.mes] || new Set()).add(a);
+  });
+  const mesesEnEquipo = Object.values(autoresPorMes).filter(s => s.size >= 2).length;
+
+  const maxVerde = Math.max(r.streak, maxStreak(r.balances));
+
+  // ── familias ──────────────────────────────────────────────────────────
+  const F = (clave, nombre, lema, color, hitos) => {
+    const hs = hitos.map((h, i) => Object.assign({}, h, { tier: i + 1, pts: PROG_PTS[i] }));
+    let rango = 0;
+    // El rango es cuántos seguidos van desde el principio: no se puede tener el
+    // oro sin la plata, y así la barra de la familia siempre dice la verdad.
+    for (let i = 0; i < hs.length; i++) { if (hs[i].ok) rango = i + 1; else break; }
+    return { clave, nombre, lema, color, rango, hitos: hs };
+  };
+  const prog = (hecho, total, txt) => ({ hecho, total, txt });
+
+  const familias = [
+    F('registro', 'Registro', 'Poner los números', '#3B82F6', [
+      { n: 'Primer movimiento', d: 'Anotaste algo. Ya arrancó.', ok: all.length >= 1 },
+      { n: 'Cien movimientos', d: 'Tu historial ya tiene cuerpo.', ok: all.length >= 100,
+        p: prog(all.length, 100, all.length + ' de 100') },
+      { n: 'Quinientos', d: 'Medio millar anotados.', ok: all.length >= 500,
+        p: prog(all.length, 500, all.length + ' de 500') }
+    ]),
+    F('constancia', 'Constancia', 'No soltar', '#F97316', [
+      { n: 'Cuatro semanas', d: 'Un mes sin saltarte una semana.', ok: mejorSem >= 4,
+        p: prog(mejorSem, 4, mejorSem + ' de 4 semanas') },
+      { n: 'Doce semanas', d: 'Un trimestre entero de rutina.', ok: mejorSem >= 12,
+        p: prog(mejorSem, 12, mejorSem + ' de 12 semanas') },
+      { n: 'Un año sin faltar', d: '52 semanas seguidas registrando.', ok: mejorSem >= 52,
+        p: prog(mejorSem, 52, mejorSem + ' de 52 semanas') }
+    ]),
+    F('verde', 'Verde', 'Cerrar el mes arriba', '#10B981', [
+      { n: 'Primer mes en verde', d: 'Cerraste un mes con balance positivo.', ok: r.enVerde >= 1 },
+      { n: 'Racha de 3', d: 'Tres meses seguidos en verde.', ok: maxVerde >= 3,
+        p: prog(maxVerde, 3, maxVerde + ' de 3 meses') },
+      { n: 'Disciplina total', d: 'Seis meses seguidos en verde.', ok: maxVerde >= 6,
+        p: prog(maxVerde, 6, maxVerde + ' de 6 meses') }
+    ]),
+    F('control', 'Control', 'Que no se escape', '#8B5CF6', [
+      { n: 'Primer tope', d: 'Le pusiste límite a un rubro.', ok: mesesConTope.length >= 1 },
+      { n: 'Mes bajo control', d: 'Cerraste sin pasarte de ningún tope.', ok: mesesBajoTope.length >= 1 },
+      { n: 'Tres seguidos', d: 'Tres cierres seguidos sin pasarte.', ok: mejorBajoTope >= 3,
+        p: prog(mejorBajoTope, 3, mejorBajoTope + ' de 3') }
+    ]),
+    F('reserva', 'Reserva', 'Construir el colchón', '#D4A017', [
+      { n: 'Primer destino', d: 'Le pusiste nombre a un para qué.', ok: destinos.length >= 1 },
+      { n: 'Destino completo', d: 'Llegaste a la meta de un destino.', ok: algunCumplido },
+      { n: 'Tres meses apartados', d: 'Apartaste el equivalente a tres meses de tus gastos.',
+        ok: mesesDeAire >= 3,
+        p: gastoMensual > 0 ? prog(mesesDeAire, 3, mesesDeAire.toFixed(1) + ' de 3 meses') : null }
+    ]),
+    F('tarjetas', 'Tarjetas', 'Domar el plástico', '#4F46E5', [
+      { n: 'Primer resumen', d: 'Importaste tu primer resumen.', ok: resumenes.size >= 1 },
+      { n: 'Medio año', d: 'Seis resúmenes importados.', ok: resumenes.size >= 6,
+        p: prog(resumenes.size, 6, resumenes.size + ' de 6') },
+      { n: 'Un año sin sorpresas', d: 'Doce resúmenes importados.', ok: resumenes.size >= 12,
+        p: prog(resumenes.size, 12, resumenes.size + ' de 12') }
+    ]),
+    F('cuaderno', 'Cuaderno', 'Saber los precios', '#8B5E3C', [
+      { n: 'Primera anotación', d: 'Anotaste un precio.', ok: cuad.length >= 1 },
+      { n: 'Primera comparación', d: 'Dos veces lo mismo y viste el cambio.', ok: cuConHistoria >= 1 },
+      { n: 'Cazador de precios', d: 'Veinte productos con historia propia.', ok: cuProductos >= 20,
+        p: prog(cuProductos, 20, cuProductos + ' de 20') }
+    ]),
+    F('hogar', 'Hogar', 'Jugar en equipo', '#EC4899', [
+      { n: 'Sumaste a alguien', d: 'El hogar dejó de ser de uno.', ok: autores.size >= 2 },
+      { n: 'Mes a dos manos', d: 'Un mes con movimientos de dos personas.', ok: mesesEnEquipo >= 1 },
+      { n: 'Medio año en equipo', d: 'Seis meses cargando entre varios.', ok: mesesEnEquipo >= 6,
+        p: prog(mesesEnEquipo, 6, mesesEnEquipo + ' de 6 meses') }
+    ])
   ];
 
-  document.getElementById('badgesGrid').innerHTML = badges.map(b => `
-    <div class="badge-card ${b.unlocked ? 'unlocked' : 'locked'}">
-      <div class="badge-ico-big">${b.ico}</div>
-      <div class="badge-name">${b.name}</div>
-      <div class="badge-desc">${b.desc}</div>
-      <div class="badge-check">${b.unlocked ? '✓ Desbloqueado' : '🔒 Bloqueado'}</div>
-    </div>`).join('');
+  let ptsHitos = 0, hitosOk = 0, hitosTotal = 0;
+  familias.forEach(f => f.hitos.forEach(h => { hitosTotal++; if (h.ok) { hitosOk++; ptsHitos += h.pts; } }));
+
+  const total = ptsConstancia + ptsHitos;
+  let idx = 0;
+  for (let i = 0; i < PROG_NIVELES.length; i++) if (total >= PROG_NIVELES[i].min) idx = i;
+  const lvl = PROG_NIVELES[idx], next = PROG_NIVELES[idx + 1];
+
+  return {
+    pts: { constancia: ptsConstancia, hitos: ptsHitos, total },
+    nivel: { idx, nombre: lvl.nombre, sub: lvl.sub, min: lvl.min,
+             next: next ? next.nombre : null, nextMin: next ? next.min : null,
+             pct: next ? Math.max(0, Math.min(100, Math.round((total - lvl.min) / (next.min - lvl.min) * 100))) : 100 },
+    semanas: { total: semArr.length, racha: progRachaActual(semArr), mejor: mejorSem, mesesCompletos },
+    meses: { total: r.total, enVerde: r.enVerde, racha: r.streak },
+    hitos: { ok: hitosOk, total: hitosTotal },
+    familias
+  };
+}
+
+// ── dibujo ───────────────────────────────────────────────────────────────
+function progEscudo(color, glifo, tier, size, apagado) {
+  const m = PROG_METAL[tier - 1];
+  let a = m.a, b = m.b, c = color;
+  if (apagado) { a = '#E2E8F0'; b = '#CBD5E1'; c = '#CBD5E1'; }
+  const uid = 'p' + tier + color.replace('#', '') + (apagado ? 'x' : '');
+  let rayos = '', corona = '';
+  // El rango III no se distingue sólo por el marco dorado: lleva rayos y corona.
+  // Es la medalla que se muestra, no la que se colecciona.
+  if (tier === 3 && !apagado) {
+    let p = '';
+    for (let g = 0; g < 360; g += 30) {
+      const rad = g * Math.PI / 180;
+      p += '<path d="M20 22 ' + (20 + 26 * Math.cos(rad)).toFixed(1) + ' ' + (22 + 26 * Math.sin(rad)).toFixed(1) +
+           '" stroke="' + b + '" stroke-width="1.5" stroke-linecap="round"/>';
+    }
+    rayos = '<g opacity=".55">' + p + '</g>';
+    corona = '<path d="M14.4 6.2 17 8.4l3-3 3 3 2.6-2.2-.7 3.4H15.1z" fill="' + a + '" stroke="' + b + '" stroke-width=".7" stroke-linejoin="round"/>';
+  }
+  return '<svg class="pg-esc" width="' + size + '" height="' + Math.round(size * 1.1) + '" viewBox="0 0 40 44" aria-hidden="true">' +
+    '<defs><linearGradient id="m' + uid + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + a + '"/><stop offset=".55" stop-color="' + b + '"/><stop offset="1" stop-color="' + a + '"/></linearGradient>' +
+    '<linearGradient id="f' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + c + '" stop-opacity=".92"/><stop offset="1" stop-color="' + c + '"/></linearGradient></defs>' +
+    rayos +
+    '<path d="M20 1 38 6.6v14.6c0 10.4-7.5 17.7-18 21.9C9.5 38.9 2 31.6 2 21.2V6.6z" fill="url(#m' + uid + ')"/>' +
+    '<path d="M20 4.4 34.6 9v12.3c0 8.6-6.1 14.8-14.6 18.4C11.5 36.1 5.4 29.9 5.4 21.3V9z" fill="url(#f' + uid + ')"/>' +
+    glifo + corona + '</svg>';
+}
+
+// El anillo: un arco por familia, lleno según el rango. Es lo que ata el escudo
+// del nivel con las familias — sin esto el nivel es un número suelto.
+function progAnillo(familias, r, ancho) {
+  const C = 2 * Math.PI * r, gap = 5, largo = C / familias.length - gap;
+  let s = '';
+  familias.forEach((f, i) => {
+    const rot = -90 + i * (360 / familias.length) + gap / C * 180;
+    s += '<circle cx="60" cy="60" r="' + r + '" fill="none" stroke="rgba(255,255,255,.13)" stroke-width="' + ancho +
+         '" stroke-linecap="round" stroke-dasharray="' + largo.toFixed(2) + ' ' + (C - largo).toFixed(2) +
+         '" transform="rotate(' + rot.toFixed(2) + ' 60 60)"/>';
+    if (f.rango) {
+      const l = largo * f.rango / 3;
+      s += '<circle cx="60" cy="60" r="' + r + '" fill="none" stroke="' + f.color + '" stroke-width="' + ancho +
+           '" stroke-linecap="round" stroke-dasharray="' + l.toFixed(2) + ' ' + (C - l).toFixed(2) +
+           '" transform="rotate(' + rot.toFixed(2) + ' 60 60)"><title>' + esc(f.nombre) + ': rango ' + f.rango + ' de 3</title></circle>';
+    }
+  });
+  return s;
+}
+
+function progEscudoNivel(familias, size, rAnillo, ancho) {
+  return '<svg class="pg-hero-esc" width="' + size + '" height="' + size + '" viewBox="0 0 120 120" aria-hidden="true">' +
+    '<defs><linearGradient id="phm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE3B0"/><stop offset=".5" stop-color="#E3B341"/><stop offset="1" stop-color="#B98916"/></linearGradient>' +
+    '<linearGradient id="phf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f5f7d"/><stop offset="1" stop-color="#12293b"/></linearGradient></defs>' +
+    progAnillo(familias, rAnillo, ancho) +
+    '<path d="M60 24 84 32v18.6c0 13.4-10 22.8-24 28.2-14-5.4-24-14.8-24-28.2V32z" fill="url(#phm)"/>' +
+    '<path d="M60 28.6 79.6 35.1v15c0 10.9-8.2 18.6-19.6 23-11.4-4.4-19.6-12.1-19.6-23v-15z" fill="url(#phf)"/>' +
+    '<path d="M60 38 66 53.5 60 69l-6-15.5z" fill="#FF8A5C"/><path d="M60 38 66 53.5h-6z" fill="#FFC38F"/>' +
+    '<circle cx="60" cy="53.5" r="2.4" fill="#FFE3B0"/></svg>';
+}
+
+function renderProgreso() {
+  const d = progCalcular();
+  const cont = document.getElementById('progresoBody');
+  if (!cont) return;
+  const n = d.nivel;
+  const mil = v => Math.round(v).toLocaleString('es-AR');
+
+  const leyenda = d.familias.map(f =>
+    '<span class="pg-lg"><i style="background:' + (f.rango ? f.color : '#94a3b8') + '"></i>' + esc(f.nombre) +
+    '<b>' + f.rango + '/3</b></span>').join('');
+
+  const llamas = (n2, tope, color) => {
+    let s = '';
+    for (let i = 0; i < tope; i++) s += '<i class="pg-llama" style="' + (i < n2 ? 'background:' + color : '') + '"></i>';
+    return '<div class="pg-llamas">' + s + '</div>';
+  };
+
+  const fams = d.familias.map(f => {
+    const medallas = f.hitos.map(h => {
+      const metal = PROG_METAL[h.tier - 1].n;
+      let barra = '';
+      if (!h.ok && h.p && h.p.total) {
+        const pct = Math.max(0, Math.min(100, h.p.hecho / h.p.total * 100));
+        barra = '<div class="pg-hprog"><i style="width:' + pct.toFixed(0) + '%;background:' + f.color + '"></i></div>' +
+                '<div class="pg-hprog-t">' + esc(h.p.txt) + '</div>';
+      }
+      return '<div class="pg-hito ' + (h.ok ? 'ok' : 'lock') + '">' +
+        '<div class="pg-hcab">' + progEscudo(f.color, PROG_GLIFOS[f.clave], h.tier, 46, !h.ok) +
+          '<div class="pg-hrango"><b>' + 'I'.repeat(h.tier) + '</b><span>' + metal + '</span></div>' +
+          '<div class="pg-hpts"' + (h.ok ? ' style="color:' + f.color + '"' : '') + '>+' + h.pts + '</div>' +
+        '</div>' +
+        '<div class="pg-hn">' + esc(h.n) + '</div><div class="pg-hd">' + esc(h.d) + '</div>' + barra +
+      '</div>';
+    }).join('');
+    return '<div class="pg-fam">' +
+      '<div class="pg-fcab"><span class="pg-fpt" style="background:' + f.color + '"></span>' +
+        '<span class="pg-fnom">' + esc(f.nombre) + '</span><span class="pg-flema">' + esc(f.lema) + '</span>' +
+        '<span class="pg-frango">rango ' + f.rango + ' <i>de 3</i></span></div>' +
+      '<div class="pg-fbar"><i style="width:' + (f.rango / 3 * 100) + '%;background:' + f.color + '"></i></div>' +
+      '<div class="pg-grilla">' + medallas + '</div></div>';
+  }).join('');
+
+  const pctC = d.pts.total ? d.pts.constancia / d.pts.total * 100 : 0;
+
+  cont.innerHTML =
+  '<div class="pg-pantalla">' +
+    '<div class="pg-hero">' +
+      '<div class="pg-hfila">' + progEscudoNivel(d.familias, 126, 47, 7) +
+        '<div class="pg-htxt">' +
+          '<div class="pg-hk">Nivel ' + (n.idx + 1) + ' de ' + PROG_NIVELES.length + '</div>' +
+          '<div class="pg-hnom">' + esc(n.nombre) + '</div>' +
+          '<div class="pg-hsub">' + esc(n.sub) + ' El anillo del escudo son tus ocho familias: se va llenando a medida que avanzás.</div>' +
+        '</div>' +
+        '<div class="pg-hpts-big"><b>' + mil(d.pts.total) + '</b><span>puntos</span></div>' +
+      '</div>' +
+      '<div class="pg-hbar">' +
+        '<div class="pg-hbar-t"><span>' + (n.next
+            ? 'Te faltan <b>' + mil(n.nextMin - d.pts.total) + ' puntos</b> para <b>' + esc(n.next) + '</b>'
+            : 'Llegaste al nivel máximo') + '</span>' +
+          '<span>' + mil(d.pts.total) + (n.nextMin ? ' / ' + mil(n.nextMin) : '') + '</span></div>' +
+        '<div class="pg-hbar-track"><div class="pg-hbar-fill" style="width:' + n.pct + '%"></div></div>' +
+      '</div>' +
+      '<div class="pg-leyenda">' + leyenda + '</div>' +
+    '</div>' +
+
+    '<div class="pg-reglas">' +
+      '<div class="pg-rt">Cómo se juntan los puntos</div>' +
+      '<div class="pg-rs">Dos motores. Los hitos se cobran una vez; la constancia se cobra siempre — y por eso es la que más pesa con el tiempo.</div>' +
+      '<div class="pg-motores">' +
+        '<div class="pg-motor eje"><div class="pg-mk">Motor 1 · se cobra siempre</div><div class="pg-mn">Constancia</div>' +
+          '<div class="pg-md">Puntos por aparecer. No por gastar bien ni por ahorrar: por registrar. Es lo único que se puede sostener todas las semanas.</div>' +
+          '<div class="pg-tarifa"><div><span>Una semana con al menos un movimiento</span><b>+5</b></div>' +
+            '<div><span>Un mes cerrado sin semanas en blanco</span><b>+20</b></div>' +
+            '<div><span>Cada 4 semanas seguidas, el bonus sube</span><b>+10 · +15 · +20</b></div></div></div>' +
+        '<div class="pg-motor"><div class="pg-mk">Motor 2 · se cobra una vez</div><div class="pg-mn">Hitos</div>' +
+          '<div class="pg-md">Ocho familias, tres rangos cada una. El bronce es casi inevitable, la plata cuesta y el oro se ve de lejos. Veinticuatro en total.</div>' +
+          '<div class="pg-tarifa"><div><span>Rango I · bronce</span><b>+25</b></div>' +
+            '<div><span>Rango II · plata</span><b>+60</b></div>' +
+            '<div><span>Rango III · oro</span><b>+150</b></div></div></div>' +
+      '</div>' +
+      '<div class="pg-reparto"><div class="pg-rpt">De dónde salieron tus ' + mil(d.pts.total) + '</div>' +
+        '<div class="pg-rpbar"><i style="width:' + pctC.toFixed(0) + '%;background:#F97316"></i><i style="width:' + (100 - pctC).toFixed(0) + '%;background:#3B82F6"></i></div>' +
+        '<div class="pg-rpl"><span><i style="background:#F97316"></i>Constancia <b>' + mil(d.pts.constancia) + '</b> · ' +
+          d.semanas.total + ' semana' + (d.semanas.total === 1 ? '' : 's') + ' y ' + d.semanas.mesesCompletos + ' mes' + (d.semanas.mesesCompletos === 1 ? '' : 'es') + ' completos</span>' +
+          '<span><i style="background:#3B82F6"></i>Hitos <b>' + mil(d.pts.hitos) + '</b> · ' + d.hitos.ok + ' de ' + d.hitos.total + '</span></div></div>' +
+    '</div>' +
+
+    '<div class="pg-cuerpo">' +
+      '<div class="pg-tiras">' +
+        '<div class="pg-tira"><div class="pg-tl">Racha</div><div class="pg-tv">' + d.meses.racha + ' <small>mes' + (d.meses.racha === 1 ? '' : 'es') + '</small></div>' +
+          '<div class="pg-ts">seguidos en verde</div>' + llamas(Math.min(6, d.meses.racha), 6, '#10B981') + '</div>' +
+        '<div class="pg-tira"><div class="pg-tl">Constancia</div><div class="pg-tv">' + d.semanas.racha + ' <small>semana' + (d.semanas.racha === 1 ? '' : 's') + '</small></div>' +
+          '<div class="pg-ts">sin saltarte una</div>' + llamas(Math.min(6, d.semanas.racha), 6, '#F97316') + '</div>' +
+        '<div class="pg-tira"><div class="pg-tl">Hitos</div><div class="pg-tv">' + d.hitos.ok + ' <small>de ' + d.hitos.total + '</small></div>' +
+          '<div class="pg-ts">' + (d.hitos.total - d.hitos.ok) + ' por desbloquear</div></div>' +
+        '<div class="pg-tira"><div class="pg-tl">Historial</div><div class="pg-tv">' + d.meses.total + ' <small>mes' + (d.meses.total === 1 ? '' : 'es') + '</small></div>' +
+          '<div class="pg-ts">registrados en Norte</div></div>' +
+      '</div>' + fams +
+      '<div class="pg-spoiler">' +
+        '<svg width="54" height="54" viewBox="0 0 48 48" aria-hidden="true">' +
+          '<rect x="7" y="19" width="34" height="22" rx="3" fill="#FFB199"/>' +
+          '<rect x="4" y="13" width="40" height="9" rx="2.5" fill="#FF8A5C"/>' +
+          '<rect x="21" y="13" width="6" height="28" fill="#E8714A"/>' +
+          '<path d="M24 13c-4-7-12-5-10 0M24 13c4-7 12-5 10 0" fill="none" stroke="#E8714A" stroke-width="2.6" stroke-linecap="round"/></svg>' +
+        '<div class="pg-spt"><b>Estamos preparando algo para los que lleguen lejos</b>' +
+          '<p>Todavía no podemos contar qué es. Lo que sí: va a mirar tus rangos de oro. Los que hoy estén arriba van a ser los primeros en enterarse.</p></div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+
+  // El gráfico de evolución sigue abajo: es lo único de la pantalla vieja que
+  // no se superpone con nada nuevo y sirve para ver el largo plazo de un vistazo.
+  try {
+    const r2 = computeRacha(getData(), curKey());
+    const last12 = r2.balances.slice(-12);
+    const cvs = document.getElementById('progresoEvolChart');
+    const vacio = document.getElementById('progresoEvolEmpty');
+    if (cvs && vacio) {
+      if (last12.length < 2) { cvs.style.display = 'none'; vacio.style.display = ''; }
+      else {
+        cvs.style.display = ''; vacio.style.display = 'none';
+        if (window._progChart) window._progChart.destroy();
+        window._progChart = new Chart(cvs.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: last12.map(b => mesLabel(b.key)),
+            datasets: [{
+              data: last12.map(b => b.bal),
+              backgroundColor: last12.map(b => b.bal >= 0 ? 'rgba(16,185,129,.28)' : 'rgba(239,68,68,.24)'),
+              borderColor: last12.map(b => b.bal >= 0 ? '#10b981' : '#ef4444'),
+              borderWidth: 1.5, borderRadius: 5
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: true,
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + fmtP(c.raw) } } },
+            scales: { y: { ticks: { callback: v => fmtShort(v) } } }
+          }
+        });
+      }
+    }
+  } catch (e) {}
 }
 
 function maxStreak(balances) {
@@ -10932,7 +11318,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.10.010';
+const APP_VERSION = 'v005.11.001';
 let novEntradas = [];
 
 function novLeida(e) {
