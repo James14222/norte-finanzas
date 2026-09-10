@@ -8160,22 +8160,25 @@ function renderAcctBox(){
   const esPionero = String(miOrigenCuenta || '') === 'club_pioneros';
   const c = acctConstancia();
   let ultimaFila = '';
+  // El GPS Pioneros, si corresponde. No reemplaza a nada: es un programa de
+  // cuatro semanas con final, y convive con el progreso, que no lo tiene.
   if (esPionero && miGPS && typeof miGPS.puntos === 'number'){
     const pts = Math.max(0, Math.min(40, miGPS.puntos));
-    ultimaFila = '<div class="acct-lbl">GPS Pioneros</div><div class="acct-val">' + pts + ' de 40 puntos</div>'
-               + '<div class="acct-bar"><i style="width:' + (pts/40*100) + '%"></i></div>';
-  } else {
-    try {
-      // Mismo escudo y mismo número que va a ver adentro: la ficha es un
-      // adelanto de la pantalla, no otro cálculo.
-      const d = progCalcular();
-      ultimaFila = '<div class="acct-prog" onclick="showPage(\'progreso\')" title="Ver tu progreso">'
-                 + '<div class="acct-val">' + progEscudoNivel(d.familias, 26, 47, 11).replace('pg-hero-esc', 'acct-prog-esc')
-                 + '<span>' + esc(d.nivel.nombre) + ' · nivel ' + (d.nivel.idx + 1) + '</span></div>'
-                 + '<div class="acct-bar"><i style="width:' + d.nivel.pct + '%"></i></div>'
-                 + '<div class="acct-prog-cta">Ver tu progreso →</div></div>';
-    } catch(e){ ultimaFila = ''; }
+    ultimaFila += '<div class="acct-lbl">GPS Pioneros</div><div class="acct-val">' + pts + ' de 40 puntos</div>'
+                + '<div class="acct-bar"><i style="width:' + (pts/40*100) + '%"></i></div>';
   }
+  // Y el progreso, SIEMPRE: esta ficha es la única puerta a esa pantalla desde
+  // que salió del menú. Si acá no aparece, no hay forma de entrar.
+  try {
+    // Mismo escudo y mismo número que va a ver adentro: la ficha es un
+    // adelanto de la pantalla, no otro cálculo.
+    const d = progCalcular();
+    ultimaFila += '<div class="acct-prog" onclick="showPage(\'progreso\')" title="Ver tu progreso">'
+               + '<div class="acct-val">' + progEscudoNivel(d.familias, 26, 47, 11).replace('pg-hero-esc', 'acct-prog-esc')
+               + '<span>' + esc(d.nivel.nombre) + ' · nivel ' + (d.nivel.idx + 1) + '</span></div>'
+               + '<div class="acct-bar"><i style="width:' + d.nivel.pct + '%"></i></div>'
+               + '<div class="acct-prog-cta">Ver tu progreso →</div></div>';
+  } catch(e){}
   box.innerHTML =
     '<div class="acct-who"><div class="acct-av" id="acctAv">' + esc(inicial) + '</div>'
     + '<div class="nm"><b>' + esc(nombre) + '</b><span>' + esc(hogar) + '</span></div>'
@@ -8971,6 +8974,22 @@ const PROG_GLIFOS = {
   hogar:      '<circle cx="16" cy="17" r="3.4" fill="#fff"/><circle cx="24.5" cy="18.5" r="2.8" fill="#fff"/><path d="M10 28c0-3.6 2.7-5.6 6-5.6s6 2 6 5.6zM22.5 28c0-2.8 2-4.4 4.4-4.4S31 25.2 31 28z" fill="#fff"/>'
 };
 
+// Cuándo se CARGÓ el movimiento. Las ids se arman con Date.now().toString(36),
+// así que la fecha de carga viaja adentro de la id. Es exactamente lo que mide
+// `acctConstancia()` para los puntitos del menú: misma fuente, mismo número.
+// `t.fecha` no sirve para esto —es opcional en el alta y casi siempre viene
+// vacía— y `venc` es la fecha de la factura, no la del registro.
+function progFechaCarga(t) {
+  const ts = parseInt(String(t && t.id || '').slice(0, 8), 36);
+  if (ts && ts >= 1577836800000 && ts <= Date.now() + 86400000) {
+    const d = new Date(ts);   // en hora local: pasarlo por UTC corre el día
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  // Importados o de antes de que las ids llevaran sello: la mejor fecha que
+  // tenga el movimiento, y como último recurso el mes.
+  return (t && (t.fecha || t.venc)) || ((t && t.mes || '') + '-15');
+}
+
 // El lunes de la semana de una fecha. Se ancla al mediodía para que ningún
 // cambio de horario mueva el día.
 function progLunes(f) {
@@ -9015,10 +9034,7 @@ function progCalcular() {
 
   // ── semanas y meses ───────────────────────────────────────────────────
   const semanas = new Set();
-  all.forEach(t => {
-    const l = progLunes(t.fecha) || progLunes((t.mes || '') + '-15');
-    if (l) semanas.add(l);
-  });
+  all.forEach(t => { const l = progLunes(progFechaCarga(t)); if (l) semanas.add(l); });
   const semArr  = [...semanas];
   const mejorSem = progMejorRacha(semArr);
 
@@ -11318,7 +11334,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.11.001';
+const APP_VERSION = 'v005.11.003';
 let novEntradas = [];
 
 function novLeida(e) {
