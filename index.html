@@ -683,6 +683,10 @@ tr:hover td { background: #fafbfc; }
 .cu-sello-btn.active { border-color: var(--primary); background: rgba(255,138,92,.09); color: var(--primary-dark, var(--primary)); }
 .cu-sello-btn small { display: block; font-size: 11px; font-weight: 500; opacity: .8; margin-top: 1px; }
 
+/* El formulario es un diálogo hijo del historial: tiene que apilarse encima,
+   no al lado. Sin esto queda debajo por orden del HTML. */
+#cuFormOverlay { z-index: 240; }
+
 @media (max-width: 880px) {
   #page-cuaderno .cu-cab .f-search { width: 100%; }
   .cu-conteo { margin-left: 0; }
@@ -2479,8 +2483,7 @@ tr:hover td { background: #fafbfc; }
           </div>
           <div style="flex:1 1 0;min-width:0">
             <label>Rubro</label>
-            <input type="text" id="cuRubro" list="cuRubros" placeholder="Opcional" autocomplete="off">
-            <datalist id="cuRubros"></datalist>
+            <select id="cuRubro"></select>
           </div>
         </div>
         <div class="form-group">
@@ -3400,11 +3403,11 @@ tr:hover td { background: #fafbfc; }
         <!-- GPS PIONEROS -->
         <div class="ayuda-section" id="ayuda-gps">
           <h3>🧭 Novedades</h3>
-          <p class="subtitulo">Lo que cambia en Norte, y tu canal directo con quien la hace</p>
+          <p class="subtitulo">Tu Canal de Novedades</p>
           <div class="ayuda-bloque">
             <h4>Qué es</h4>
             <p>Cada mejora que le hacemos a Norte se cuenta acá, en criollo: qué cambió, para qué te sirve y dónde encontrarlo. Abajo de cada una podés <strong>votar del 1 al 5</strong> — un toque y listo, sin escribir nada. Eso es lo que decide en qué se trabaja después.</p>
-            <div class="ayuda-tip">Lo que votás lo ve solo quien hace Norte. Nadie más.</div>
+            <div class="ayuda-tip">Lo que votás lo vemos solo nosotros. Nadie más.</div>
           </div>
           <div class="ayuda-bloque">
             <h4>El recorrido guiado de cuatro semanas</h4>
@@ -3427,15 +3430,15 @@ tr:hover td { background: #fafbfc; }
             <p>Si ya cumpliste las dos y aun así lo ves cerrado, la pantalla te lo dice y te ofrece un botón para <strong>actualizar</strong>: se abre en el momento. No hace falta esperar ni escribirnos.</p>
           </div>
           <div class="ayuda-bloque">
-            <h4>En qué estoy trabajando</h4>
+            <h4>En qué estamos trabajando</h4>
             <p>Abajo de los capítulos vas a encontrar la <strong>bitácora de cambios</strong>: cada mejora que le vamos haciendo a Norte, contada en criollo — qué cambió, para qué te sirve y dónde encontrarlo.</p>
             <div class="ayuda-tip">Antes esto era exclusivo del Club Pioneros. Ahora lo ve cualquiera que tenga Norte.</div>
           </div>
           <div class="ayuda-bloque">
             <h4>Hablemos</h4>
-            <p>Al final de la pantalla tenés un espacio para escribirle directo a Jaime: algo que no te cierra, una idea, algo que se rompió. Es una <strong>conversación privada</strong> entre vos y él — ningún otro Pionero la ve.</p>
-            <p>Cuando mandás un mensaje le llega un aviso por mail en el momento. La respuesta aparece en esa misma pantalla, sin que tengas que recargar nada.</p>
-            <div class="ayuda-tip">Es el canal directo del programa: no hace falta buscarlo por Instagram ni esperar a que él pregunte. Lo que cuentes acá es lo que termina cambiando la app — varias de las mejoras de la bitácora salieron de mensajes de Pioneros.</div>
+            <p>Al final de la pantalla tenés un espacio para escribirnos directo: algo que no te cierra, una idea, algo que se rompió. Es una <strong>conversación privada</strong> entre vos y nosotros — ningún otro Pionero la ve.</p>
+            <p>Cuando mandás un mensaje nos llega un aviso por mail en el momento. La respuesta aparece en esa misma pantalla, sin que tengas que recargar nada.</p>
+            <div class="ayuda-tip">Es el canal directo del programa: no hace falta buscarnos por Instagram ni esperar a que preguntemos. Lo que cuentes acá es lo que termina cambiando la app — varias de las mejoras de la bitácora salieron de mensajes de Pioneros.</div>
           </div>
           <div class="ayuda-bloque">
             <h4>El premio: Pionero Vitalicio</h4>
@@ -3773,7 +3776,7 @@ tr:hover td { background: #fafbfc; }
   </div>
 </div>
 
-<!-- TU GPS PAGE --><div id="page-tugps" class="page"><div class="gps-wrap" style="max-width:760px;margin:0 auto;padding:8px 24px 40px;display:flex;flex-direction:column"><div class="gps-header"><div style="display:flex;align-items:center;gap:12px"><button class="menu-toggle gps-volver" onclick="toggleSidebar()" aria-label="Volver al menu" title="Volver al menu">&#9776;</button><div><div class="gps-header-title">Novedades</div><div class="gps-header-sub">Lo que cambia en Norte, y tu canal conmigo</div></div></div></div><div id="gpsBody" style="margin-top:16px;position:relative;z-index:1"><div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando...</div></div></div></div>
+<!-- TU GPS PAGE --><div id="page-tugps" class="page"><div class="gps-wrap" style="max-width:760px;margin:0 auto;padding:8px 24px 40px;display:flex;flex-direction:column"><div class="gps-header"><div style="display:flex;align-items:center;gap:12px"><button class="menu-toggle gps-volver" onclick="toggleSidebar()" aria-label="Volver al menu" title="Volver al menu">&#9776;</button><div><div class="gps-header-title">Novedades</div><div class="gps-header-sub">Tu Canal de Novedades</div></div></div></div><div id="gpsBody" style="margin-top:16px;position:relative;z-index:1"><div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando...</div></div></div></div>
 <!-- ADMIN PAGE -->
 <div id="page-admin" class="page">
   <div style="max-width:1400px;margin:0 auto;padding:28px 24px;display:flex;flex-direction:column">
@@ -3800,7 +3803,7 @@ tr:hover td { background: #fafbfc; }
     <div class="card admin-section" id="adminNovedadesSection" style="padding:22px 24px;display:none">
       <div style="font-size:16px;font-weight:800;color:var(--text)">Lo que leen tus usuarios</div>
       <div style="font-size:13px;color:var(--muted);margin:6px 0 16px;line-height:1.55">
-        Aparece al instante dentro de <strong>Novedades</strong>, en «En qué estoy trabajando», y ahora
+        Aparece al instante dentro de <strong>Novedades</strong>, en «En qué estamos trabajando», y ahora
         lo ve cualquiera que tenga Norte — no sólo los Pioneros. Escribilo en criollo y en primera
         persona: qué cambió, para qué le sirve y, si hace falta, dónde lo encuentra.
       </div>
@@ -4247,7 +4250,7 @@ tr:hover td { background: #fafbfc; }
       <label>Tipo de comunicación</label>
       <select id="nvaTipo" onchange="nvaPintarTipo()" style="width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;font-family:inherit;background:var(--card);color:var(--text)">
         <option value="hecho">Ya disponible &mdash; algo que ya pueden usar</option>
-        <option value="propuesta">Lo estoy pensando &mdash; todavía no existe</option>
+        <option value="propuesta">Lo estamos pensando &mdash; todavía no existe</option>
       </select>
       <div id="nvaTipoAyuda" style="margin-top:7px;font-size:12px;color:var(--muted);line-height:1.5"></div>
     </div>
@@ -9405,10 +9408,25 @@ const CU_TUTO = [
 ];
 let cuTutoPaso = 0;
 
+const CU_NUEVO_DIAS = 3;
+
 function cuPintarNuevo() {
   const el = document.getElementById('navCuNuevo');
   if (!el) return;
-  const mostrar = lectListo && !lect.cuTuto && Date.now() < CU_NUEVO_HASTA;
+  if (!lectListo) { el.style.display = 'none'; return; }
+
+  /* El reloj arranca la primera vez que esta persona abre la app con la función
+     ya publicada, no cuando se subió: a quien estuvo de vacaciones una semana
+     el cartel no se le vence antes de verlo. */
+  if (!lect.cuNuevoDesde) {
+    lect.cuNuevoDesde = Date.now();
+    try { lectEscribir('cuNuevoDesde', lect.cuNuevoDesde); } catch (e) {}
+  }
+
+  const ahora   = Date.now();
+  const cumplio = ahora >= lect.cuNuevoDesde + CU_NUEVO_DIAS * 86400000;
+  // Se apaga cuando pasaron los días Y además lo abrió. Si no entró, sigue.
+  const mostrar = !(cumplio && lect.cuTuto) && ahora < CU_NUEVO_HASTA;
   el.style.display = mostrar ? '' : 'none';
 }
 
@@ -9468,6 +9486,7 @@ function cuTutoPintar() {
 function cuAbrir(clave) {
   const g = cuGrupos().find(x => x.clave === clave);
   if (!g) return;
+  _cuDetalleClave = clave;
   const ov = document.getElementById('cuDetalleOverlay');
   const cuerpo = document.getElementById('cuDetalleBody');
   document.getElementById('cuDetalleTitulo').textContent = g.nombre;
@@ -9501,10 +9520,26 @@ function cuAbrir(clave) {
   ov.style.display = 'flex';
 }
 
-function cuCerrarDetalle() { document.getElementById('cuDetalleOverlay').style.display = 'none'; }
+function cuCerrarDetalle() {
+  _cuDetalleClave = null;
+  document.getElementById('cuDetalleOverlay').style.display = 'none';
+}
+
+/* Después de guardar o borrar: si el producto sigue teniendo anotaciones se
+   vuelve a pintar su historial (con el cambio ya adentro); si era la última,
+   se cierra. Antes quedaba abierto mostrando lo de antes. */
+function cuRefrescarDetalle() {
+  if (!_cuDetalleClave) return;
+  const clave = _cuDetalleClave;
+  if (cuGrupos().some(g => g.clave === clave)) cuAbrir(clave);
+  else cuCerrarDetalle();
+}
 
 // ── Alta y edición ──────────────────────────────────────────────────
 let _cuEditando = null;
+// Qué producto está abierto en el historial, para poder volver a él después de
+// guardar o borrar en vez de dejar la pantalla con datos viejos.
+let _cuDetalleClave = null;
 
 function cuHoy() {
   const d = new Date();
@@ -9520,7 +9555,6 @@ function cuEditar(id) {
   const it = cuGet().items[id];
   if (!it) return;
   _cuEditando = id;
-  cuCerrarDetalle();
   cuAbrirForm(it);
 }
 
@@ -9530,7 +9564,6 @@ function cuAbrirForm(d) {
   numSet('cuPrecio', d.precio);
   document.getElementById('cuLugar').value  = d.lugar || '';
   document.getElementById('cuFecha').value  = d.fecha || cuHoy();
-  document.getElementById('cuRubro').value  = d.rubro || '';
   document.getElementById('cuNota').value   = d.nota || '';
   cuSetSello(d.sello === 'relevado' ? 'relevado' : 'comprado');
   document.getElementById('cuFormError').style.display = 'none';
@@ -9541,7 +9574,14 @@ function cuAbrirForm(d) {
     const m = getRubrosMaestro();
     const lista = [].concat(m.Gasto || [], m.Ingreso || [])
       .filter((v, i, a) => v && a.indexOf(v) === i).sort();
-    document.getElementById('cuRubros').innerHTML = lista.map(r => '<option value="' + esc(r) + '">').join('');
+    const actual = d.rubro || '';
+    /* Un rubro anotado hace meses que el hogar ya borró de su lista no se
+       pierde al editar: se agrega al final para que el select pueda mostrarlo. */
+    if (actual && lista.indexOf(actual) === -1) lista.push(actual);
+    const sel = document.getElementById('cuRubro');
+    sel.innerHTML = '<option value="">— Sin rubro —</option>' +
+      lista.map(r => '<option value="' + esc(r) + '">' + esc(r) + '</option>').join('');
+    sel.value = actual;
   } catch (e) {}
 
   document.getElementById('cuFormOverlay').style.display = 'flex';
@@ -9589,6 +9629,7 @@ function cuGuardar() {
   _cuEditando = null;
   cuCerrarForm();
   renderCuaderno();
+  cuRefrescarDetalle();
 }
 
 function cuBorrar(id) {
@@ -9601,8 +9642,8 @@ function cuBorrar(id) {
   cuSave(c);
   _cuEditando = null;
   cuCerrarForm();
-  cuCerrarDetalle();
   renderCuaderno();
+  cuRefrescarDetalle();
 }
 
 function renderComparativoIntegrantes() {
@@ -10780,7 +10821,7 @@ function rbRefrescarPantallas() {
 //
 // La regla ata el nodo al propio uid: nadie puede marcar como leído ni votar en
 // nombre de otro, así que no hace falta pasar por una Cloud Function.
-let lect = { nov: {}, votos: {}, novHasta: 0, chat: 0, caps: {}, capsVisto: 0, cuTuto: 0 };
+let lect = { nov: {}, votos: {}, novHasta: 0, chat: 0, caps: {}, capsVisto: 0, cuTuto: 0, cuNuevoDesde: 0 };
 let lectListo = false;   // ¿ya contestó la nube? Hasta que conteste no se
                          // decide nada: en un dispositivo nuevo el caché
                          // está vacío y el tutorial saldría de nuevo.
@@ -10798,7 +10839,8 @@ function lectNormalizar(o) {
     chat:      Number(o.chat)      || 0,
     caps:      o.caps  || {},
     capsVisto: Number(o.capsVisto) || 0,
-    cuTuto:    Number(o.cuTuto)    || 0
+    cuTuto:    Number(o.cuTuto)    || 0,
+    cuNuevoDesde: Number(o.cuNuevoDesde) || 0
   };
 }
 
@@ -10864,7 +10906,10 @@ function iniciarLecturas() {
           chat:      Math.max(lect.chat,      r.chat),
           caps:      Object.assign({}, lect.caps,  r.caps),
           capsVisto: Math.max(lect.capsVisto, r.capsVisto),
-          cuTuto:    Math.max(lect.cuTuto,    r.cuTuto)
+          cuTuto:    Math.max(lect.cuTuto,    r.cuTuto),
+          cuNuevoDesde: (lect.cuNuevoDesde && r.cuNuevoDesde)
+            ? Math.min(lect.cuNuevoDesde, r.cuNuevoDesde)
+            : (lect.cuNuevoDesde || r.cuNuevoDesde)
         };
         lectGuardarLocal();
       }
@@ -10887,7 +10932,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.10.007';
+const APP_VERSION = 'v005.10.010';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -10935,7 +10980,7 @@ const NOV_TIPOS = {
     escala: ['No me sirve', 'Me da igual', 'Algo me sirve', 'Me sirve', 'Me resuelve un problema']
   },
   propuesta: {
-    rotulo: 'Lo estoy pensando',
+    rotulo: 'Lo estamos pensando',
     pregunta: '¿Cuánta utilidad le ves?',
     escala: ['Ninguna', 'Poca', 'Alguna', 'Bastante', 'Mucha, la necesito']
   }
@@ -10961,10 +11006,10 @@ function renderNovedades() {
   if (!cont) return;
   const encabezado =
     '<div style="border-top:1px solid var(--border);padding-top:22px;margin-bottom:16px">' +
-      '<div style="font-size:19px;font-weight:800;color:var(--text);letter-spacing:-0.3px">En qué estoy trabajando</div>' +
+      '<div style="font-size:19px;font-weight:800;color:var(--text);letter-spacing:-0.3px">En qué estamos trabajando</div>' +
       '<div style="font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.55">' +
-        'Cada cambio que le hago a Norte lo cuento acá. Tocá cualquiera para leer el detalle ' +
-        'y decirme qué te parece — con un toque me alcanza.' +
+        'Cada cambio que hacemos en Norte lo contamos acá. Tocá cualquiera para leer el detalle ' +
+        'y decinos qué te parece — con un toque nos alcanza.' +
       '</div>' +
     '</div>';
   if (!novEntradas.length) {
@@ -11038,8 +11083,8 @@ function novPintarVoto(e) {
     '<div class="nv-voto-caja">' +
       '<div class="nv-voto-preg">' + esc(novPregunta(e)) + '</div>' +
       '<div class="nv-voto-ctx">' + (novEsPropuesta(e)
-        ? 'Todavía no está hecho: tu voto me ayuda a decidir si lo hago.'
-        : 'Ya lo podés usar: contame cuánto te sirvió en la práctica.') + '</div>' +
+        ? 'Todavía no está hecho: tu voto nos ayuda a decidir si lo hacemos.'
+        : 'Ya lo podés usar: contanos cuánto te sirvió en la práctica.') + '</div>' +
       '<div class="nv-voto-fila">' +
         escala.map(function (txt, i) {
           const v = i + 1;
@@ -11337,8 +11382,8 @@ function renderChatPionero() {
     '<div style="border-top:1px solid var(--border);padding-top:22px;margin-bottom:16px">' +
       '<div style="font-size:19px;font-weight:800;color:var(--text);letter-spacing:-0.3px">Hablemos</div>' +
       '<div style="font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.55">' +
-        'Escribime por acá lo que quieras: algo que no te cierra, una idea, algo que te rompió. ' +
-        'Es una conversación privada entre vos y yo — ningún otro usuario la ve.' +
+        'Escribinos por acá lo que quieras: algo que no te cierra, una idea, algo que te rompió. ' +
+        'Es una conversación privada entre vos y nosotros — ningún otro usuario la ve.' +
       '</div>' +
     '</div>';
 
@@ -11350,7 +11395,7 @@ function renderChatPionero() {
           '<div class="hb-meta"><span class="hb-firma">' + (mio ? 'Vos' : 'Jaime') + '</span> · ' +
           esc(hbFechaCorta(m.ts)) + '</div></div>';
       }).join('') + '</div>'
-    : '<div class="hb-vacio">Todavía no escribiste nada.<br>Contame cómo venís, o preguntame lo que quieras.</div>';
+    : '<div class="hb-vacio">Todavía no escribiste nada.<br>Contanos cómo venís, o preguntanos lo que quieras.</div>';
 
   cont.innerHTML = encabezado + hilo +
     '<div class="hb-caja">' +
@@ -11358,7 +11403,7 @@ function renderChatPionero() {
         'onkeydown="if(event.key===\'Enter\'&&(event.metaKey||event.ctrlKey)){event.preventDefault();hbEnviar()}"></textarea>' +
       '<button class="btn btn-primary" id="hbBtn" onclick="hbEnviar()">Enviar</button>' +
     '</div>' +
-    '<div style="font-size:12px;color:var(--muted);margin-top:8px">Te contesto apenas lo vea. Te va a llegar acá mismo.</div>';
+    '<div style="font-size:12px;color:var(--muted);margin-top:8px">Te contestamos apenas lo veamos. Te va a llegar acá mismo.</div>';
 
   // El hilo arranca abajo, donde está lo último.
   const h = document.getElementById('hbHilo');
