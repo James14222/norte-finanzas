@@ -530,6 +530,82 @@ tr:hover td { background: #fafbfc; }
 .btn-danger:hover { background: #fecaca; }
 
 /* MODAL */
+/* ── EL CUADERNO ────────────────────────────────────────────────────
+   La libreta tiene su propio tono de papel, apenas distinto del resto de
+   Norte. No es decoración: es la señal de que lo que se anota acá no entra
+   en ninguna cuenta. Mismo criterio que se usó en Deriva. */
+#page-cuaderno .cu-cab { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+#page-cuaderno .cu-cab .f-search { width: 210px; }
+.cu-conteo { font-size: 12.5px; color: var(--muted); margin-left: auto; white-space: nowrap; }
+.cu-nota-cab { font-size: 12.5px; color: var(--muted); margin: -6px 0 16px; }
+
+.cu-hoja {
+  background: #F5F1E9; border: 1px solid #e6e2d9; border-radius: 14px;
+  padding: 2px 20px 8px; position: relative; overflow: hidden;
+}
+.cu-hoja::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--primary); opacity: .45;
+}
+.cu-fila { padding: 14px 0 13px; border-bottom: 1px solid #e6e2d9; cursor: pointer; }
+.cu-fila:last-child { border-bottom: none; }
+.cu-fila:hover { background: rgba(255,255,255,.5); margin: 0 -20px; padding-left: 20px; padding-right: 20px; }
+.cu-l1 { display: flex; align-items: baseline; gap: 10px; }
+.cu-nom { font-size: 15.5px; font-weight: 700; flex: 1 1 auto; min-width: 0; }
+.cu-precio { font-size: 18px; font-weight: 800; white-space: nowrap; }
+.cu-l2 { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+.cu-pie { font-size: 12.5px; color: var(--muted); margin-top: 5px; }
+.cu-sube { color: #c2410c; font-weight: 700; }
+.cu-baja { color: #0b7a5b; font-weight: 700; }
+
+.cu-sello { font-size: 10.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: 2px 8px; border-radius: 20px; }
+.cu-comprado { background: rgba(16,185,129,.14); color: #0b7a5b; }
+.cu-relevado { background: rgba(232,192,80,.22); color: #8a6d10; }
+
+.cu-vacio { text-align: center; padding: 40px 20px 34px; }
+.cu-vacio-ico { font-size: 40px; margin-bottom: 10px; }
+.cu-vacio-tit { font-size: 16px; font-weight: 700; margin-bottom: 7px; }
+.cu-vacio-txt { font-size: 13.5px; color: var(--muted); max-width: 46ch; margin: 0 auto 16px; line-height: 1.6; }
+
+/* La línea de precios en el tiempo: el punto lleno es lo comprado, el hueco
+   un precio que te pasaron. */
+.cu-linea { display: flex; align-items: flex-end; margin: 4px 0 20px; }
+.cu-hito { flex: 1 1 0; text-align: center; position: relative; padding-bottom: 22px; min-width: 0; }
+.cu-hito::after { content: ""; position: absolute; left: 0; right: 0; bottom: 7px; height: 2px; background: #e6e2d9; }
+.cu-hito:first-child::after { left: 50%; }
+.cu-hito:last-child::after { right: 50%; }
+.cu-punto { width: 11px; height: 11px; border-radius: 50%; background: #10b981; position: absolute; left: 50%; bottom: 2px; transform: translateX(-50%); z-index: 1; }
+.cu-hito-rel .cu-punto { background: #F5F1E9; border: 2.5px solid #E8C050; }
+.cu-hito-p { font-size: 13px; font-weight: 800; }
+.cu-hito-f { font-size: 11px; color: var(--muted); }
+
+.cu-det-fila { padding: 11px 0; border-bottom: 1px solid var(--border); }
+.cu-det-fila:last-child { border-bottom: none; }
+.cu-det-l1 { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 13.5px; }
+.cu-det-l1 strong { font-size: 16px; font-weight: 800; }
+.cu-det-l2 { font-size: 12.5px; color: var(--muted); margin-top: 3px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.cu-det-acc { display: flex; gap: 8px; margin-top: 7px; }
+.cu-mini { background: none; border: 1px solid var(--border); border-radius: 7px; padding: 3px 10px; font-size: 12px; font-family: inherit; color: var(--muted); cursor: pointer; }
+.cu-mini:hover { border-color: var(--primary); color: var(--primary); }
+.cu-mini-x:hover { border-color: #ef4444; color: #ef4444; }
+.cu-agregar-mas { width: 100%; justify-content: center; margin-top: 16px; }
+
+.cu-sellos { display: flex; gap: 8px; }
+.cu-sello-btn {
+  flex: 1 1 0; border: 1.5px solid var(--border); border-radius: 9px; padding: 9px 11px;
+  font-size: 13.5px; font-weight: 600; text-align: center; background: var(--card);
+  color: var(--muted); cursor: pointer; font-family: inherit;
+}
+.cu-sello-btn.active { border-color: var(--primary); background: rgba(255,138,92,.09); color: var(--primary-dark, var(--primary)); }
+.cu-sello-btn small { display: block; font-size: 11px; font-weight: 500; opacity: .8; margin-top: 1px; }
+
+@media (max-width: 880px) {
+  #page-cuaderno .cu-cab .f-search { width: 100%; }
+  .cu-conteo { margin-left: 0; }
+  .cu-hoja { padding: 2px 14px 8px; }
+  .cu-fila:hover { margin: 0 -14px; padding-left: 14px; padding-right: 14px; }
+  .cu-hito-p { font-size: 12px; }
+}
 .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: center; justify-content: center; }
 .overlay.show { display: flex; }
 .modal { background: var(--card); border-radius: 16px; padding: 26px 28px; width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; }
@@ -1783,6 +1859,7 @@ tr:hover td { background: #fafbfc; }
     <div class="nav-item" onclick="showPage('analisis')"><span class="ico">🔎</span> Análisis</div>
     <div class="nav-item" onclick="showPage('progreso')"><span class="ico">🏆</span> Progreso</div>
     <div class="nav-item" onclick="showPage('reportes')"><span class="ico">📈</span> Reportes</div>
+    <div class="nav-item" onclick="showPage('cuaderno')"><span class="ico">📒</span> El Cuaderno</div>
     <div class="nav-item disabled nortia-item" id="navNortia"><span class="nortia-nav-icon" style="display:inline-block;background-image:var(--nortia-icon-url);background-size:72%;background-repeat:no-repeat;background-position:center;background-color:#fff;border-radius:6px;"></span> <strong>NortIA</strong> <span class="badge-soon" id="navNortiaBadge">Próximamente</span></div>
         <div class="nav-item gps-nav-item" id="navTuGps" onclick="showPage('tugps')"><span class="ico">🧭</span> Novedades<span id="gpsNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
      <div class="nav-item" id="navAdmin" style="display:none" onclick="showPage('admin')"><span class="ico">⚙️</span> Admin<span id="adminNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
@@ -2251,6 +2328,86 @@ tr:hover td { background: #fafbfc; }
       </div>
 
       </div><!-- /repTabsWrap -->
+    </div>
+
+<!-- ── EL CUADERNO ────────────────────────────────────────────
+         La libreta de precios del hogar. Vive aparte de todo lo
+         financiero: nada de lo que se anota acá entra en el balance,
+         el presupuesto, los reportes ni el saldo pendiente. -->
+    <div id="page-cuaderno" class="page">
+      <div class="cu-cab">
+        <input class="f-search" type="text" placeholder="🔍 Buscar producto o comercio..." oninput="cuBuscar(this.value)">
+        <div class="tgl-group">
+          <button class="tgl-btn active" onclick="cuFiltroSello('',this)">Todos</button>
+          <button class="tgl-btn" onclick="cuFiltroSello('comprado',this)">Comprado</button>
+          <button class="tgl-btn" onclick="cuFiltroSello('relevado',this)">Relevado</button>
+        </div>
+        <button class="btn btn-primary" onclick="cuNuevo()">+ Anotar precio</button>
+        <div class="cu-conteo" id="cuConteo"></div>
+      </div>
+      <p class="cu-nota-cab">Precios de referencia del hogar. No entran en el balance, el presupuesto ni los reportes.</p>
+      <div class="cu-hoja" id="cuLista"></div>
+    </div>
+
+    <!-- Alta y edición de una anotación -->
+    <div class="overlay" id="cuFormOverlay">
+      <div class="modal" style="max-width:460px">
+        <div class="modal-title" id="cuFormTitulo">Anotar un precio</div>
+        <div class="form-group">
+          <label>Qué</label>
+          <input type="text" id="cuProd" placeholder="Ej: Garrafa 10 kg, Service del auto" autocomplete="off">
+        </div>
+        <div class="form-group" style="display:flex;gap:12px">
+          <div style="flex:1 1 0;min-width:0">
+            <label>Cuánto</label>
+            <input type="number" id="cuPrecio" inputmode="decimal" placeholder="0" autocomplete="off">
+          </div>
+          <div style="flex:1 1 0;min-width:0">
+            <label>Cuándo</label>
+            <input type="date" id="cuFecha">
+          </div>
+        </div>
+        <div class="form-group" style="display:flex;gap:12px">
+          <div style="flex:1 1 0;min-width:0">
+            <label>Dónde</label>
+            <input type="text" id="cuLugar" placeholder="Comercio o lugar" autocomplete="off">
+          </div>
+          <div style="flex:1 1 0;min-width:0">
+            <label>Rubro</label>
+            <input type="text" id="cuRubro" list="cuRubros" placeholder="Opcional" autocomplete="off">
+            <datalist id="cuRubros"></datalist>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Cómo lo sabés</label>
+          <input type="hidden" id="cuSello" value="comprado">
+          <div class="cu-sellos">
+            <button type="button" class="cu-sello-btn active" id="cuSello_comprado" onclick="cuSetSello('comprado')">Comprado<small>lo pagaste</small></button>
+            <button type="button" class="cu-sello-btn" id="cuSello_relevado" onclick="cuSetSello('relevado')">Relevado<small>te pasaron el precio</small></button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Nota</label>
+          <input type="text" id="cuNota" placeholder="Opcional — marca, medida, quién lo pasó" autocomplete="off">
+        </div>
+        <div id="cuFormError" style="color:#ef4444;font-size:12.5px;margin-bottom:10px;display:none"></div>
+        <div style="display:flex;gap:10px;margin-top:6px">
+          <button class="btn" id="cuBorrarBtn" style="display:none;border:1px solid var(--border);color:#ef4444" onclick="cuBorrar(_cuEditando)">Borrar</button>
+          <button class="btn" style="flex:1;border:1px solid var(--border);color:var(--muted)" onclick="cuCerrarForm()">Cancelar</button>
+          <button class="btn btn-primary" style="flex:2" onclick="cuGuardar()">Guardar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- La historia de un producto -->
+    <div class="overlay" id="cuDetalleOverlay">
+      <div class="modal" style="max-width:520px">
+        <div class="modal-title" id="cuDetalleTitulo"></div>
+        <div id="cuDetalleBody"></div>
+        <div style="text-align:right;margin-top:16px">
+          <button class="btn" style="border:1px solid var(--border);color:var(--muted)" onclick="cuCerrarDetalle()">Cerrar</button>
+        </div>
+      </div>
     </div>
 
     <!-- CONSULTAS IA -->
@@ -6214,6 +6371,7 @@ function exportarDatos() {
     fin_budgets:      localStorage.getItem(`fin_budgets_${eid}`)      || '{}',
     fin_meta_ahorro:  localStorage.getItem(`fin_meta_ahorro_${eid}`)  || '0',
     fin_reservas:     localStorage.getItem(`fin_reservas_${eid}`)     || '{}',
+    fin_cuaderno:     localStorage.getItem(`fin_cuaderno_${eid}`)     || '{}',
   };
   const json = JSON.stringify(backup, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
@@ -6256,7 +6414,7 @@ function importarDatos(input) {
       // Si hay Firebase, forzar push del backup restaurado
       if (fbRef) {
         setSyncStatus('pending');
-        fbRef.set(syncSnapshot())
+        fbRef.update(syncSnapshot())
           .then(() => setSyncStatus('ok'))
           .catch(() => setSyncStatus('error'));
       }
@@ -7295,7 +7453,8 @@ function getSyncKeys() {
   // fin_reservas: la Reserva es del hogar, no de la persona ni del aparato —
   // si uno aparta desde el celular, el otro lo tiene que ver en la notebook.
   return [`fin_data_${eid}`, `fin_budgets_${eid}`, `fin_meta_ahorro_${eid}`,
-          `fin_bankconfigs_${eid}`, `fin_rubros_${eid}`, `fin_reservas_${eid}`];
+          `fin_bankconfigs_${eid}`, `fin_rubros_${eid}`, `fin_reservas_${eid}`,
+          `fin_cuaderno_${eid}`];
 }
 function getSyncPath() { return `norteSync/empresas/${curEmpresa()}`; }
 // Compat aliases (se sobreescriben después del login)
@@ -7331,7 +7490,11 @@ function setSyncStatus(state) {
 
 function syncSnapshot() {
   const snap = { _client: syncClientId, _ts: Date.now() };
-  SYNC_KEYS.forEach(k => { snap[k] = localStorage.getItem(k); });
+  /* Una clave que este dispositivo no tiene no se sube como null: en Firebase
+     un null BORRA el hijo, y quien esté atrasado no tiene por qué destruir lo
+     que otro cargó. Un borrado real igual viaja, porque queda como '[]' o '{}'
+     y no como ausencia. */
+  SYNC_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v != null) snap[k] = v; });
   return snap;
 }
 
@@ -7370,7 +7533,7 @@ function pushNow() {
       clearTimeout(syncPushTimer);
       syncLocalDirty = true;
       setSyncStatus('pending');
-      fbRef.set(syncSnapshot())
+      fbRef.update(syncSnapshot())
         .then(() => { if (myRef === fbRef) { syncLocalDirty = false; setSyncStatus('ok'); } })
         .catch(() => setSyncStatus('error'));
     }
@@ -7381,7 +7544,7 @@ function pushNow() {
   setSyncStatus('pending');
   clearTimeout(syncPushTimer);
   syncPushTimer = setTimeout(() => { if (fbRef !== myRef) return;
-    fbRef.set(syncSnapshot())
+    fbRef.update(syncSnapshot())
       .then(() => { syncLocalDirty = false; setSyncStatus('ok'); })
       .catch(() => setSyncStatus('error'));
   }, 900);
@@ -7414,7 +7577,7 @@ function initSync() { let myRef;
     const remote = snap.val();
     if (!remote) {
       // No hay datos en la nube todavía: subimos lo que tenemos localmente (migración inicial)
-      return fbRef.set(syncSnapshot());
+      return fbRef.update(syncSnapshot());
     }
     // Siempre aplicamos el snapshot remoto al arrancar: es la fuente de verdad
     // (evita quedarse sin datos si el browser limpió localStorage entre sesiones)
@@ -7472,7 +7635,7 @@ window.scrollTo(0, 0);
   // El orden tiene que coincidir con el de los .nav-item del menú: se marca el
   // activo por posición. Al insertar Reserva entre Presupuesto y Análisis, sin
   // esta línea se subrayaba el ítem equivocado de ahí para abajo.
-  const navIdx = ['dashboard','transacciones','presupuesto','reserva','analisis','progreso','reportes','consultas'].indexOf(p);
+  const navIdx = ['dashboard','transacciones','presupuesto','reserva','analisis','progreso','reportes','cuaderno','consultas'].indexOf(p);
   if (navIdx >= 0) document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
   document.getElementById('pageTitle').textContent = {dashboard:'Mi Rumbo',transacciones:'Transacciones',presupuesto:'Presupuesto',reserva:'Reserva',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',consultas:'NortIA',admin:'Administración',tugps:'Novedades'}[p] || p;
   curPage = p;
@@ -7584,6 +7747,7 @@ function render() { if (curPage !== 'dashboard') { const _mn = document.querySel
   else if (curPage === 'analisis')      renderAnalisis();
   else if (curPage === 'progreso')      renderProgreso();
   else if (curPage === 'reportes')      renderReportes();
+  else if (curPage === 'cuaderno')      renderCuaderno();
   else if (curPage === 'admin')         renderAdmin();
   // consultas no necesita re-render al cambiar mes
 }
@@ -8868,6 +9032,349 @@ function getDataReportes() {
   return all;
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   EL CUADERNO — la libreta de precios del hogar
+   ══════════════════════════════════════════════════════════════════════
+   Un registro paralelo: qué compraste, cuánto salió, dónde y cuándo.
+   Contesta la pregunta que Norte no podía contestar — cuánto salió la vez
+   anterior — y sobre todo cuánto aumentó.
+
+   No toca NADA de lo financiero. No entra en el balance, ni en el
+   presupuesto, ni en los reportes, ni en el saldo pendiente. Vive en su
+   propia clave (`fin_cuaderno_<hogar>`) y ninguna función de plata la lee.
+   Se sincroniza por el mismo snapshot que el resto, así que hereda las
+   reglas de la base y el manejo de conflictos que ya existían.
+
+   Dos sellos, y el segundo es el que le da sentido:
+     COMPRADO  — lo pagaste.
+     RELEVADO  — te pasaron el precio y todavía no compraste nada.
+   Con el segundo la libreta sirve MIENTRAS estás decidiendo, no sólo para
+   mirar para atrás.
+   ══════════════════════════════════════════════════════════════════════ */
+
+const CU_VACIO = { items: {} };
+
+function cuKey() { return 'fin_cuaderno_' + curEmpresa(); }
+
+function cuGet() {
+  try {
+    const c = JSON.parse(localStorage.getItem(cuKey()) || 'null');
+    if (!c || typeof c !== 'object') return { items: {} };
+    return { items: c.items && typeof c.items === 'object' ? c.items : {} };
+  } catch (e) { return { items: {} }; }
+}
+
+function cuSave(c) {
+  localStorage.setItem(cuKey(), JSON.stringify({ items: (c && c.items) || {} }));
+  try { schedulePush(); } catch (e) {}
+}
+
+/* La clave con la que se agrupan las anotaciones de un mismo producto.
+   "Garrafa 10 Kg", "garrafa 10 kg" y "  Garrafa  10 kg " son lo mismo:
+   sin acentos, sin mayúsculas y sin espacios de más. El nombre que se
+   muestra es el de la anotación más reciente, así que corregir la escritura
+   una vez alcanza para que quede prolijo. */
+function cuClave(prod) {
+  return String(prod || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function cuNum(v) { const n = Number(v); return isFinite(n) ? n : 0; }
+
+/* Cuántos meses pasaron entre dos fechas 'YYYY-MM-DD'. Se cuenta por mes
+   calendario y no por días: para un service o una garrafa, "hace 14 meses"
+   dice más que "hace 421 días". */
+function cuMeses(desde, hasta) {
+  const a = String(desde || '').split('-'), b = String(hasta || '').split('-');
+  if (a.length < 2 || b.length < 2) return null;
+  const m = (Number(b[0]) - Number(a[0])) * 12 + (Number(b[1]) - Number(a[1]));
+  return isFinite(m) ? Math.max(0, m) : null;
+}
+
+function cuHaceCuanto(meses) {
+  if (meses == null) return '';
+  if (meses === 0)  return 'este mes';
+  if (meses === 1)  return 'hace 1 mes';
+  if (meses < 24)   return 'hace ' + meses + ' meses';
+  const an = Math.floor(meses / 12), re = meses % 12;
+  return 'hace ' + an + (an === 1 ? ' año' : ' años') + (re ? ' y ' + re + (re === 1 ? ' mes' : ' meses') : '');
+}
+
+/* La variación contra la anotación anterior, en porcentaje.
+   Sin el porcentaje son dos números sueltos; con el porcentaje es una
+   respuesta. Si el precio anterior es cero no hay variación posible:
+   se devuelve null en vez de un infinito o un cartel absurdo. */
+function cuVariacion(entradas) {
+  if (!entradas || entradas.length < 2) return null;
+  const act = entradas[0];
+  /* Se compara contra la anotación anterior DEL MISMO SELLO. Un precio que
+     pagaste contra el último que pagaste; un presupuesto contra el
+     presupuesto anterior. Mezclarlos daba números que no querían decir nada:
+     un service de $184.500 contra un presupuesto de $175.000 del mes pasado
+     mostraba "+5,4%" y escondía que la vez que lo pagaste, hace catorce
+     meses, habían sido $96.000. */
+  const sello = act.sello === 'relevado' ? 'relevado' : 'comprado';
+  const ant = entradas.slice(1).find(e => (e.sello === 'relevado' ? 'relevado' : 'comprado') === sello);
+  if (!ant) return null;
+  const pa = cuNum(ant.precio), pb = cuNum(act.precio);
+  if (pa <= 0) return null;
+  const pct = (pb / pa - 1) * 100;
+  return {
+    pct: pct,
+    // Cerca de cero un entero miente: 0,4% no es "0%".
+    txt: (pct > 0 ? '+' : '') + (Math.abs(pct) < 10 ? pct.toFixed(1) : String(Math.round(pct))) + '%',
+    sube: pct > 0,
+    anterior: pa,
+    meses: cuMeses(ant.fecha, act.fecha)
+  };
+}
+
+/* Las anotaciones agrupadas por producto, cada grupo con su historia
+   ordenada de la más nueva a la más vieja, y los grupos ordenados por la
+   anotación más reciente: lo último que tocaste, primero. */
+function cuGrupos() {
+  const items = cuGet().items, mapa = {};
+  Object.keys(items).forEach(id => {
+    const it = items[id];
+    if (!it || !it.prod) return;
+    const k = cuClave(it.prod);
+    if (!k) return;
+    (mapa[k] = mapa[k] || []).push(it);
+  });
+  return Object.keys(mapa).map(k => {
+    const e = mapa[k].slice().sort((a, b) => String(b.fecha || '').localeCompare(String(a.fecha || '')));
+    return { clave: k, nombre: e[0].prod, rubro: e[0].rubro || '', entradas: e, variacion: cuVariacion(e) };
+  }).sort((a, b) => String(b.entradas[0].fecha || '').localeCompare(String(a.entradas[0].fecha || '')));
+}
+
+// ── Filtros de la pantalla ──────────────────────────────────────────
+let _cuBusq = '';
+let _cuSello = '';
+
+function cuBuscar(v) { _cuBusq = String(v || '').toLowerCase(); renderCuaderno(); }
+function cuFiltroSello(v, btn) {
+  _cuSello = v;
+  const cont = btn && btn.parentNode;
+  if (cont) [...cont.children].forEach(b => b.classList.toggle('active', b === btn));
+  renderCuaderno();
+}
+
+function cuSelloHTML(s) {
+  return s === 'relevado'
+    ? '<span class="cu-sello cu-relevado">Relevado</span>'
+    : '<span class="cu-sello cu-comprado">Comprado</span>';
+}
+
+function cuFecha(f) {
+  const p = String(f || '').split('-');
+  if (p.length < 3) return '';
+  const M = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return Number(p[2]) + ' ' + (M[Number(p[1]) - 1] || '') + ' ' + p[0];
+}
+
+function renderCuaderno() {
+  const cont = document.getElementById('cuLista');
+  if (!cont) return;
+
+  let grupos = cuGrupos();
+  const total = grupos.length;
+
+  if (_cuSello) grupos = grupos.filter(g => g.entradas.some(e => (e.sello || 'comprado') === _cuSello));
+  if (_cuBusq) grupos = grupos.filter(g =>
+    (g.nombre + ' ' + g.rubro + ' ' + g.entradas.map(e => e.lugar || '').join(' ')).toLowerCase().indexOf(_cuBusq) >= 0);
+
+  const cnt = document.getElementById('cuConteo');
+  if (cnt) cnt.textContent = total ? (grupos.length === total
+    ? total + (total === 1 ? ' producto anotado' : ' productos anotados')
+    : grupos.length + ' de ' + total) : '';
+
+  if (!total) {
+    cont.innerHTML =
+      '<div class="cu-vacio">' +
+        '<div class="cu-vacio-ico">📒</div>' +
+        '<p class="cu-vacio-tit">Tu cuaderno todavía está en blanco</p>' +
+        '<p class="cu-vacio-txt">Anotá lo que salió una garrafa, un service, unas cubiertas. ' +
+        'La próxima vez que te lo cobren vas a saber si el precio es razonable — ' +
+        'y cuánto aumentó.</p>' +
+        '<button class="btn btn-primary" onclick="cuNuevo()">Anotar el primero</button>' +
+      '</div>';
+    return;
+  }
+  if (!grupos.length) {
+    cont.innerHTML = '<div class="cu-vacio"><p class="cu-vacio-txt">Ninguna anotación coincide con la búsqueda.</p></div>';
+    return;
+  }
+
+  cont.innerHTML = grupos.map(g => {
+    const u = g.entradas[0];
+    const v = g.variacion;
+    let pie;
+    if (v) {
+      pie = 'La vez anterior, ' + cuHaceCuanto(v.meses) + ': ' + fmtP(v.anterior) +
+            ' · <b class="' + (v.sube ? 'cu-sube' : 'cu-baja') + '">' + esc(v.txt) + '</b>';
+    } else if (g.entradas.length > 1) {
+      pie = g.entradas.length + ' anotaciones';
+    } else {
+      pie = 'Primera vez que lo anotás.';
+    }
+    return '<div class="cu-fila" onclick="cuAbrir(\'' + esc(g.clave).replace(/'/g, "\\'") + '\')">' +
+      '<div class="cu-l1">' +
+        '<div class="cu-nom">' + esc(g.nombre) + '</div>' +
+        '<div class="cu-precio">' + fmtP(cuNum(u.precio)) + '</div>' +
+      '</div>' +
+      '<div class="cu-l2">' + cuSelloHTML(u.sello) + ' ' + esc(cuFecha(u.fecha)) +
+        (u.lugar ? ' · ' + esc(u.lugar) : '') +
+        (g.rubro ? ' · ' + esc(g.rubro) : '') + '</div>' +
+      '<div class="cu-pie">' + pie + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+/* La historia de un producto: la línea de precios en el tiempo, del más
+   viejo al más nuevo. El punto lleno es lo COMPRADO; el hueco, un precio
+   que te pasaron. Así se ve de un vistazo qué presupuesto terminó en qué
+   pago. */
+function cuAbrir(clave) {
+  const g = cuGrupos().find(x => x.clave === clave);
+  if (!g) return;
+  const ov = document.getElementById('cuDetalleOverlay');
+  const cuerpo = document.getElementById('cuDetalleBody');
+  document.getElementById('cuDetalleTitulo').textContent = g.nombre;
+
+  const orden = g.entradas.slice().reverse();          // del más viejo al más nuevo
+  const linea = orden.map(e =>
+    '<div class="cu-hito' + ((e.sello || 'comprado') === 'relevado' ? ' cu-hito-rel' : '') + '">' +
+      '<div class="cu-hito-p">' + fmtP(cuNum(e.precio)) + '</div>' +
+      '<div class="cu-hito-f">' + esc(cuFecha(e.fecha)) + '</div>' +
+      '<div class="cu-punto"></div>' +
+    '</div>').join('');
+
+  const filas = g.entradas.map(e =>
+    '<div class="cu-det-fila">' +
+      '<div class="cu-det-l1"><span>' + esc(cuFecha(e.fecha)) + '</span>' +
+        '<strong>' + fmtP(cuNum(e.precio)) + '</strong></div>' +
+      '<div class="cu-det-l2">' + cuSelloHTML(e.sello) +
+        (e.lugar ? ' ' + esc(e.lugar) : '') +
+        (e.nota ? ' · ' + esc(e.nota) : '') + '</div>' +
+      '<div class="cu-det-acc">' +
+        '<button class="cu-mini" onclick="event.stopPropagation();cuEditar(\'' + e.id + '\')">Editar</button>' +
+        '<button class="cu-mini cu-mini-x" onclick="event.stopPropagation();cuBorrar(\'' + e.id + '\')">Borrar</button>' +
+      '</div>' +
+    '</div>').join('');
+
+  cuerpo.innerHTML =
+    (orden.length > 1 ? '<div class="cu-linea">' + linea + '</div>' : '') +
+    '<div class="cu-det-lista">' + filas + '</div>' +
+    '<button class="btn btn-primary cu-agregar-mas" onclick="cuNuevo(\'' +
+      esc(g.nombre).replace(/'/g, "\\'") + '\')">Anotar un precio nuevo de esto</button>';
+  ov.style.display = 'flex';
+}
+
+function cuCerrarDetalle() { document.getElementById('cuDetalleOverlay').style.display = 'none'; }
+
+// ── Alta y edición ──────────────────────────────────────────────────
+let _cuEditando = null;
+
+function cuHoy() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function cuNuevo(prod) {
+  _cuEditando = null;
+  cuAbrirForm({ prod: prod || '', precio: '', lugar: '', fecha: cuHoy(), sello: 'comprado', rubro: '', nota: '' });
+}
+
+function cuEditar(id) {
+  const it = cuGet().items[id];
+  if (!it) return;
+  _cuEditando = id;
+  cuCerrarDetalle();
+  cuAbrirForm(it);
+}
+
+function cuAbrirForm(d) {
+  document.getElementById('cuFormTitulo').textContent = _cuEditando ? 'Editar la anotación' : 'Anotar un precio';
+  document.getElementById('cuProd').value   = d.prod || '';
+  document.getElementById('cuPrecio').value = d.precio != null && d.precio !== '' ? d.precio : '';
+  document.getElementById('cuLugar').value  = d.lugar || '';
+  document.getElementById('cuFecha').value  = d.fecha || cuHoy();
+  document.getElementById('cuRubro').value  = d.rubro || '';
+  document.getElementById('cuNota').value   = d.nota || '';
+  cuSetSello(d.sello === 'relevado' ? 'relevado' : 'comprado');
+  document.getElementById('cuFormError').style.display = 'none';
+  document.getElementById('cuBorrarBtn').style.display = _cuEditando ? '' : 'none';
+
+  // Los rubros que el hogar ya usa, para no inventar una taxonomía nueva.
+  try {
+    const m = getRubrosMaestro();
+    const lista = [].concat(m.Gasto || [], m.Ingreso || [])
+      .filter((v, i, a) => v && a.indexOf(v) === i).sort();
+    document.getElementById('cuRubros').innerHTML = lista.map(r => '<option value="' + esc(r) + '">').join('');
+  } catch (e) {}
+
+  document.getElementById('cuFormOverlay').style.display = 'flex';
+  setTimeout(() => { const i = document.getElementById('cuProd'); if (i && !i.value) i.focus(); }, 60);
+}
+
+function cuCerrarForm() { document.getElementById('cuFormOverlay').style.display = 'none'; }
+
+function cuSetSello(v) {
+  document.getElementById('cuSello').value = v;
+  ['comprado', 'relevado'].forEach(s => {
+    const b = document.getElementById('cuSello_' + s);
+    if (b) b.classList.toggle('active', s === v);
+  });
+}
+
+function cuGuardar() {
+  const err  = document.getElementById('cuFormError');
+  const prod = document.getElementById('cuProd').value.trim();
+  const precio = cuNum(document.getElementById('cuPrecio').value);
+  const fecha = document.getElementById('cuFecha').value;
+
+  function fallar(m) { err.textContent = m; err.style.display = 'block'; }
+  if (!prod)        return fallar('Poné qué es. Sin nombre no hay con qué comparar después.');
+  if (precio <= 0)  return fallar('Poné cuánto salió.');
+  if (!fecha)       return fallar('Poné la fecha.');
+
+  const c = cuGet();
+  const id = _cuEditando || uid();
+  const antes = c.items[id] || {};
+  c.items[id] = {
+    id: id,
+    prod: prod,
+    precio: precio,
+    lugar: document.getElementById('cuLugar').value.trim(),
+    fecha: fecha,
+    rubro: document.getElementById('cuRubro').value.trim(),
+    nota: document.getElementById('cuNota').value.trim(),
+    sello: document.getElementById('cuSello').value === 'relevado' ? 'relevado' : 'comprado',
+    por: antes.por || (getSession() || {}).userId || '',
+    creadoAt: antes.creadoAt || Date.now(),
+    act: Date.now()
+  };
+  cuSave(c);
+  _cuEditando = null;
+  cuCerrarForm();
+  renderCuaderno();
+}
+
+function cuBorrar(id) {
+  const it = cuGet().items[id];
+  if (!it) return;
+  if (!confirm('¿Borrar esta anotación?\n\n' + it.prod + ' · ' + fmtP(cuNum(it.precio)) +
+               '\n\nSe borra sólo del Cuaderno. Tus movimientos no se tocan.')) return;
+  const c = cuGet();
+  delete c.items[id];
+  cuSave(c);
+  _cuEditando = null;
+  cuCerrarForm();
+  cuCerrarDetalle();
+  renderCuaderno();
+}
+
 function renderComparativoIntegrantes() {
   const eid = empresaIdVistaEnReportes();
   const miembros = repMiembrosCache[eid] || {};
@@ -10138,7 +10645,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.9.001';
+const APP_VERSION = 'v005.10.000';
 let novEntradas = [];
 
 function novLeida(e) {
