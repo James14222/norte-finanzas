@@ -8129,11 +8129,44 @@ function pushNow() {
       syncLocalDirty = true; const myRef = fbRef;
   setSyncStatus('pending');
   clearTimeout(syncPushTimer);
+  /* Antes eran 900ms. En el celular, cuando bloqueás la pantalla o cambiás de
+     app, el navegador SUSPENDE los temporizadores: ese setTimeout podía no
+     correr nunca, `fbRef.update()` no se llamaba, y Firebase ni se enteraba del
+     movimiento. Al reabrir, `syncLocalDirty` arranca en false —es una variable
+     en memoria— y el snapshot remoto, que nunca lo recibió, pisaba el archivo
+     local entero. El gasto desaparecía. La espera ahora es corta: sigue
+     juntando la ráfaga de escrituras de una misma operación, pero deja de ser
+     una ventana donde se pierden datos. */
   syncPushTimer = setTimeout(() => { if (fbRef !== myRef) return;
     fbRef.update(syncSnapshot())
       .then(() => { syncLocalDirty = false; setSyncStatus('ok'); })
       .catch(() => setSyncStatus('error'));
-  }, 900);
+  }, 250);
+}
+
+/* La red de contención: si la página se va a ocultar y quedó algo sin subir,
+   se sube AHORA en vez de confiar en un temporizador que quizás no corra.
+   `visibilitychange` es el que dispara al bloquear la pantalla o cambiar de
+   app; `pagehide` cubre el cierre y el volver atrás. */
+function flushPush() {
+  if (!fbRef || !syncLocalDirty) return;
+  const myRef = fbRef;
+  clearTimeout(syncPushTimer);
+  try {
+    fbRef.update(syncSnapshot())
+      .then(function () { if (myRef === fbRef) { syncLocalDirty = false; setSyncStatus('ok'); } })
+      .catch(function () { setSyncStatus('error'); });
+  } catch (e) {}
+}
+let _flushEnganchado = false;
+function engancharFlush() {
+  if (_flushEnganchado) return;     // initSync corre de nuevo al cambiar de hogar
+  _flushEnganchado = true;
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') flushPush();
+  });
+  window.addEventListener('pagehide', flushPush);
+  window.addEventListener('freeze', flushPush);
 }
 
 function reinitSync() {
@@ -8191,6 +8224,7 @@ function initSync() { let myRef;
     if (SYNC_KEYS.includes(key)) schedulePush();
   };
 
+  engancharFlush();
   window.addEventListener('online',  () => { setSyncStatus('pending'); schedulePush(); });
   window.addEventListener('offline', () => setSyncStatus('offline'));
   if (navigator.onLine === false) setSyncStatus('offline');
@@ -11860,7 +11894,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.13.003';
+const APP_VERSION = 'v005.13.004';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -13038,6 +13072,7 @@ function saveTx(e) {
     data.push(tx);
   }
   saveData(data);
+  try { pushNow(); } catch (e) {}
   closeModal();
   render();
 }
@@ -14058,6 +14093,10 @@ function saveQuickTx() {
     creadoPor: dueno.id, creadoPorNombre: dueno.nombre
   };
   saveData([...getData(), tx]);
+  // Sube ya. Las operaciones grandes (importar, carga masiva, pagar tarjeta)
+  // siempre hicieron esto; la carga de a uno se había quedado esperando el
+  // temporizador, que en el celular es justo lo que no corre.
+  try { pushNow(); } catch (e) {}
   closeQuickPanel();
   render();
 }
