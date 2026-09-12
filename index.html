@@ -11860,7 +11860,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.13.002';
+const APP_VERSION = 'v005.13.003';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -12447,13 +12447,21 @@ function rfQuien() {
 // Si no llevamos la pantalla con ella, la persona toca un boton y no pasa nada
 // donde esta mirando — el cambio ocurrio a dos pantallazos de distancia.
 function rfMirar(id) {
-  try {
-    requestAnimationFrame(function () {
-      var el = document.getElementById(id);
-      if (!el || !el.firstChild) return;
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  } catch (e) {}
+  // Con requestAnimationFrame esto no corría nunca en una pestaña en segundo
+  // plano: Chrome pausa el bucle de cuadros y el salto se perdía en silencio.
+  // Con temporizadores anda siempre. Y va tres veces a propósito: al pintar el
+  // formulario crece contenido por encima, y el anclaje de scroll del navegador
+  // reacomoda la página DESPUÉS —empujándola cientos de píxeles—, así que el
+  // primer intento solo no alcanza. Instantáneo, no suave: un desplazamiento
+  // animado lo pisa ese mismo reacomodo.
+  var ir = function () {
+    var el = document.getElementById(id);
+    if (!el || !el.firstChild) return;
+    try { el.scrollIntoView({ block: 'start' }); } catch (e) {}
+  };
+  try { ir(); } catch (e) {}
+  setTimeout(ir, 60);
+  setTimeout(ir, 220);
 }
 
 function rfAbrir() {
