@@ -4330,6 +4330,11 @@ tr:hover td { background: #fafbfc; }
     <div id="novDetCab" style="font-size:12px;color:var(--muted);font-weight:600;margin:-4px 0 14px"></div>
     <div id="novDetCuerpo"></div>
     <div id="novDetVoto"></div>
+    <div id="novDetPie" style="display:flex;justify-content:flex-end;gap:10px;align-items:center;
+      margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+      <span id="novDetPieTxt" style="font-size:13px;color:var(--muted);font-weight:600;margin-right:auto"></span>
+      <button class="btn" onclick="novCerrar()">Cerrar</button>
+    </div>
   </div>
 </div>
 
@@ -11852,7 +11857,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.13.000';
+const APP_VERSION = 'v005.13.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -11983,6 +11988,11 @@ function novAbrir(id) {
         '</div>';
     }).join('');
   novPintarVoto(e);
+  if (_novCierre) { clearTimeout(_novCierre); _novCierre = null; }
+  const pie0 = document.getElementById('novDetPieTxt');
+  if (pie0) pie0.textContent = novVotada(e)
+    ? 'Ya la puntuaste. Podés cambiar tu voto.'
+    : 'Puntuala acá arriba y la ventana se cierra sola.';
   document.getElementById('novOverlay').classList.add('show');
 
   if (!novLeida(e)) {
@@ -11993,6 +12003,7 @@ function novAbrir(id) {
   novPintarBadge();
 }
 function novCerrar() {
+  if (_novCierre) { clearTimeout(_novCierre); _novCierre = null; }
   document.getElementById('novOverlay').classList.remove('show');
 }
 
@@ -12019,6 +12030,12 @@ function novPintarVoto(e) {
     '</div>';
 }
 
+// Votar cerraba nada: la persona puntuaba abajo de todo y tenía que volver a
+// subir hasta la × para salir. Ahora el voto confirma en el lugar donde está
+// mirando y cierra solo. El temporizador se guarda para poder cancelarlo si
+// cambia el voto antes de que se cierre — si no, dos toques dejaban dos cierres
+// encolados y el segundo se llevaba puesta la ventana siguiente.
+let _novCierre = null;
 function novVotar(id, valor) {
   const e = novEntradas.find(function (x) { return String(x.id) === String(id); });
   if (!e) return;
@@ -12035,6 +12052,20 @@ function novVotar(id, valor) {
   novPintarVoto(e);
   renderNovedades();
   novPintarBadge();
+
+  // Confirmación donde está el dedo, y salida sola.
+  const escala = novEscala(e);
+  const pie = document.getElementById('novDetPieTxt');
+  if (pie) pie.textContent = 'Anotamos tu ' + valor + ' — ' + (escala[valor - 1] || '') + '. Gracias.';
+  const txt = document.getElementById('novVotoTxt');
+  if (txt) txt.innerHTML = '<b>Listo.</b> Podés cambiarlo cuando quieras: se cierra sola.';
+  if (_novCierre) clearTimeout(_novCierre);
+  _novCierre = setTimeout(function () {
+    _novCierre = null;
+    // Si mientras tanto la cerró a mano, no hacemos nada.
+    const ov = document.getElementById('novOverlay');
+    if (ov && ov.classList.contains('show')) novCerrar();
+  }, 1200);
 }
 
 function novFechaLarga(iso) {
@@ -12380,7 +12411,19 @@ var rfAbierto = false, rfElegidas = [], rfEnviando = false, rfHecho = false;
 var rfBorr = { q1: '', q2: '', q3: '', firma: 'anon', nombre: '', lugar: '' };
 
 function rfClaveHecha() { try { return 'norte_ref_enviada_' + curUserId(); } catch (e) { return 'norte_ref_enviada'; } }
-function rfYaMando() { try { return !!localStorage.getItem(rfClaveHecha()); } catch (e) { return false; } }
+function rfMarca() { try { return localStorage.getItem(rfClaveHecha()) || ''; } catch (e) { return ''; } }
+function rfYaMando() { var m = rfMarca(); return !!m && m !== 'no'; }
+function rfPospuesta() { return rfMarca() === 'no'; }
+// Lo que hace que el distintivo prenda. Una sola cosa pendiente, y se apaga
+// tanto si contestás como si decís que ahora no: un puntito rojo que no se
+// puede apagar deja de ser un aviso y pasa a ser una pinchadura.
+function rfPendiente() { return (rfHecho || rfYaMando() || rfPospuesta()) ? 0 : 1; }
+function rfAhoraNo() {
+  try { localStorage.setItem(rfClaveHecha(), 'no'); } catch (e) {}
+  rfAbierto = false;
+  renderRefApp();
+  try { window.gpsPintarBadgeTotal(); } catch (e) {}
+}
 
 // Quién contesta, con lo que la sesión ya sabe. No se lo preguntamos: pedirle
 // el mail a alguien que ya está adentro y logueado es el paso de más que
@@ -12490,6 +12533,7 @@ async function rfEnviar() {
     rfHecho = true;
     try { localStorage.setItem(rfClaveHecha(), String(Date.now())); } catch (e) {}
     renderRefApp();
+    try { window.gpsPintarBadgeTotal(); } catch (e) {}
   } catch (e) {
     if (est) est.textContent = e.message || 'No pudimos enviarlo. Probá de nuevo.';
   } finally {
@@ -12500,8 +12544,17 @@ async function rfEnviar() {
 }
 
 function renderRefApp() {
-  var cont = document.getElementById('gpsRefWrap');
+  // Mientras está pendiente va ARRIBA de las novedades, porque es un pedido con
+  // fecha y se pierde si queda al pie. Una vez contestada baja: ya cumplió.
+  var arriba = document.getElementById('gpsRefTop');
+  var abajo  = document.getElementById('gpsRefBottom');
+  if (!arriba && !abajo) return;
+  var cerrada = rfHecho || (!rfAbierto && (rfYaMando() || rfPospuesta()));
+  var cont = cerrada ? abajo : arriba;
+  var otro = cerrada ? arriba : abajo;
+  if (otro) { otro.innerHTML = ''; otro.style.marginTop = '0'; }
   if (!cont) return;
+  cont.style.marginTop = '28px';
 
   if (rfHecho || (!rfAbierto && rfYaMando())) {
     cont.innerHTML =
@@ -12512,6 +12565,16 @@ function renderRefApp() {
         'y si hay que recortarlo por espacio te preguntamos antes.' +
         (rfHecho ? '<br>Lo que mandaste te queda en Hablemos, acá abajo.' : '') +
         '</div></div></div>';
+    return;
+  }
+
+  if (!rfAbierto && rfPospuesta()) {
+    cont.innerHTML =
+      '<div class="rf-card" style="background:var(--card);border-color:var(--border)">' +
+        '<div class="rf-sub" style="margin-top:0">Cuando tengas ganas, contanos cómo te fue con Norte. ' +
+        'Son tres preguntas y dos minutos. ' +
+        '<a href="#" onclick="rfAbrir();return false" style="color:var(--primary);font-weight:700">Contestar ahora</a></div>' +
+      '</div>';
     return;
   }
 
@@ -12603,6 +12666,7 @@ function renderRefApp() {
 
       '<div class="rf-enviar">' +
         '<button class="btn btn-primary" id="rfBtn" onclick="rfEnviar()">Enviar</button>' +
+        '<button class="btn" type="button" onclick="rfAhoraNo()">Ahora no</button>' +
         '<span class="rf-estado" id="rfEstado"></span>' +
       '</div>' +
     '</div>';
@@ -16951,6 +17015,8 @@ function subtituloRumbo() {
     var n = (_gpsParticipa && _gpsCapPendiente ? 1 : 0);
     try { if (typeof novSinLeer === 'function') n += novSinLeer(); } catch (e) {}
     try { if (typeof hbSinLeer === 'function') n += hbSinLeer(); } catch (e) {}
+    // La referencia sin contestar también es algo que te espera adentro.
+    try { if (typeof rfPendiente === 'function') n += rfPendiente(); } catch (e) {}
     badge.textContent = n > 9 ? '9+' : String(n);
     badge.style.display = n > 0 ? 'inline-flex' : 'none';
   };
@@ -17042,8 +17108,9 @@ function subtituloRumbo() {
       // que queda reservado es el programa guiado de cuatro semanas, que sólo
       // tiene sentido para quienes ya lo arrancaron.
       body.innerHTML =
+        '<div id="gpsRefTop"></div>' +
         '<div id="gpsNovWrap"></div>' +
-        '<div id="gpsRefWrap" style="margin-top:28px"></div>' +
+        '<div id="gpsRefBottom"></div>' +
         '<div id="gpsChatWrap" style="margin-top:28px"></div>';
       try { renderNovedades(); } catch (e) {}
       try { iniciarRefApp(); } catch (e) {}
@@ -17104,8 +17171,9 @@ function subtituloRumbo() {
       // Los arman las DOS ramas de esta función —ésta y la de quien no está en
       // el programa guiado—, porque desde que se cerró el Club Pioneros los ve
       // cualquiera que tenga Norte.
+      '<div id="gpsRefTop" style="margin-top:28px"></div>' +
       '<div id="gpsNovWrap" style="margin-top:28px"></div>' +
-      '<div id="gpsRefWrap" style="margin-top:28px"></div>' +
+      '<div id="gpsRefBottom"></div>' +
       '<div id="gpsChatWrap" style="margin-top:28px"></div>';
     try { renderNovedades(); } catch (e) {}
     try { iniciarRefApp(); } catch (e) {}
