@@ -315,6 +315,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .hb-vacio { text-align:center; padding:26px 18px; color:var(--muted); font-size:13.5px; line-height:1.6; }
 /* Contanos cómo te fue — el pedido de referencias */
 .rf-card { border:1px solid rgba(255,138,92,.45); background:#FFF7F3; border-radius:14px; padding:20px 22px; }
+/* Al mudarse de arriba a abajo (o al revés) hay que llevar los ojos con la
+   tarjeta. scroll-margin evita que quede calzada contra el borde. */
+#gpsRefTop, #gpsRefBottom { scroll-margin-top:18px; scroll-margin-bottom:18px; }
 .rf-tit { font-size:18px; font-weight:800; color:var(--text); letter-spacing:-.3px; }
 .rf-sub { font-size:13.5px; color:var(--muted); margin-top:7px; line-height:1.6; }
 .rf-sub b { color:var(--text); font-weight:700; }
@@ -11857,7 +11860,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.13.001';
+const APP_VERSION = 'v005.13.002';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -12423,6 +12426,7 @@ function rfAhoraNo() {
   rfAbierto = false;
   renderRefApp();
   try { window.gpsPintarBadgeTotal(); } catch (e) {}
+  rfMirar('gpsRefBottom');
 }
 
 // Quién contesta, con lo que la sesión ya sabe. No se lo preguntamos: pedirle
@@ -12439,7 +12443,26 @@ function rfQuien() {
   return { nombre: nombre, email: email };
 }
 
-function rfAbrir() { rfAbierto = true; renderRefApp(); }
+// La tarjeta cambia de lugar segun el estado: pendiente arriba, resuelta abajo.
+// Si no llevamos la pantalla con ella, la persona toca un boton y no pasa nada
+// donde esta mirando — el cambio ocurrio a dos pantallazos de distancia.
+function rfMirar(id) {
+  try {
+    requestAnimationFrame(function () {
+      var el = document.getElementById(id);
+      if (!el || !el.firstChild) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  } catch (e) {}
+}
+
+function rfAbrir() {
+  rfAbierto = true;
+  renderRefApp();
+  // El formulario se abre arriba de todo: si lo abriste desde la tarjeta del
+  // pie, sin esto te quedabas abajo mirando el lugar vacio donde estaba.
+  rfMirar('gpsRefTop');
+}
 
 function rfLeer() {
   var g = function (id) { var e = document.getElementById(id); return e ? e.value : ''; };
@@ -12534,6 +12557,7 @@ async function rfEnviar() {
     try { localStorage.setItem(rfClaveHecha(), String(Date.now())); } catch (e) {}
     renderRefApp();
     try { window.gpsPintarBadgeTotal(); } catch (e) {}
+    rfMirar('gpsRefBottom');
   } catch (e) {
     if (est) est.textContent = e.message || 'No pudimos enviarlo. Probá de nuevo.';
   } finally {
