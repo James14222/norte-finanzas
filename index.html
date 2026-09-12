@@ -313,6 +313,60 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   border:1px solid var(--border); border-radius:10px; font-size:14px; font-family:inherit;
   background:var(--card); color:var(--text); line-height:1.5; box-sizing:border-box; }
 .hb-vacio { text-align:center; padding:26px 18px; color:var(--muted); font-size:13.5px; line-height:1.6; }
+/* Contanos cómo te fue — el pedido de referencias */
+.rf-card { border:1px solid rgba(255,138,92,.45); background:#FFF7F3; border-radius:14px; padding:20px 22px; }
+.rf-tit { font-size:18px; font-weight:800; color:var(--text); letter-spacing:-.3px; }
+.rf-sub { font-size:13.5px; color:var(--muted); margin-top:7px; line-height:1.6; }
+.rf-sub b { color:var(--text); font-weight:700; }
+.rf-abrir { margin-top:14px; }
+.rf-paso { margin-top:22px; padding-top:18px; border-top:1px solid rgba(255,138,92,.28); }
+.rf-paso:first-of-type { border-top:none; padding-top:0; }
+.rf-preg { display:flex; gap:10px; align-items:flex-start; }
+.rf-preg i { width:24px; height:24px; border-radius:50%; background:var(--primary); color:#fff; font-style:normal;
+  font-weight:800; font-size:12.5px; display:grid; place-items:center; flex:none; margin-top:1px; }
+.rf-preg h4 { font-size:15.5px; font-weight:800; color:var(--text); line-height:1.35; letter-spacing:-.2px; }
+.rf-ayuda { font-size:12.5px; color:var(--muted); margin:6px 0 0 34px; line-height:1.55; }
+.rf-fichas { display:flex; flex-wrap:wrap; gap:7px; margin:11px 0 0 34px; }
+.rf-ficha { border:1px solid var(--border); background:var(--card); color:var(--muted); border-radius:999px;
+  padding:6px 12px; font-size:12.5px; font-weight:600; font-family:inherit; cursor:pointer; }
+.rf-ficha:hover { border-color:var(--primary); color:var(--text); }
+.rf-ficha[aria-pressed="true"] { background:var(--primary); border-color:var(--primary); color:#fff; }
+.rf-card textarea { width:calc(100% - 34px); margin-left:34px; margin-top:11px; border:1px solid var(--border);
+  border-radius:10px; padding:11px 13px; font-size:14px; font-family:inherit; background:var(--card);
+  color:var(--text); line-height:1.55; min-height:74px; resize:vertical; box-sizing:border-box; }
+.rf-card textarea:focus { outline:none; border-color:var(--primary); }
+.rf-cuenta { font-size:11.5px; color:var(--muted); margin:5px 0 0 34px; }
+.rf-previa { margin-top:22px; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px; }
+.rf-previa .k { font-size:10.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.rf-previa .k b { color:var(--primary); }
+.rf-comillas { font-size:30px; line-height:.7; color:var(--primary); font-weight:900; margin-top:11px; }
+.rf-frase { font-size:16px; font-weight:700; color:var(--brand-navy); line-height:1.45; margin-top:7px; letter-spacing:-.2px; }
+.rf-firma { display:flex; align-items:center; gap:9px; margin-top:14px; padding-top:12px; border-top:1px solid var(--border); }
+.rf-av { width:30px; height:30px; border-radius:50%; background:var(--brand-navy); color:#fff; display:grid;
+  place-items:center; font-weight:800; font-size:12.5px; flex:none; }
+.rf-quien b { display:block; font-size:13px; font-weight:700; color:var(--text); }
+.rf-quien span { display:block; font-size:11.5px; color:var(--muted); }
+.rf-pie { font-size:12px; color:var(--muted); margin-top:12px; line-height:1.55; }
+.rf-pie b { color:var(--text); }
+.rf-ops { display:grid; gap:8px; margin:11px 0 0 34px; }
+.rf-op { display:flex; gap:10px; align-items:flex-start; border:1px solid var(--border); border-radius:10px;
+  padding:11px 13px; cursor:pointer; background:var(--card); }
+.rf-op input { margin-top:3px; accent-color:var(--primary); flex:none; }
+.rf-op b { display:block; font-size:13.5px; font-weight:700; color:var(--text); }
+.rf-op span { display:block; font-size:12px; color:var(--muted); margin-top:1px; line-height:1.45; }
+.rf-nombre { display:grid; gap:8px; margin:9px 0 0 34px; }
+.rf-nombre input { border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-size:13.5px;
+  font-family:inherit; background:var(--card); color:var(--text); box-sizing:border-box; }
+.rf-nombre input:focus { outline:none; border-color:var(--primary); }
+.rf-enviar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:20px; }
+.rf-estado { font-size:13px; color:var(--muted); font-weight:600; }
+.rf-gracias { text-align:center; padding:8px 4px 4px; }
+.rf-gracias .tick { font-size:26px; }
+@media (max-width:560px) {
+  .rf-ayuda, .rf-fichas, .rf-cuenta, .rf-ops, .rf-nombre { margin-left:0; }
+  .rf-card textarea { width:100%; margin-left:0; }
+  .rf-card { padding:17px 16px; }
+}
 /* Panel de admin */
 .hbA-fila { display:flex; align-items:center; gap:10px; padding:11px 13px; border:1px solid var(--border);
   border-radius:10px; margin-bottom:8px; background:var(--card); cursor:pointer; }
@@ -11798,7 +11852,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.12.007';
+const APP_VERSION = 'v005.13.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -12311,6 +12365,252 @@ async function hbEnviar() {
     if (b) { b.disabled = false; b.textContent = 'Enviar'; }
   }
 }
+
+
+// ── CONTANOS COMO TE FUE: el pedido de referencias ───────────────
+// Viaja por el mismo canal que Hablemos (`enviarMensajePionero`), así que no
+// hace falta backend nuevo: la función ya resuelve el hogar desde el token,
+// guarda el uid de quien escribió y deja nombre y mail en la meta del hilo.
+// Lo único que agregamos nosotros es quién de la casa contestó, porque la meta
+// guarda el contacto del primer miembro del hogar y no el del que escribe.
+var RF_FICHAS = ['Ver todo junto en un lugar', 'Entender la tarjeta de crédito',
+  'Compartirlo con mi pareja', 'Saber cuánto me queda', 'Apartar plata con la Reserva',
+  'Anotar precios en el Cuaderno', 'Que sea rápido de cargar', 'Preguntarle a NortIA'];
+var rfAbierto = false, rfElegidas = [], rfEnviando = false, rfHecho = false;
+var rfBorr = { q1: '', q2: '', q3: '', firma: 'anon', nombre: '', lugar: '' };
+
+function rfClaveHecha() { try { return 'norte_ref_enviada_' + curUserId(); } catch (e) { return 'norte_ref_enviada'; } }
+function rfYaMando() { try { return !!localStorage.getItem(rfClaveHecha()); } catch (e) { return false; } }
+
+// Quién contesta, con lo que la sesión ya sabe. No se lo preguntamos: pedirle
+// el mail a alguien que ya está adentro y logueado es el paso de más que
+// justamente estamos sacando.
+function rfQuien() {
+  var email = '', nombre = '';
+  try {
+    var u = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+    if (u) { email = String(u.email || ''); nombre = String(u.displayName || '').trim(); }
+  } catch (e) {}
+  try { if (!email) email = String(curUserName() || ''); } catch (e) {}
+  try { if (!nombre) nombre = nombrePilaUsuario() || ''; } catch (e) {}
+  return { nombre: nombre, email: email };
+}
+
+function rfAbrir() { rfAbierto = true; renderRefApp(); }
+
+function rfLeer() {
+  var g = function (id) { var e = document.getElementById(id); return e ? e.value : ''; };
+  rfBorr.q1 = g('rfQ1'); rfBorr.q2 = g('rfQ2'); rfBorr.q3 = g('rfQ3');
+  rfBorr.nombre = g('rfNombre'); rfBorr.lugar = g('rfLugar');
+  var r = document.querySelector('input[name=rfFirma]:checked');
+  if (r) rfBorr.firma = r.value;
+}
+
+function rfFicha(btn) {
+  var on = btn.getAttribute('aria-pressed') === 'true';
+  var t = btn.getAttribute('data-f') || '';
+  btn.setAttribute('aria-pressed', on ? 'false' : 'true');
+  if (on) rfElegidas = rfElegidas.filter(function (x) { return x !== t; });
+  else if (rfElegidas.indexOf(t) < 0) rfElegidas.push(t);
+}
+
+function rfTipeo(id, tope) {
+  var e = document.getElementById(id), c = document.getElementById(id + 'c');
+  if (e && c) c.textContent = e.value.length + '/' + tope;
+  if (id === 'rfQ3') rfPintarPrevia();
+}
+
+function rfFirmaActual() {
+  rfLeer();
+  var anon = { nombre: 'Un hogar de Norte', detalle: 'Usuario de Norte', ini: '·' };
+  if (rfBorr.firma !== 'pila') return anon;
+  var n = (rfBorr.nombre || '').trim(), l = (rfBorr.lugar || '').trim();
+  if (!n) return anon;
+  return { nombre: n + (l ? ', ' + l : ''), detalle: 'Usuario de Norte', ini: n.charAt(0).toUpperCase() };
+}
+
+function rfPintarPrevia() {
+  var e = document.getElementById('rfQ3'); if (!e) return;
+  var t = (e.value || '').trim();
+  var f = rfFirmaActual();
+  var q = function (id, v) { var x = document.getElementById(id); if (x) x.textContent = v; };
+  q('rfPvTexto', t || 'Acá va a aparecer lo que escribas en la pregunta 3.');
+  q('rfPvNombre', f.nombre); q('rfPvDetalle', f.detalle); q('rfPvIni', f.ini);
+}
+
+function rfFirmaCambio() {
+  rfLeer();
+  var c = document.getElementById('rfCamposNombre');
+  if (c) c.style.display = (rfBorr.firma === 'pila') ? '' : 'none';
+  rfPintarPrevia();
+}
+
+function rfArmar() {
+  rfLeer();
+  var q = rfQuien();
+  var como = { anon: 'Sin nombre', pila: 'Con nombre de pila', no: 'No publicar' }[rfBorr.firma] || 'Sin nombre';
+  var n = (rfBorr.nombre || '').trim(), l = (rfBorr.lugar || '').trim();
+  return '★ REFERENCIA PARA NORTE\n' +
+    'De: ' + (q.nombre || 'sin nombre') + (q.email ? ' <' + q.email + '>' : '') + '\n\n' +
+    '1) Lo que más me sirvió\n' +
+    (rfElegidas.length ? '   [' + rfElegidas.join('] [') + ']\n' : '') +
+    '   ' + ((rfBorr.q1 || '').trim() || '—') + '\n\n' +
+    '2) Qué cambió en cómo manejo la plata\n   ' + ((rfBorr.q2 || '').trim() || '—') + '\n\n' +
+    '3) Qué le diría a alguien\n   ' + ((rfBorr.q3 || '').trim() || '—') + '\n\n' +
+    'Cómo puede salir publicado: ' + como +
+    (rfBorr.firma === 'pila' ? ' (' + (n || 'sin nombre') + (l ? ', ' + l : '') + ')' : '');
+}
+
+async function rfEnviar() {
+  if (rfEnviando) return;
+  rfLeer();
+  var algo = [rfBorr.q1, rfBorr.q2, rfBorr.q3].some(function (t) { return (t || '').trim(); });
+  if (!algo && !rfElegidas.length) {
+    var e0 = document.getElementById('rfEstado');
+    if (e0) e0.textContent = 'Contestá aunque sea una de las tres.';
+    return;
+  }
+  var texto = rfArmar();
+  // El canal corta en 4000. Nuestros topes suman 1080 mas el encabezado, pero
+  // si algun dia crecen, que se entere acá y no en silencio del lado del servidor.
+  if (texto.length > 4000) texto = texto.slice(0, 3997) + '...';
+
+  rfEnviando = true;
+  var btn = document.getElementById('rfBtn'), est = document.getElementById('rfEstado');
+  if (btn) { btn.disabled = true; btn.textContent = 'Enviando…'; }
+  if (est) est.textContent = '';
+  try {
+    var idToken = await firebase.auth().currentUser.getIdToken();
+    var r = await fetch(HB_FN + '/enviarMensajePionero', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken: idToken, texto: texto })
+    });
+    var j = await r.json().catch(function () { return {}; });
+    if (!r.ok) throw new Error(j.error || 'No pudimos enviarlo.');
+    rfHecho = true;
+    try { localStorage.setItem(rfClaveHecha(), String(Date.now())); } catch (e) {}
+    renderRefApp();
+  } catch (e) {
+    if (est) est.textContent = e.message || 'No pudimos enviarlo. Probá de nuevo.';
+  } finally {
+    rfEnviando = false;
+    var b = document.getElementById('rfBtn');
+    if (b) { b.disabled = false; b.textContent = 'Enviar'; }
+  }
+}
+
+function renderRefApp() {
+  var cont = document.getElementById('gpsRefWrap');
+  if (!cont) return;
+
+  if (rfHecho || (!rfAbierto && rfYaMando())) {
+    cont.innerHTML =
+      '<div class="rf-card"><div class="rf-gracias">' +
+        '<div class="tick">✓</div>' +
+        '<div class="rf-tit" style="margin-top:6px">Gracias de verdad</div>' +
+        '<div class="rf-sub">Lo recibimos. Si publicamos algo tuyo va a salir tal cual lo escribiste, ' +
+        'y si hay que recortarlo por espacio te preguntamos antes.' +
+        (rfHecho ? '<br>Lo que mandaste te queda en Hablemos, acá abajo.' : '') +
+        '</div></div></div>';
+    return;
+  }
+
+  if (!rfAbierto) {
+    cont.innerHTML =
+      '<div class="rf-card">' +
+        '<div class="rf-tit">Contanos cómo te fue</div>' +
+        '<div class="rf-sub">Estamos por escribir la parte de la web donde otras personas cuentan cómo ' +
+          'les fue con Norte, y <b>no la queremos inventar</b>. Son tres preguntas y dos minutos. ' +
+          'Sale sin tu nombre, y vas viendo mientras escribís cómo queda publicado.</div>' +
+        '<div class="rf-abrir"><button class="btn btn-primary" onclick="rfAbrir()">Contestar</button></div>' +
+      '</div>';
+    return;
+  }
+
+  var fichas = RF_FICHAS.map(function (t) {
+    var on = rfElegidas.indexOf(t) >= 0;
+    return '<button type="button" class="rf-ficha" data-f="' + esc(t) + '" aria-pressed="' + (on ? 'true' : 'false') +
+      '" onclick="rfFicha(this)">' + esc(t) + '</button>';
+  }).join('');
+
+  var q = rfQuien();
+  var quienTxt = q.email
+    ? 'Va a llegar identificado con tu cuenta (' + esc(q.email) + ') para que sepamos a quién agradecerle. ' +
+      'Eso es entre vos y nosotros: <b>en la web nunca aparece</b>.'
+    : 'Va a llegar identificado con tu cuenta para que sepamos a quién agradecerle. ' +
+      'Eso es entre vos y nosotros: <b>en la web nunca aparece</b>.';
+
+  cont.innerHTML =
+    '<div class="rf-card">' +
+      '<div class="rf-tit">Contanos cómo te fue</div>' +
+      '<div class="rf-sub">' + quienTxt + ' Y si en tu casa usan Norte entre varios, ' +
+        '<b>nos interesa la respuesta de cada uno por separado</b>: la misma app se vive distinto ' +
+        'según quién la mire.</div>' +
+
+      '<div class="rf-paso">' +
+        '<div class="rf-preg"><i>1</i><h4>¿Qué es lo que más te sirvió?</h4></div>' +
+        '<div class="rf-ayuda">Tocá lo que te haya pasado y contalo con tus palabras. Podés elegir más de uno.</div>' +
+        '<div class="rf-fichas">' + fichas + '</div>' +
+        '<textarea id="rfQ1" maxlength="400" oninput="rfTipeo(\'rfQ1\',400)" ' +
+          'placeholder="Ej: por primera vez sé cuánto de la tarjeta ya está comprometido antes de que llegue el resumen.">' +
+          esc(rfBorr.q1) + '</textarea>' +
+        '<div class="rf-cuenta" id="rfQ1c">' + rfBorr.q1.length + '/400</div>' +
+      '</div>' +
+
+      '<div class="rf-paso">' +
+        '<div class="rf-preg"><i>2</i><h4>¿Qué cambió en cómo manejás la plata?</h4></div>' +
+        '<div class="rf-ayuda">Algo que hacés distinto ahora, o que dejaste de hacer. Aunque sea chiquito.</div>' +
+        '<textarea id="rfQ2" maxlength="400" oninput="rfTipeo(\'rfQ2\',400)" ' +
+          'placeholder="Ej: dejamos de discutir a fin de mes porque los dos vemos el mismo número.">' +
+          esc(rfBorr.q2) + '</textarea>' +
+        '<div class="rf-cuenta" id="rfQ2c">' + rfBorr.q2.length + '/400</div>' +
+      '</div>' +
+
+      '<div class="rf-paso">' +
+        '<div class="rf-preg"><i>3</i><h4>Si se lo tuvieras que recomendar a alguien, ¿qué le dirías?</h4></div>' +
+        '<div class="rf-ayuda">Una o dos frases. Esta es la que probablemente salga publicada.</div>' +
+        '<textarea id="rfQ3" maxlength="280" oninput="rfTipeo(\'rfQ3\',280)" ' +
+          'placeholder="Ej: si alguna vez llegaste a fin de mes sin saber en qué se fue la plata, probala.">' +
+          esc(rfBorr.q3) + '</textarea>' +
+        '<div class="rf-cuenta" id="rfQ3c">' + rfBorr.q3.length + '/280</div>' +
+      '</div>' +
+
+      '<div class="rf-previa">' +
+        '<div class="k">Así va a salir publicado <b>— sin tu nombre</b></div>' +
+        '<div class="rf-comillas">&ldquo;</div>' +
+        '<div class="rf-frase" id="rfPvTexto">Acá va a aparecer lo que escribas en la pregunta 3.</div>' +
+        '<div class="rf-firma"><div class="rf-av" id="rfPvIni">·</div>' +
+          '<div class="rf-quien"><b id="rfPvNombre">Un hogar de Norte</b>' +
+          '<span id="rfPvDetalle">Usuario de Norte</span></div></div>' +
+        '<div class="rf-pie">Este es el componente que va en la web. <b>Lo que ves acá es lo que se publica</b>, ni una palabra más.</div>' +
+      '</div>' +
+
+      '<div class="rf-paso">' +
+        '<div class="rf-preg"><i>4</i><h4>¿Cómo querés que salga?</h4></div>' +
+        '<div class="rf-ops">' +
+          '<label class="rf-op"><input type="radio" name="rfFirma" value="anon"' + (rfBorr.firma === 'anon' ? ' checked' : '') +
+            ' onchange="rfFirmaCambio()"><span><b>Sin nombre</b><span>«Un hogar de Norte». Nadie sabe que fuiste vos.</span></span></label>' +
+          '<label class="rf-op"><input type="radio" name="rfFirma" value="pila"' + (rfBorr.firma === 'pila' ? ' checked' : '') +
+            ' onchange="rfFirmaCambio()"><span><b>Con mi nombre de pila</b><span>«Mariana, Córdoba». Sin apellido y sin foto.</span></span></label>' +
+          '<label class="rf-op"><input type="radio" name="rfFirma" value="no"' + (rfBorr.firma === 'no' ? ' checked' : '') +
+            ' onchange="rfFirmaCambio()"><span><b>No lo publiquen</b><span>Te lo cuento igual, pero es sólo para ustedes.</span></span></label>' +
+        '</div>' +
+        '<div class="rf-nombre" id="rfCamposNombre" style="display:' + (rfBorr.firma === 'pila' ? '' : 'none') + '">' +
+          '<input type="text" id="rfNombre" maxlength="30" placeholder="Tu nombre de pila" value="' + esc(rfBorr.nombre) + '" oninput="rfPintarPrevia()">' +
+          '<input type="text" id="rfLugar" maxlength="40" placeholder="Ciudad o provincia (opcional)" value="' + esc(rfBorr.lugar) + '" oninput="rfPintarPrevia()">' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="rf-enviar">' +
+        '<button class="btn btn-primary" id="rfBtn" onclick="rfEnviar()">Enviar</button>' +
+        '<span class="rf-estado" id="rfEstado"></span>' +
+      '</div>' +
+    '</div>';
+
+  rfPintarPrevia();
+}
+
+function iniciarRefApp() { renderRefApp(); }
 
 
 // ── MENSAJES DE PIONEROS (panel de superadmin) ───────────────────
@@ -16743,8 +17043,10 @@ function subtituloRumbo() {
       // tiene sentido para quienes ya lo arrancaron.
       body.innerHTML =
         '<div id="gpsNovWrap"></div>' +
+        '<div id="gpsRefWrap" style="margin-top:28px"></div>' +
         '<div id="gpsChatWrap" style="margin-top:28px"></div>';
       try { renderNovedades(); } catch (e) {}
+      try { iniciarRefApp(); } catch (e) {}
       try { iniciarChatPionero(); } catch (e) {}
       return;
     }
@@ -16803,8 +17105,10 @@ function subtituloRumbo() {
       // el programa guiado—, porque desde que se cerró el Club Pioneros los ve
       // cualquiera que tenga Norte.
       '<div id="gpsNovWrap" style="margin-top:28px"></div>' +
+      '<div id="gpsRefWrap" style="margin-top:28px"></div>' +
       '<div id="gpsChatWrap" style="margin-top:28px"></div>';
     try { renderNovedades(); } catch (e) {}
+    try { iniciarRefApp(); } catch (e) {}
     try { iniciarChatPionero(); } catch (e) {}
   }
 
