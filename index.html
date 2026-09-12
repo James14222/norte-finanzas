@@ -11911,7 +11911,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.14.001';
+const APP_VERSION = 'v005.15.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -17566,6 +17566,85 @@ function subtituloRumbo() {
     <div class="ob-body" id="obBody"></div>
   </div>
 </div>
+
+
+<!-- ── AVISO DE VERSIÓN NUEVA ─────────────────────────────────────
+     El que nunca cierra Norte es el que más la usa, y era el que más tiempo
+     se quedaba con código viejo: la app abierta no vuelve a pedir el HTML.
+     Eso importó de verdad el día que arreglamos una pérdida de datos, porque
+     el arreglo no le llegaba justamente a quien más lo necesitaba.
+     No usamos el service worker para detectarlo (hoy no hay ninguno
+     registrado). Comparamos el contenido de sw.js —dos kilobytes— contra el
+     que había cuando cargó la página. Ese archivo cambia en cada pase sin
+     excepción, así que sirve de huella sin pedirle disciplina nueva a nadie. -->
+<script>
+(function () {
+  var URL_SW = '/sw.js';
+  var huellaInicial = null;
+  var yaAvisado = false;
+  var CADA = 20 * 60 * 1000;
+
+  function huella() {
+    return fetch(URL_SW, { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.text() : null; })
+      .then(function (t) {
+        if (!t) return null;
+        var m = t.match(/CACHE_NAME\s*=\s*'([^']+)'/);
+        return m ? m[1] : ('len:' + t.length);
+      })
+      .catch(function () { return null; });   // sin red no molestamos a nadie
+  }
+
+  function mostrarBarra() {
+    if (yaAvisado || document.getElementById('avisoVersion')) return;
+    yaAvisado = true;
+    var d = document.createElement('div');
+    d.id = 'avisoVersion';
+    // Si el cartel de instalar está abierto, nos corremos para no taparlo.
+    var abajo = document.getElementById('pwaInstallBanner') ? '92px' : '16px';
+    d.style.cssText = 'position:fixed;left:16px;right:16px;bottom:' + abajo + ';z-index:9998;' +
+      'background:#0c1c2b;border:1px solid rgba(255,138,92,.35);border-radius:14px;' +
+      'padding:12px 14px;display:flex;align-items:center;gap:10px;max-width:420px;margin:0 auto;' +
+      'box-shadow:0 12px 30px rgba(0,0,0,.35);font-family:inherit';
+    d.innerHTML =
+      '<div style="flex:1;min-width:0">' +
+        '<div style="color:#fff;font-weight:700;font-size:13.5px">Hay una versión nueva de Norte</div>' +
+        '<div style="color:rgba(232,237,242,.6);font-size:12px">Actualizá para tenerla</div>' +
+      '</div>' +
+      '<button id="avisoVersionOk" style="background:#FF8A5C;color:#0c1c2b;border:none;border-radius:9px;' +
+        'padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;flex-shrink:0">Actualizar</button>' +
+      '<button id="avisoVersionNo" aria-label="Ahora no" style="background:none;border:none;' +
+        'color:rgba(232,237,242,.4);font-size:17px;cursor:pointer;padding:4px;flex-shrink:0">✕</button>';
+    document.body.appendChild(d);
+
+    document.getElementById('avisoVersionOk').onclick = function () {
+      // Antes de recargar, que no quede nada sin subir a la nube.
+      try { if (typeof flushPush === 'function') flushPush(); } catch (e) {}
+      setTimeout(function () { location.reload(); }, 150);
+    };
+    // Descartar vale para esta sesión nada más: la próxima vez que abra, se le
+    // vuelve a ofrecer. No lo guardamos, para que no se pierda un arreglo.
+    document.getElementById('avisoVersionNo').onclick = function () { d.remove(); };
+  }
+
+  function revisar() {
+    if (yaAvisado) return;
+    huella().then(function (h) {
+      if (!h) return;
+      if (huellaInicial === null) { huellaInicial = h; return; }
+      if (h !== huellaInicial) mostrarBarra();
+    });
+  }
+
+  revisar();                                    // la huella de arranque
+  setInterval(revisar, CADA);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') revisar();
+  });
+  window.addEventListener('online', revisar);
+  window.__revisarVersion = revisar;            // para poder probarlo
+})();
+</script>
 
 <!-- PWA: Service Worker Registration -->
 <script>
