@@ -11997,7 +11997,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.16.000';
+const APP_VERSION = 'v005.17.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -16446,6 +16446,7 @@ function subtituloRumbo() {
   var SUPER_ADMIN_UID = 'RUO9uxaH26QZDC1eMVuA0kjMYkw2';
   var FN = 'https://us-central1-norte-finanzas.cloudfunctions.net';
   var _saHogares = [];
+  var _saProgreso = {};
 
   function esSuper() {
     try { return (getSession() || {}).userId === SUPER_ADMIN_UID; } catch (e) { return false; }
@@ -16528,6 +16529,13 @@ function subtituloRumbo() {
     try {
       var d = await saLlamar('adminListarUsuarios');
       _saHogares = d.hogares || [];
+      // El progreso vive aparte, colgado del hogar. Lo leemos derecho de la
+      // base: la regla deja leer todo el nodo sólo al superadmin.
+      _saProgreso = {};
+      try {
+        var snapP = await firebase.database().ref('norteSync/progreso').once('value');
+        _saProgreso = snapP.val() || {};
+      } catch (e) { _saProgreso = {}; }
       var us = d.usuarios || [];
       document.getElementById('saResumen').textContent =
         us.length + ' cuenta' + (us.length === 1 ? '' : 's') + ' · ' + _saHogares.length + ' hogar' + (_saHogares.length === 1 ? '' : 'es');
@@ -16578,6 +16586,27 @@ function subtituloRumbo() {
           (chips ? '<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px">' + chips + '</div>' : '') +
           (u.objetivoTexto ? '<div style="margin-top:4px;font-size:11.5px;color:var(--muted);max-width:220px;line-height:1.4">“' + esc(u.objetivoTexto) + '”</div>' : '');
 
+        // ── Uso real: el nivel dice lo que la última conexión no puede decir.
+        // Alguien entra todos los días y carga dos cosas por mes; el nivel los
+        // separa. El progreso es del HOGAR, así que dos integrantes muestran
+        // el mismo número, que es lo correcto: comparten los movimientos.
+        var pr = hogar ? _saProgreso[hogar.id] : null;
+        var celdaUso;
+        if (!pr) {
+          celdaUso = '<span style="font-size:12px;color:var(--muted)" ' +
+            'title="Todavía no reportó. El resumen se escribe cuando la persona abre Norte.">—</span>';
+        } else {
+          var frescura = haceCuanto(pr.ts);
+          celdaUso =
+            '<div style="cursor:pointer" onclick="saVerProgreso(\'' + hogar.id + '\')" ' +
+              'title="Tocá para ver el detalle · calculado ' + esc(frescura) + '">' +
+              '<div style="font-size:12.5px;font-weight:700;color:var(--text)">' + esc(pr.nivelNombre || '—') + '</div>' +
+              '<div style="font-size:11.5px;color:var(--muted)">' + (Number(pr.ptsTotal) || 0) + ' pts · ' +
+                (Number(pr.hitosOk) || 0) + '/' + (Number(pr.hitosTotal) || 0) + ' hitos</div>' +
+              '<div style="font-size:11px;color:var(--primary);margin-top:2px">ver detalle ›</div>' +
+            '</div>';
+        }
+
         var selPlan = hogar
           ? '<select onchange="saPlan(\'' + hogar.id + '\', this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)">' +
               ['FOCO', 'PRO', 'TOP'].map(function (p) {
@@ -16591,6 +16620,7 @@ function subtituloRumbo() {
           '<td style="font-size:12px;color:var(--muted)">' + esc(u.email) + '</td>' +
           '<td style="font-size:12px">' + chip + extra + '</td>' +
           '<td>' + perfil + '</td>' +
+          '<td>' + celdaUso + '</td>' +
           '<td>' + selPlan + '</td>' +
           '<td>' + estado + '</td>' +
           '<td style="font-size:12px;color:var(--muted);cursor:help" title="' + esc(detalleActividad(u)) + '">' + haceCuanto(u.ultimaActividad || u.ultimoAcceso) + '</td>' +
@@ -16600,12 +16630,102 @@ function subtituloRumbo() {
 
       body.innerHTML =
         '<div style="overflow-x:auto"><table class="admin-table" style="width:100%">' +
-          '<thead><tr><th>Nombre</th><th>Email</th><th>Hogar</th><th title="Lo que contestó en el formulario, antes de pagar. Las cuentas anteriores a septiembre de 2026 no lo tienen.">Ciudad y objetivos</th><th>Plan</th><th>Estado</th><th title="La más reciente entre la última carga de datos, la última vez que abrió la app y el último login. Pasá el mouse por cada fila para ver el detalle.">Última actividad</th><th></th></tr></thead>' +
+          '<thead><tr><th>Nombre</th><th>Email</th><th>Hogar</th><th title="Lo que contestó en el formulario, antes de pagar. Las cuentas anteriores a septiembre de 2026 no lo tienen.">Ciudad y objetivos</th><th title="El nivel de progreso del hogar: dice cuánto usan Norte de verdad, no sólo si entraron. Se calcula en el aparato de cada uno y sólo viaja el resultado — nunca sus movimientos.">Uso</th><th>Plan</th><th>Estado</th><th title="La más reciente entre la última carga de datos, la última vez que abrió la app y el último login. Pasá el mouse por cada fila para ver el detalle.">Última actividad</th><th></th></tr></thead>' +
           '<tbody>' + filas + '</tbody>' +
         '</table></div>';
     } catch (e) {
       body.innerHTML = '<div style="font-size:13px;color:#ef4444;padding:12px 0">No pudimos cargar los usuarios: ' + esc(e.message) + '</div>';
     }
+  };
+
+
+  // ── LA VENTANA DE DETALLE DEL USO ──────────────────────────────
+  // Lo que la última conexión no dice: en qué está parado el hogar, qué ya
+  // consiguió y qué le falta. Todo sale del resumen que subió su propio
+  // aparato; acá no se lee ni un movimiento.
+  window.saVerProgreso = function (empresaId) {
+    if (!esSuper()) return;
+    var pr = _saProgreso[empresaId];
+    if (!pr) return;
+    var h = (_saHogares || []).find(function (x) { return x.id === empresaId; });
+    var nombreHogar = h ? h.nombre : empresaId;
+
+    var ov = document.getElementById('saProgOverlay');
+    if (!ov) {
+      ov = document.createElement('div');
+      ov.id = 'saProgOverlay';
+      ov.className = 'overlay';
+      ov.style.display = 'none';
+      ov.innerHTML = '<div class="modal" style="max-width:600px"><div id="saProgCuerpo"></div></div>';
+      document.body.appendChild(ov);
+      ov.addEventListener('click', function (e) { if (e.target === ov) ov.style.display = 'none'; });
+    }
+
+    function dato(n, r) {
+      return '<div style="flex:1;min-width:96px">' +
+        '<div style="font-size:19px;font-weight:800;color:var(--text);line-height:1.2">' + n + '</div>' +
+        '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + r + '</div></div>';
+    }
+
+    var fams = Object.keys(pr.medallas || {}).map(function (k) {
+      var f = pr.medallas[k];
+      var logros = (f.logros || []).map(function (l) {
+        return '<div style="display:flex;gap:7px;align-items:baseline;font-size:12.5px;margin-top:3px">' +
+          '<span style="flex:none;width:13px">' + (l.ok ? '<span style="color:#16a34a">✓</span>'
+                                                        : '<span style="color:var(--border)">○</span>') + '</span>' +
+          '<span style="' + (l.ok ? 'color:var(--text)' : 'color:var(--muted)') + '">' + esc(l.n) + '</span>' +
+          (l.txt ? '<span style="color:var(--primary);font-size:11.5px">· ' + esc(l.txt) + '</span>' : '') +
+        '</div>';
+      }).join('');
+      return '<div style="border:1px solid var(--border);border-radius:10px;padding:11px 13px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">' +
+          '<div style="font-size:13.5px;font-weight:700;color:var(--text)">' + esc(f.nombre || k) + '</div>' +
+          '<div style="font-size:11.5px;color:var(--muted);white-space:nowrap">' +
+            (Number(f.rango) || 0) + ' de ' + (Number(f.total) || 0) + '</div>' +
+        '</div>' + logros + '</div>';
+    }).join('');
+
+    document.getElementById('saProgCuerpo').innerHTML =
+      '<div class="modal-title" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">' +
+        '<span style="line-height:1.3">Uso de ' + esc(nombreHogar) + '</span>' +
+        '<button onclick="document.getElementById(\'saProgOverlay\').style.display=\'none\'" aria-label="Cerrar" ' +
+          'style="background:none;border:none;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px">×</button>' +
+      '</div>' +
+
+      '<div style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;' +
+        'background:rgba(255,138,92,.08);border:1px solid rgba(255,138,92,.28);margin-bottom:14px">' +
+        '<div style="flex:1">' +
+          '<div style="font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.3px">' + esc(pr.nivelNombre || '—') + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:2px">' +
+            (Number(pr.ptsTotal) || 0) + ' puntos · ' + (Number(pr.nivelPct) || 0) + '% hacia el nivel siguiente</div>' +
+        '</div>' +
+        '<div style="text-align:right">' +
+          '<div style="font-size:13px;font-weight:700;color:var(--text)">' +
+            (Number(pr.hitosOk) || 0) + ' / ' + (Number(pr.hitosTotal) || 0) + '</div>' +
+          '<div style="font-size:11px;color:var(--muted)">hitos</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:6px">' +
+        dato(Number(pr.movimientos) || 0, 'movimientos') +
+        dato(Number(pr.semanas) || 0, 'semanas con carga') +
+        dato(Number(pr.semanasRacha) || 0, 'racha actual') +
+        dato(Number(pr.semanasMejor) || 0, 'mejor racha') +
+        dato(Number(pr.mesesCompletos) || 0, 'meses completos') +
+      '</div>' +
+      '<div style="font-size:12px;color:var(--muted);margin:10px 0 16px;line-height:1.55">' +
+        'Los puntos salen de <b>' + (Number(pr.ptsConstancia) || 0) + '</b> de constancia y <b>' +
+        (Number(pr.ptsHitos) || 0) + '</b> de hitos. La constancia premia aparecer; los hitos, lo conseguido.' +
+      '</div>' +
+
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px">' + fams + '</div>' +
+
+      '<div style="font-size:11.5px;color:var(--muted);margin-top:16px;padding-top:12px;border-top:1px solid var(--border);line-height:1.55">' +
+        'Calculado en el aparato del hogar ' + esc(haceCuanto(pr.ts)) + ', con la versión ' + esc(pr.v || '—') + '. ' +
+        'Es el resumen de cuánto usan Norte: no incluye ningún movimiento, importe ni rubro.' +
+      '</div>';
+
+    ov.style.display = 'flex';
   };
 
   window.saAbrirCrear = function () {
