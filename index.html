@@ -93,7 +93,11 @@
         impUSD:     { type: "number" },
         confianza:  { type: "string", enum: ["alta", "media", "baja"] },
         nota:       { type: "string" },
-      transcripcionAudio: { type: "string" }
+      transcripcionAudio: { type: "string" },
+      // Cuándo pasó el gasto, en AAAA-MM-DD. Vacío si la persona no lo dijo:
+      // preferimos no saber la fecha antes que inventarla, porque una fecha
+      // equivocada mueve un movimiento de mes y altera meses ya cerrados.
+      fecha:      { type: "string" }
       },
       required: ["detectado", "tipo", "detalle", "rubro", "impPesos"]
     };
@@ -144,6 +148,7 @@ Reglas:
 - Si la imagen o el audio no contiene información clara de un gasto o ingreso, respondé con detectado: false y dejá el resto de los campos en blanco o en 0.
 – Si es un audio: si hay silencio total, ruido sin voz, o no se entiende lo que dice la persona, es OBLIGATORIO devolver detectado: false. NUNCA inventes ni supongas un gasto plausible (como "nafta", "supermercado" o cualquier otro) solo porque suena razonable. Preferimos que digas que no entendiste antes que inventar un dato falso. Además, en "transcripcionAudio" transcribí literalmente lo que se llega a escuchar; si hay silencio, ruido o no se entiende nada, dejá "transcripcionAudio" vacío ("") y detectado en false — nunca completes ese campo con un gasto inventado.
 - Si hay algo ambiguo (por ejemplo el monto se lee mal, o no está claro el rubro), marcá confianza "baja" o "media" y explicá brevemente en "nota" qué generó la duda — nunca inventes un dato que no está.
+- FECHA: hoy es ${hoyISO()}. Si la persona dice cuándo fue el gasto, devolvelo en "fecha" con formato AAAA-MM-DD. Interpretá expresiones relativas ("ayer", "anteayer", "el martes pasado", "el 9", "el 9 de septiembre") tomando el día de hoy como referencia, y elegí siempre la fecha PASADA más cercana: si alguien dice "el 9" y hoy es 12, es el 9 de este mes, no del que viene. Si no menciona ninguna fecha, dejá "fecha" vacío ("") — NO pongas la de hoy por defecto ni inventes una. Si la mencionó pero no estás seguro de haber entendido bien el día o el mes, igual devolvela y marcá confianza "media" o "baja" aclarando la duda en "nota".
 - Siempre devolvé el JSON con el formato pedido, aunque detectado sea false.`;
       const result = await modelGasto.generateContent([
         { inlineData: { mimeType, data: base64Data } },
@@ -11906,7 +11911,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.13.005';
+const APP_VERSION = 'v005.14.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -14043,6 +14048,66 @@ async function actualizarQpIaContador(usadosConocido) {
   el.style.color = quedan === 0 ? '#ef4444' : (quedan <= 5 ? 'var(--primary-dark)' : '#6b7f93');
 }
 
+// ── LA FECHA QUE DIJO LA PERSONA ─────────────────────────────────
+// Una fecha mal oída no es un detalle: mueve el movimiento de mes y cambia
+// números de un período que quizás ya miraste y comparaste. Por eso acá la IA
+// nunca decide sola cambiar de mes. Si la fecha cae en el período que ya tenés
+// abierto, se aplica sin molestarte; si cae en otro, se te ofrece y decidís vos
+// con un toque. Y si es disparatada, se descarta en silencio.
+function qpFechaRazonable(f) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(f || ''))) return false;
+  var d = new Date(f + 'T12:00:00');
+  if (isNaN(d)) return false;
+  var hoy = new Date(hoyISO() + 'T12:00:00');
+  var dias = (d - hoy) / 86400000;
+  // Hasta dos años para atrás y un mes para adelante. Más allá de eso es un
+  // error de transcripción, no una fecha.
+  return dias >= -760 && dias <= 31;
+}
+
+function qpNombreMes(mes) {
+  var p = String(mes || '').split('-');
+  if (p.length !== 2) return mes;
+  return (MESES[Number(p[1]) - 1] || '') + ' ' + p[0];
+}
+
+function qpAplicarFechaOtroMes(fecha, mes) {
+  document.getElementById('qpMes').value = mes;
+  document.getElementById('qpFecha').value = fecha;
+  var st = document.getElementById('qpIaStatus');
+  if (st) st.textContent = '✅ Listo: lo vas a cargar en ' + qpNombreMes(mes) + '.';
+}
+
+// Devuelve { aviso, boton }: el texto que hay que sumarle al estado y, si la
+// fecha cae en otro mes, el botón que el llamador cuelga DESPUÉS de escribir el
+// texto (escribir textContent borra los hijos, así que el orden importa).
+function qpUsarFechaDeIa(fecha) {
+  var nada = { aviso: '', boton: null };
+  if (!qpFechaRazonable(fecha)) return nada;
+  var mesFecha = fecha.slice(0, 7);
+  var mesPanel = document.getElementById('qpMes').value || curKey();
+
+  if (mesFecha === mesPanel) {
+    document.getElementById('qpFecha').value = fecha;   // mismo mes: se aplica y listo
+    return nada;
+  }
+
+  // Otro mes: no lo tocamos. Se ofrece y decide la persona.
+  var b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'btn btn-secondary';
+  b.id = 'qpBtnOtroMes';
+  b.style.cssText = 'margin-top:8px;font-size:12.5px;padding:6px 12px';
+  b.textContent = 'Sí, cargalo en ' + qpNombreMes(mesFecha);
+  b.onclick = function () { qpAplicarFechaOtroMes(fecha, mesFecha); };
+
+  return {
+    aviso: ' Entendí que fue el ' + Number(fecha.slice(8, 10)) + ' de ' + qpNombreMes(mesFecha) +
+           ', pero estás cargando en ' + qpNombreMes(mesPanel) + ' — el período no lo cambio yo.',
+    boton: b
+  };
+}
+
 async function qpProcesarIA(base64, mimeType) {
   if (typeof window.nortiaExtraerGasto !== 'function') {
     alert('La IA de Norte todavía se está iniciando, esperá un segundo e intentá de nuevo.');
@@ -14070,11 +14135,16 @@ async function qpProcesarIA(base64, mimeType) {
     numSet('qpPesos', datos.impPesos);
     numSet('qpUSD', datos.impUSD);
     qpSetRubroDetectado(datos.rubro || '');
+    // La fecha se resuelve antes de escribir el estado, porque puede agregarle
+    // una advertencia y colgarle el botón de "cargalo en tal mes".
+    var f = { aviso: '', boton: null };
+    try { f = qpUsarFechaDeIa(datos.fecha) || f; } catch (e) {}
     if (datos.confianza === 'baja' || datos.confianza === 'media') {
-      statusEl.textContent = '⚠️ Revisá los datos antes de guardar' + (datos.nota ? ': ' + datos.nota : ' — no estamos seguros de haber leído todo bien.');
+      statusEl.textContent = '⚠️ Revisá los datos antes de guardar' + (datos.nota ? ': ' + datos.nota : ' — no estamos seguros de haber leído todo bien.') + f.aviso;
     } else {
-      statusEl.textContent = '✅ Norte completó los datos — revisá y guardá.';
+      statusEl.textContent = '✅ Norte completó los datos — revisá y guardá.' + f.aviso;
     }
+    if (f.boton) { statusEl.appendChild(document.createElement('br')); statusEl.appendChild(f.boton); }
   } catch (e) {
     statusEl.textContent = 'No pudimos procesar la foto/audio. Completá los datos a mano.';
   }
