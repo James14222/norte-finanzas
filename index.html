@@ -5553,6 +5553,14 @@ const saveData = d => {
   }));
   if (!yaMigrado) localStorage.setItem(migKey, '1');
   localStorage.setItem(`fin_data_${eid}`, JSON.stringify(conAutor));
+  /* Subir YA, acá adentro, y no en cada lugar que llama a saveData. Había 14
+     sitios que tocan los movimientos y sólo 6 se acordaban de pedir la subida:
+     el alta de a uno, el borrado, la edición y varios más quedaban esperando un
+     temporizador que en el celular no corre. Poniéndolo en el único paso por el
+     que pasan todos, el que escriba mañana lo hereda sin saberlo. Los
+     `pushNow()` que ya estaban siguen ahí y no molestan: reenvían el mismo
+     snapshot. */
+  try { pushNow(); } catch (e) {}
 };
 // ── BASE MAESTRA DE RUBROS ───────────────────────────────────────
 // Antes había dos listas: 26 rubros fijos escritos en el código y una lista de
@@ -8112,9 +8120,13 @@ function applyRemoteSnapshot(remote) {
 }
 
 function pushNow() {
-      /* Sube ya, sin esperar el debounce. Se usa despues de operaciones que
-         escriben muchos registros de una (import de resumen, pago de tarjeta). */
+      /* Sube ya, sin esperar el debounce. Lo llama saveData, así que cubre
+         TODA modificación de movimientos: alta, edición, borrado e importes. */
       if (!fbRef) return;
+      /* Si estamos escribiendo lo que acaba de bajar de la nube, no hay que
+         devolvérselo: sería un eco, y encima pisaría con datos que quizás ya
+         estén viejos. schedulePush ya tenía esta guarda; pushNow no. */
+      if (syncApplyingRemote) return;
       const myRef = fbRef;
       clearTimeout(syncPushTimer);
       syncLocalDirty = true;
@@ -11894,7 +11906,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.13.004';
+const APP_VERSION = 'v005.13.005';
 let novEntradas = [];
 
 function novLeida(e) {
