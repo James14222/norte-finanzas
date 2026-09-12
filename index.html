@@ -4830,6 +4830,10 @@ async function bootApp(firebaseUser) {
   // Inicializar sync con la empresa del usuario
   reinitSync();
 
+  // Y el resumen de uso, con holgura: primero que baje lo que haya en la nube,
+  // si no calcularíamos el nivel sobre datos a medias en un aparato nuevo.
+  try { progAgendarSubida(12000); } catch (e) {}
+
   // Renderizar app
   curMonth = new Date().getMonth();
   curYear  = new Date().getFullYear();
@@ -5566,6 +5570,8 @@ const saveData = d => {
      `pushNow()` que ya estaban siguen ahí y no molestan: reenvían el mismo
      snapshot. */
   try { pushNow(); } catch (e) {}
+  // El progreso sale de estos mismos datos: si cambiaron, hay que recalcularlo.
+  try { progAgendarSubida(); } catch (e) {}
 };
 // ── BASE MAESTRA DE RUBROS ───────────────────────────────────────
 // Antes había dos listas: 26 rubros fijos escritos en el código y una lista de
@@ -9519,6 +9525,86 @@ function progKeyHoy() {
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
 }
 
+
+// ── EL RESUMEN DE USO QUE VE EL SUPERADMIN ───────────────────────
+// Cuánto usan Norte, nunca en qué gastan. El progreso se calcula en el aparato
+// de cada hogar a partir de sus movimientos, y esos movimientos no salen de
+// ahí: lo único que viaja es el resultado — nivel, puntos y qué medallas tiene.
+// Ni un importe, ni un rubro, ni una fecha de gasto. La regla de la base tiene
+// una lista blanca de campos, así que este nodo no puede convertirse en otra
+// cosa aunque alguien lo intente más adelante.
+//
+// Sirve para lo que la última conexión no puede decir: alguien puede entrar
+// todos los días y cargar dos cosas por mes. El nivel sí lo distingue.
+let _progSubidoHash = null;
+let _progSubirTimer = null;
+
+function progResumenParaNube() {
+  var d = progCalcular();
+  var medallas = {};
+  (d.familias || []).forEach(function (f) {
+    medallas[f.clave] = {
+      nombre: f.nombre,
+      rango: Number(f.rango) || 0,
+      total: (f.hitos || []).length,
+      logros: (f.hitos || []).map(function (h) {
+        var o = { n: String(h.n || '').slice(0, 60), ok: !!h.ok };
+        // El "6 de 12 semanas" de un hito a medias: dice cuánto le falta, y no
+        // habla de plata.
+        if (!h.ok && h.p && h.p.txt) o.txt = String(h.p.txt).slice(0, 40);
+        return o;
+      })
+    };
+  });
+  return {
+    ts: Date.now(),
+    v: APP_VERSION,
+    nivelIdx: Number(d.nivel.idx) || 0,
+    nivelNombre: String(d.nivel.nombre || '').slice(0, 40),
+    nivelPct: Number(d.nivel.pct) || 0,
+    ptsTotal: Number(d.pts.total) || 0,
+    ptsConstancia: Number(d.pts.constancia) || 0,
+    ptsHitos: Number(d.pts.hitos) || 0,
+    hitosOk: Number(d.hitos.ok) || 0,
+    hitosTotal: Number(d.hitos.total) || 0,
+    movimientos: (function () { try { return getData().length; } catch (e) { return 0; } })(),
+    semanas: Number(d.semanas.total) || 0,
+    semanasRacha: Number(d.semanas.racha) || 0,
+    semanasMejor: Number(d.semanas.mejor) || 0,
+    mesesCompletos: Number(d.semanas.mesesCompletos) || 0,
+    mesesTotal: Number(d.meses.total) || 0,
+    mesesRacha: Number(d.meses.racha) || 0,
+    medallas: medallas
+  };
+}
+
+function progSubirResumen() {
+  try {
+    if (typeof firebase === 'undefined' || !firebase.database) return;
+    var eid = curEmpresa();
+    if (!eid || eid === 'JLL') return;
+    var r = progResumenParaNube();
+    // `ts` cambia siempre, así que se compara todo MENOS eso: si nada se movió,
+    // no escribimos. Un hogar que abre la app diez veces al día no genera diez
+    // escrituras idénticas.
+    var sinTs = JSON.stringify(Object.assign({}, r, { ts: 0, v: '' }));
+    if (sinTs === _progSubidoHash) return;
+    firebase.database().ref('norteSync/progreso/' + eid).set(r)
+      .then(function () { _progSubidoHash = sinTs; })
+      .catch(function () {});
+  } catch (e) {}
+}
+
+// Se recalcula solo cuando pasó algo, y con calma: no es información que
+// necesite estar al segundo.
+function progAgendarSubida(demora) {
+  clearTimeout(_progSubirTimer);
+  _progSubirTimer = setTimeout(progSubirResumen, demora || 4000);
+}
+window.progAgendarSubida = progAgendarSubida;
+window.progSubirResumen = progSubirResumen;
+window.progResumenParaNube = progResumenParaNube;
+
 function progCalcular() {
   const all = getData();
   const key = progKeyHoy();
@@ -11911,7 +11997,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.15.000';
+const APP_VERSION = 'v005.16.000';
 let novEntradas = [];
 
 function novLeida(e) {
