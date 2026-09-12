@@ -11911,7 +11911,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.14.000';
+const APP_VERSION = 'v005.14.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -13942,6 +13942,7 @@ function closeAc() {
 // ── Captura de gasto por foto o voz (NortIA) ──────────────────
 let qpMediaRecorder = null;
 let qpAudioChunks = [];
+let qpMimeAudio = '';
 let qpGrabandoVoz = false;
 
   async function qpEsAudioSilencioso(blob) { try { const arrayBuffer = await blob.arrayBuffer(); const AudioCtx = window.AudioContext || window.webkitAudioContext; const ctx = new AudioCtx(); const audioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0)); const data = audioBuffer.getChannelData(0); const sr = audioBuffer.sampleRate; const dur = audioBuffer.duration; ctx.close(); if (dur < 0.6) return true; const frame = Math.max(1, Math.floor(sr * 0.02)); let suma = 0, frames = 0, framesConVoz = 0, picoRms = 0; for (let i = 0; i + frame <= data.length; i += frame) { let acc = 0; for (let j = i; j < i + frame; j++) acc += data[j] * data[j]; const rms = Math.sqrt(acc / frame); suma += rms; frames++; if (rms > picoRms) picoRms = rms; if (rms > 0.02) framesConVoz++; } if (!frames) return true; const rmsMedio = suma / frames; const ratioVoz = framesConVoz / frames; return rmsMedio < 0.01 || ratioVoz < 0.06 || picoRms < 0.04; } catch (e) { console.error('qpEsAudioSilencioso error:', e); return false; } }
@@ -13968,11 +13969,29 @@ async function qpToggleVoz() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       qpAudioChunks = [];
-      qpMediaRecorder = new MediaRecorder(stream);
+      /* Antes se creaba el grabador sin decirle nada y después se rotulaba el
+         audio a mano como webm. En el iPhone, Safari graba en mp4/AAC: le
+         estábamos mandando a la IA bytes de mp4 diciéndole que eran webm.
+         Ahora se elige el primero que el navegador diga soportar, y se le manda
+         el tipo REAL. */
+      qpMimeAudio = '';
+      try {
+        const candidatos = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/aac', 'audio/ogg'];
+        if (window.MediaRecorder && MediaRecorder.isTypeSupported) {
+          for (const c of candidatos) { if (MediaRecorder.isTypeSupported(c)) { qpMimeAudio = c; break; } }
+        }
+      } catch (e) { qpMimeAudio = ''; }
+      qpMediaRecorder = qpMimeAudio
+        ? new MediaRecorder(stream, { mimeType: qpMimeAudio })
+        : new MediaRecorder(stream);
       qpMediaRecorder.ondataavailable = e => { if (e.data.size > 0) qpAudioChunks.push(e.data); };
       qpMediaRecorder.onstop = async () => {
         stream.getTracks().forEach(t => t.stop());
-        const blob = new Blob(qpAudioChunks, { type: 'audio/webm' });
+        /* El tipo real: el que quedó en el grabador, o el del primer pedazo.
+           Se le saca el ";codecs=..." porque el modelo quiere el tipo pelado. */
+        const tipoReal = ((qpMediaRecorder && qpMediaRecorder.mimeType) || qpMimeAudio ||
+                          (qpAudioChunks[0] && qpAudioChunks[0].type) || 'audio/webm').split(';')[0];
+        const blob = new Blob(qpAudioChunks, { type: tipoReal });
         if (await qpEsAudioSilencioso(blob)) {
           const statusEl = document.getElementById('qpIaStatus');
           if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'No entendimos el audio. Por favor, volvé a intentar o cargalo a mano.'; }
@@ -13981,7 +14000,7 @@ async function qpToggleVoz() {
         const reader = new FileReader();
         reader.onload = () => {
           const base64 = reader.result.split(',')[1];
-          qpProcesarIA(base64, 'audio/webm');
+          qpProcesarIA(base64, tipoReal);
         };
         reader.readAsDataURL(blob);
       };
@@ -14124,7 +14143,10 @@ async function qpProcesarIA(base64, mimeType) {
   }
   actualizarQpIaContador(cupo.usados);
   try {
-    const datos = await window.nortiaExtraerGasto(base64, mimeType); if (datos && mimeType && mimeType.startsWith('audio/')) { const _tr = (datos.transcripcionAudio || '').trim(); if (_tr.length < 6) datos.detectado = false; }
+    const datos = await window.nortiaExtraerGasto(base64, mimeType);
+    /* Queda a mano para diagnosticar: en la consola, window.__ultimaIA muestra
+       qué transcribió y qué fecha entendió. No se pinta en ningún lado. */
+    try { window.__ultimaIA = { mimeType: mimeType, datos: datos, hoy: hoyISO() }; } catch (e) {} if (datos && mimeType && mimeType.startsWith('audio/')) { const _tr = (datos.transcripcionAudio || '').trim(); if (_tr.length < 6) datos.detectado = false; }
     if (!datos || !datos.detectado) {
       statusEl.textContent = mimeType && mimeType.startsWith('audio/') ? 'No entendimos la información. Por favor, volvé a compartirla o cargalo a mano.' : 'No pudimos identificar un gasto ahí — completá los datos a mano.';
       return;
