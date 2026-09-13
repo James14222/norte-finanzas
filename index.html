@@ -4832,7 +4832,7 @@ async function bootApp(firebaseUser) {
 
   // Y el resumen de uso, con holgura: primero que baje lo que haya en la nube,
   // si no calcularíamos el nivel sobre datos a medias en un aparato nuevo.
-  try { progAgendarSubida(12000); } catch (e) {}
+  try { progAgendarSubida(5000); } catch (e) {}
 
   // Renderizar app
   curMonth = new Date().getMonth();
@@ -8128,6 +8128,10 @@ function applyRemoteSnapshot(remote) {
     syncApplyingRemote = false;
   }
   if (faltaEnLaNube) schedulePush();
+  /* Ya tenemos los datos buenos: éste es el momento honesto para recalcular el
+     resumen. Antes dependíamos de un temporizador de 12 s al entrar, que se
+     perdía si la persona miraba y cerraba. */
+  try { progAgendarSubida(2500); } catch (e) {}
 }
 
 function pushNow() {
@@ -8185,11 +8189,20 @@ let _flushEnganchado = false;
 function engancharFlush() {
   if (_flushEnganchado) return;     // initSync corre de nuevo al cambiar de hogar
   _flushEnganchado = true;
+  /* El resumen de progreso viaja por su cuenta y NO lo cubre flushPush, que
+     sólo mira `syncLocalDirty`. Sin esto le pasaba lo mismo que a los
+     movimientos antes del arreglo: el temporizador quedaba suspendido al
+     bloquear la pantalla y el resumen no se escribía nunca. Se veía como
+     "última actividad: hoy" con la columna Uso en guion. */
+  var vaciarTodo = function () {
+    flushPush();
+    try { if (typeof progSubirResumen === 'function') progSubirResumen(); } catch (e) {}
+  };
   document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'hidden') flushPush();
+    if (document.visibilityState === 'hidden') vaciarTodo();
   });
-  window.addEventListener('pagehide', flushPush);
-  window.addEventListener('freeze', flushPush);
+  window.addEventListener('pagehide', vaciarTodo);
+  window.addEventListener('freeze', vaciarTodo);
 }
 
 function reinitSync() {
@@ -11997,7 +12010,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.17.000';
+const APP_VERSION = 'v005.17.001';
 let novEntradas = [];
 
 function novLeida(e) {
