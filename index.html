@@ -110,6 +110,7 @@
       const prompt = `Sos NortIA, el motor de análisis financiero de Norte, una app argentina de finanzas del hogar.
 Tu trabajo es interpretar el siguiente resumen YA CALCULADO de la situación financiera del usuario y generar como máximo 3 hallazgos.
 NUNCA inventes ni recalcules números — usá exclusivamente los valores que aparecen en el resumen.
+Cada cifra que escribas tiene que estar COPIADA TAL CUAL del resumen de abajo. No sumes, no restes, no promedies, no proyectes y no redondees a un número que no figure. Si para decir algo necesitás una cifra que no está, no lo digas: elegí otro hallazgo. Un hallazgo con una cifra que no figure en el resumen se descarta entero antes de mostrarse, así que inventarla no te sirve de nada.
 Cada hallazgo sigue el formato de 5 partes: qué observaste, la evidencia numérica exacta, por qué importa, una pregunta para que el usuario se la haga, y una acción concreta (cuantificada en pesos si aplica).
 No des consejos de inversión ni de cómo generar más ingresos — solo ayudá a organizar y optimizar gastos ya registrados.
 Priorizá lo más relevante: si hay muchas señales, elegí las 3 que más importan, no las primeras 3.
@@ -7443,7 +7444,9 @@ async function tcpFallbackIA(paginas) {
   var txt = tcpTexto(paginas).slice(0, 60000);
   var prompt = 'Sos el lector de resumenes de tarjeta de credito de Norte. Abajo esta el texto plano de un resumen argentino.\n' +
     'Devolve UNICAMENTE un JSON valido, sin explicaciones ni markdown, con esta forma exacta:\n' +
-    '{"banco":"nombre del banco","filas":[{"fecha":"AAAA-MM-DD","desc":"comercio","monto":1234.56,"moneda":"ARS","cuota":"3/9","titular":"nombre del portador","tipo":"consumo"}]}\n' +
+    '{"banco":"nombre del banco","totalDeclaradoArs":1234.56,"totalDeclaradoUsd":0,' +
+    '"filas":[{"fecha":"AAAA-MM-DD","desc":"comercio","monto":1234.56,"moneda":"ARS","cuota":"3/9","titular":"nombre del portador","tipo":"consumo"}]}\n' +
+    'totalDeclaradoArs y totalDeclaradoUsd son el TOTAL DEL PERIODO que el propio resumen declara (el que el banco imprime como total a pagar de este mes, o el total de consumos del periodo). Copialo TAL CUAL figura, no lo sumes vos. Si el resumen no lo declara o no lo encontras, poné 0 — sirve para comprobar que no se nos haya escapado ninguna linea, asi que un total inventado es peor que ninguno.\n' +
     'Reglas: incluí TODOS los consumos y tambien los impuestos, percepciones e intereses (esos van con tipo "impuesto"). ' +
     'NO incluyas pagos del resumen anterior, saldos anteriores, subtotales ni totales. ' +
     'moneda es "ARS" o "USD". cuota vacia si la compra no es en cuotas. ' +
@@ -7456,7 +7459,44 @@ async function tcpFallbackIA(paginas) {
   var filas = (j.filas || []).filter(function (f) { return f && f.desc && Number(f.monto) > 0; }).map(function (f) {
     return { fecha: f.fecha || '', desc: String(f.desc).trim(), monto: Number(f.monto), moneda: f.moneda === 'USD' ? 'USD' : 'ARS', cuota: f.cuota || '', comprobante: '', titular: f.titular || '', tipo: f.tipo === 'impuesto' ? 'impuesto' : 'consumo' };
   });
-  return { ok: true, emisor: { id: 'IA', nombre: 'Leido con NortIA' }, banco: j.banco || 'Resumen de tarjeta', filas: filas, control: { ars: null, usd: null }, subtotales: [], totales: tcpTotales(filas), cuadra: null, viaIA: true };
+  /* Portero de números (NIA-001). Los emisores con perfil se validan contra el
+     total de control del resumen; esta rama no tenía NADA: lo que la IA leía se
+     cargaba. Acá comprobamos que cada importe exista de verdad en el texto del
+     PDF. No se descartan filas: hay una pantalla de confirmación antes de
+     importar, así que dejar movimientos afuera en silencio daría una
+     importación incompleta sin que el usuario se entere. Se marcan y se avisan. */
+  var cifrasDelPdf = iaCifrasDe(txt).map(function (c) { return c.v; });
+  var dudosas = [];
+  filas.forEach(function (f) {
+    var esta = iaCifraEsta({ v: Number(f.monto), pct: false, plata: true }, cifrasDelPdf);
+    f.verificado = esta;
+    if (!esta) dudosas.push(f);
+  });
+  if (dudosas.length) {
+    console.warn('NortIA lector: ' + dudosas.length + ' importe(s) no aparecen en el texto del resumen', dudosas);
+  }
+
+  /* Lo anterior detecta números INVENTADOS. Esto detecta lo contrario: líneas
+     que la IA no leyó. Comparamos lo que sumamos contra el total que el propio
+     resumen declara — la misma comprobación que ya tenían los emisores con
+     perfil, que en esta rama no existía. Sólo vale si el total declarado
+     aparece de verdad en el texto: si la IA lo inventó, no controla nada. */
+  var val = tcpTotales(filas);
+  var decArs = Number(j.totalDeclaradoArs) || 0;
+  var decUsd = Number(j.totalDeclaradoUsd) || 0;
+  var declaradoEsReal = function (n) {
+    return n > 0 && iaCifraEsta({ v: n, pct: false, plata: true }, cifrasDelPdf);
+  };
+  var control = { ars: declaradoEsReal(decArs) ? decArs : null,
+                  usd: declaradoEsReal(decUsd) ? decUsd : null };
+  var cuadra = null;
+  if (control.ars !== null || control.usd !== null) {
+    var okArs = control.ars === null || Math.abs(val.totalArs - control.ars) < 1;
+    var okUsd = control.usd === null || Math.abs(val.totalUsd - control.usd) < 1;
+    cuadra = okArs && okUsd;
+  }
+
+  return { ok: true, emisor: { id: 'IA', nombre: 'Leido con NortIA' }, banco: j.banco || 'Resumen de tarjeta', filas: filas, control: control, subtotales: [], totales: val, cuadra: cuadra, viaIA: true, dudosas: dudosas.length };
 }
 
 /* Normalizacion al modelo de filas que usa la vista previa de Norte */
@@ -7513,6 +7553,21 @@ async function tcPdfPreparar(file) {
       (tits.length ? '<div style="font-size:13px;color:var(--text);margin-top:4px">👤 ' + tits.map(esc).join(' · ') + '</div>' : '') +
       (res.cuadra === true ? '<div style="font-size:12.5px;color:#16a34a;font-weight:700;margin-top:8px">✓ Los totales cuadran con el resumen</div>' :
        res.cuadra === false ? '<div style="font-size:12.5px;color:#b45309;font-weight:700;margin-top:8px">⚠ Los totales no cuadran con el resumen — revisá la vista previa</div>' : '') +
+      // Cuando lo leyó la IA no hay total de control, pero sí se puede comprobar
+      // que cada importe exista en el texto del PDF. Es el equivalente honesto.
+      (res.viaIA
+        ? (res.dudosas
+            ? '<div style="font-size:12.5px;color:#b45309;font-weight:700;margin-top:8px">⚠ ' + res.dudosas +
+              ' importe' + (res.dudosas === 1 ? '' : 's') + ' no ' + (res.dudosas === 1 ? 'aparece' : 'aparecen') +
+              ' en el texto del resumen — revisá la vista previa antes de importar</div>'
+            : '<div style="font-size:12.5px;color:#16a34a;font-weight:700;margin-top:8px">✓ Todos los importes aparecen en el texto del resumen</div>')
+        : '') +
+      // Y el otro lado: si falta una línea, la suma no llega al total del resumen.
+      (res.viaIA && res.cuadra === false
+        ? '<div style="font-size:12.5px;color:#b45309;font-weight:700;margin-top:6px">⚠ Lo leído no llega al total que declara el resumen — puede faltar alguna línea. Revisá la vista previa.</div>'
+        : res.viaIA && res.cuadra === null
+        ? '<div style="font-size:12px;color:var(--muted);margin-top:6px">Este resumen no declara un total, así que no podemos comprobar que no falte ninguna línea.</div>'
+        : '') +
       '</div>';
     if (pi) pi.innerHTML = html;
     tcCheckConfig();
@@ -9619,7 +9674,10 @@ function progResumenParaNube() {
     mesesTotal: Number(d.meses.total) || 0,
     mesesRacha: Number(d.meses.racha) || 0,
     medallas: medallas,
-    porUsuario: progPorUsuario()
+    porUsuario: progPorUsuario(),
+    // Cuánto tuvo que trabajar el portero de números de NortIA en este hogar.
+    niaRevisados: (function () { try { return niaLeer('rev'); } catch (e) { return 0; } })(),
+    niaDescartados: (function () { try { return niaLeer('desc'); } catch (e) { return 0; } })()
   };
 }
 
@@ -12042,7 +12100,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.18.000';
+const APP_VERSION = 'v005.20.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -14850,6 +14908,120 @@ function nortiaBetaHabilitado() {
 }
 
 // Arma un resumen COMPACTO Y CALCULADO (nunca transacciones crudas) para enviarle a NortIA.
+
+// ── PORTERO DE NÚMEROS DE NortIA (NIA-001) ───────────────────────
+// El código calcula y la IA narra: ésa es la regla del producto. Pero hasta acá
+// nadie comprobaba que lo narrado usara los números calculados. Un número
+// inventado no cuesta una funcionalidad, cuesta la confianza en todas las demás.
+//
+// Estos dos ayudantes los usan dos lugares distintos: los hallazgos (que se
+// comparan contra el resumen calculado) y el lector de resúmenes de tarjeta en
+// modo IA (que se compara contra el texto del PDF).
+
+// Saca de un texto todos los números que un lector reconocería como cifra, y
+// los normaliza. El formato argentino es el problema: "1.234,56" son mil
+// doscientos treinta y cuatro con cincuenta y seis, y "1,234.56" es lo mismo en
+// inglés. La regla: manda el ÚLTIMO separador que aparezca.
+function iaNormalizarNumero(txt) {
+  var s = String(txt || '').trim().replace(/\s/g, '');
+  /* El punto o la coma del final de la oración se pegan al número: "$4.940.517."
+     se leía como 4,94 y mandaba a descartar un hallazgo perfectamente bueno.
+     Se sacan los separadores del final que no tienen dígitos después. */
+  s = s.replace(/[.,]+$/, '');
+  if (!/[0-9]/.test(s)) return null;
+  var puntos = (s.match(/\./g) || []).length;
+  var comas  = (s.match(/,/g) || []).length;
+  if (puntos && comas) {
+    // El último separador es el decimal; el otro es de miles.
+    if (s.lastIndexOf(',') > s.lastIndexOf('.')) s = s.replace(/\./g, '').replace(',', '.');
+    else s = s.replace(/,/g, '');
+  } else if (comas) {
+    // Una coma sola: decimal, salvo que parezca separador de miles (1,234).
+    s = /,\d{3}(\D|$)/.test(s) && comas >= 1 && !/,\d{1,2}$/.test(s)
+      ? s.replace(/,/g, '') : s.replace(',', '.');
+  } else if (puntos) {
+    // Un punto solo: miles si deja grupos de tres, decimal si no.
+    s = /^\d{1,3}(\.\d{3})+$/.test(s) ? s.replace(/\./g, '') : s;
+  }
+  var n = parseFloat(s);
+  return isFinite(n) ? n : null;
+}
+
+// Devuelve la lista de cifras de un texto, cada una con su valor y si venía
+// marcada como porcentaje (que se compara con otra tolerancia).
+function iaCifrasDe(texto) {
+  var out = [];
+  var re = /(-?\$?\s?)(\d[\d.,]*)(\s?%?)/g, m;
+  var t = String(texto || '');
+  while ((m = re.exec(t)) !== null) {
+    var v = iaNormalizarNumero(m[2]);
+    if (v === null) continue;
+    out.push({ v: v, pct: m[3].indexOf('%') >= 0, plata: m[1].indexOf('$') >= 0 });
+  }
+  return out;
+}
+
+// El conjunto contra el que se compara: todos los valores, y aparte los que en
+// el respaldo venían escritos como PORCENTAJE. Hacen falta separados porque un
+// porcentaje inventado tiene muchas chances de coincidir con un conteo o un
+// importe cualquiera: "el 31% del total" pasaba sólo porque el resumen decía
+// "31 movimientos". Un porcentaje sólo se valida contra otro porcentaje.
+function iaConjunto(respaldo) {
+  var todos = [], pct = [];
+  iaCifrasDe(respaldo).forEach(function (c) { todos.push(c.v); if (c.pct) pct.push(c.v); });
+  return { todos: todos, pct: pct };
+}
+
+// ¿Esta cifra está respaldada? Con tolerancia de redondeo: el modelo puede
+// escribir 1.234.567 donde el resumen dice 1.234.567,38. La tolerancia es chica
+// a propósito — alcanza para el redondeo y no para tapar un número inventado.
+function iaCifraEsta(c, conjunto) {
+  var lista = Array.isArray(conjunto)
+    ? conjunto                                   // llamada simple: una lista pelada
+    : (c.pct ? conjunto.pct : conjunto.todos);
+  for (var i = 0; i < lista.length; i++) {
+    var d = Math.abs(c.v - lista[i]);
+    if (d === 0) return true;
+    if (c.pct) { if (d <= 1) return true; continue; }   // un punto de redondeo
+    /* La tolerancia es de MENOS DE UN PESO, y nada más. Alcanza para que
+       "$7.168.826,79" pase escrito como "$7.168.827" o como "$7.168.826", que es
+       el único redondeo legítimo. Antes era medio por ciento: sobre siete
+       millones eso daba 35.000 pesos de margen y un invento entraba caminando. */
+    if (d < 1) return true;
+  }
+  return false;
+}
+
+// Las cifras chicas sin símbolo son casi siempre conteos que el modelo deriva
+// ("3 movimientos", "los últimos 2 meses"): pedirles respaldo llena la pantalla
+// de falsos positivos. Se controlan las que el usuario lee como un dato duro:
+// plata, porcentajes, y cualquier número de tres cifras para arriba.
+function iaCifraImporta(c) { return c.plata || c.pct || Math.abs(c.v) >= 100; }
+
+// Cuánto alucina el modelo, acumulado. Vive en el aparato y viaja al resumen de
+// uso, que es lo único que el superadmin puede leer. Sin texto: sólo dos
+// números, para saber si el portero está trabajando mucho o poco.
+function niaClave(q) { try { return 'norte_nia_' + q + '_' + curEmpresa(); } catch (e) { return 'norte_nia_' + q; } }
+function niaLeer(q) { try { return Number(localStorage.getItem(niaClave(q))) || 0; } catch (e) { return 0; } }
+function niaContar(revisados, descartados) {
+  try {
+    localStorage.setItem(niaClave('rev'), String(niaLeer('rev') + (Number(revisados) || 0)));
+    localStorage.setItem(niaClave('desc'), String(niaLeer('desc') + (Number(descartados) || 0)));
+  } catch (e) {}
+  try { progAgendarSubida(3000); } catch (e) {}
+}
+
+// El portero: devuelve las cifras del texto que NO están respaldadas.
+function iaCifrasSinRespaldo(texto, respaldo) {
+  var conj = iaConjunto(respaldo);
+  var malas = [];
+  iaCifrasDe(texto).forEach(function (c) {
+    if (!iaCifraImporta(c)) return;
+    if (!iaCifraEsta(c, conj)) malas.push(c.v);
+  });
+  return malas;
+}
+
 function buildResumenCalculado() {
   const all = getData();
   const key = curKey();
@@ -14997,10 +15169,36 @@ async function renderNortiaHallazgos(forzarRegenerar = false) {
 
     const resumen = buildResumenCalculado();
     const data = await window.nortiaGenerarHallazgos(resumen);
-    const hallazgos = Array.isArray(data?.hallazgos) ? data.hallazgos.slice(0,3) : [];
+    const crudos = Array.isArray(data?.hallazgos) ? data.hallazgos.slice(0,3) : [];
 
-    await cacheRef.set({ hallazgos, sig, generatedAt: Date.now() });
-    nortiaPintarHallazgos(hallazgos, false);
+    /* El portero (NIA-001). Todo número que el usuario lee tiene que estar en el
+       resumen que calculó el código. Un hallazgo con una cifra que no aparece
+       ahí se descarta entero: no se muestra a medias ni con asterisco, porque un
+       número con advertencia igual erosiona la confianza en los otros dos. */
+    const descartados = [];
+    const hallazgos = crudos.filter(function (h) {
+      if (!h) return false;
+      var texto = [h.observado, h.evidencia, h.por_que_importa, h.pregunta, h.accion_sugerida]
+        .filter(Boolean).join(' ');
+      if (h.monto_estimado != null) texto += ' $' + h.monto_estimado;
+      var malas = iaCifrasSinRespaldo(texto, resumen);
+      if (malas.length) {
+        descartados.push({ id: h.id || '', cifras: malas.slice(0, 5) });
+        return false;
+      }
+      return true;
+    });
+    if (descartados.length) {
+      console.warn('NortIA: ' + descartados.length + ' hallazgo(s) descartado(s) por cifras sin respaldo',
+                   descartados);
+    }
+
+    await cacheRef.set({ hallazgos, sig, generatedAt: Date.now(),
+                         descartados: descartados.length, revisados: crudos.length });
+    // Un contador acumulado que SÍ llega al panel de superadmin: la caché vive
+    // dentro del hogar y desde afuera no se puede leer.
+    try { niaContar(crudos.length, descartados.length); } catch (e) {}
+    nortiaPintarHallazgos(hallazgos, false, crudos.length > 0 && hallazgos.length === 0);
   } catch (e) {
     console.error('NortIA error:', e);
     wrap.innerHTML = `<div class="nortia-error">No pudimos generar el an\u00e1lisis en este momento. Prob\u00e1 de nuevo en unos minutos.</div>`;
@@ -15009,10 +15207,16 @@ async function renderNortiaHallazgos(forzarRegenerar = false) {
 
 const NORTIA_CAT_ICO = { calidad_datos:'\ud83e\uddf9', anomalia:'\ud83d\udcc8', proyeccion:'\ud83d\udd2e', presupuesto:'\ud83c\udfaf', compromisos:'\ud83d\udccc', gasto_hormiga:'\ud83d\udc1c', comparativa_hogar:'\ud83d\udc65' };
 
-function nortiaPintarHallazgos(hallazgos, deCache) {
+function nortiaPintarHallazgos(hallazgos, deCache, todosDescartados) {
   const wrap = document.getElementById('nortiaHallazgosWrap');
   if (!hallazgos.length) {
-    wrap.innerHTML = `<div class="nortia-empty">Todav\u00eda no hay suficientes datos este mes para un an\u00e1lisis confiable. Registr\u00e1 m\u00e1s movimientos y volv\u00e9 a intentarlo.</div>`;
+    /* Dos vacíos que NO son lo mismo. Si no había datos, la culpa es de que
+       falta cargar. Si había análisis pero ninguno pasó la verificación, la
+       culpa es nuestra y decirle "registrá más movimientos" sería mentirle y
+       encima echarle la culpa. */
+    wrap.innerHTML = todosDescartados
+      ? `<div class="nortia-empty">No pudimos verificar el an\u00e1lisis de este mes contra tus n\u00fameros, as\u00ed que preferimos no mostrarlo. Prob\u00e1 de nuevo en un rato.<div style="margin-top:10px"><span class="nortia-refresh" onclick="renderNortiaHallazgos(true)">\u21bb Reintentar</span></div></div>`
+      : `<div class="nortia-empty">Todav\u00eda no hay suficientes datos este mes para un an\u00e1lisis confiable. Registr\u00e1 m\u00e1s movimientos y volv\u00e9 a intentarlo.</div>`;
     return;
   }
   const header = `<div style="display:flex;align-items:center;margin-bottom:2px"><span style="font-size:11px;color:var(--muted)">${deCache ? 'An\u00e1lisis de este mes' : 'An\u00e1lisis reci\u00e9n generado'}</span><span class="nortia-refresh" onclick="renderNortiaHallazgos(true)">\u21bb Actualizar</span></div>`;
@@ -16818,6 +17022,16 @@ function subtituloRumbo() {
       quien +
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px">' + fams + '</div>' +
 
+      (Number(pr.niaRevisados) > 0
+        ? '<div style="font-size:12px;margin-top:14px;padding:10px 12px;border-radius:9px;' +
+            'background:' + (Number(pr.niaDescartados) > 0 ? 'rgba(180,83,9,.08)' : 'rgba(22,163,74,.07)') + '">' +
+            '<b>NortIA:</b> ' + Number(pr.niaRevisados) + ' análisis revisados, ' +
+            '<b>' + (Number(pr.niaDescartados) || 0) + ' descartados</b> por traer un número que no estaba en el resumen calculado.' +
+            (Number(pr.niaDescartados) > 0
+              ? ' Ese usuario nunca los vio.'
+              : ' Ninguno se descartó: el modelo se está portando bien en este hogar.') +
+          '</div>'
+        : '') +
       '<div style="font-size:11.5px;color:var(--muted);margin-top:16px;padding-top:12px;border-top:1px solid var(--border);line-height:1.55">' +
         'Calculado en el aparato del hogar ' + esc(haceCuanto(pr.ts)) + ', con la versión ' + esc(pr.v || '—') + '. ' +
         'Es el resumen de cuánto usan Norte: no incluye ningún movimiento, importe ni rubro.' +
