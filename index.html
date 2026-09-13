@@ -9552,6 +9552,37 @@ function progKeyHoy() {
 let _progSubidoHash = null;
 let _progSubirTimer = null;
 
+// Quién de la casa sostiene la carga. Sólo actividad: cuántos movimientos puso
+// cada uno, en cuántas semanas distintas y con qué racha. NO se reparten los
+// resultados (mes en verde, topes respetados, metas de Reserva) porque esos son
+// del hogar y no tienen dueño: partirlos sería inventar una atribución.
+// `progFechaCarga` saca la fecha del id del movimiento, así que mide CUÁNDO SE
+// CARGÓ, no cuándo fue el gasto.
+function progPorUsuario() {
+  var out = {};
+  var semanas = {};
+  var movs;
+  try { movs = getData(); } catch (e) { return out; }
+  movs.forEach(function (t) {
+    var a = t && t.creadoPor;
+    // Los movimientos anteriores al backfill quedaron como 'legacy': no tienen
+    // dueño y se cuentan aparte, no se le atribuyen a nadie.
+    if (!a || a === 'legacy') return;
+    if (!out[a]) { out[a] = { nombre: '', movs: 0, semanas: 0, racha: 0 }; semanas[a] = {}; }
+    out[a].movs++;
+    if (!out[a].nombre && t.creadoPorNombre) out[a].nombre = String(t.creadoPorNombre).slice(0, 40);
+    var l = progLunes(progFechaCarga(t));
+    if (l) semanas[a][l] = true;
+  });
+  Object.keys(out).forEach(function (a) {
+    var ls = Object.keys(semanas[a]);
+    out[a].semanas = ls.length;
+    out[a].racha = progRachaActual(ls);
+    if (!out[a].nombre) out[a].nombre = 'Sin nombre';
+  });
+  return out;
+}
+
 function progResumenParaNube() {
   var d = progCalcular();
   var medallas = {};
@@ -9587,7 +9618,8 @@ function progResumenParaNube() {
     mesesCompletos: Number(d.semanas.mesesCompletos) || 0,
     mesesTotal: Number(d.meses.total) || 0,
     mesesRacha: Number(d.meses.racha) || 0,
-    medallas: medallas
+    medallas: medallas,
+    porUsuario: progPorUsuario()
   };
 }
 
@@ -12010,7 +12042,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.17.001';
+const APP_VERSION = 'v005.18.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -16610,12 +16642,25 @@ function subtituloRumbo() {
             'title="Todavía no reportó. El resumen se escribe cuando la persona abre Norte.">—</span>';
         } else {
           var frescura = haceCuanto(pr.ts);
+          // Dos personas del mismo hogar muestran el MISMO nivel, porque los
+          // movimientos son compartidos. Sin avisarlo, dos filas idénticas se
+          // leen como un error del panel. Y de paso decimos cuántos cargó ésta.
+          var mios = (pr.porUsuario || {})[u.uid];
+          var comparten = Object.keys(pr.porUsuario || {}).length > 1;
+          var linea3 = mios
+            ? '<div style="font-size:11px;color:var(--muted);margin-top:2px">' +
+                (Number(mios.movs) || 0) + ' cargados por esta cuenta' +
+                (comparten ? ' · hogar compartido' : '') + '</div>'
+            : (comparten
+                ? '<div style="font-size:11px;color:var(--muted);margin-top:2px">hogar compartido</div>'
+                : '');
           celdaUso =
             '<div style="cursor:pointer" onclick="saVerProgreso(\'' + hogar.id + '\')" ' +
               'title="Tocá para ver el detalle · calculado ' + esc(frescura) + '">' +
               '<div style="font-size:12.5px;font-weight:700;color:var(--text)">' + esc(pr.nivelNombre || '—') + '</div>' +
               '<div style="font-size:11.5px;color:var(--muted)">' + (Number(pr.ptsTotal) || 0) + ' pts · ' +
                 (Number(pr.hitosOk) || 0) + '/' + (Number(pr.hitosTotal) || 0) + ' hitos</div>' +
+              linea3 +
               '<div style="font-size:11px;color:var(--primary);margin-top:2px">ver detalle ›</div>' +
             '</div>';
         }
@@ -16698,6 +16743,45 @@ function subtituloRumbo() {
         '</div>' + logros + '</div>';
     }).join('');
 
+    // ── Quién de la casa carga ──────────────────────────────────
+    // El nivel es del hogar porque los movimientos son compartidos. Esto de acá
+    // abajo es lo único que SÍ tiene dueño: quién puso cada movimiento.
+    var pu = pr.porUsuario || {};
+    var uids = Object.keys(pu).sort(function (a, b) { return (pu[b].movs || 0) - (pu[a].movs || 0); });
+    var quien = '';
+    if (uids.length) {
+      var sumaPersonas = uids.reduce(function (n, u) { return n + (Number(pu[u].movs) || 0); }, 0);
+      var sinDueno = Math.max(0, (Number(pr.movimientos) || 0) - sumaPersonas);
+      quien =
+        '<div style="margin:16px 0 14px;border:1px solid var(--border);border-radius:10px;padding:12px 14px">' +
+          '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">Quién carga</div>' +
+          uids.map(function (u) {
+            var x = pu[u];
+            var pct = sumaPersonas ? Math.round((Number(x.movs) || 0) / sumaPersonas * 100) : 0;
+            return '<div style="display:flex;align-items:center;gap:10px;margin-top:6px">' +
+              '<div style="flex:1;min-width:0">' +
+                '<div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' +
+                  esc(x.nombre || 'Sin nombre') + '</div>' +
+                '<div style="height:5px;border-radius:3px;background:var(--border);margin-top:4px;overflow:hidden">' +
+                  '<div style="height:100%;width:' + pct + '%;background:var(--primary)"></div></div>' +
+              '</div>' +
+              '<div style="text-align:right;white-space:nowrap;font-size:12px;color:var(--muted)">' +
+                '<b style="color:var(--text)">' + (Number(x.movs) || 0) + '</b> movs · ' + pct + '%<br>' +
+                (Number(x.semanas) || 0) + ' semanas · racha ' + (Number(x.racha) || 0) +
+              '</div>' +
+            '</div>';
+          }).join('') +
+          (sinDueno
+            ? '<div style="font-size:11.5px;color:var(--muted);margin-top:9px;line-height:1.5">' +
+              sinDueno + ' movimiento' + (sinDueno === 1 ? '' : 's') + ' sin dueño: son anteriores a que Norte ' +
+              'guardara quién cargaba cada cosa.</div>'
+            : '') +
+          '<div style="font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.5">' +
+            'El nivel y las medallas son del hogar — los movimientos son compartidos. Esto es lo único que tiene dueño.' +
+          '</div>' +
+        '</div>';
+    }
+
     document.getElementById('saProgCuerpo').innerHTML =
       '<div class="modal-title" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">' +
         '<span style="line-height:1.3">Uso de ' + esc(nombreHogar) + '</span>' +
@@ -16731,6 +16815,7 @@ function subtituloRumbo() {
         (Number(pr.ptsHitos) || 0) + '</b> de hitos. La constancia premia aparecer; los hitos, lo conseguido.' +
       '</div>' +
 
+      quien +
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px">' + fams + '</div>' +
 
       '<div style="font-size:11.5px;color:var(--muted);margin-top:16px;padding-top:12px;border-top:1px solid var(--border);line-height:1.55">' +
