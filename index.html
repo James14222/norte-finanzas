@@ -12100,7 +12100,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.20.000';
+const APP_VERSION = 'v005.20.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -16731,6 +16731,34 @@ function subtituloRumbo() {
     if (dias < 30) return 'hace ' + dias + ' días';
     return fecha(iso);
   }
+  // La señal PERSONAL: abrir la app y loguearse son de la persona. La carga
+  // de datos es del hogar y por eso queda afuera — es justo la que hacía que
+  // dos integrantes del mismo hogar mostraran siempre la misma fecha.
+  function senalPersonal(u) {
+    var a = u.ultimaApertura ? new Date(u.ultimaApertura).getTime() : 0;
+    var b = u.ultimoLogin    ? new Date(u.ultimoLogin).getTime()    : 0;
+    if (isNaN(a)) a = 0;
+    if (isNaN(b)) b = 0;
+    var m = Math.max(a, b);
+    return m ? new Date(m).toISOString() : null;
+  }
+  function haceCuantoLargo(iso) {
+    var d = diasDesde(iso);
+    if (d >= 9999) return 'nunca entró';
+    if (d <= 0) return 'hoy';
+    if (d === 1) return 'ayer';
+    if (d < 60) return 'hace ' + d + ' días';
+    var m = Math.floor(d / 30);
+    if (m < 12) return 'hace ' + m + ' meses';
+    return fecha(iso);
+  }
+  function diasDesde(iso) {
+    if (!iso) return 9999;
+    var t = new Date(iso).getTime();
+    if (isNaN(t)) return 9999;
+    return Math.floor((Date.now() - t) / 86400000);
+  }
+
   // El detalle de las tres señales, para que la fecha nunca sea una caja negra:
   // si una cuenta figura inactiva, acá se ve exactamente por qué.
   function detalleActividad(u) {
@@ -16739,9 +16767,11 @@ function subtituloRumbo() {
       try { return new Date(iso).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }); }
       catch (e) { return 'sin dato'; }
     };
-    return 'Última carga de datos: ' + f(u.ultimaCarga) +
-           '\nÚltima vez que abrió la app: ' + f(u.ultimaApertura) +
-           '\nÚltimo login con contraseña: ' + f(u.ultimoLogin);
+    return 'ESTA PERSONA\n' +
+           '· Abrió la app: ' + f(u.ultimaApertura) + '\n' +
+           '· Se logueó: ' + f(u.ultimoLogin) + '\n\n' +
+           'EL HOGAR (compartido con los demás integrantes)\n' +
+           '· Última carga de datos: ' + f(u.ultimaCarga);
   }
 
   // Crea el contenedor una sola vez, arriba de todo en la página Admin
@@ -16786,8 +16816,12 @@ function subtituloRumbo() {
         _saProgreso = snapP.val() || {};
       } catch (e) { _saProgreso = {}; }
       var us = d.usuarios || [];
+      // Cuántas personas entraron de verdad en el último mes. Es el número que
+      // la suma de cuentas no dice.
+      var activas = us.filter(function (x) { return diasDesde(senalPersonal(x)) < 30; }).length;
       document.getElementById('saResumen').textContent =
-        us.length + ' cuenta' + (us.length === 1 ? '' : 's') + ' · ' + _saHogares.length + ' hogar' + (_saHogares.length === 1 ? '' : 'es');
+        us.length + ' cuenta' + (us.length === 1 ? '' : 's') + ' · ' + _saHogares.length + ' hogar' + (_saHogares.length === 1 ? '' : 'es') +
+        ' · ' + activas + ' entr' + (activas === 1 ? 'ó' : 'aron') + ' en los últimos 30 días';
 
       if (!us.length) {
         body.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0">Todavía no hay usuarios registrados.</div>';
@@ -16802,8 +16836,35 @@ function subtituloRumbo() {
         en_pareja: 'De a dos',        juntar: 'Juntar'
       };
 
+      // Cuántas cuentas hay en cada hogar. Sirve para dos cosas: avisar que el
+      // nivel es compartido, y decidir si vale la pena mostrar la carga del
+      // hogar aparte de la actividad de la persona.
+      var cuentasPorHogar = {};
+      us.forEach(function (x) {
+        var h = (x.hogares && x.hogares[0]) ? x.hogares[0] : null;
+        if (h && h.id) cuentasPorHogar[h.id] = (cuentasPorHogar[h.id] || 0) + 1;
+      });
+
+      // La fila de actividad, en dos alturas: arriba la persona, abajo el
+      // hogar. Una cuenta que hace más de 30 días que no abre Norte se pinta
+      // en ocre: es la que hay que mirar.
+      function celdaActividad(u, compartido) {
+        var pers = senalPersonal(u);
+        var d = diasDesde(pers);
+        var color = !pers ? '#ef4444' : (d >= 30 ? '#E8C050' : 'var(--text)');
+        var txt = pers ? haceCuantoLargo(pers) : 'nunca entró';
+        var l1 = '<div style="font-size:12.5px;font-weight:700;color:' + color + '">' + esc(txt) + '</div>';
+        var l2 = '';
+        if (compartido) {
+          l2 = '<div style="font-size:10.5px;color:var(--muted);margin-top:2px">' +
+               'el hogar cargó ' + esc(haceCuanto(u.ultimaCarga)) + '</div>';
+        }
+        return l1 + l2;
+      }
+
       var filas = us.map(function (u) {
         var hogar = (u.hogares && u.hogares[0]) ? u.hogares[0] : null;
+        var esCompartido = !!(hogar && cuentasPorHogar[hogar.id] > 1);
         var chip = hogar
           ? '<span class="empresa-chip" title="' + esc(hogar.nombre) + '">' + esc(hogar.nombre) + ' <span style="opacity:0.6">' + esc(hogar.rol) + '</span></span>'
           : '<span style="color:var(--muted)">Sin hogar</span>';
@@ -16850,7 +16911,10 @@ function subtituloRumbo() {
           // movimientos son compartidos. Sin avisarlo, dos filas idénticas se
           // leen como un error del panel. Y de paso decimos cuántos cargó ésta.
           var mios = (pr.porUsuario || {})[u.uid];
-          var comparten = Object.keys(pr.porUsuario || {}).length > 1;
+          // Antes esto miraba cuántos habían CARGADO algo: si en un hogar de
+          // dos cargaba uno solo, el aviso no salía — justo el caso en que la
+          // fila repetida más confunde. Ahora mira cuántas cuentas hay.
+          var comparten = esCompartido;
           var linea3 = mios
             ? '<div style="font-size:11px;color:var(--muted);margin-top:2px">' +
                 (Number(mios.movs) || 0) + ' cargados por esta cuenta' +
@@ -16885,14 +16949,14 @@ function subtituloRumbo() {
           '<td>' + celdaUso + '</td>' +
           '<td>' + selPlan + '</td>' +
           '<td>' + estado + '</td>' +
-          '<td style="font-size:12px;color:var(--muted);cursor:help" title="' + esc(detalleActividad(u)) + '">' + haceCuanto(u.ultimaActividad || u.ultimoAcceso) + '</td>' +
+          '<td style="cursor:help" title="' + esc(detalleActividad(u)) + '">' + celdaActividad(u, esCompartido) + '</td>' +
           '<td style="white-space:nowrap">' + acciones + '</td>' +
         '</tr>';
       }).join('');
 
       body.innerHTML =
         '<div style="overflow-x:auto"><table class="admin-table" style="width:100%">' +
-          '<thead><tr><th>Nombre</th><th>Email</th><th>Hogar</th><th title="Lo que contestó en el formulario, antes de pagar. Las cuentas anteriores a septiembre de 2026 no lo tienen.">Ciudad y objetivos</th><th title="El nivel de progreso del hogar: dice cuánto usan Norte de verdad, no sólo si entraron. Se calcula en el aparato de cada uno y sólo viaja el resultado — nunca sus movimientos.">Uso</th><th>Plan</th><th>Estado</th><th title="La más reciente entre la última carga de datos, la última vez que abrió la app y el último login. Pasá el mouse por cada fila para ver el detalle.">Última actividad</th><th></th></tr></thead>' +
+          '<thead><tr><th>Nombre</th><th>Email</th><th>Hogar</th><th title="Lo que contestó en el formulario, antes de pagar. Las cuentas anteriores a septiembre de 2026 no lo tienen.">Ciudad y objetivos</th><th title="El nivel de progreso del hogar: dice cuánto usan Norte de verdad, no sólo si entraron. Se calcula en el aparato de cada uno y sólo viaja el resultado — nunca sus movimientos.">Uso</th><th>Plan</th><th>Estado</th><th title="Cuándo entró ESTA persona: la más reciente entre abrir la app y loguearse. No incluye la carga de datos, que es del hogar y la comparten todos los integrantes — esa va en la segunda línea. Pasá el mouse por cada fila para ver las señales una por una.">Última actividad</th><th></th></tr></thead>' +
           '<tbody>' + filas + '</tbody>' +
         '</table></div>';
     } catch (e) {
