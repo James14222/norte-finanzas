@@ -2832,39 +2832,42 @@ tr:hover td { background: #fafbfc; }
     <div style="display:flex;flex-wrap:wrap;gap:16px" id="planCardsWrap">
       <div class="plan-card-app" data-plan="FOCO" style="flex:1;min-width:220px;border:1px solid var(--border);border-radius:16px;padding:20px">
         <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">FOCO</div>
-        <div style="font-size:24px;font-weight:800;margin:6px 0 10px">Pago único</div>
+        <div style="font-size:24px;font-weight:800;margin:6px 0 10px"><span data-precio="FOCO">$25.000</span><span style="font-size:13px;font-weight:500;color:var(--muted)"> una vez</span></div>
         <ul style="font-size:13px;color:var(--text);line-height:1.9;padding-left:18px;margin-bottom:16px">
-          <li>1 hogar, hasta 2 integrantes</li>
-          <li>50 cargas por foto/voz al mes</li>
-          <li>60 consultas a NortIA al mes</li>
-          <li>Reportes basicos</li>
+          <li>Norte completo, tuyo para siempre</li>
+          <li><span data-cupo="FOCO.hogares">1</span> hogar, hasta <span data-cupo="FOCO.integrantes">2</span> integrantes</li>
+          <li><span data-cupo="FOCO.capturas">20</span> cargas por foto/voz al mes</li>
+          <li><span data-cupo="FOCO.chat">20</span> consultas a NortIA al mes</li>
+          <li><span data-cupo="FOCO.hallazgos">5</span> hallazgos al mes</li>
         </ul>
         <button disabled data-btn-plan="FOCO" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-weight:600">Incluido</button>
       </div>
       <div class="plan-card-app" data-plan="PRO" style="flex:1;min-width:220px;border:2px solid var(--primary);border-radius:16px;padding:20px">
         <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--primary)">PRO</div>
-        <div style="font-size:24px;font-weight:800;margin:6px 0 10px">$5.000<span style="font-size:13px;font-weight:500;color:var(--muted)">/mes</span></div>
+        <div style="font-size:24px;font-weight:800;margin:6px 0 10px"><span data-precio="PRO">$5.900</span><span style="font-size:13px;font-weight:500;color:var(--muted)">/mes</span></div>
         <ul style="font-size:13px;color:var(--text);line-height:1.9;padding-left:18px;margin-bottom:16px">
-          <li>Hasta 3 hogares, integrantes ilimitados</li>
-          <li>100 cargas por foto/voz al mes</li>
-          <li>200 consultas a NortIA al mes</li>
-          <li>Reportes avanzados</li>
+          <li>Todo lo de FOCO</li>
+          <li>Hasta <span data-cupo="PRO.hogares">3</span> hogares, <span data-cupo="PRO.integrantes">3</span> integrantes cada uno</li>
+          <li><span data-cupo="PRO.capturas">150</span> cargas por foto/voz al mes</li>
+          <li><span data-cupo="PRO.chat">200</span> consultas a NortIA al mes</li>
+          <li><span data-cupo="PRO.hallazgos">15</span> hallazgos al mes</li>
         </ul>
         <button data-btn-plan="PRO" data-plan-target="PRO" class="btn-suscribir" style="width:100%;padding:10px;border-radius:10px;border:none;background:var(--primary);color:white;font-weight:700;cursor:pointer">Suscribirme a PRO</button>
       </div>
       <div class="plan-card-app" data-plan="TOP" style="flex:1;min-width:220px;border:1px solid var(--border);border-radius:16px;padding:20px">
         <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">TOP</div>
-        <div style="font-size:24px;font-weight:800;margin:6px 0 10px">$9.000<span style="font-size:13px;font-weight:500;color:var(--muted)">/mes</span></div>
+        <div style="font-size:24px;font-weight:800;margin:6px 0 10px"><span data-precio="TOP">$11.900</span><span style="font-size:13px;font-weight:500;color:var(--muted)">/mes</span></div>
         <ul style="font-size:13px;color:var(--text);line-height:1.9;padding-left:18px;margin-bottom:16px">
-          <li>Hogares e integrantes ilimitados</li>
-          <li>Cargas por foto/voz ilimitadas</li>
-          <li>Consultas a NortIA ilimitadas</li>
-          <li>Soporte prioritario</li>
+          <li>Todo lo de PRO</li>
+          <li>Hasta <span data-cupo="TOP.hogares">10</span> hogares, <span data-cupo="TOP.integrantes">5</span> integrantes cada uno</li>
+          <li><span data-cupo="TOP.capturas">400</span> cargas por foto/voz al mes</li>
+          <li><span data-cupo="TOP.chat">600</span> consultas a NortIA al mes</li>
+          <li><span data-cupo="TOP.hallazgos">30</span> hallazgos al mes</li>
         </ul>
         <button data-btn-plan="TOP" data-plan-target="TOP" class="btn-suscribir" style="width:100%;padding:10px;border-radius:10px;border:none;background:var(--brand-navy);color:white;font-weight:700;cursor:pointer">Suscribirme a TOP</button>
       </div>
     </div>
-    <p style="font-size:12px;color:var(--muted);margin-top:20px">PRO y TOP son suscripciones mensuales opcionales, se pueden cancelar cuando quieras desde Mercado Pago. Lo que ya pagaste de FOCO no cambia nunca.</p>
+    <p style="font-size:12px;color:var(--muted);margin-top:20px;line-height:1.7">Con FOCO la aplicación es tuya: todas las pantallas, todos los reportes y todas las actualizaciones, sin vencimiento. Lo que traen PRO y TOP es más cupo de inteligencia artificial y más hogares — son suscripciones mensuales opcionales que podés cancelar cuando quieras desde Mercado Pago, y al cancelar volvés a FOCO con todos tus datos intactos. Lo que ya pagaste de FOCO no cambia nunca.<br><span id="planNotaPionero" style="display:none">Como entraste por el Club Pioneros, tu cupo mensual es el que se te prometió ahí: <span data-cupo="PIONERO.capturas">50</span> cargas y <span data-cupo="PIONERO.chat">60</span> consultas. Eso no se toca.</span></p>
   </div>
 </div>
 <script>document.querySelectorAll('.btn-suscribir').forEach(function(b){ b.addEventListener('click', function(){ suscribirse(b.getAttribute('data-plan-target')); }); });</script>
@@ -3179,11 +3182,11 @@ tr:hover td { background: #fafbfc; }
             <h4>Cuántas cargas tenés por mes</h4>
             <p>Debajo de los botones hay un contador con las cargas usadas y disponibles del mes. El cupo es <strong>por hogar</strong> (se comparte entre los integrantes) y se renueva el primer día de cada mes.</p>
             <div class="ayuda-ejemplo">
-              <strong>FOCO:</strong> 50 cargas por mes<br>
-              <strong>PRO:</strong> 100 cargas por mes<br>
-              <strong>TOP:</strong> sin límite
+              <strong>FOCO:</strong> <span data-cupo="FOCO.capturas">20</span> cargas por mes<br>
+              <strong>PRO:</strong> <span data-cupo="PRO.capturas">150</span> cargas por mes<br>
+              <strong>TOP:</strong> <span data-cupo="TOP.capturas">400</span> cargas por mes
             </div>
-            <div class="ayuda-tip">La carga manual no consume cupo. El cupo aplica solo a foto y voz, que son las que usan inteligencia artificial.</div>
+            <div class="ayuda-tip">La carga manual no consume cupo. El cupo aplica a foto, a voz y a la lectura de un resumen de tarjeta cuando el banco todavía no está reconocido — son las tres que usan inteligencia artificial.</div>
           </div>
         </div>
 
@@ -3523,11 +3526,11 @@ tr:hover td { background: #fafbfc; }
             <h4>Cuántas consultas tenés por mes</h4>
             <p>El contador arriba del chat te muestra las consultas usadas y disponibles. El cupo es <strong>por hogar</strong> y se renueva cada mes.</p>
             <div class="ayuda-ejemplo">
-              <strong>FOCO:</strong> 60 consultas por mes<br>
-              <strong>PRO:</strong> 200 consultas por mes<br>
-              <strong>TOP:</strong> sin límite
+              <strong>FOCO:</strong> <span data-cupo="FOCO.chat">20</span> consultas por mes<br>
+              <strong>PRO:</strong> <span data-cupo="PRO.chat">200</span> consultas por mes<br>
+              <strong>TOP:</strong> <span data-cupo="TOP.chat">600</span> consultas por mes
             </div>
-            <p>Los hallazgos automáticos tienen su propio cupo, separado del chat.</p>
+            <p>Los hallazgos automáticos tienen su propio cupo, separado del chat: <span data-cupo="FOCO.hallazgos">5</span> al mes en FOCO, <span data-cupo="PRO.hallazgos">15</span> en PRO y <span data-cupo="TOP.hallazgos">30</span> en TOP.</p>
           </div>
           <div class="ayuda-tip">Las respuestas salen de tus datos reales: cuantos más meses tengas cargados, más precisas y más útiles se vuelven.</div>
         </div>
@@ -3621,9 +3624,9 @@ tr:hover td { background: #fafbfc; }
             <h4>Varios hogares</h4>
             <p>Con <strong>+ Crear otro hogar</strong> armás un espacio nuevo, con sus propios movimientos, rubros y presupuestos. Para pasar de uno a otro, elegilo desde la misma pantalla — la app se recarga en el hogar seleccionado.</p>
             <div class="ayuda-ejemplo">
-              <strong>FOCO:</strong> 1 hogar, hasta 2 integrantes<br>
-              <strong>PRO:</strong> hasta 3 hogares, integrantes ilimitados<br>
-              <strong>TOP:</strong> hogares e integrantes ilimitados
+              <strong>FOCO:</strong> <span data-cupo="FOCO.hogares">1</span> hogar, hasta <span data-cupo="FOCO.integrantes">2</span> integrantes<br>
+              <strong>PRO:</strong> hasta <span data-cupo="PRO.hogares">3</span> hogares, <span data-cupo="PRO.integrantes">3</span> integrantes cada uno<br>
+              <strong>TOP:</strong> hasta <span data-cupo="TOP.hogares">10</span> hogares, <span data-cupo="TOP.integrantes">5</span> integrantes cada uno
             </div>
           </div>
         </div>
@@ -3634,30 +3637,35 @@ tr:hover td { background: #fafbfc; }
           <p class="subtitulo">Qué incluye cada plan y cómo cambiarlo</p>
           <div class="ayuda-bloque">
             <h4>Cómo está pensado</h4>
-            <p><strong>FOCO es un pago único</strong>: lo comprás una vez y es tuyo, sin suscripción y sin vencimiento. PRO y TOP son suscripciones mensuales opcionales, para quien necesita más volumen o más hogares. Lo que ya pagaste de FOCO no cambia nunca, aunque después te suscribas y luego canceles.</p>
+            <p><strong>FOCO es un pago único</strong>: lo comprás una vez y la aplicación es tuya, sin suscripción y sin vencimiento. Todas las pantallas, todos los reportes, Reserva, El Cuaderno y las actualizaciones que vengan — nada de eso se vence ni se paga de nuevo.</p>
+            <p>Lo que traen <strong>PRO</strong> y <strong>TOP</strong> es más <strong>cupo de inteligencia artificial</strong> —cargar por foto y por voz, consultarle a NortIA, los hallazgos del mes— y más hogares. Son suscripciones mensuales opcionales: si la IA la usás de vez en cuando, FOCO te alcanza; si la usás todos los días, el cupo de FOCO se te va a quedar corto.</p>
+            <p>Lo que ya pagaste de FOCO no cambia nunca, aunque después te suscribas y luego canceles.</p>
           </div>
           <div class="ayuda-bloque">
             <h4>Qué incluye cada uno</h4>
             <div class="ayuda-ejemplo">
-              <strong>FOCO — pago único</strong><br>
-              • 1 hogar, hasta 2 integrantes<br>
-              • 50 cargas por foto/voz al mes<br>
-              • 60 consultas a NortIA al mes<br>
-              • Reportes básicos
+              <strong>FOCO — <span data-precio="FOCO">$25.000</span>, pago único</strong><br>
+              • Norte completo, para siempre: todas las pantallas y todos los reportes<br>
+              • <span data-cupo="FOCO.hogares">1</span> hogar, hasta <span data-cupo="FOCO.integrantes">2</span> integrantes<br>
+              • <span data-cupo="FOCO.capturas">20</span> cargas por foto/voz al mes<br>
+              • <span data-cupo="FOCO.chat">20</span> consultas a NortIA al mes<br>
+              • <span data-cupo="FOCO.hallazgos">5</span> hallazgos al mes
             </div>
             <div class="ayuda-ejemplo">
-              <strong>PRO — $5.000/mes</strong><br>
-              • Hasta 3 hogares, integrantes ilimitados<br>
-              • 100 cargas por foto/voz al mes<br>
-              • 200 consultas a NortIA al mes<br>
-              • Reportes avanzados
+              <strong>PRO — <span data-precio="PRO">$5.900</span>/mes</strong><br>
+              • Todo lo de FOCO<br>
+              • Hasta <span data-cupo="PRO.hogares">3</span> hogares, <span data-cupo="PRO.integrantes">3</span> integrantes cada uno<br>
+              • <span data-cupo="PRO.capturas">150</span> cargas por foto/voz al mes<br>
+              • <span data-cupo="PRO.chat">200</span> consultas a NortIA al mes<br>
+              • <span data-cupo="PRO.hallazgos">15</span> hallazgos al mes
             </div>
             <div class="ayuda-ejemplo">
-              <strong>TOP — $9.000/mes</strong><br>
-              • Hogares e integrantes ilimitados<br>
-              • Cargas por foto/voz ilimitadas<br>
-              • Consultas a NortIA ilimitadas<br>
-              • Soporte prioritario
+              <strong>TOP — <span data-precio="TOP">$11.900</span>/mes</strong><br>
+              • Todo lo de PRO<br>
+              • Hasta <span data-cupo="TOP.hogares">10</span> hogares, <span data-cupo="TOP.integrantes">5</span> integrantes cada uno<br>
+              • <span data-cupo="TOP.capturas">400</span> cargas por foto/voz al mes<br>
+              • <span data-cupo="TOP.chat">600</span> consultas a NortIA al mes<br>
+              • <span data-cupo="TOP.hallazgos">30</span> hallazgos al mes
             </div>
           </div>
           <div class="ayuda-bloque">
@@ -3666,9 +3674,10 @@ tr:hover td { background: #fafbfc; }
           </div>
           <div class="ayuda-bloque">
             <h4>Qué pasa si llegás al límite</h4>
-            <p>Norte no borra ni bloquea nada. Si te quedás sin cargas de foto/voz o sin consultas de NortIA, esas dos funciones esperan al mes siguiente — el resto de la aplicación sigue funcionando igual, y la carga manual nunca tiene límite.</p>
+            <p>Norte no borra ni bloquea nada. Si te quedás sin cargas de foto/voz o sin consultas de NortIA, esas dos funciones esperan al 1° del mes siguiente — el resto de la aplicación sigue funcionando igual, y <strong>la carga manual nunca tiene límite</strong>. El cupo es por hogar y se comparte entre los integrantes.</p>
+            <p>Los cupos son los que figuran arriba, sin excepciones ni asteriscos. Ningún plan dice «ilimitado»: preferimos escribir el número, aunque sea alto, antes que prometer un techo que en algún momento existe igual.</p>
           </div>
-          <div class="ayuda-tip">Si sos <strong>Pionero Vitalicio</strong>, tenés Norte FOCO gratis para siempre — el Club Pioneros ya está cerrado, pero lo que se prometió ahí sigue en pie.</div>
+          <div class="ayuda-tip">Si entraste por el <strong>Club Pioneros</strong>, tenés Norte FOCO gratis para siempre y conservás el cupo con el que entraste: <span data-cupo="PIONERO.capturas">50</span> cargas por foto/voz y <span data-cupo="PIONERO.chat">60</span> consultas a NortIA al mes. El Club ya está cerrado y el cupo de FOCO cambió después, pero lo que se prometió ahí sigue en pie.</div>
         </div>
 
         <!-- TU CUENTA -->
@@ -3781,7 +3790,7 @@ tr:hover td { background: #fafbfc; }
           <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)">NortIA</div>
           <div class="ayuda-bloque">
             <h4>🧭 Sin configuración</h4>
-            <p>NortIA funciona automáticamente para todas las cuentas: no hay que cargar ninguna clave de API ni contratar nada por separado. Los cupos mensuales dependen del plan del hogar.</p>
+            <p>NortIA funciona automáticamente para todas las cuentas: no hay que cargar ninguna clave de API ni contratar nada por separado. Viene incluida desde FOCO — lo que cambia entre planes es cuánto la podés usar por mes.</p>
           </div>
 
           <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Gestión de cuentas</div>
@@ -12100,7 +12109,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.20.001';
+const APP_VERSION = 'v005.21.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -14217,9 +14226,7 @@ function qpCapturaRef() {
 }
 
 function qpLimiteIaCapActual() {
-  if (miPlanActual === 'TOP') return Infinity;
-  if (miPlanActual === 'PRO') return 100;
-  return 50; // FOCO
+  return cuposActuales().capturas;
 }
 
 async function qpCapturaLeerUso() {
@@ -14229,7 +14236,6 @@ async function qpCapturaLeerUso() {
 // Reserva un uso ANTES de llamar a la IA. Si la base falla, dejamos pasar la carga.
 async function qpCapturaCheckYRegistrarUso() {
   const cap = qpLimiteIaCapActual();
-  if (cap === Infinity) return { ok: true, usados: 0 };
   try {
     const ref = qpCapturaRef();
     const snap = await ref.once('value');
@@ -14247,7 +14253,6 @@ async function actualizarQpIaContador(usadosConocido) {
   const el = document.getElementById('qpIaContador');
   if (!el) return;
   const cap = qpLimiteIaCapActual();
-  if (cap === Infinity) { el.textContent = 'Cargas por foto/voz ilimitadas con tu plan'; el.style.color = '#6b7f93'; return; }
   const usados = (usadosConocido !== undefined) ? usadosConocido : await qpCapturaLeerUso();
   const quedan = Math.max(0, cap - usados);
   el.textContent = quedan === 0
@@ -14326,7 +14331,7 @@ async function qpProcesarIA(base64, mimeType) {
   statusEl.textContent = mimeType && mimeType.startsWith('audio/') ? 'Norte está escuchando el audio…' : 'Norte está leyendo el gasto…';
   const cupo = await qpCapturaCheckYRegistrarUso();
   if (!cupo.ok) {
-    statusEl.textContent = 'Llegaste al límite de ' + qpLimiteIaCapActual() + ' cargas por foto/voz este mes. Podés seguir cargando a mano, o mejorar tu plan desde el botón Mi plan.';
+    statusEl.textContent = 'Llegaste a las ' + qpLimiteIaCapActual() + ' cargas por foto/voz de este mes. Se renuevan el 1° del mes que viene. Podés seguir cargando a mano, o ver los planes en 💎 Mi plan.';
     actualizarQpIaContador(cupo.usados);
     return;
   }
@@ -14856,14 +14861,28 @@ function clearGeminiKey() {
 function getGeminiKey() { return localStorage.getItem('norte_gemini_key') || ''; }
 
 // ── GEMINI CONTEXT BUILDER ────────────────────────────────────
+// Tres niveles, del más resumido al más detallado. El detalle crudo del año
+// entero no viaja: pesa 91 caracteres por movimiento y se repite en CADA
+// mensaje, así que el costo de una consulta crecía con la antigüedad del
+// hogar. Los totales por rubro contestan mejor y ocupan cuarenta líneas
+// donde antes había cuatrocientas.
+const NORTIA_MESES_DETALLE = 4; // meses recientes que viajan movimiento por movimiento
+// Cuatro y no tres por dos razones que apuntan al mismo lado: un trimestre
+// cerrado más el mes en curso es lo que alcanza para casi toda pregunta
+// concreta, y con ese tamaño el prefijo del prompt suele pasar los 4.096
+// tokens que Gemini pide para aplicar el descuento por contexto repetido.
+// Con tres meses queda justo por debajo en un hogar mediano: más corto le
+// sale más caro.
+
 function buildFinancialContext() {
   const all = getData();
   const year = curYear;
+  const delAnio = all.filter(t => String(t.mes || '').startsWith(String(year)));
 
-  // Resumen anual por mes
-  const months = [...new Set(all.filter(t => t.mes.startsWith(String(year))).map(t => t.mes))].sort();
+  // ── 1. El año, mes a mes ──
+  const months = [...new Set(delAnio.map(t => t.mes))].sort();
   const resumen = months.map(k => {
-    const d = all.filter(t => t.mes === k);
+    const d = delAnio.filter(t => t.mes === k);
     const [, m] = k.split('-');
     const ing  = d.filter(t => t.tipo === 'Ingreso').reduce((s, t) => s + (Number(t.impPesos) || 0), 0);
     const gas  = d.filter(t => t.tipo === 'Gasto').reduce((s, t) => s + (Number(t.impPesos) || 0), 0);
@@ -14871,26 +14890,82 @@ function buildFinancialContext() {
     return `${MESES[parseInt(m)-1]} ${year}: Ingresos=$${ing.toLocaleString('es-AR')} Gastos=$${gas.toLocaleString('es-AR')} Balance=$${(ing-gas).toLocaleString('es-AR')} Pendiente=$${pend.toLocaleString('es-AR')}`;
   }).join('\n');
 
-  // Detalle completo de todos los registros del año (compacto)
-  const detalle = all
-    .filter(t => t.mes.startsWith(String(year)))
-    .sort((a, b) => a.mes.localeCompare(b.mes))
-    .map(t => {
-      const [, m] = t.mes.split('-');
-      const imp = t.impUSD > 0 ? `U$S${t.impUSD}` : `$${Number(t.impPesos || 0).toLocaleString('es-AR')}`;
-      const saldo = Number(t.saldo || 0) > 0 ? ` [pendiente $${Number(t.saldo).toLocaleString('es-AR')}]` : '';
-      const banco = t.banco ? ` [${getBancoLabel(t)}]` : '';
-      return `${MESES[parseInt(m)-1]}: ${t.tipo} | ${t.rubro || '—'} | ${t.detalle}${banco} | ${imp}${saldo}`;
+  // ── 2. El año, rubro por rubro ──
+  // Calculado acá sale exacto. Deducido por el modelo a partir de las
+  // transacciones sueltas, no: sumar es justo lo que peor hace.
+  const acum = {};
+  delAnio.forEach(t => {
+    const k = (t.tipo || 'Gasto') + '\u0000' + (t.rubro || 'Sin rubro');
+    if (!acum[k]) acum[k] = { n: 0, total: 0 };
+    acum[k].n++;
+    acum[k].total += (Number(t.impPesos) || 0);
+  });
+  const rubros = Object.keys(acum)
+    .sort((a, b) => acum[b].total - acum[a].total)
+    .map(k => {
+      const partes = k.split('\u0000');
+      const d = acum[k];
+      return `${partes[0]} | ${partes[1]} | total=$${Math.round(d.total).toLocaleString('es-AR')} | ${d.n} movimiento${d.n === 1 ? '' : 's'} | promedio=$${Math.round(d.total / d.n).toLocaleString('es-AR')}`;
     }).join('\n');
+
+  // ── 3. El detalle de los meses recientes ──
+  const mesesDetalle = months.slice(-NORTIA_MESES_DETALLE);
+  const recientes = delAnio
+    .filter(t => mesesDetalle.indexOf(t.mes) !== -1)
+    .sort((a, b) => String(a.mes).localeCompare(String(b.mes)));
+  const detalle = recientes.map(t => nortiaLineaTx(t)).join('\n');
+  const rotulo = mesesDetalle.length
+    ? mesesDetalle.map(k => MESES[parseInt(k.split('-')[1]) - 1]).join(', ')
+    : 'sin datos';
 
   return `DATOS FINANCIEROS DEL USUARIO — ${year}
 
 RESUMEN MENSUAL:
 ${resumen || 'Sin datos'}
 
-DETALLE DE TRANSACCIONES:
-${detalle || 'Sin transacciones'}
+TOTALES POR RUBRO EN EL AÑO (exactos, ya calculados):
+${rubros || 'Sin datos'}
+
+DETALLE MOVIMIENTO POR MOVIMIENTO — ${rotulo} (${recientes.length}):
+${detalle || 'Sin movimientos'}
+
+Los meses que no figuran en ese detalle no vienen listados uno por uno, pero sus totales SÍ están completos en los dos bloques de arriba. Si te preguntan por uno de esos meses, contestá con esos totales: son exactos. Nunca digas que no tenés el dato si el total está, y nunca inventes movimientos individuales que no estén listados.
 ${rsContextoIA()}`;
+}
+
+// Una línea por movimiento, con el mismo formato en todos lados.
+function nortiaLineaTx(t) {
+  const m = String(t.mes || '').split('-')[1];
+  const imp = t.impUSD > 0 ? `U$S${t.impUSD}` : `$${Number(t.impPesos || 0).toLocaleString('es-AR')}`;
+  const saldo = Number(t.saldo || 0) > 0 ? ` [pendiente $${Number(t.saldo).toLocaleString('es-AR')}]` : '';
+  const banco = t.banco ? ` [${getBancoLabel(t)}]` : '';
+  return `${MESES[parseInt(m)-1]}: ${t.tipo} | ${t.rubro || '\u2014'} | ${t.detalle}${banco} | ${imp}${saldo}`;
+}
+
+// ── El mes que pide la pregunta ──────────────────────────────────────
+// Si alguien pregunta por marzo y marzo ya no está en el detalle reciente,
+// le mandamos marzo. Va aparte del contexto y pegado a la pregunta, para no
+// tocar el prefijo estable del prompt: ese prefijo, repetido igual entre
+// mensajes, es lo que Gemini cobra más barato.
+function nortiaDetalleDePeriodo(pregunta) {
+  const txt = String(pregunta || '').toLowerCase();
+  const all = getData();
+  const delAnio = all.filter(t => String(t.mes || '').startsWith(String(curYear)));
+  const months = [...new Set(delAnio.map(t => t.mes))].sort();
+  const yaEnviados = months.slice(-NORTIA_MESES_DETALLE);
+
+  const partes = [];
+  MESES.forEach((nombre, i) => {
+    const raiz = nombre.toLowerCase().slice(0, 4); // ene, febr, marz, abri...
+    if (txt.indexOf(raiz) === -1) return;
+    const clave = String(curYear) + '-' + String(i + 1).padStart(2, '0');
+    if (yaEnviados.indexOf(clave) !== -1) return;   // ya viajó en el contexto
+    const delMes = delAnio.filter(t => t.mes === clave);
+    if (!delMes.length) return;
+    partes.push(`DETALLE DE ${nombre.toUpperCase()} ${curYear} (${delMes.length} movimiento${delMes.length === 1 ? '' : 's'}), porque lo mencionaste en la pregunta:\n` +
+      delMes.map(t => nortiaLineaTx(t)).join('\n'));
+  });
+  return partes.length ? '\n' + partes.join('\n\n') + '\n' : '';
 }
 
 // ── CHAT HISTORY ──────────────────────────────────────────────
@@ -14901,7 +14976,69 @@ function resetChatHistory() { _chatHistory = []; }
 // ── NortIA — resumen calculado + hallazgos (Firebase AI Logic) ──
 let miPlanActual = 'FOCO'; // se actualiza en vivo desde norteSync/billing/{empresaId}, ver iniciarListenerPlan()
 let miPlanEstado = 'active';
-const NORTIA_CAP_MENSUAL = 30; // llamadas por hogar por mes, plan gratis con tope
+
+// ── EL ALCANCE DE CADA PLAN, EN UN SOLO LUGAR ──────────────────────
+// Todo lo que la app aplica y todo lo que la app muestra sale de estas dos
+// tablas. Si un número está escrito a mano en otro lado, es un número que
+// tarde o temprano va a decir algo distinto de lo que el código hace.
+
+// Los precios que la app MUESTRA. Los que se COBRAN viven en
+// functions/index.js (PRECIO y PLANES_SUSCRIPCION) — son dos lugares
+// porque son dos programas distintos, y tienen que decir lo mismo.
+const PRECIOS_PLAN = { FOCO: 25000, PRO: 5900, TOP: 11900 };
+
+// Ningún plan dice «ilimitado»: un servicio que cuesta plata todos los
+// meses no puede prometer un techo que no existe. El de TOP es alto y
+// está escrito.
+const CUPOS_PLAN = {
+  FOCO: { capturas: 20,  chat: 20,  hallazgos: 5,  hogares: 1,  integrantes: 2 },
+  PRO:  { capturas: 150, chat: 200, hallazgos: 15, hogares: 3,  integrantes: 3 },
+  TOP:  { capturas: 400, chat: 600, hallazgos: 30, hogares: 10, integrantes: 5 },
+  // Los que entraron por el Club Pioneros conservan el cupo con el que
+  // entraron. FOCO cambió después; lo que se les prometió a ellos, no.
+  PIONERO: { capturas: 50, chat: 60, hallazgos: 30, hogares: 1, integrantes: 2 }
+};
+
+// Rellena cada hueco marcado con data-cupo="PLAN.campo" o data-precio="PLAN".
+// Corre una vez al arrancar: los textos de ayuda y el modal de planes salen
+// todos de acá, así que no hay forma de que digan un número que el código no
+// aplique.
+function pintarCuposEnPantalla(raiz) {
+  const R = raiz || document;
+  R.querySelectorAll('[data-cupo]').forEach(function (el) {
+    const partes = String(el.getAttribute('data-cupo')).split('.');
+    const plan = CUPOS_PLAN[partes[0]];
+    if (!plan) return;
+    const v = plan[partes[1]];
+    if (v === undefined) return;
+    el.textContent = Number(v).toLocaleString('es-AR');
+  });
+  R.querySelectorAll('[data-precio]').forEach(function (el) {
+    const v = PRECIOS_PLAN[el.getAttribute('data-precio')];
+    if (v === undefined) return;
+    el.textContent = '$' + Number(v).toLocaleString('es-AR');
+  });
+}
+try { document.addEventListener('DOMContentLoaded', function () { pintarCuposEnPantalla(); }); } catch (e) {}
+
+function esCuentaPionera() {
+  return String(miOrigenCuenta || '') === 'club_pioneros';
+}
+
+// El cupo que le toca a este hogar. Un Pionero que además se suscribe a PRO
+// o TOP recibe lo mejor de los dos: nunca menos de lo que ya tenía.
+function cuposActuales() {
+  const base = CUPOS_PLAN[miPlanActual] || CUPOS_PLAN.FOCO;
+  if (!esCuentaPionera()) return base;
+  const pio = CUPOS_PLAN.PIONERO;
+  return {
+    capturas:    Math.max(base.capturas,    pio.capturas),
+    chat:        Math.max(base.chat,        pio.chat),
+    hallazgos:   Math.max(base.hallazgos,   pio.hallazgos),
+    hogares:     Math.max(base.hogares,     pio.hogares),
+    integrantes: Math.max(base.integrantes, pio.integrantes)
+  };
+}
 
 function nortiaBetaHabilitado() {
     return true; // NortIA siempre activo (ya no es beta cerrada)
@@ -15089,16 +15226,14 @@ async function nortiaCheckYRegistrarUso() {
   const ref = db.ref(`norteSync/empresas/${curEmpresa()}/nortia/usage/${ym}`);
   const snap = await ref.once('value');
   const usados = snap.val() || 0;
-  if (usados >= NORTIA_CAP_MENSUAL) return false;
+  if (usados >= cuposActuales().hallazgos) return false;
   await ref.set(usados + 1);
   return true;
 }
 
 // ── NortIA CHAT — tope de uso mensual (separado del de hallazgos) ──
 function nortiaChatCapActual() {
-  if (miPlanActual === 'TOP') return Infinity;
-  if (miPlanActual === 'PRO') return 200;
-  return 60; // FOCO
+  return cuposActuales().chat;
 }
 const NORTIA_CHAT_HISTORIAL_MAX = 8; // intercambios recientes que se envían como contexto al modelo
 
@@ -15128,8 +15263,7 @@ async function actualizarNortiaChatCounter(usadosConocido) {
   if (!el) return;
   if (!nortiaBetaHabilitado()) { el.textContent = ''; return; }
   const usados = (usadosConocido !== undefined) ? usadosConocido : await nortiaChatLeerUso();
-  const capNortiaChat = nortiaChatCapActual();
-  el.textContent = `${usados} / ${capNortiaChat === Infinity ? '∞' : capNortiaChat} mensajes este mes`;
+  el.textContent = `${usados} / ${nortiaChatCapActual()} consultas este mes`;
 }
 
 async function renderNortiaHallazgos(forzarRegenerar = false) {
@@ -15163,7 +15297,7 @@ async function renderNortiaHallazgos(forzarRegenerar = false) {
 
     const puedeUsar = await nortiaCheckYRegistrarUso();
     if (!puedeUsar) {
-      wrap.innerHTML = `<div class="nortia-cap">Llegaste al l\u00edmite de an\u00e1lisis de NortIA de este mes. Vuelve a estar disponible el pr\u00f3ximo mes.</div>`;
+      wrap.innerHTML = `<div class="nortia-cap">Llegaste a los ${cuposActuales().hallazgos} an\u00e1lisis de NortIA de este mes. Se renuevan el 1\u00b0 del mes que viene.</div>`;
       return;
     }
 
@@ -15251,10 +15385,11 @@ Cuando te pidan detalle de gastos, mostrá una lista con cada ítem, rubro e imp
 Cuando detectes discrepancias o diferencias, ayudá a identificar la causa.
 Usá pesos argentinos ($) y formato numérico argentino (punto = miles, coma = decimal).
 No inventes datos — solo usá lo que está en el contexto proporcionado. Si algo no está en los datos, decilo con naturalidad.
+Los datos te llegan en tres niveles: el resumen mes a mes del año, los totales por rubro del año y el detalle movimiento por movimiento de los meses más recientes. Los totales son exactos y ya están calculados: usalos tal cual en vez de sumar vos.
 No des consejos de inversión ni de cómo generar más ingresos — solo ayudá a organizar y entender gastos ya registrados.
 
 ${systemCtx}
-${historyTexto ? `\nCONVERSACIÓN PREVIA:\n${historyTexto}\n` : ''}
+${nortiaDetalleDePeriodo(userText)}${historyTexto ? `\nCONVERSACIÓN PREVIA:\n${historyTexto}\n` : ''}
 Usuario: ${userText}`;
 
   const reply = await window.nortiaChatEnviar(prompt);
@@ -15287,7 +15422,8 @@ async function submitQuery() {
   const uso = await nortiaChatCheckYRegistrarUso();
   actualizarNortiaChatCounter(uso.usados);
   if (!uso.ok) {
-    addChatMsg('Llegaste al límite de mensajes de NortIA de este mes. Vuelve a estar disponible el próximo mes.', 'bot');
+    addChatMsg('Llegaste a las ' + nortiaChatCapActual() + ' consultas de NortIA de este mes. ' +
+      'Se renueva el 1° del mes que viene. Si te queda corto, podés ver los planes en 💎 Mi plan.', 'bot');
     inp.disabled = false;
     document.getElementById('chatSendBtn').disabled = false;
     inp.focus();
@@ -15354,6 +15490,10 @@ function renderPlanUI() {
     if (miPlanEstado === 'pending') estadoTxt = ' — tu suscripcion esta pendiente de confirmacion.';
     txt.textContent = 'Tu plan actual es ' + (nombres[miPlanActual] || 'FOCO') + estadoTxt;
   }
+  // La línea del Club Pioneros solo tiene sentido para quien entró por ahí.
+  const notaPio = document.getElementById('planNotaPionero');
+  if (notaPio) notaPio.style.display = esCuentaPionera() ? 'inline' : 'none';
+  try { pintarCuposEnPantalla(); } catch (e) {}
   document.querySelectorAll('.plan-card-app').forEach(card => {
     const p = card.getAttribute('data-plan');
     const btn = card.querySelector('[data-btn-plan]');
@@ -15439,8 +15579,10 @@ function renderListaHogares() {
   });
   const limTxt = document.getElementById('hogaresLimiteTexto');
   if (limTxt) {
-    const cap = miPlanActual === 'TOP' ? 'ilimitados' : (miPlanActual === 'PRO' ? 'hasta 3' : 'hasta 1');
-    limTxt.textContent = 'Tu plan (' + miPlanActual + ') permite ' + cap + ' hogar(es). Los integrantes por hogar dependen del plan de cada hogar.';
+    const q = cuposActuales();
+    limTxt.textContent = 'Tu plan (' + miPlanActual + ') permite ' + q.hogares +
+      (q.hogares === 1 ? ' hogar' : ' hogares') + ', con hasta ' + q.integrantes +
+      ' integrantes cada uno. Los integrantes de un hogar dependen del plan de ese hogar.';
   }
 }
 function cambiarDeHogar(empresaId, nombre, role) {
