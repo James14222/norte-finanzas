@@ -12109,7 +12109,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.21.000';
+const APP_VERSION = 'v005.22.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -17368,7 +17368,7 @@ function subtituloRumbo() {
   var BK_ESTADOS = ['Pendiente', 'En curso', 'Bloqueado', 'Listo'];
   var BK_PRIOS = ['Crítica', 'Alta', 'Media', 'Baja'];
   var BK_TIPOS = ['Mejora', 'Corrección'];
-  var BK_AREAS = { TEC: 'Técnico', ADM: 'Administración', TRX: 'Transacciones', DRV: 'Deriva', NIA: 'NortIA', RES: 'Reserva', UX: 'Interfaz', MKT: 'Marketing', DEM: 'Demo', CUA: 'Cuaderno', GEN: 'General' };
+  var BK_AREAS = { TEC: 'Técnico', ADM: 'Administración', TRX: 'Transacciones', DRV: 'Deriva', NIA: 'NortIA', RES: 'Reserva', UX: 'Interfaz', MKT: 'Marketing', DEM: 'Demo', CUA: 'Cuaderno', PTS: 'Puntos Norte', GEN: 'General' };
   var BK_CEST = { 'Pendiente': '#64748b', 'En curso': '#0ea5e9', 'Bloqueado': '#b45309', 'Listo': '#16a34a' };
   var BK_CPRI = { 'Crítica': '#dc2626', 'Alta': '#ea580c', 'Media': '#0891b2', 'Baja': '#94a3b8' };
   var BK_OPRI = { 'Crítica': 0, 'Alta': 1, 'Media': 2, 'Baja': 3 };
@@ -17377,7 +17377,7 @@ function subtituloRumbo() {
   // sueltos entre 36 no dicen por donde se empieza; puestos en orden de
   // dependencia, si. Por eso cuando se elige un proyecto la vista deja de ser
   // dos columnas y pasa a ser una sola lista numerada.
-  var BK_PROYS = { DERIVA: 'Proyecto Deriva', CUADERNO: 'Proyecto El Cuaderno' };
+  var BK_PROYS = { DERIVA: 'Proyecto Deriva', CUADERNO: 'Proyecto El Cuaderno', PUNTOS: 'Proyecto Puntos Norte' };
 
   var BK_SEMILLA = [
 {"cod":"TEC-001","tit":"Migrar las Cloud Functions a Node 22","desc":"Node 20 se decomisiona el 30/10/2026. Después de esa fecha no se puede desplegar ninguna función, ni siquiera para corregir un error.","fun":"Toda la capa de Functions: pagos, altas de cuenta, mails, panel de admin.","ben":"Que Norte siga siendo desplegable. Es el único pendiente con fecha dura.","tipo":"Corrección","prio":"Crítica","est":"Pendiente"},
@@ -17412,7 +17412,25 @@ function subtituloRumbo() {
 {"cod":"DEM-001","tit":"Mantener completa la cuenta demo","desc":"Se le cargaron destinos de Reserva y los ingresos que faltaban en agosto y septiembre. Conviene revisarla antes de cada pieza: es la fuente de todas las capturas.","fun":"Hogar García (demo).","ben":"Nunca usar datos reales de Jaime en marketing, y que el demo se vea como un hogar plausible.","tipo":"Mejora","prio":"Media","est":"En curso"},
 {"cod":"RES-000","tit":"Reserva — destinos, apartar, pausar y dejar","desc":"Pantalla completa, tarjeta en Mi Rumbo, cuatro estados por destino, historia, y NortIA que la conoce. Reemplazó a la Meta de ahorro mensual.","fun":"Reserva.","ben":"Ahorrar “en general” no dura; juntar para algo concreto sí.","tipo":"Mejora","prio":"Alta","est":"Listo"},
 {"cod":"TRX-000","tit":"Fecha en cada movimiento","desc":"Campo fecha distinto de venc, con la de hoy por defecto sólo si el período es el mes en curso. Se recuperaron las fechas del resumen de tarjeta y de la carga masiva.","fun":"Carga, importadores.","ben":"Sin esto Deriva no puede hablar nunca de momentos del mes. Y la historia no se reconstruye hacia atrás.","tipo":"Mejora","prio":"Crítica","est":"Listo"},
-{"cod":"UX-000","tit":"Separador de miles al escribir importes","desc":"Los catorce campos de importe pasaron a texto con teclado numérico. Se escribe 120000 y se ve 120.000.","fun":"Toda la app.","ben":"Sacar la duda de si sobró o faltó un cero, que es el error más caro al cargar a mano.","tipo":"Mejora","prio":"Media","est":"Listo"}
+{"cod":"UX-000","tit":"Separador de miles al escribir importes","desc":"Los catorce campos de importe pasaron a texto con teclado numérico. Se escribe 120000 y se ve 120.000.","fun":"Toda la app.","ben":"Sacar la duda de si sobró o faltó un cero, que es el error más caro al cargar a mano.","tipo":"Mejora","prio":"Media","est":"Listo"},
+    {"cod":"PTS-001","tit":"Definir la economía de puntos antes de escribir código","desc":"Qué acciones puntúan, qué es un «mes válido», los pesos del Índice, cuánto dura un punto (180 días para arrancar), cómo se degrada una racha y cuántos meses hacen falta antes del primer beneficio. Todo configurable desde Admin, sin redeploy: la economía se va a recalibrar varias veces y no puede depender de una subida de archivo.","fun":"Documento de reglas + tabla de parámetros en Admin.","ben":"Es la decisión de la que cuelgan las otras diecisiete. Arrancar a codear sin esto cerrado significa reescribir el motor cuando cambie el primer ponderador.","tipo":"Mejora","prio":"Crítica","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-002","tit":"Motor de eventos","desc":"Cada acción relevante emite un evento normalizado: usuario, fecha, tipo, valor y la metadata mínima. Nada de contar acciones dentro de cada pantalla.","fun":"Toda la app.","ben":"Sin una fuente única de eventos, cada pantalla cuenta a su manera y el índice termina siendo imposible de auditar.","tipo":"Mejora","prio":"Alta","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-003","tit":"Ledger de puntos","desc":"Toda acreditación, débito y vencimiento queda registrado con saldo posterior y motivo. Histórico inmutable: los saldos nunca se recalculan hacia atrás.","fun":"Base de datos.","ben":"El día que alguien pregunte por qué tiene 340 y no 400, hay que poder contestarle con el detalle. Un saldo sin historia es una promesa sin respaldo.","tipo":"Mejora","prio":"Alta","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-004","tit":"Motor de scoring: el Índice de Hábito","desc":"Calcula los cinco subíndices (constancia 35%, cobertura 25%, planificación 20%, uso integral 15%, cierre 5%), el índice mensual, la racha, el nivel y la elegibilidad. Normalizado 0 a 100.","fun":"Backend.","ben":"Es el número que hoy no existe: saber qué cuentas tienen hábito real y cuáles solo se dieron de alta. Sirve para el producto y sirve para decidir precio.","tipo":"Mejora","prio":"Alta","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-005","tit":"Motor de reglas configurable desde Admin","desc":"Puntos por hito, topes, multiplicadores por plan y por permanencia, bonos de referido. Editable desde el panel, sin tocar el archivo.","fun":"Admin.","ben":"La economía se calibra con datos reales. Si cada ajuste pide un deploy, no se ajusta.","tipo":"Mejora","prio":"Alta","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-006","tit":"Widget de progreso en el Dashboard","desc":"Nivel, puntos, racha y barra hacia el próximo hito. Tiene que haber progreso visible desde el primer día, aunque los beneficios estén bloqueados.","fun":"Dashboard.","ben":"Un sistema de progreso que no se ve no cambia comportamiento.","tipo":"Mejora","prio":"Alta","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-007","tit":"Pantalla Puntos Norte","desc":"Saldo, puntos por vencer, historial, nivel, racha, índice del mes, próximos hitos y recompensas disponibles.","fun":"Pantalla nueva.","ben":"Es donde el usuario entiende el sistema entero. Sin esto, los puntos son un número suelto.","tipo":"Mejora","prio":"Alta","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-008","tit":"Por qué subió o bajó tu índice, explicado por NortIA","desc":"En castellano, sin ponderadores: qué hiciste distinto este mes y qué conviene hacer ahora. Dos o tres factores, no el detalle de la fórmula.","fun":"NortIA.","ben":"Un índice que el usuario no entiende es letra chica, que es exactamente lo que Norte promete no tener. Este tema es el que convierte la fórmula en algo honesto.","tipo":"Mejora","prio":"Media","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-009","tit":"Referidos con acreditación por actividad real","desc":"Código y link personal, estado de cada invitación. Los puntos se acreditan cuando el invitado se vuelve usuario activo, no cuando se registra. Reemplaza al tema MKT-006, que conviene cerrar.","fun":"App y landing.","ben":"Es el canal de adquisición más barato que hay, y hoy es el cuello de botella real: no hay problema de retención, hay problema de que casi no hay usuarios.","tipo":"Mejora","prio":"Alta","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-010","tit":"Recompensas propias de Norte para la beta","desc":"Meses de PRO, cupo extra de IA por un período, acceso anticipado a lo que venga. Nada de terceros hasta que haya a quién dárselo.","fun":"Planes y cupos.","ben":"No dependen de ningún acuerdo, cuestan poco —el cupo de IA ya está modelado— y empujan directo hacia PRO, que es el número del que depende el negocio.","tipo":"Mejora","prio":"Alta","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-011","tit":"Anti-abuso","desc":"Topes por tipo de acción, detección de duplicados y de fragmentación artificial, validación de importaciones y cierres antes de dar un hito, criterios mínimos para un referido, y capacidad de anular puntos con reglas escritas en los términos.","fun":"Backend.","ben":"Un sistema de puntos sin esto se rompe el día que alguien entiende cómo farmearlo, y quitarle puntos a alguien después es peor que no habérselos dado.","tipo":"Mejora","prio":"Media","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-012","tit":"Instrumentar la analítica ANTES de lanzar","desc":"Altas por origen, activación, WAU/MAU, índice promedio, distribución por nivel, retención D7/D30/M3, puntos emitidos y vencidos. Medido desde el primer día de la beta.","fun":"Analítica.","ben":"Si se instrumenta después, el primer mes —el único que muestra el efecto del lanzamiento— se pierde para siempre.","tipo":"Mejora","prio":"Crítica","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-013","tit":"Convocatoria de 50 Pioneros y onboarding propio","desc":"Cupo visible y limitado, FOCO gratis para siempre, puntos desde el día uno, beneficios bloqueados hasta los 3 meses, insignia permanente y feedback en el día 7, el primer cierre y el mes 3.","fun":"Landing, alta de cuentas, GPS.","ben":"Es la excusa de lanzamiento. Ojo con el antecedente: la primera camada entró gratis y tiene uso bajo — conviene medir activación semanal desde el día uno y no dar la cohorte por exitosa porque se llenó el cupo.","tipo":"Mejora","prio":"Media","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-014","tit":"Aprender las categorías relevantes de cada usuario","desc":"Tres a cinco rubros por usuario, elegidos por frecuencia y peso, no por monto absoluto. Corre desde la beta aunque los beneficios todavía estén bloqueados. Categorías sensibles excluidas, y el usuario puede ocultar una.","fun":"Backend.","ben":"Cuando haya beneficios, la personalización ya va a tener tres meses de datos en vez de empezar de cero.","tipo":"Mejora","prio":"Media","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-015","tit":"Beneficios bloqueados visibles durante los primeros 3 meses","desc":"Se ve qué hay y cuánto falta para activarlo, sin poder canjear todavía.","fun":"Pantalla Puntos Norte.","ben":"La espera de tres meses necesita algo que la sostenga. Un candado con fecha es mejor que una pantalla vacía.","tipo":"Mejora","prio":"Media","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-016","tit":"Gatillo de escala: cuándo salir a buscar comercios","desc":"Fijar el número de usuarios activos por zona que hace falta antes de tocarle la puerta al primer comercio. De referencia: una cafetería necesita ver del orden de 20 a 50 canjes por mes para repetir, lo que con 5% de canje son 400 a 1.000 activos en su radio.","fun":"Decisión, no desarrollo.","ben":"Salir antes de tener masa quema los contactos: un partner que probó y no vio tráfico no vuelve a atender. Es más barato esperar que recuperar.","tipo":"Mejora","prio":"Alta","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-017","tit":"Motor de beneficios y catálogo de partners","desc":"Partner, categoría, zona, costo en puntos, cupo, vigencia, elegibilidad, reglas de renovación y código o QR de canje.","fun":"Backend y pantalla nueva.","ben":"Es la mitad B2B2C del plan. Queda en Baja a propósito: no se empieza hasta que el gatillo de PTS-016 se cumpla, por más que el diseño ya esté escrito.","tipo":"Mejora","prio":"Baja","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-018","tit":"Panel de partners y modelos de cobro","desc":"Métricas agregadas para la marca —impresiones, activaciones, canjes— sin datos individuales, y los modelos de fee, CPA o revenue share.","fun":"Admin y backend.","ben":"Es por donde el proyecto se paga a sí mismo, y es lo último de todo: sin partners activos no hay nada que cobrar.","tipo":"Mejora","prio":"Baja","est":"Pendiente","proy":"PUNTOS"}
   ];
 
   var _bkItems = null;
@@ -17692,11 +17710,17 @@ function subtituloRumbo() {
     try {
       var snap = await bkRef().once('value');
       var v = snap.val();
-      if (!v || !Object.keys(v).length) {
-        var semilla = {};
-        BK_SEMILLA.forEach(function (it) { semilla[it.cod] = Object.assign({ notas: '', act: Date.now() }, it); });
-        await bkRef().set(semilla);
-        v = semilla;
+      // Antes esto era «si está vacío, cargar todo», y por eso un tema nuevo
+      // escrito en la semilla no llegaba nunca a la base. Ahora agrega
+      // solamente los códigos que faltan: lo que ya está no se toca, con su
+      // estado, su prioridad y sus notas intactos.
+      var faltan = {};
+      BK_SEMILLA.forEach(function (it) {
+        if (!v || !v[it.cod]) faltan[it.cod] = Object.assign({ notas: '', act: Date.now() }, it);
+      });
+      if (Object.keys(faltan).length) {
+        await bkRef().update(faltan);
+        v = Object.assign({}, v || {}, faltan);
       }
       _bkItems = v;
       bkPintar();
