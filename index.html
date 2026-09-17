@@ -12109,7 +12109,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.22.000';
+const APP_VERSION = 'v005.22.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -14255,9 +14255,10 @@ async function actualizarQpIaContador(usadosConocido) {
   const cap = qpLimiteIaCapActual();
   const usados = (usadosConocido !== undefined) ? usadosConocido : await qpCapturaLeerUso();
   const quedan = Math.max(0, cap - usados);
-  el.textContent = quedan === 0
+  const marca = esCuentaInterna() ? ' (cuenta interna)' : '';
+  el.textContent = (quedan === 0
     ? 'Usaste las ' + cap + ' cargas por foto/voz del mes'
-    : 'Te quedan ' + quedan + ' de ' + cap + ' cargas por foto/voz este mes';
+    : 'Te quedan ' + quedan + ' de ' + cap + ' cargas por foto/voz este mes') + marca;
   el.style.color = quedan === 0 ? '#ef4444' : (quedan <= 5 ? 'var(--primary-dark)' : '#6b7f93');
 }
 
@@ -14996,8 +14997,20 @@ const CUPOS_PLAN = {
   TOP:  { capturas: 400, chat: 600, hallazgos: 30, hogares: 10, integrantes: 5 },
   // Los que entraron por el Club Pioneros conservan el cupo con el que
   // entraron. FOCO cambió después; lo que se les prometió a ellos, no.
-  PIONERO: { capturas: 50, chat: 60, hallazgos: 30, hogares: 1, integrantes: 2 }
+  PIONERO: { capturas: 50, chat: 60, hallazgos: 30, hogares: 1, integrantes: 2 },
+  // La cuenta desde la que se prueba Norte antes de publicarlo. No es un
+  // plan que se venda: es una excepción de una sola persona, para no tener
+  // que elegir entre probar bien y no ensuciar los números del negocio con
+  // una cuenta TOP que nadie pagó.
+  INTERNO: { capturas: 60, chat: 60, hallazgos: 30, hogares: 10, integrantes: 5 }
 };
+
+// El UID de esa cuenta. Es el mismo que ya abre el panel de superadmin.
+const NORTE_UID_INTERNO = 'RUO9uxaH26QZDC1eMVuA0kjMYkw2';
+function esCuentaInterna() {
+  try { return String((getSession() || {}).userId || '') === NORTE_UID_INTERNO; }
+  catch (e) { return false; }
+}
 
 // Rellena cada hueco marcado con data-cupo="PLAN.campo" o data-precio="PLAN".
 // Corre una vez al arrancar: los textos de ayuda y el modal de planes salen
@@ -15025,19 +15038,25 @@ function esCuentaPionera() {
   return String(miOrigenCuenta || '') === 'club_pioneros';
 }
 
-// El cupo que le toca a este hogar. Un Pionero que además se suscribe a PRO
-// o TOP recibe lo mejor de los dos: nunca menos de lo que ya tenía.
+// El cupo que le toca a quien está usando la app. Se resuelve tomando el
+// mayor de cada campo entre el plan del hogar y las excepciones que
+// correspondan: un Pionero que además se suscribe a PRO recibe lo mejor de
+// los dos, y nunca menos de lo que ya tenía.
 function cuposActuales() {
-  const base = CUPOS_PLAN[miPlanActual] || CUPOS_PLAN.FOCO;
-  if (!esCuentaPionera()) return base;
-  const pio = CUPOS_PLAN.PIONERO;
-  return {
-    capturas:    Math.max(base.capturas,    pio.capturas),
-    chat:        Math.max(base.chat,        pio.chat),
-    hallazgos:   Math.max(base.hallazgos,   pio.hallazgos),
-    hogares:     Math.max(base.hogares,     pio.hogares),
-    integrantes: Math.max(base.integrantes, pio.integrantes)
-  };
+  let q = CUPOS_PLAN[miPlanActual] || CUPOS_PLAN.FOCO;
+  const extras = [];
+  if (esCuentaPionera()) extras.push(CUPOS_PLAN.PIONERO);
+  if (esCuentaInterna())  extras.push(CUPOS_PLAN.INTERNO);
+  extras.forEach(function (e) {
+    q = {
+      capturas:    Math.max(q.capturas,    e.capturas),
+      chat:        Math.max(q.chat,        e.chat),
+      hallazgos:   Math.max(q.hallazgos,   e.hallazgos),
+      hogares:     Math.max(q.hogares,     e.hogares),
+      integrantes: Math.max(q.integrantes, e.integrantes)
+    };
+  });
+  return q;
 }
 
 function nortiaBetaHabilitado() {
