@@ -189,6 +189,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .nav-item:hover { background: rgba(255,255,255,0.07); }
 .nav-item.active { background: rgba(255,255,255,0.12); border-left-color: var(--brand-accent); }
 .nav-item .ico { font-size: 17px; }
+/* El hueco del símbolo de Puntos Norte. Se le da tamaño por CSS y no por el
+   alto de un emoji, así el ítem del menú no cambia de altura respecto de los
+   demás. El `line-height:0` evita el espacio fantasma que un SVG en línea
+   arrastra debajo de la caja. */
+.pn-ico { display: inline-flex; align-items: center; justify-content: center;
+          width: 21px; height: 21px; line-height: 0; flex-shrink: 0; }
+.pn-ico svg { display: block; }
 .nav-item.disabled { opacity: 0.42; cursor: not-allowed; }
 .nav-item.disabled:hover { background: transparent; }
 .nav-item.disabled .badge-soon { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; background: rgba(255,255,255,0.12); border-radius: 6px; padding: 2px 6px; margin-left: auto; }
@@ -696,6 +703,40 @@ tr:hover td { background: #fafbfc; }
             mask-image: linear-gradient(to bottom, #000 52%, transparent);
   }
   .pn-aviso-btn { width: 100%; }
+}
+
+/* El cartel de lanzamiento. Es lo primero que ve la persona sobre Hábito
+   Norte, así que se permite hacer ruido: título grande, una sola idea por
+   bloque y el número del rótulo en color. Todo lo demás de la app es sobrio
+   a propósito; esto no. */
+.pn-lanza-cab { padding: 30px 36px 26px; text-align: left; }
+.pn-lanza-ico { line-height: 0; margin-bottom: 15px; }
+.pn-lanza-rotulo {
+  font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--primary); margin-bottom: 7px;
+}
+.pn-lanza-tit {
+  font-size: 34px; font-weight: 800; color: #fff; letter-spacing: -.8px; line-height: 1.02;
+}
+.pn-lanza-baja {
+  font-size: 15px; color: rgba(255,255,255,.72); line-height: 1.45; margin-top: 11px;
+}
+.pn-bloque { display: flex; gap: 14px; margin-bottom: 20px; }
+.pn-bloque-n {
+  flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(255,138,92,.14); color: var(--primary-dark, #E8714A);
+  font-size: 12.5px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+}
+.pn-bloque-tit { font-size: 15.5px; font-weight: 800; color: var(--text); line-height: 1.28; }
+.pn-bloque-txt { font-size: 13.5px; line-height: 1.6; color: var(--muted); margin-top: 4px; }
+.pn-remate {
+  background: var(--bg); border-radius: 11px; padding: 14px 16px; margin-top: 4px;
+  font-size: 13px; line-height: 1.55; color: var(--muted);
+}
+.pn-remate b { color: var(--text); }
+@media (max-width: 620px) {
+  .pn-lanza-cab { padding: 26px 22px 22px; }
+  .pn-lanza-tit { font-size: 29px; }
 }
 
 /* La cuenta de los puntos. Es la tarjeta que contesta «por qué tengo este
@@ -1390,9 +1431,26 @@ tr:hover td { background: #fafbfc; }
 .tg-abbr { display: none; }
 
 /* Sidebar: que se pueda scrollear cuando no entra todo (Exportar / Importar) */
-.sidebar { overflow-y: auto; overscroll-behavior: contain; }
-.sidebar-nav { flex: 0 0 auto; }
-.sidebar-footer { flex-shrink: 0; }
+/* La barra no scrollea como un bloque: si lo hiciera, el logo se iría hacia
+   arriba y ya no habría nada que respete el área segura del teléfono. Lo que
+   scrollea es sólo la lista de pantallas, que es la parte que crece cada vez
+   que se agrega una función. */
+.sidebar {
+  overflow: hidden; overscroll-behavior: contain; box-sizing: border-box;
+  /* El área segura del teléfono. La app corre como PWA con la barra de estado
+     translúcida, así que sin esto el logo queda abajo del notch. El .content
+     ya lo hacía desde agosto; la barra lateral nunca lo había hecho. */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+/* En iOS el 100vh cuenta la barra de direcciones aunque esté retraída, así que
+   la barra quedaba más alta que la pantalla. El dvh mide lo que se ve de
+   verdad; el 100vh de arriba queda como respaldo para los navegadores viejos. */
+@supports (height: 100dvh) { .sidebar { height: 100dvh; } }
+.sidebar-logo { flex: 0 0 auto; }
+.sidebar-nav { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.sidebar-user { flex: 0 0 auto; }
+.sidebar-footer { flex: 0 0 auto; }
 .sidebar::-webkit-scrollbar { width: 6px; }
 .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 3px; }
 .sidebar::-webkit-scrollbar-track { background: transparent; }
@@ -2243,7 +2301,7 @@ tr:hover td { background: #fafbfc; }
     <div class="nav-item" onclick="showPage('reserva')"><span class="ico">⚓</span> Reserva</div>
     <div class="nav-item" onclick="showPage('analisis')"><span class="ico">🔎</span> Análisis</div>
     <div class="nav-item" onclick="showPage('reportes')"><span class="ico">📈</span> Reportes</div>
-    <div class="nav-item" onclick="showPage('puntos')"><span class="ico">🎖️</span> Puntos Norte</div>
+    <div class="nav-item" onclick="showPage('puntos')"><span class="ico pn-ico" id="navPuntosIco"></span> Puntos Norte<span class="badge-nuevo" id="navPuntosNuevo" style="display:none">nuevo</span></div>
     <div class="nav-item" onclick="showPage('cuaderno')"><span class="ico">📒</span> El Cuaderno<span class="badge-nuevo" id="navCuNuevo" style="display:none">nuevo</span></div>
     <div class="nav-item disabled nortia-item" id="navNortia"><span class="nortia-nav-icon" style="display:inline-block;background-image:var(--nortia-icon-url);background-size:72%;background-repeat:no-repeat;background-position:center;background-color:#fff;border-radius:6px;"></span> <strong>NortIA</strong> <span class="badge-soon" id="navNortiaBadge">Próximamente</span></div>
         <div class="nav-item gps-nav-item" id="navTuGps" onclick="showPage('tugps')"><span class="ico">🧭</span> Novedades<span id="gpsNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
@@ -2380,7 +2438,7 @@ tr:hover td { background: #fafbfc; }
         </div>
         <div class="card" style="cursor:pointer;margin-top:18px" onclick="showPage('puntos')">
           <div class="report-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <span>🎖️ Puntos Norte</span>
+            <span style="display:inline-flex;align-items:center;gap:8px"><span class="pn-ico" id="dashPuntosIco"></span> Puntos Norte</span>
             <span style="font-size:12px;color:var(--primary);font-weight:600">Ver tu índice y tus puntos →</span>
           </div>
           <div id="d-puntos"></div>
@@ -2393,10 +2451,11 @@ tr:hover td { background: #fafbfc; }
          en display:none no se vería. -->
     <div id="pnLanzaOverlay" class="hidden">
       <div class="ob-card">
-        <div class="ob-header">
-          <div class="ob-step-ico" id="pnLanzaIco" style="line-height:0;margin-bottom:12px"></div>
-          <div class="ob-step-title">Puntos Norte</div>
-          <div class="ob-step-sub">Dos números nuevos en Norte. Esto es lo que son, y lo que todavía no son.</div>
+        <div class="ob-header pn-lanza-cab">
+          <div class="pn-lanza-ico" id="pnLanzaIco"></div>
+          <div class="pn-lanza-rotulo">Nuevo en Norte</div>
+          <div class="pn-lanza-tit">Hábito Norte</div>
+          <div class="pn-lanza-baja">Controlar la plata no se gana<br>en un mes heroico. Se gana volviendo.</div>
         </div>
         <div class="ob-body">
           <div id="pnLanzaCuerpo"></div>
@@ -2404,7 +2463,7 @@ tr:hover td { background: #fafbfc; }
         <div class="pn-lanza-pie">
           <div class="ob-actions">
             <button class="ob-btn-skip" onclick="pnCerrarLanzamiento(false)">Después</button>
-            <button class="ob-btn-next" onclick="pnCerrarLanzamiento(true)">Ver mis puntos</button>
+            <button class="ob-btn-next" onclick="pnCerrarLanzamiento(true)">Ver dónde estoy parado</button>
           </div>
         </div>
       </div>
@@ -5029,6 +5088,7 @@ async function bootApp(firebaseUser) {
   // que se cargó antes de que existiera el registro de autoría es suyo, y
   // hasta que se sepa esos eventos esperan sin acreditarse a nadie. Después,
   // con la misma holgura que Progreso, se concilia y se sube el resumen.
+  try { pnPintarIconos(); } catch (e) {}
   try { pnResolverTitular(); } catch (e) {}
   try { pnEscucharReglas(); } catch (e) {}
   try { pnAgendarSubida(6000); } catch (e) {}
@@ -8574,6 +8634,8 @@ window.scrollTo(0, 0);
   if (p === 'admin') { try { renderChatsAdmin(); } catch (e) {} }
   if (p === 'admin') { try { iniciarListenerChatsAdmin(); pintarBadgeAdmin(); } catch (e) {} }
   if (p === 'admin') { try { pnAdmRefrescar(); } catch (e) {} }
+  // Entrar a Puntos Norte apaga el cartelito de «nuevo»: ya lo vio.
+  if (p === 'puntos') { try { pnMarcarVisto(); } catch (e) {} }
   const fabEl = document.querySelector('.fab');
   // En Administración el botón flotante tapaba las acciones de la lista de
   // rubros, y ahí no se cargan movimientos: se esconde, igual que en NortIA.
@@ -9096,6 +9158,7 @@ function renderDash() {
             try { rsPintarDash(); } catch (e) {}
             try { pnPintarDash(); } catch (e) {}
             try { pnPintarAviso(); } catch (e) {}
+            try { pnPintarIconos(); } catch (e) {}
                                                                                                           
                                                                                                             // Mini-resumen Progreso
   // Mismo cálculo que la pantalla y que la ficha del pie: un solo lugar decide
@@ -10445,15 +10508,22 @@ const PN_REGLAS_DEF = {
     rsap:   { pts: 15, tope: 45, por: 'mes',    nom: 'Apartar en la Reserva' },
     rsdes:  { pts: 25, tope: 50, por: 'mes',    nom: 'Abrir un destino de Reserva' },
     cua:    { pts: 5,  tope: 25, por: 'mes',    nom: 'Anotar en El Cuaderno' },
+    tc:     { pts: 25, tope: 25, por: 'mes',    nom: 'Importar el resumen de la tarjeta' },
     sem:    { pts: 20, tope: 20, por: 'semana', nom: 'Semana activa' },
     racha:  { pts: 50, tope: 50, por: 'mes',    nom: 'Cuatro semanas seguidas' },
-    mes:    { pts: 60, tope: 60, por: 'mes',    nom: 'Mes completo' }
+    // El premio más grande, y el más difícil. Vale lo que vale porque exige
+    // haber usado Norte entero en el mismo mes (ver mesExige).
+    mes:    { pts: 150, tope: 150, por: 'mes',  nom: 'Mes completo' }
   },
   // Pesos del Índice de Hábito. Tienen que sumar 100.
   pesos: { constancia: 35, cobertura: 25, planificacion: 20, integral: 15, cierre: 5 },
   coberturaMeta: 6,           // rubros distintos en el mes para dar cobertura plena
-  mesMinMovs: 8,              // movimientos propios para que el mes cuente como completo
-  mesMinSemanas: 2,           // semanas activas para que el mes cuente como completo
+  mesMinMovs: 12,             // movimientos propios para que el mes cuente como completo
+  mesMinSemanas: 3,           // semanas activas para que el mes cuente como completo
+  // Todo esto, además, en el MISMO mes y de la misma persona. Es la lista que
+  // convierte «mes completo» en algo difícil de verdad. Se edita desde Admin:
+  // si resulta que no lo alcanza nadie, se saca un requisito y listo.
+  mesExige: ['presu', 'rs', 'cua', 'ia', 'tc'],
   multiplicadores: { FOCO: 1, PRO: 1.25, TOP: 1.5 }
 };
 
@@ -10489,6 +10559,13 @@ function pnReglas() {
   ['vence', 'graciaVence', 'coberturaMeta', 'mesMinMovs', 'mesMinSemanas'].forEach(k => {
     if (Number(r[k]) > 0) base[k] = Number(r[k]);
   });
+  // La lista de requisitos del mes completo también se edita desde Admin. Se
+  // aceptan sólo los nombres que el motor sabe medir: una lista con un nombre
+  // inventado dejaría el mes imposible para siempre y sin ninguna pista.
+  if (Array.isArray(r.mesExige)) {
+    const validos = ['presu', 'rs', 'cua', 'ia', 'tc'];
+    base.mesExige = r.mesExige.filter(function (x) { return validos.indexOf(x) >= 0; });
+  }
   if (r.acciones) Object.keys(base.acciones).forEach(k => {
     const a = r.acciones[k];
     if (!a) return;
@@ -10656,12 +10733,26 @@ function pnEventos() {
   // opcional en el alta y `venc` es la de la factura, no la del registro.
   let data = [];
   try { data = getData() || []; } catch (e) { data = []; }
+  // La tarjeta se cuenta UNA vez por mes y por persona, no por consumo: un
+  // resumen trae cuarenta movimientos de una sola vez, y pagarlos todos haría
+  // que importar el resumen valiera más que usar Norte tres meses.
+  const tcMes = {};
   data.forEach(t => {
     if (!t || !t.id) return;
     const ts = pnTsDeId(t.id);
     const u  = dueno(t.creadoPor);
     push('mov', t.id, ts, u);
     if (t.via === 'ia') push('ia', t.id, ts, u);
+    let esTC = false;
+    try { esTC = (typeof isTCOrigen === 'function') ? isTCOrigen(t) : (t.origen === 'TARJETA'); }
+    catch (e) { esTC = (t.origen === 'TARJETA'); }
+    if (esTC && u && ts) {
+      const k = u + ':' + pnYM(ts);
+      if (!tcMes[k] || ts < tcMes[k]) tcMes[k] = ts;   // la primera del mes
+    }
+  });
+  Object.keys(tcMes).forEach(function (k) {
+    push('tc', k, tcMes[k], k.split(':')[0]);
   });
 
   // Reserva: destinos abiertos y aportes. Ninguno de los dos guardaba autor,
@@ -10734,6 +10825,19 @@ function pnEventos() {
     // llenaba el tope de la otra y una de cada dos semanas se quedaba sin nada.
     // Se vio recién dibujando la pantalla, no en las pruebas de lógica.
     const finDeSemana = l => l + 6 * 86400000;
+    // Qué módulos tocó esta persona en cada mes. Es lo que después decide si
+    // el mes está completo o sólo estuvo cerca.
+    const modulos = {};
+    mios.forEach(function (x) {
+      const ym = pnYM(x.ts);
+      if (!modulos[ym]) modulos[ym] = {};
+      if (x.k === 'presu') modulos[ym].presu = 1;
+      if (x.k === 'rsap' || x.k === 'rsdes') modulos[ym].rs = 1;
+      if (x.k === 'cua') modulos[ym].cua = 1;
+      if (x.k === 'ia')  modulos[ym].ia  = 1;
+      if (x.k === 'tc')  modulos[ym].tc  = 1;
+    });
+
     const ls = Object.keys(semanas).map(Number).sort((a, b) => a - b);
     ls.forEach(l => push('sem', u + ':' + l, finDeSemana(l), u));
     // Racha: la cuarta semana consecutiva paga el bono, y después cada cuarta.
@@ -10744,9 +10848,12 @@ function pnEventos() {
     });
     Object.keys(meses).forEach(ym => {
       const m = meses[ym];
-      if (m.movs >= R2.mesMinMovs && Object.keys(m.sem).length >= R2.mesMinSemanas) {
-        push('mes', u + ':' + ym, pnTsDeMes(ym), u);
-      }
+      if (m.movs < R2.mesMinMovs) return;
+      if (Object.keys(m.sem).length < R2.mesMinSemanas) return;
+      const hechos = modulos[ym] || {};
+      const exige = R2.mesExige || [];
+      for (let i = 0; i < exige.length; i++) if (!hechos[exige[i]]) return;
+      push('mes', u + ':' + ym, pnTsDeMes(ym), u);
     });
   });
 
@@ -11095,6 +11202,38 @@ function pnBrujula(tam, claro) {
     '</svg>';
 }
 
+// El cartelito de «nuevo» del menú. Se apaga cuando la persona entra a la
+// pantalla por primera vez, y de todas formas cuando pasa la fecha de corte:
+// un «nuevo» que sigue colgado tres meses después deja de leerse y encima
+// contagia al resto de los carteles.
+const PN_NUEVO_HASTA = Date.parse('2026-12-31T23:59:59-03:00');
+const pnVistoKey = () => `fin_pnvisto_${curEmpresa()}`;
+
+function pnPintarNuevo() {
+  const el = document.getElementById('navPuntosNuevo');
+  if (!el) return;
+  let visto = false;
+  try { visto = !!localStorage.getItem(pnVistoKey()); } catch (e) {}
+  el.style.display = (!visto && Date.now() < PN_NUEVO_HASTA) ? '' : 'none';
+}
+function pnMarcarVisto() {
+  try { localStorage.setItem(pnVistoKey(), String(Date.now())); } catch (e) {}
+  pnPintarNuevo();
+}
+
+// El símbolo en el menú y en la tarjeta del tablero. Se pinta una sola vez.
+// El del menú va sobre el azul de la barra y el del tablero sobre blanco, así
+// que cada uno pide su variante; es el mismo dibujo con otros colores.
+function pnPintarIconos() {
+  try {
+    const m = document.getElementById('navPuntosIco');
+    if (m && !m.innerHTML) m.innerHTML = pnBrujula(21, true);
+    const d = document.getElementById('dashPuntosIco');
+    if (d && !d.innerHTML) d.innerHTML = pnBrujula(21, false);
+    pnPintarNuevo();
+  } catch (e) {}
+}
+
 // ── El aviso de Mi Rumbo ─────────────────────────────────────────────────
 // Se apaga cuando la persona lo cierra o cuando leyó la explicación, y en
 // cualquier caso el 31/12/2026. La fecha dura es para que no quede un cartel
@@ -11132,28 +11271,36 @@ function pnAbrirLanzamiento() {
     '<div style="margin-bottom:17px"><div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:4px">' +
     tit + '</div><div style="font-size:13.5px;line-height:1.62;color:var(--muted)">' + txt + '</div></div>';
 
-  document.getElementById('pnLanzaIco').innerHTML = pnBrujula(46, true);
+  // Un bloque = una idea. El número al costado no es decoración: son cuatro
+  // pasos de un mismo argumento y conviene que se lean en orden.
+  const paso = (n, tit, txt) =>
+    '<div class="pn-bloque"><div class="pn-bloque-n">' + n + '</div><div>' +
+    '<div class="pn-bloque-tit">' + tit + '</div>' +
+    '<div class="pn-bloque-txt">' + txt + '</div></div></div>';
+
+  document.getElementById('pnLanzaIco').innerHTML = pnBrujula(52, true);
   document.getElementById('pnLanzaCuerpo').innerHTML =
-    bloque('No es un juego de premios',
-           'Norte no sirve de mucho si lo abrís una vez. Puntos Norte mide y premia lo único que hace que ' +
-           'estos números signifiquen algo: que vuelvas.') +
-    bloque('Dos números, y conviene no confundirlos',
-           'El <b>Índice de Hábito</b> va de 0 a 100 y mide cómo usás Norte <b>este mes</b>: sube y baja. ' +
-           'Los <b>puntos</b> se ganan y se acumulan, y duran ' + R.vence + ' días. ' +
-           'Y <b>Progreso</b> sigue igual que siempre, midiendo todo lo que lograste desde que empezaste, sin bajar nunca.') +
-    bloque('Aparecer pesa más que acumular',
-           'Una semana en la que registraste algo vale ' + R.acciones.sem.pts + ' puntos. Un movimiento vale ' +
-           R.acciones.mov.pts + ', con un tope de ' + R.acciones.mov.tope + ' por semana. ' +
-           'Cargar cincuenta movimientos un domingo vale menos que cargar tres por semana durante un mes. Es a propósito.') +
-    bloque('Son tuyos, no del hogar',
-           'Si en tu casa usan Norte dos personas, cada una junta los suyos.') +
-    bloque('Ya cuenta lo que venías haciendo',
-           'No arranca en cero: el índice y los puntos se calcularon sobre todo tu historial. ' +
-           'Lo único que no se pudo contar hacia atrás es la carga por foto y por voz, porque hasta ahora Norte ' +
-           'no guardaba <i>cómo</i> había entrado cada movimiento. Desde esta versión sí.') +
-    bloque('Todavía no se canjean, y te lo decimos ahora',
-           'Los puntos se acumulan pero el canje no está abierto, y no hay fecha prometida. ' +
-           'Preferimos que juntes unos meses y abrirlo cuando haya algo que valga la pena, antes que abrirlo vacío.');
+    paso(1, 'Norte es tan bueno como lo que tiene adentro',
+         'Te puede decir en qué se te va la plata, cuánto te sale vivir y cuánto podés apartar sin ' +
+         'quedarte corto. Pero sólo si el registro está completo. Un mes a medias da una respuesta a medias.') +
+    paso(2, 'Y lo que lo completa no es el esfuerzo: es volver',
+         'Tres movimientos por semana durante un mes arman una foto que sirve. Cincuenta un domingo, no. ' +
+         'Por eso una semana en la que apareciste vale ' + R.acciones.sem.pts + ' puntos y un movimiento vale ' +
+         R.acciones.mov.pts + '. El sistema entero está armado para premiar la vuelta, no la maratón.') +
+    paso(3, 'Tu índice es qué tan completa está la foto de este mes',
+         'Un número del 0 al 100 que junta cinco cosas: si apareciste todas las semanas, si están todos ' +
+         'los rubros, si planificaste, si usaste Norte entero y si cerraste el mes. ' +
+         'Están las cinco desglosadas en la pantalla: no hay nada que no puedas ver.') +
+    paso(4, 'Sube y baja, y está bien que lo haga',
+         'Mide el mes, no te mide a vos. Un mes flojo no borra nada: al siguiente el número vuelve a subir. ' +
+         'No es una nota sobre cómo manejás tu plata — es cuánto de tu plata está registrada.') +
+    '<div class="pn-remate">' +
+    '<b>Y mientras tanto, juntás puntos.</b> Cada cosa que hacés en Norte suma, y los puntos duran ' +
+    R.vence + ' días. El mes completo —usar Norte entero, tarjeta incluida— es el más grande de todos: ' +
+    R.acciones.mes.pts + ' puntos. ' +
+    'El canje todavía no está abierto y no hay fecha prometida: preferimos que juntes unos meses y abrirlo ' +
+    'cuando haya algo que valga la pena, antes que abrirlo vacío.' +
+    '</div>';
   ov.classList.remove('hidden');
 }
 function pnCerrarLanzamiento(irAPuntos) {
@@ -13657,7 +13804,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.25.001';
+const APP_VERSION = 'v005.26.002';
 let novEntradas = [];
 
 function novLeida(e) {
