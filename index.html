@@ -3,12 +3,13 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<!-- viewport-fit=cover: sin esto, en iOS TODAS las env(safe-area-inset-*)
-     valen cero, y como la app corre con la barra de estado translúcida se
-     dibuja desde el píxel cero de la pantalla. La reserva para el notch estaba
-     escrita desde agosto y no valía nada: la cabecera de Mi Rumbo quedaba
-     abajo de la hora en cualquier iPhone con notch. -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<!-- Sin viewport-fit=cover a propósito. Se probó agregarlo para que las
+     env(safe-area-inset-*) devolvieran algo, y el efecto fue peor: la página
+     pasa a dibujarse sobre la barra de estado en TODAS las pantallas, y el
+     botón de menú quedó abajo del reloj del teléfono, sin forma de tocarlo.
+     Si algún día se vuelve a intentar, hay que compensar TODO lo que toca un
+     borde, no sólo el tablero. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Norte — La brújula de tus finanzas</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Ccircle cx='28' cy='28' r='26' fill='%231B3A4B'/%3E%3Cpath d='M28 12 L34 28 L28 44 L22 28 Z' fill='%23FF8A5C'/%3E%3Cpath d='M28 12 L34 28 L28 28 Z' fill='%23FFB199'/%3E%3C/svg%3E">
 
@@ -1092,10 +1093,7 @@ tr:hover td { background: #fafbfc; }
 .ing-total-row td { font-weight:700; background:#f0fdf4 !important; color:var(--success); }
 
 /* QUICK-ADD FAB */
-/* Con viewport-fit=cover la página también se dibuja sobre el borde de
-   abajo, así que el botón flotante se sube por encima del indicador de inicio
-   del iPhone. Sin esto queda justo arriba de la barrita y cuesta tocarlo. */
-.fab { position:fixed; bottom:calc(28px + env(safe-area-inset-bottom, 0px)); right:28px; z-index:160; }
+.fab { position:fixed; bottom:28px; right:28px; z-index:160; }
 .fab-btn { width:52px; height:52px; border-radius:50%; background:var(--primary); color:white; border:none; font-size:26px; cursor:pointer; box-shadow:0 4px 18px rgba(37,99,235,0.45); transition:all 0.2s; display:flex; align-items:center; justify-content:center; line-height:1; }
 .fab-btn:hover { background:var(--primary-dark); transform:scale(1.06); }
 .fab-btn.open { background:#64748b; transform:rotate(45deg); }
@@ -1439,26 +1437,9 @@ tr:hover td { background: #fafbfc; }
 .tg-abbr { display: none; }
 
 /* Sidebar: que se pueda scrollear cuando no entra todo (Exportar / Importar) */
-/* La barra no scrollea como un bloque: si lo hiciera, el logo se iría hacia
-   arriba y ya no habría nada que respete el área segura del teléfono. Lo que
-   scrollea es sólo la lista de pantallas, que es la parte que crece cada vez
-   que se agrega una función. */
-.sidebar {
-  overflow: hidden; overscroll-behavior: contain; box-sizing: border-box;
-  /* El área segura del teléfono. La app corre como PWA con la barra de estado
-     translúcida, así que sin esto el logo queda abajo del notch. El .content
-     ya lo hacía desde agosto; la barra lateral nunca lo había hecho. */
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-/* En iOS el 100vh cuenta la barra de direcciones aunque esté retraída, así que
-   la barra quedaba más alta que la pantalla. El dvh mide lo que se ve de
-   verdad; el 100vh de arriba queda como respaldo para los navegadores viejos. */
-@supports (height: 100dvh) { .sidebar { height: 100dvh; } }
-.sidebar-logo { flex: 0 0 auto; }
-.sidebar-nav { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
-.sidebar-user { flex: 0 0 auto; }
-.sidebar-footer { flex: 0 0 auto; }
+.sidebar { overflow-y: auto; overscroll-behavior: contain; }
+.sidebar-nav { flex: 0 0 auto; }
+.sidebar-footer { flex-shrink: 0; }
 .sidebar::-webkit-scrollbar { width: 6px; }
 .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 3px; }
 .sidebar::-webkit-scrollbar-track { background: transparent; }
@@ -1768,13 +1749,8 @@ tr:hover td { background: #fafbfc; }
      que se repone con env(safe-area-inset-top) y se agrega un poco de aire a la
      izquierda para que las tarjetas no queden pegadas al borde. */
   .main:has(#page-dashboard.active) .topbar { display: none; }
-  /* RESPALDO, sin ninguna función: no se puede descartar. La versión anterior
-     era `max(54px, calc(16px + env(...)))` —tres funciones anidadas— y si el
-     navegador no resolvía una, descartaba la declaración entera y el tablero
-     caía a los 22px de `.content`, o sea abajo de la barra de estado. En CSS
-     no existe «resolver a medias»: o vale toda, o no vale nada. */
   .main:has(#page-dashboard.active) .content {
-    padding-top: var(--pad-tablero, 68px) !important;
+        padding-top: max(54px, calc(16px + env(safe-area-inset-top, 0px))) !important;
     padding-left: 20px !important;
   }
   /* Numeros largos ($X.XXX.XXX,XX) podian forzar el ancho de la tarjeta mas alla de
@@ -8647,6 +8623,7 @@ window.scrollTo(0, 0);
   if (p === 'admin') { try { renderChatsAdmin(); } catch (e) {} }
   if (p === 'admin') { try { iniciarListenerChatsAdmin(); pintarBadgeAdmin(); } catch (e) {} }
   if (p === 'admin') { try { pnAdmRefrescar(); } catch (e) {} }
+  if (p === 'admin') { try { encPintar(); } catch (e) {} }
   // Entrar a Puntos Norte apaga el cartelito de «nuevo»: ya lo vio.
   if (p === 'puntos') { try { pnMarcarVisto(); } catch (e) {} }
   const fabEl = document.querySelector('.fab');
@@ -11215,17 +11192,12 @@ function pnBrujula(tam, claro) {
     '</svg>';
 }
 
-// Cuánto hay que dejar arriba del tablero EN ESTE APARATO.
+// Cuánto área segura declara ESTE aparato. No cambia nada de la maqueta: es
+// sólo para poder LEERLO. Se usa desde el medidor del panel de Admin.
 //
-// Se MIDE, no se deduce. Se crea un elemento con padding-top:env(safe-area-
-// inset-top), se lee cuánto quedó y se usa ese número. Parece rebuscado y es
-// lo contrario: es lo único que no depende de que el navegador resuelva un
-// env() adentro de un calc() adentro de un max(), que es exactamente lo que
-// venía fallando en el iPhone —y cuando en CSS una de esas tres no resuelve,
-// no queda un valor aproximado: se descarta la declaración entera y el
-// tablero se iba a los 22px de `.content`, abajo de la barra de estado.
-//
-// Si esto no llega a correr, el CSS tiene su propio respaldo de 68px.
+// Existe porque el encuadre del iPhone se intentó corregir tres veces sin
+// haberlo medido nunca, y las tres salieron mal. El próximo intento sale de
+// un número leído en el teléfono, no de una hipótesis.
 function norteMedirAreaSegura() {
   try {
     const d = document.createElement('div');
@@ -11234,23 +11206,9 @@ function norteMedirAreaSegura() {
     document.body.appendChild(d);
     const arriba = parseFloat(getComputedStyle(d).paddingTop) || 0;
     document.body.removeChild(d);
-    // 64px es el piso. Cubre la barra de estado de un iPhone con notch (unos
-    // 59) incluso en el caso feo: que el aparato tenga notch pero no declare
-    // su área segura, y la medición dé cero. Antes el piso era 54 y en ese
-    // caso quedaba cinco píxeles corto. Si el teléfono declara un área mayor,
-    // manda la suya.
-    const px = Math.max(64, Math.round(arriba) + 16);
-    document.documentElement.style.setProperty('--pad-tablero', px + 'px');
-    return px;
-  } catch (e) { return 0; }
+    return Math.round(arriba);
+  } catch (e) { return -1; }
 }
-try {
-  norteMedirAreaSegura();
-  // Girar el teléfono cambia el área segura: en horizontal el notch pasa a un
-  // costado y arriba deja de haber nada que esquivar.
-  window.addEventListener('resize', norteMedirAreaSegura);
-  window.addEventListener('orientationchange', function () { setTimeout(norteMedirAreaSegura, 120); });
-} catch (e) {}
 
 // El cartelito de «nuevo» del menú. Misma regla que estrenó El Cuaderno: se
 // apaga cuando pasaron unos días Y ADEMÁS la persona entró. Entrar una vez,
@@ -11780,6 +11738,75 @@ function renderPuntos() {
   cont.innerHTML = PN_ESTILOS + avisoTitular + cabecera + desglose + saldo + comoSeGanan + recompensas;
 }
 
+// ── EL ENCUADRE DE ESTE TELÉFONO ─────────────────────────────────────────
+// Una sección propia y primera en Admin, no escondida adentro de otra.
+// Existe porque el encuadre del iPhone se intentó corregir tres veces sin
+// haberlo medido nunca en el aparato donde fallaba, y las tres salieron mal —
+// la tercera dejó el menú abajo del reloj, sin forma de tocarlo. El próximo
+// intento sale de estos números y no de una hipótesis.
+(function () {
+  function encContenedor() {
+    if (document.getElementById('encSection')) return true;
+    var page = document.querySelector('#page-admin > div');
+    if (!page) return false;
+    var wrap = document.createElement('div');
+    wrap.id = 'encWrap';
+    wrap.innerHTML = '<div class="admin-group-label">Encuadre de este teléfono</div>' +
+      '<div class="card admin-section" id="encSection" style="margin-bottom:8px;padding:22px 24px">' +
+      '<div id="encBody"></div></div>';
+    page.insertBefore(wrap, page.children[1] || null);   // primera de todas
+    return true;
+  }
+
+  window.encPintar = function () {
+    if (!encContenedor()) return;
+    var el = document.getElementById('encBody');
+    if (!el) return;
+
+    // El probe: un elemento con padding = área segura, para poder leerla.
+    var d = document.createElement('div');
+    d.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;visibility:hidden;pointer-events:none;' +
+      'padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);' +
+      'padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)';
+    document.body.appendChild(d);
+    var c = getComputedStyle(d);
+    var seg = { t: c.paddingTop, b: c.paddingBottom, l: c.paddingLeft, r: c.paddingRight };
+    document.body.removeChild(d);
+
+    var cont = document.querySelector('.content');
+    var mv = document.querySelector('meta[name=viewport]');
+    var rh = document.getElementById('rumboHeader');
+    var entiende = !!(window.CSS && CSS.supports && CSS.supports('padding-top', 'env(safe-area-inset-top)'));
+    var instalada = !!(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone);
+
+    var filas = [
+      ['Área segura ARRIBA', seg.t],
+      ['Área segura abajo', seg.b],
+      ['Área segura izquierda / derecha', seg.l + ' / ' + seg.r],
+      ['Espacio que quedó arriba del tablero', cont ? getComputedStyle(cont).paddingTop : '—'],
+      ['Dónde arranca la cabecera de Mi Rumbo', rh ? Math.round(rh.getBoundingClientRect().top) + 'px' : 'entrá primero a Mi Rumbo'],
+      ['¿El navegador entiende env()?', entiende ? 'sí' : 'NO'],
+      ['¿El viewport pide cover?', (mv && mv.content.indexOf('viewport-fit') >= 0) ? 'sí' : 'no'],
+      ['Pantalla', window.innerWidth + ' × ' + window.innerHeight],
+      ['¿Corre como app instalada?', instalada ? 'sí' : 'no, es el navegador'],
+      ['Versión', (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '—')]
+    ];
+
+    el.innerHTML =
+      '<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px">Cuánto mide la barra de estado acá</div>' +
+      '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:14px">' +
+      'Abrí esto <b>en el teléfono donde se ve mal</b> y pasame estos números. El dato que más importa ' +
+      'es el primero.</div>' +
+      '<table style="width:100%;border-collapse:collapse;font-size:13.5px">' +
+      filas.map(function (f, i) {
+        return '<tr><td style="padding:7px 0;color:' + (i === 0 ? 'var(--text)' : 'var(--muted)') +
+               ';font-weight:' + (i === 0 ? '700' : '400') + '">' + f[0] + '</td>' +
+               '<td style="padding:7px 0;text-align:right;font-weight:700;color:' +
+               (i === 0 ? 'var(--primary)' : 'var(--text)') + '">' + f[1] + '</td></tr>';
+      }).join('') + '</table>';
+  };
+})();
+
 // ── PUNTOS NORTE: lo que NortIA cuenta y lo que el superadmin edita ──────
 
 // El contexto que recibe NortIA. Los números los calcula el código; la IA sólo
@@ -11941,14 +11968,12 @@ function pnContextoIA() {
         '<button class="btn btn-secondary" onclick="pnAdmRestaurar()">Volver a los valores de fábrica</button>' +
         '<span id="pnAdmEstado" style="font-size:12.5px;color:var(--muted)"></span>' +
       '</div>' +
-      '<div id="pnAdmAreaSegura" style="margin-top:22px;border-top:1px solid var(--border);padding-top:16px"></div>' +
       '<div id="pnAdmAnalitica" style="margin-top:22px;border-top:1px solid var(--border);padding-top:16px">Cargando la analítica…</div>';
-
-    pnAdmAreaSegura();
 
     pnAdmAnalitica();
   }
 
+  // ── (el medidor se mudó a su propia sección, más abajo) ────────────────
   // ── Cuánto mide el área segura de ESTE aparato ─────────────────────────
   // Existe porque el encuadre del tablero en el iPhone se corrigió dos veces a
   // ciegas antes de que a alguien se le ocurriera medirlo. Abrir Admin en el
@@ -13974,7 +13999,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.27.004';
+const APP_VERSION = 'v005.28.002';
 let novEntradas = [];
 
 function novLeida(e) {
