@@ -1753,23 +1753,6 @@ tr:hover td { background: #fafbfc; }
         padding-top: max(54px, calc(16px + env(safe-area-inset-top, 0px))) !important;
     padding-left: 20px !important;
   }
-  /* Las mismas dos reglas, pero colgadas de una clase que pone el JavaScript.
-     No son un duplicado por descuido: son el piso.
-
-     Safari no vuelve a evaluar un `:has()` cuando lo único que cambió fue el
-     display de otro elemento — y eso es justo lo que pasa al terminar el
-     login: se esconde la pantalla de login y se dibuja el tablero sin que
-     nadie toque una clase. Las dos reglas de arriba quedaban sin aplicar y la
-     cabecera terminaba abajo del reloj del teléfono. Al tocar cualquier ítem
-     del menú, showPage() mueve clases, Safari recalcula y recién ahí entraban:
-     de ahí el «se acomoda solo después de navegar».
-
-     Una clase puesta a mano no depende de que el navegador re-evalúe nada. */
-  body.en-tablero .topbar { display: none; }
-  body.en-tablero .content {
-    padding-top: max(54px, calc(16px + env(safe-area-inset-top, 0px))) !important;
-    padding-left: 20px !important;
-  }
   /* Numeros largos ($X.XXX.XXX,XX) podian forzar el ancho de la tarjeta mas alla de
      su columna en el grid, quedando cortados contra el borde de la pantalla. */
   .cards-grid .card { min-width: 0; }
@@ -5139,10 +5122,6 @@ function obMarkDone() {
   // El asistente aparece DESPUÉS de dibujar el tablero y tapa la pantalla
   // entera. Al irse, el tablero queda como estaba y nadie lo vuelve a mirar:
   // es el momento exacto en el que se veía la cabecera pegada arriba. Se
-  // reencuadra acá, y otra vez un instante después por si el navegador
-  // todavía está acomodando la pantalla.
-  try { norteEncuadrarTablero(); } catch (e) {}
-  try { setTimeout(norteEncuadrarTablero, 200); } catch (e) {}
 }
 
 function obNext() {
@@ -8629,57 +8608,8 @@ function toggleSidebar(force) {
 // (ver el comentario de `body.en-tablero` en los estilos).
 function norteMarcarPantalla(p) {
   try { document.body.classList.toggle('en-tablero', p === 'dashboard'); } catch (e) {}
-  try { norteEncuadrarTablero(); } catch (e) {}
 }
 
-// El espacio de la barra de estado, escrito DIRECTO sobre el elemento.
-//
-// Esto no debería hacer falta: la hoja de estilos ya lo dice, dos veces. Pero
-// en el iPhone no se aplicaba al entrar desde el login —y sí al navegar a
-// cualquier otra pantalla y volver—, y cuatro intentos de arreglarlo desde el
-// CSS no alcanzaron. Un estilo en línea con !important le gana a todo: a un
-// selector que no matchee, a una media query que todavía no se evaluó, a
-// cualquier problema de re-evaluación del navegador. Es por descarte.
-//
-// PARA EL QUE LO LEA DESPUÉS: si algún día se confirma cuál era la causa real,
-// esto se puede sacar y volver a confiar en el CSS. Hasta entonces, se queda.
-const NORTE_PAD_TABLERO = 54;   // el valor que ya venía andando al navegar
-
-function norteEncuadrarTablero() {
-  try {
-    const c = document.querySelector('.content');
-    if (!c) return;
-    const angosto  = window.matchMedia('(max-width: 880px)').matches;
-    const enTablero = (typeof curPage === 'undefined') || curPage === 'dashboard';
-    if (angosto && enTablero) {
-      // El área segura que declare el aparato, si declara alguna; si no, el
-      // valor fijo. Se suma, no se reemplaza: en un teléfono que sí la declara
-      // hace falta más espacio, no menos.
-      let extra = 0;
-      try {
-        const p = document.createElement('div');
-        p.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;visibility:hidden;' +
-                          'pointer-events:none;padding-top:env(safe-area-inset-top,0px)';
-        document.body.appendChild(p);
-        extra = parseFloat(getComputedStyle(p).paddingTop) || 0;
-        document.body.removeChild(p);
-      } catch (e) {}
-      const px = Math.max(NORTE_PAD_TABLERO, Math.round(extra) + 16);
-      c.style.setProperty('padding-top', px + 'px', 'important');
-      c.style.setProperty('padding-left', '20px', 'important');
-    } else {
-      c.style.removeProperty('padding-top');
-      c.style.removeProperty('padding-left');
-    }
-  } catch (e) {}
-}
-try {
-  // Tres pasadas a propósito. En iOS el viewport recién abierto puede reportar
-  // medidas que después corrige, y una sola pasada se quedaría con la vieja.
-  window.addEventListener('resize', function () { try { norteEncuadrarTablero(); } catch (e) {} });
-  window.addEventListener('orientationchange', function () { setTimeout(norteEncuadrarTablero, 150); });
-  window.addEventListener('load', function () { setTimeout(norteEncuadrarTablero, 60); });
-} catch (e) {}
 
 function showPage(p) {
 window.scrollTo(0, 0);
@@ -9236,12 +9166,6 @@ function renderDash() {
             try { pnPintarDash(); } catch (e) {}
             try { pnPintarAviso(); } catch (e) {}
             try { pnPintarIconos(); } catch (e) {}
-            // El encuadre, escrito a mano justo después de armar la cabecera.
-            // Va acá y no sólo en showPage() porque al salir del login nadie
-            // llama a showPage(): renderDash() es el único punto por el que
-            // pasan los dos caminos.
-            try { norteEncuadrarTablero(); } catch (e) {}
-            try { setTimeout(norteEncuadrarTablero, 250); } catch (e) {}
             // Foto del encuadre en el momento en que SE DIBUJA el tablero. El
             // medidor de Admin leía estos dos valores estando parado en Admin,
             // donde `.content` vale cero por otra regla: medía cualquier cosa.
@@ -14112,7 +14036,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.30.001';
+const APP_VERSION = 'v005.31.001';
 let novEntradas = [];
 
 function novLeida(e) {
