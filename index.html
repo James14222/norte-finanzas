@@ -1768,8 +1768,13 @@ tr:hover td { background: #fafbfc; }
      que se repone con env(safe-area-inset-top) y se agrega un poco de aire a la
      izquierda para que las tarjetas no queden pegadas al borde. */
   .main:has(#page-dashboard.active) .topbar { display: none; }
+  /* RESPALDO, sin ninguna función: no se puede descartar. La versión anterior
+     era `max(54px, calc(16px + env(...)))` —tres funciones anidadas— y si el
+     navegador no resolvía una, descartaba la declaración entera y el tablero
+     caía a los 22px de `.content`, o sea abajo de la barra de estado. En CSS
+     no existe «resolver a medias»: o vale toda, o no vale nada. */
   .main:has(#page-dashboard.active) .content {
-        padding-top: max(54px, calc(16px + env(safe-area-inset-top, 0px))) !important;
+    padding-top: var(--pad-tablero, 68px) !important;
     padding-left: 20px !important;
   }
   /* Numeros largos ($X.XXX.XXX,XX) podian forzar el ancho de la tarjeta mas alla de
@@ -11210,6 +11215,43 @@ function pnBrujula(tam, claro) {
     '</svg>';
 }
 
+// Cuánto hay que dejar arriba del tablero EN ESTE APARATO.
+//
+// Se MIDE, no se deduce. Se crea un elemento con padding-top:env(safe-area-
+// inset-top), se lee cuánto quedó y se usa ese número. Parece rebuscado y es
+// lo contrario: es lo único que no depende de que el navegador resuelva un
+// env() adentro de un calc() adentro de un max(), que es exactamente lo que
+// venía fallando en el iPhone —y cuando en CSS una de esas tres no resuelve,
+// no queda un valor aproximado: se descarta la declaración entera y el
+// tablero se iba a los 22px de `.content`, abajo de la barra de estado.
+//
+// Si esto no llega a correr, el CSS tiene su propio respaldo de 68px.
+function norteMedirAreaSegura() {
+  try {
+    const d = document.createElement('div');
+    d.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;visibility:hidden;' +
+                      'pointer-events:none;padding-top:env(safe-area-inset-top,0px)';
+    document.body.appendChild(d);
+    const arriba = parseFloat(getComputedStyle(d).paddingTop) || 0;
+    document.body.removeChild(d);
+    // 64px es el piso. Cubre la barra de estado de un iPhone con notch (unos
+    // 59) incluso en el caso feo: que el aparato tenga notch pero no declare
+    // su área segura, y la medición dé cero. Antes el piso era 54 y en ese
+    // caso quedaba cinco píxeles corto. Si el teléfono declara un área mayor,
+    // manda la suya.
+    const px = Math.max(64, Math.round(arriba) + 16);
+    document.documentElement.style.setProperty('--pad-tablero', px + 'px');
+    return px;
+  } catch (e) { return 0; }
+}
+try {
+  norteMedirAreaSegura();
+  // Girar el teléfono cambia el área segura: en horizontal el notch pasa a un
+  // costado y arriba deja de haber nada que esquivar.
+  window.addEventListener('resize', norteMedirAreaSegura);
+  window.addEventListener('orientationchange', function () { setTimeout(norteMedirAreaSegura, 120); });
+} catch (e) {}
+
 // El cartelito de «nuevo» del menú. Misma regla que estrenó El Cuaderno: se
 // apaga cuando pasaron unos días Y ADEMÁS la persona entró. Entrar una vez,
 // de casualidad y por dos segundos, no es haber conocido la función — y con
@@ -11899,9 +11941,54 @@ function pnContextoIA() {
         '<button class="btn btn-secondary" onclick="pnAdmRestaurar()">Volver a los valores de fábrica</button>' +
         '<span id="pnAdmEstado" style="font-size:12.5px;color:var(--muted)"></span>' +
       '</div>' +
+      '<div id="pnAdmAreaSegura" style="margin-top:22px;border-top:1px solid var(--border);padding-top:16px"></div>' +
       '<div id="pnAdmAnalitica" style="margin-top:22px;border-top:1px solid var(--border);padding-top:16px">Cargando la analítica…</div>';
 
+    pnAdmAreaSegura();
+
     pnAdmAnalitica();
+  }
+
+  // ── Cuánto mide el área segura de ESTE aparato ─────────────────────────
+  // Existe porque el encuadre del tablero en el iPhone se corrigió dos veces a
+  // ciegas antes de que a alguien se le ocurriera medirlo. Abrir Admin en el
+  // teléfono y leer el número es más rápido y más seguro que deducirlo.
+  function pnAdmAreaSegura() {
+    const el = document.getElementById('pnAdmAreaSegura');
+    if (!el) return;
+    const d = document.createElement('div');
+    d.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;' +
+      'padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);' +
+      'padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);' +
+      'visibility:hidden;pointer-events:none';
+    document.body.appendChild(d);
+    const c = getComputedStyle(d);
+    const v = { arriba: c.paddingTop, abajo: c.paddingBottom, izq: c.paddingLeft, der: c.paddingRight };
+    document.body.removeChild(d);
+
+    const cont = document.querySelector('.content');
+    const mv = document.querySelector('meta[name=viewport]');
+    const entiende = (window.CSS && CSS.supports && CSS.supports('padding-top', 'env(safe-area-inset-top)'));
+
+    el.innerHTML =
+      '<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px">El encuadre de este aparato</div>' +
+      '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:12px">' +
+      'Abrí esto en el celular donde se vea mal y pasame estos números: con eso se ajusta con un dato ' +
+      'y no con una suposición.</div>' +
+      '<table style="width:100%;border-collapse:collapse;font-size:13px">' +
+      [['Área segura arriba', v.arriba], ['Área segura abajo', v.abajo],
+       ['Área segura izquierda', v.izq], ['Área segura derecha', v.der],
+       ['Espacio que quedó arriba del tablero', cont ? getComputedStyle(cont).paddingTop : '—'],
+       ['¿Entiende env()?', entiende ? 'sí' : 'NO'],
+       ['¿El viewport trae cover?', (mv && mv.content.indexOf('viewport-fit') >= 0) ? 'sí' : 'NO'],
+       ['Ancho de pantalla', window.innerWidth + 'px'],
+       ['Alto de pantalla', window.innerHeight + 'px'],
+       ['¿Corre como app instalada?', (window.matchMedia('(display-mode: standalone)').matches ||
+          window.navigator.standalone) ? 'sí' : 'no, es el navegador']]
+      .map(function (f) {
+        return '<tr><td style="padding:5px 0;color:var(--muted)">' + f[0] + '</td>' +
+               '<td style="padding:5px 0;text-align:right;font-weight:700;color:var(--text)">' + f[1] + '</td></tr>';
+      }).join('') + '</table>';
   }
 
   // ── Analítica (PTS-012) ────────────────────────────────────────────────
@@ -13887,7 +13974,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.27.001';
+const APP_VERSION = 'v005.27.004';
 let novEntradas = [];
 
 function novLeida(e) {
