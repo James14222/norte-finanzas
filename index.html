@@ -1753,6 +1753,23 @@ tr:hover td { background: #fafbfc; }
         padding-top: max(54px, calc(16px + env(safe-area-inset-top, 0px))) !important;
     padding-left: 20px !important;
   }
+  /* Las mismas dos reglas, pero colgadas de una clase que pone el JavaScript.
+     No son un duplicado por descuido: son el piso.
+
+     Safari no vuelve a evaluar un `:has()` cuando lo único que cambió fue el
+     display de otro elemento — y eso es justo lo que pasa al terminar el
+     login: se esconde la pantalla de login y se dibuja el tablero sin que
+     nadie toque una clase. Las dos reglas de arriba quedaban sin aplicar y la
+     cabecera terminaba abajo del reloj del teléfono. Al tocar cualquier ítem
+     del menú, showPage() mueve clases, Safari recalcula y recién ahí entraban:
+     de ahí el «se acomoda solo después de navegar».
+
+     Una clase puesta a mano no depende de que el navegador re-evalúe nada. */
+  body.en-tablero .topbar { display: none; }
+  body.en-tablero .content {
+    padding-top: max(54px, calc(16px + env(safe-area-inset-top, 0px))) !important;
+    padding-left: 20px !important;
+  }
   /* Numeros largos ($X.XXX.XXX,XX) podian forzar el ancho de la tarjeta mas alla de
      su columna en el grid, quedando cortados contra el borde de la pantalla. */
   .cards-grid .card { min-width: 0; }
@@ -5083,6 +5100,11 @@ async function bootApp(firebaseUser) {
   try { pnAgendarSubida(6000); } catch (e) {}
 
   // Renderizar app
+  // La clase del tablero va ANTES de dibujar: al salir del login nadie llama a
+  // showPage(), así que si no se pusiera acá el primer dibujo quedaría sin el
+  // espacio de la barra de estado. Es el caso que hacía que la cabecera
+  // apareciera pegada arriba sólo al entrar, y se acomodara al navegar.
+  norteMarcarPantalla('dashboard');
   curMonth = new Date().getMonth();
   curYear  = new Date().getFullYear();
   updateMonthDisplay();
@@ -8595,8 +8617,16 @@ function toggleSidebar(force) {
   bd.classList.toggle('show', open);
 }
 
+// En qué pantalla estamos, como clase del body. Existe porque el CSS que
+// reserva el espacio de la barra de estado no puede depender de `:has()`
+// (ver el comentario de `body.en-tablero` en los estilos).
+function norteMarcarPantalla(p) {
+  try { document.body.classList.toggle('en-tablero', p === 'dashboard'); } catch (e) {}
+}
+
 function showPage(p) {
 window.scrollTo(0, 0);
+  norteMarcarPantalla(p);
   document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.getElementById(`page-${p}`).classList.add('active');
@@ -9149,6 +9179,19 @@ function renderDash() {
             try { pnPintarDash(); } catch (e) {}
             try { pnPintarAviso(); } catch (e) {}
             try { pnPintarIconos(); } catch (e) {}
+            // Foto del encuadre en el momento en que SE DIBUJA el tablero. El
+            // medidor de Admin leía estos dos valores estando parado en Admin,
+            // donde `.content` vale cero por otra regla: medía cualquier cosa.
+            try {
+              const _c = document.querySelector('.content');
+              const _r = document.getElementById('rumboHeader');
+              window.__encTablero = {
+                padTop: _c ? getComputedStyle(_c).paddingTop : '—',
+                cabecera: _r ? Math.round(_r.getBoundingClientRect().top) + 'px' : '—',
+                clase: document.body.classList.contains('en-tablero') ? 'sí' : 'NO',
+                cuando: new Date().toLocaleTimeString('es-AR')
+              };
+            } catch (e) {}
                                                                                                           
                                                                                                             // Mini-resumen Progreso
   // Mismo cálculo que la pantalla y que la ficha del pie: un solo lugar decide
@@ -11773,9 +11816,10 @@ function renderPuntos() {
     var seg = { t: c.paddingTop, b: c.paddingBottom, l: c.paddingLeft, r: c.paddingRight };
     document.body.removeChild(d);
 
-    var cont = document.querySelector('.content');
+    // Estos dos se miden cuando se dibuja Mi Rumbo, no acá: parados en Admin,
+    // `.content` tiene padding cero por otra regla y daban siempre 0px.
+    var tab = window.__encTablero || null;
     var mv = document.querySelector('meta[name=viewport]');
-    var rh = document.getElementById('rumboHeader');
     var entiende = !!(window.CSS && CSS.supports && CSS.supports('padding-top', 'env(safe-area-inset-top)'));
     var instalada = !!(window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone);
 
@@ -11783,8 +11827,9 @@ function renderPuntos() {
       ['Área segura ARRIBA', seg.t],
       ['Área segura abajo', seg.b],
       ['Área segura izquierda / derecha', seg.l + ' / ' + seg.r],
-      ['Espacio que quedó arriba del tablero', cont ? getComputedStyle(cont).paddingTop : '—'],
-      ['Dónde arranca la cabecera de Mi Rumbo', rh ? Math.round(rh.getBoundingClientRect().top) + 'px' : 'entrá primero a Mi Rumbo'],
+      ['Espacio arriba del tablero', tab ? tab.padTop : 'entrá primero a Mi Rumbo'],
+      ['Dónde arranca la cabecera de Mi Rumbo', tab ? tab.cabecera : 'entrá primero a Mi Rumbo'],
+      ['¿Estaba puesta la clase del tablero?', tab ? tab.clase : '—'],
       ['¿El navegador entiende env()?', entiende ? 'sí' : 'NO'],
       ['¿El viewport pide cover?', (mv && mv.content.indexOf('viewport-fit') >= 0) ? 'sí' : 'no'],
       ['Pantalla', window.innerWidth + ' × ' + window.innerHeight],
@@ -13999,7 +14044,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.28.002';
+const APP_VERSION = 'v005.29.001';
 let novEntradas = [];
 
 function novLeida(e) {
