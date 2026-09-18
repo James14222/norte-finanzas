@@ -698,6 +698,41 @@ tr:hover td { background: #fafbfc; }
   .pn-aviso-btn { width: 100%; }
 }
 
+/* La cuenta de los puntos. Es la tarjeta que contesta «por qué tengo este
+   número», así que se distingue del resto con un borde de color en vez de
+   quedar como una tarjeta más del montón. */
+.pn-saldo {
+  border-left: 4px solid var(--primary);
+  background: linear-gradient(135deg, var(--card) 70%, rgba(255,138,92,.05));
+}
+
+/* Lo que se va a poder canjear. Durante los primeros meses es lo único que
+   sostiene la espera: si fuera una lista gris al pie de la pantalla no la
+   sostendría. Va oscuro, que es donde la marca se ve mejor. */
+.pn-premios {
+  background: linear-gradient(135deg, #0c1c2b 0%, #1a3c4e 100%);
+  border-radius: 14px; padding: 20px 22px 18px; color: #fff;
+}
+.pn-premios-cab { display: flex; align-items: center; gap: 13px; margin-bottom: 16px; }
+.pn-premios-ico { line-height: 0; flex: 0 0 auto; }
+.pn-premios-tit { font-size: 16.5px; font-weight: 800; letter-spacing: -.2px; }
+.pn-premios-sub { font-size: 12.5px; color: rgba(255,255,255,.6); margin-top: 2px; line-height: 1.4; }
+.pn-premios-grilla { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.pn-premio {
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 11px; padding: 13px 14px;
+}
+.pn-premio-candado { font-size: 15px; opacity: .55; margin-bottom: 6px; }
+.pn-premio-tit { font-size: 13.5px; font-weight: 700; color: #fff; line-height: 1.3; }
+.pn-premio-txt { font-size: 11.5px; color: rgba(255,255,255,.62); line-height: 1.45; margin-top: 3px; }
+.pn-premios-pie {
+  font-size: 12px; color: rgba(255,255,255,.55); line-height: 1.55; margin-top: 14px;
+  border-top: 1px solid rgba(255,255,255,.12); padding-top: 12px;
+}
+@media (max-width: 620px) {
+  .pn-premios-grilla { grid-template-columns: 1fr; }
+}
+
 /* La ventana de lanzamiento reusa la caja del asistente de bienvenida (.ob-*),
    igual que el tutorial del Cuaderno: misma cabecera, mismos botones. La
    persona ya vio esta caja, no hace falta estética nueva. */
@@ -11192,6 +11227,39 @@ function pnPintarDash() {
     </div>`;
 }
 
+
+// La cuenta, hecha. Agrupa el ledger por tipo de acción y devuelve de dónde
+// salió cada punto. Nadie va a sumar ciento treinta filas para entender un
+// saldo: si el número no se puede explicar en seis renglones, no se explica.
+function pnCuenta(uid) {
+  const R = pnReglas();
+  const l = pnGetLedger();
+  const i = l.u.indexOf(uid);
+  const vacio = { lineas: [], ganados: 0, vencidos: 0, saldo: 0, sinPuntos: 0 };
+  if (i < 0) return vacio;
+  const ms = R.vence * 86400000;
+  const ahora = Date.now();
+  const g = {};
+  let sinPuntos = 0;
+  l.r.forEach(function (f) {
+    if (f.i !== i) return;
+    const p = Number(f.p) || 0;
+    if (p <= 0) { sinPuntos++; return; }          // topeadas: van al resumen
+    if (!g[f.k]) g[f.k] = { k: f.k, n: 0, pts: 0, vencidos: 0 };
+    g[f.k].n++;
+    g[f.k].pts += p;
+    if (f.t + ms <= ahora) g[f.k].vencidos += p;
+  });
+  const lineas = Object.keys(g).map(function (k) {
+    const a = R.acciones[k] || {};
+    return Object.assign({ nom: a.nom || k }, g[k]);
+  }).sort(function (a, b) { return b.pts - a.pts; });
+  const ganados  = lineas.reduce(function (t, x) { return t + x.pts; }, 0);
+  const vencidos = lineas.reduce(function (t, x) { return t + x.vencidos; }, 0);
+  return { lineas: lineas, ganados: ganados, vencidos: vencidos,
+           saldo: ganados - vencidos, sinPuntos: sinPuntos };
+}
+
 // ── La pantalla ──────────────────────────────────────────────────────────
 let pnMesVisto = null;      // null = el mes en curso
 
@@ -11309,19 +11377,47 @@ function renderPuntos() {
          <b>${pnFmt(s.porVencer)} puntos vencen el ${pnFecha(s.proximo)}</b> — faltan ${pnDiasHasta(s.proximo)} días.
        </div>` : '';
 
+  // La cuenta, renglón por renglón. Es la tarjeta más importante de la
+  // pantalla: es la que contesta «¿por qué tengo este número?».
+  const C = pnCuenta(curUserId());
+  const filasCuenta = C.lineas.map(function (x) {
+    return `<tr>
+      <td style="padding:7px 0;font-size:13.5px;color:var(--text)">${x.nom}</td>
+      <td style="padding:7px 10px;font-size:12px;color:var(--muted);text-align:right;white-space:nowrap">${x.n} ${x.n === 1 ? 'vez' : 'veces'}</td>
+      <td style="padding:7px 0;font-size:14px;font-weight:800;color:var(--text);text-align:right;white-space:nowrap">+${pnFmt(x.pts)}</td>
+    </tr>`;
+  }).join('');
+
+  const notaTope = C.sinPuntos > 0
+    ? `<div style="font-size:12px;color:var(--muted);line-height:1.5;margin-top:10px">
+         Hubo <b>${pnFmt(C.sinPuntos)}</b> ${C.sinPuntos === 1 ? 'acción que llegó' : 'acciones que llegaron'}
+         después del tope de su período y no ${C.sinPuntos === 1 ? 'sumó' : 'sumaron'} puntos.
+         Los topes están para que el sistema premie el hábito y no el volumen.
+       </div>` : '';
+
   const saldo = `
-    <div class="card" style="margin-bottom:14px">
-      <div class="report-title" style="margin-bottom:12px">Tus puntos</div>
-      <div style="display:flex;gap:26px;flex-wrap:wrap">
-        <div><div style="font-size:30px;font-weight:800;color:var(--primary);line-height:1">${pnFmt(s.saldo)}</div>
-             <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:3px">DISPONIBLES</div></div>
-        <div><div style="font-size:30px;font-weight:800;color:var(--text);line-height:1">${pnFmt(s.ganados)}</div>
-             <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:3px">GANADOS EN TOTAL</div></div>
-        <div><div style="font-size:30px;font-weight:800;color:var(--muted);line-height:1">${pnFmt(s.vencidos)}</div>
-             <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:3px">VENCIDOS</div></div>
-        <div><div style="font-size:30px;font-weight:800;color:var(--text);line-height:1">${R.racha}</div>
-             <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:3px">SEMANAS SEGUIDAS</div></div>
+    <div class="card pn-saldo" style="margin-bottom:14px">
+      <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:3px">Tus puntos</div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:16px">
+        De dónde salió cada uno. La cuenta completa, sin nada abreviado.
       </div>
+      <div style="display:flex;gap:26px;flex-wrap:wrap;margin-bottom:18px">
+        <div><div style="font-size:38px;font-weight:800;color:var(--primary);line-height:1">${pnFmt(s.saldo)}</div>
+             <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:4px">DISPONIBLES</div></div>
+        <div><div style="font-size:38px;font-weight:800;color:var(--text);line-height:1">${R.racha}</div>
+             <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:4px">SEMANA${R.racha === 1 ? '' : 'S'} SEGUIDA${R.racha === 1 ? '' : 'S'}</div></div>
+      </div>
+      ${C.lineas.length ? `
+      <table style="width:100%;border-collapse:collapse;border-top:1px solid var(--border)">
+        ${filasCuenta}
+        <tr><td colspan="2" style="padding:11px 0 7px;font-size:13.5px;font-weight:700;color:var(--text);border-top:2px solid var(--border)">Ganaste en total</td>
+            <td style="padding:11px 0 7px;font-size:15px;font-weight:800;color:var(--text);text-align:right;border-top:2px solid var(--border)">${pnFmt(C.ganados)}</td></tr>
+        ${C.vencidos ? `<tr><td colspan="2" style="padding:5px 0;font-size:13.5px;color:var(--muted)">Vencieron (pasaron ${Rg.vence} días)</td>
+            <td style="padding:5px 0;font-size:14px;font-weight:700;color:var(--muted);text-align:right">−${pnFmt(C.vencidos)}</td></tr>` : ''}
+        <tr><td colspan="2" style="padding:9px 0 2px;font-size:14.5px;font-weight:800;color:var(--text);border-top:1px solid var(--border)">Te quedan</td>
+            <td style="padding:9px 0 2px;font-size:19px;font-weight:800;color:var(--primary);text-align:right;border-top:1px solid var(--border)">${pnFmt(C.saldo)}</td></tr>
+      </table>` : `<div style="font-size:13px;color:var(--muted)">Todavía no sumaste puntos.</div>`}
+      ${notaTope}
       ${vencAviso}
       <div style="margin-top:12px;font-size:12.5px;color:var(--muted);line-height:1.5">
         Un punto dura <b>${Rg.vence} días</b> desde que se gana. Los puntos son tuyos, no del hogar:
@@ -11350,13 +11446,16 @@ function renderPuntos() {
     </div>`;
 
   // ── El historial ──
-  const movs = pnMovimientosDe(curUserId(), 80);
+  // Sólo lo que sumó. Las acciones topeadas siguen guardadas en el ledger
+  // —son lo que impide acreditar dos veces la misma cosa— pero no se listan:
+  // en una cuenta real son dos de cada tres filas y tapan lo que importa. Su
+  // resumen está arriba, en la cuenta.
+  const movs = pnMovimientosDe(curUserId(), 400).filter(function (m) { return m.pts > 0; }).slice(0, 60);
   const filas = movs.length ? movs.map(m => `
     <tr style="${m.vencido ? 'opacity:.45' : ''}">
       <td style="padding:7px 0;font-size:12.5px;color:var(--muted);white-space:nowrap">${pnFecha(m.ts)}</td>
-      <td style="padding:7px 8px;font-size:13px;color:var(--text)">${m.nom}${m.tope
-        ? ' <span style="font-size:10.5px;font-weight:700;color:#92740a;background:#fde68a;border-radius:9px;padding:1px 6px">tope del período</span>' : ''}<span class="pn-angosto">${m.vencido ? 'vencido' : 'vence ' + pnFecha(m.vence)}</span></td>
-      <td style="padding:7px 0;font-size:13px;font-weight:700;text-align:right;white-space:nowrap;color:${m.pts ? 'var(--success)' : 'var(--muted)'}">${m.pts ? '+' + m.pts : '0'}</td>
+      <td style="padding:7px 8px;font-size:13px;color:var(--text)">${m.nom}<span class="pn-angosto">${m.vencido ? 'vencido' : 'vence ' + pnFecha(m.vence)}</span></td>
+      <td style="padding:7px 0;font-size:13px;font-weight:700;text-align:right;white-space:nowrap;color:var(--success)">+${m.pts}</td>
       <td class="pn-ancho" style="padding:7px 0 7px 10px;font-size:11.5px;color:var(--muted);text-align:right;white-space:nowrap">${m.vencido ? 'vencido' : 'vence ' + pnFecha(m.vence)}</td>
     </tr>`).join('')
     : `<tr><td colspan="4" style="padding:16px 0;font-size:13px;color:var(--muted)">Todavía no hay movimientos de puntos.</td></tr>`;
@@ -11365,8 +11464,7 @@ function renderPuntos() {
     <div class="card" style="margin-bottom:14px">
       <div class="report-title" style="margin-bottom:4px">Historial</div>
       <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:8px">
-        Todo lo que sumó y lo que no, con el motivo. Las filas en cero son acciones que llegaron
-        después del tope del período: se registran igual para que siempre se pueda explicar un saldo.
+        Lo último que sumó, de lo más reciente para atrás.
       </div>
       <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">${filas}</table></div>
     </div>`;
@@ -11374,22 +11472,37 @@ function renderPuntos() {
   // ── Lo que viene, con candado ──
   // Se muestra qué va a haber y no se promete cuándo. Una pantalla vacía durante
   // tres meses no sostiene nada, y una fecha inventada se paga más caro.
+  // Lo que viene. Va destacado a propósito: durante los primeros meses es lo
+  // único que sostiene la espera, y una lista gris al pie de la pantalla no
+  // sostiene nada. Lo que NO se hace es poner una fecha: no la hay, y una
+  // fecha inventada se paga mucho más cara que una espera sin fecha.
+  const PN_PREMIOS = [
+    ['Un mes de Norte PRO', 'Sin tocar tu plan: se te extiende un mes.'],
+    ['Cupo extra de foto y voz', 'Más cargas con IA durante un mes.'],
+    ['Acceso anticipado', 'Lo que se esté por lanzar, antes que el resto.']
+  ];
   const recompensas = `
-    <div class="card">
-      <div class="report-title" style="margin-bottom:4px">🔒 Todavía no se canjean</div>
-      <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:12px">
-        Los puntos ya se acumulan, pero el canje no está abierto. Preferimos que juntes durante
-        los primeros meses y abrirlo cuando haya algo que valga la pena, antes que abrirlo vacío.
-        Cuando esté, estos son los primeros:
+    <div class="pn-premios">
+      <div class="pn-premios-cab">
+        <div class="pn-premios-ico">${pnBrujula(40, true)}</div>
+        <div>
+          <div class="pn-premios-tit">En qué se van a poder canjear</div>
+          <div class="pn-premios-sub">Seguí juntando. Todavía no está abierto el canje.</div>
+        </div>
       </div>
-      ${[['Un mes de Norte PRO', 'Sin tocar tu plan actual: se extiende un mes.'],
-         ['Cupo extra de carga por foto y voz', 'Más cargas con IA durante un mes.'],
-         ['Acceso anticipado', 'Lo que se esté por lanzar, antes que el resto.']]
-        .map(([t, d]) => `<div style="display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--border)">
-          <span style="font-size:15px;line-height:1.3;opacity:.4">🔒</span>
-          <div><div style="font-size:13.5px;font-weight:700;color:var(--text)">${t}</div>
-               <div style="font-size:12px;color:var(--muted);line-height:1.45">${d}</div></div>
-        </div>`).join('')}
+      <div class="pn-premios-grilla">
+        ${PN_PREMIOS.map(function (x) {
+          return `<div class="pn-premio">
+            <div class="pn-premio-candado">🔒</div>
+            <div class="pn-premio-tit">${x[0]}</div>
+            <div class="pn-premio-txt">${x[1]}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="pn-premios-pie">
+        No hay fecha prometida. Preferimos que juntes unos meses y abrirlo cuando haya algo que
+        valga la pena, antes que abrirlo vacío. Cuando se abra, te vamos a avisar acá.
+      </div>
     </div>`;
 
   cont.innerHTML = PN_ESTILOS + avisoTitular + cabecera + desglose + saldo + comoSeGanan + historial + recompensas;
@@ -13544,7 +13657,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.24.003';
+const APP_VERSION = 'v005.25.001';
 let novEntradas = [];
 
 function novLeida(e) {
