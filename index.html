@@ -5083,10 +5083,10 @@ async function bootApp(firebaseUser) {
   try { pnAgendarSubida(6000); } catch (e) {}
 
   // Renderizar app
-  // La clase del tablero va ANTES de dibujar: al salir del login nadie llama a
-  // showPage(), así que si no se pusiera acá el primer dibujo quedaría sin el
-  // espacio de la barra de estado. Es el caso que hacía que la cabecera
-  // apareciera pegada arriba sólo al entrar, y se acomodara al navegar.
+  // La clase queda como marca de «en qué pantalla estamos», por si alguna regla
+  // la necesita. OJO: ya NO reserva el espacio de la barra de estado — eso lo
+  // hace la regla con :has() de siempre, y la cabecera pegada arriba no era un
+  // problema de espacio sino de scroll (ver norteAlTope).
   norteMarcarPantalla('dashboard');
   curMonth = new Date().getMonth();
   curYear  = new Date().getFullYear();
@@ -5119,9 +5119,16 @@ function obMarkDone() {
   const sess = getSession();
   if (sess) localStorage.setItem('fin_onboarding_done_' + sess.userId, '1');
   document.getElementById('onboardingOverlay').classList.add('hidden');
-  // El asistente aparece DESPUÉS de dibujar el tablero y tapa la pantalla
-  // entera. Al irse, el tablero queda como estaba y nadie lo vuelve a mirar:
-  // es el momento exacto en el que se veía la cabecera pegada arriba. Se
+  // El asistente pide el nombre del hogar en un campo de texto. Al tocarlo,
+  // iOS sube la página para dejarlo arriba del teclado — y cuando el asistente
+  // se cierra, la página queda ahí. El espacio de la barra de estado sigue
+  // reservado, pero queda arriba del borde visible y la cabecera oscura de Mi
+  // Rumbo aparece pegada al reloj. Navegar a cualquier otra pantalla lo
+  // arreglaba porque showPage() empieza con este mismo scrollTo.
+  //
+  // Tres pasadas: la animación con la que iOS baja el teclado termina después
+  // de que el modal ya se cerró y puede mover la página una vez más.
+  norteAlTope();
 }
 
 function obNext() {
@@ -8610,6 +8617,15 @@ function norteMarcarPantalla(p) {
   try { document.body.classList.toggle('en-tablero', p === 'dashboard'); } catch (e) {}
 }
 
+// Llevar la página al tope. El que scrollea es el documento: `.content` no
+// tiene overflow propio. Si la página quedó corrida —el teclado de iOS la sube
+// cuando se toca un campo— el espacio que reserva `.content` para la barra de
+// estado queda fuera de la vista y la cabecera aparece pegada arriba.
+function norteAlTope() {
+  var ir = function () { try { window.scrollTo(0, 0); } catch (e) {} };
+  ir(); setTimeout(ir, 100); setTimeout(ir, 400);
+}
+
 
 function showPage(p) {
 window.scrollTo(0, 0);
@@ -9166,6 +9182,10 @@ function renderDash() {
             try { pnPintarDash(); } catch (e) {}
             try { pnPintarAviso(); } catch (e) {}
             try { pnPintarIconos(); } catch (e) {}
+            // El otro camino que no pasa por showPage(): al salir del login se
+            // llama a renderDash() directo. Sin esto, cualquier scroll que haya
+            // quedado de antes se queda.
+            try { norteAlTope(); } catch (e) {}
             // Foto del encuadre en el momento en que SE DIBUJA el tablero. El
             // medidor de Admin leía estos dos valores estando parado en Admin,
             // donde `.content` vale cero por otra regla: medía cualquier cosa.
@@ -14036,7 +14056,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.31.001';
+const APP_VERSION = 'v005.32.001';
 let novEntradas = [];
 
 function novLeida(e) {
