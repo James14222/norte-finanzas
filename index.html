@@ -691,15 +691,6 @@ tr:hover td { background: #fafbfc; }
   box-shadow: 0 2px 10px rgba(0,0,0,.22);
 }
 .pn-aviso-btn:hover { opacity: .88; }
-/* La cruz cae siempre sobre el arte, en el escritorio y en el celular: va
-   blanca con sombra, que es lo único que se lee sobre una foto oscura. */
-.pn-aviso-x {
-  position: absolute; top: 5px; right: 8px; background: none; border: none;
-  color: #fff; font-size: 18px; line-height: 1; cursor: pointer;
-  padding: 3px 7px; border-radius: 6px; opacity: .8;
-  text-shadow: 0 1px 4px rgba(0,0,0,.7);
-}
-.pn-aviso-x:hover { opacity: 1; background: rgba(255,255,255,.18); }
 @media (max-width: 620px) {
   /* En el celular el arte no puede ir al costado: se comería el ancho del
      texto. Pasa a ser una banda arriba, desvanecida hacia abajo, y la tarjeta
@@ -730,6 +721,9 @@ tr:hover td { background: #fafbfc; }
 .pn-lanza-baja {
   font-size: 17px; color: rgba(255,255,255,.78); line-height: 1.4; margin-top: 12px;
 }
+/* La segunda frase es la idea que sostiene todo el programa: va blanca y en
+   negrita para que se despegue de la primera, que es la que la prepara. */
+.pn-lanza-baja b { color: #fff; font-weight: 700; }
 /* Sin numeritos al costado: numeraban un argumento y hacian que el cartel se
    leyera como un instructivo. Ahora cada bloque es un beneficio suelto, y lo
    que lo separa del anterior es una linea fina y aire. */
@@ -2398,7 +2392,8 @@ tr:hover td { background: #fafbfc; }
       <!-- Alertas inteligentes -->
       <div class="alertas-wrap" id="alertasWrap"></div>
 
-      <!-- Lanzamiento de Puntos Norte. Se apaga solo (ver pnPintarAviso). -->
+      <!-- Lanzamiento de Puntos Norte. Queda fijo; se apaga desde las reglas
+           con `aviso: false` (ver pnPintarAviso). -->
       <div class="pn-aviso" id="pnAviso" style="display:none">
         <div class="pn-aviso-arte" aria-hidden="true"></div>
         <div class="pn-aviso-ico" id="pnAvisoIco"></div>
@@ -2407,7 +2402,6 @@ tr:hover td { background: #fafbfc; }
           <div class="pn-aviso-sub">Cada vez que usás Norte sumás puntos — y ya contamos lo que venías haciendo.</div>
         </div>
         <button class="pn-aviso-btn" onclick="pnAbrirLanzamiento()">Cómo funciona</button>
-        <button class="pn-aviso-x" onclick="pnCerrarAviso()" aria-label="Ocultar este aviso" title="Ocultar">&times;</button>
       </div>
 
       <div class="dash-grid">
@@ -2465,7 +2459,7 @@ tr:hover td { background: #fafbfc; }
           <div class="pn-lanza-ico" id="pnLanzaIco"></div>
           <div class="pn-lanza-rotulo">Nuevo en Norte</div>
           <div class="pn-lanza-tit">Hábito Norte</div>
-          <div class="pn-lanza-baja">Controlar la plata no se gana<br>en un mes heroico. Se gana volviendo.</div>
+          <div class="pn-lanza-baja">Tener el control de tu plata no se logra en un mes heroico.<br><b>Se logra volviendo.</b></div>
         </div>
         <div class="ob-body">
           <div id="pnLanzaCuerpo"></div>
@@ -10562,6 +10556,7 @@ function maxStreak(balances) {
 // subir un archivo nuevo. La economía de puntos no se acierta a la primera:
 // si cada ajuste pide un deploy, en la práctica no se ajusta.
 const PN_REGLAS_DEF = {
+  aviso: true,                // el cartel de Mi Rumbo; se apaga con `aviso:false` desde Admin
   vence: 180,                 // días que dura un punto desde que se acredita
   graciaVence: 30,            // se avisa cuando faltan menos de estos días
   acciones: {
@@ -10619,6 +10614,10 @@ function pnReglas() {
   const base = JSON.parse(JSON.stringify(PN_REGLAS_DEF));
   const r = _pnReglasRemotas;
   if (!r || typeof r !== 'object') return base;
+  // El interruptor del aviso de Mi Rumbo. Sólo el `false` explícito apaga: un
+  // campo ausente, vacío o mal escrito lo deja prendido, que es el lado seguro
+  // para equivocarse.
+  if (r.aviso === false) base.aviso = false;
   ['vence', 'graciaVence', 'coberturaMeta', 'mesMinMovs', 'mesMinSemanas'].forEach(k => {
     if (Number(r[k]) > 0) base[k] = Number(r[k]);
   });
@@ -11328,28 +11327,25 @@ function pnPintarIconos() {
 }
 
 // ── El aviso de Mi Rumbo ─────────────────────────────────────────────────
-// Se apaga cuando la persona lo cierra o cuando leyó la explicación, y en
-// cualquier caso el 31/12/2026. La fecha dura es para que no quede un cartel
-// de lanzamiento colgado meses después de haber lanzado, que es exactamente
-// lo que hace que la gente deje de mirar los carteles.
-const PN_AVISO_HASTA = Date.parse('2026-12-31T23:59:59-03:00');
-const pnAvisoKey = () => `fin_pnaviso_${curEmpresa()}`;
-
-function pnAvisoYaVisto() {
-  try { return !!localStorage.getItem(pnAvisoKey()); } catch (e) { return false; }
-}
+// QUEDA FIJO. Antes se apagaba por tres caminos —la X, haber leído la
+// explicación, y una fecha dura al 31/12/2026— y los tres se fueron a pedido:
+// tiene que seguir estando aunque la persona ya lo haya consultado.
+//
+// El único interruptor está en las reglas que ya se editan desde Admin: poner
+// `aviso: false` en norteSync/puntosReglas lo apaga para todos, sin tocar el
+// código ni publicar una versión nueva. Cualquier otro valor —o ninguno— lo
+// deja prendido.
+//
+// SI ALGÚN DÍA MOLESTA: es ese campo, no este archivo.
 function pnPintarAviso() {
   const el = document.getElementById('pnAviso');
   if (!el) return;
-  const mostrar = !pnAvisoYaVisto() && Date.now() < PN_AVISO_HASTA;
+  let mostrar = true;
+  try { mostrar = pnReglas().aviso !== false; } catch (e) {}
   el.style.display = mostrar ? '' : 'none';
   if (!mostrar) return;
   const ico = document.getElementById('pnAvisoIco');
   if (ico && !ico.innerHTML) ico.innerHTML = pnBrujula(42, false);
-}
-function pnCerrarAviso() {
-  try { localStorage.setItem(pnAvisoKey(), String(Date.now())); } catch (e) {}
-  pnPintarAviso();
 }
 
 // ── La ventana de lanzamiento ────────────────────────────────────────────
@@ -11360,10 +11356,6 @@ function pnAbrirLanzamiento() {
   const ov = document.getElementById('pnLanzaOverlay');
   if (!ov) return;
   const R = pnReglas();
-  const bloque = (tit, txt) =>
-    '<div style="margin-bottom:17px"><div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:4px">' +
-    tit + '</div><div style="font-size:13.5px;line-height:1.62;color:var(--muted)">' + txt + '</div></div>';
-
   // Un bloque = un beneficio. El titulo dice qué gana la persona; el texto de
   // abajo es una sola frase que lo sostiene. Nada más: es una pieza de venta.
   const paso = (tit, txt) =>
@@ -11373,9 +11365,11 @@ function pnAbrirLanzamiento() {
 
   document.getElementById('pnLanzaIco').innerHTML = pnBrujula(52, true);
   document.getElementById('pnLanzaCuerpo').innerHTML =
-    paso('Sabé en qué se te va la plata',
-         'Cuánto te sale vivir. Cuánto podés apartar sin quedarte corto. ' +
-         'Norte te lo dice — cuando el mes está completo.') +
+    paso('Ahora Norte te premia por usarlo',
+         'Queremos que armes el hábito de tener tu plata bajo control — y que te lleves algo ' +
+         'por hacerlo. Para eso creamos Puntos Norte: usás Norte, sumás puntos, que muy pronto ' +
+         'se podrán canjear por beneficios. No sólo te ayudamos a ordenar tus finanzas. ' +
+         'Además tenés un incentivo extra.') +
     paso('Dos minutos por semana alcanzan',
          'No hace falta un mes heroico. Hace falta volver. ' +
          'Una semana en la que apareciste vale ' + R.acciones.sem.pts + ' puntos; un movimiento suelto, ' +
@@ -11388,15 +11382,14 @@ function pnAbrirLanzamiento() {
     '<b>Y todo lo que hacés suma puntos.</b>' +
     'El mes completo es el premio grande: ' + R.acciones.mes.pts + ' puntos de una. ' +
     'Te duran ' + R.vence + ' días.' +
-    '<div class="pn-remate-chica">El canje todavía no está abierto y no prometemos fecha. ' +
-    'Preferimos abrirlo cuando haya algo que valga la pena, y no antes.</div>' +
+    '<div class="pn-remate-chica">El canje todavía no está abierto: lo vamos a abrir ' +
+    'cuando haya algo que valga la pena.</div>' +
     '</div>';
   ov.classList.remove('hidden');
 }
 function pnCerrarLanzamiento(irAPuntos) {
   const ov = document.getElementById('pnLanzaOverlay');
   if (ov) ov.classList.add('hidden');
-  pnCerrarAviso();                       // lo leyó: el aviso ya cumplió
   if (irAPuntos) showPage('puntos');
 }
 
@@ -14074,7 +14067,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.33.003';
+const APP_VERSION = 'v005.34.003';
 let novEntradas = [];
 
 function novLeida(e) {
