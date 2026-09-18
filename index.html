@@ -668,7 +668,10 @@ tr:hover td { background: #fafbfc; }
    un borde duro entre la foto y la tarjeta; sin ella queda un recorte pegado. */
 .pn-aviso-arte {
   position: absolute; top: 0; right: 0; bottom: 0; width: 44%;
-  background-image: url('assets/puntos/lanzamiento.jpg');
+  /* En la raiz, no en assets/: el subidor web de GitHub deja los archivos
+     donde uno este parado y no respeta la carpeta de origen. `cuaderno-fondo`
+     ya vive asi. */
+  background-image: url('lanzamiento.jpg');
   background-size: cover; background-position: 42% center;
   -webkit-mask-image: linear-gradient(to right, transparent, #000 62%);
           mask-image: linear-gradient(to right, transparent, #000 62%);
@@ -14056,7 +14059,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.32.001';
+const APP_VERSION = 'v005.32.002';
 let novEntradas = [];
 
 function novLeida(e) {
