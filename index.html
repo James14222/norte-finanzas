@@ -632,6 +632,101 @@ tr:hover td { background: #fafbfc; }
 /* El tutorial reusa la caja del asistente de bienvenida (.ob-*): misma
    cabecera, mismos puntitos, mismos botones. No hace falta estética nueva,
    la persona ya vio esta caja el primer día. */
+/* El aviso de Puntos Norte en Mi Rumbo. Va debajo de las alertas y arriba de
+   los gráficos: se ve, pero no tapa ningún número del mes.
+
+   Lleva el arte de la campaña de fondo. La imagen NO está incrustada en este
+   archivo: va como asset, igual que las de NortIA y las de los bancos. Un
+   index.html que se sube a mano y ya pesa más de un mega no es lugar para
+   meter una foto. Y si el asset todavía no está subido, esto se ve igual sin
+   fondo — un background de CSS que no carga no rompe nada ni deja un ícono
+   roto en el medio del tablero. */
+.pn-aviso {
+  display: flex; align-items: center; gap: 14px; position: relative;
+  background: linear-gradient(135deg, rgba(27,58,75,.05), rgba(255,138,92,.07));
+  border: 1px solid rgba(27,58,75,.14); border-radius: 13px;
+  padding: 15px 16px; margin-bottom: 18px; overflow: hidden; min-height: 86px;
+}
+/* El arte está posicionado y por eso pinta ENCIMA de todo lo que está en flujo
+   normal: sin esto, el botón queda tapado por la foto y no se puede tocar.
+   Pasó exactamente eso y se vio recién en la captura, no en el HTML. */
+.pn-aviso > *:not(.pn-aviso-arte) { position: relative; z-index: 1; }
+/* El arte, desvanecido hacia el texto. La máscara es lo que hace que no haya
+   un borde duro entre la foto y la tarjeta; sin ella queda un recorte pegado. */
+.pn-aviso-arte {
+  position: absolute; top: 0; right: 0; bottom: 0; width: 44%;
+  background-image: url('assets/puntos/lanzamiento.jpg');
+  background-size: cover; background-position: 42% center;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 62%);
+          mask-image: linear-gradient(to right, transparent, #000 62%);
+  pointer-events: none;
+}
+.pn-aviso-ico { flex: 0 0 auto; line-height: 0; }
+.pn-aviso-txt { flex: 1; min-width: 0; }
+.pn-aviso-tit { font-size: 14.5px; font-weight: 800; color: var(--text); letter-spacing: -.2px; }
+.pn-aviso-sub { font-size: 12.5px; color: var(--muted); line-height: 1.45; margin-top: 2px; }
+/* Naranja y no azul: el botón queda sobre la parte oscura del arte, y el azul
+   de la marca ahí desaparece. Además la tarjeta dejó de ser discreta cuando se
+   le puso la foto, así que el llamado a la acción también deja de serlo. */
+.pn-aviso-btn {
+  flex: 0 0 auto; background: var(--primary); color: #fff; border: none;
+  border-radius: 9px; padding: 10px 18px; font-size: 13.5px; font-weight: 700;
+  cursor: pointer; transition: opacity .2s;
+  box-shadow: 0 2px 10px rgba(0,0,0,.22);
+}
+.pn-aviso-btn:hover { opacity: .88; }
+/* La cruz cae siempre sobre el arte, en el escritorio y en el celular: va
+   blanca con sombra, que es lo único que se lee sobre una foto oscura. */
+.pn-aviso-x {
+  position: absolute; top: 5px; right: 8px; background: none; border: none;
+  color: #fff; font-size: 18px; line-height: 1; cursor: pointer;
+  padding: 3px 7px; border-radius: 6px; opacity: .8;
+  text-shadow: 0 1px 4px rgba(0,0,0,.7);
+}
+.pn-aviso-x:hover { opacity: 1; background: rgba(255,255,255,.18); }
+@media (max-width: 620px) {
+  /* En el celular el arte no puede ir al costado: se comería el ancho del
+     texto. Pasa a ser una banda arriba, desvanecida hacia abajo, y la tarjeta
+     se corre para dejarle el lugar. */
+  .pn-aviso { flex-wrap: wrap; padding: 116px 30px 14px 16px; }
+  .pn-aviso-arte {
+    top: 0; right: 0; left: 0; bottom: auto; width: auto; height: 104px;
+    background-position: center 42%;
+    -webkit-mask-image: linear-gradient(to bottom, #000 52%, transparent);
+            mask-image: linear-gradient(to bottom, #000 52%, transparent);
+  }
+  .pn-aviso-btn { width: 100%; }
+}
+
+/* La ventana de lanzamiento reusa la caja del asistente de bienvenida (.ob-*),
+   igual que el tutorial del Cuaderno: misma cabecera, mismos botones. La
+   persona ya vio esta caja, no hace falta estética nueva. */
+#pnLanzaOverlay {
+  position: fixed; inset: 0; z-index: 3000;
+  background: rgba(8,18,30,.88);
+  backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+#pnLanzaOverlay.hidden { display: none; }
+/* La explicación es larga y en un celular no entra. La caja se limita al alto
+   de la pantalla, el CUERPO scrollea y los botones quedan clavados al pie.
+   El `min-height:0` no es decorativo: sin él, un hijo de un contenedor flex se
+   niega a achicarse por debajo de su contenido, el cuerpo no scrollea y los
+   botones terminan abajo de todo, fuera de la pantalla. Pasó exactamente eso
+   y lo agarró la prueba que mide dónde cae el botón. */
+#pnLanzaOverlay .ob-card   { max-height: 88vh; display: flex; flex-direction: column; }
+#pnLanzaOverlay .ob-header { flex: 0 0 auto; }
+#pnLanzaOverlay .ob-body   { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-bottom: 20px; }
+.pn-lanza-pie {
+  flex: 0 0 auto; border-top: 1px solid var(--border);
+  padding: 14px 36px 18px; background: var(--card);
+}
+.pn-lanza-pie .ob-actions { margin-top: 0; }
+@media (max-width: 620px) {
+  #pnLanzaOverlay .ob-body { padding-left: 22px; padding-right: 22px; }
+  .pn-lanza-pie { padding-left: 22px; padding-right: 22px; }
+}
+
 #cuTutoOverlay {
   position: fixed; inset: 0; z-index: 3000;
   background: rgba(8,18,30,.88);
@@ -2113,6 +2208,7 @@ tr:hover td { background: #fafbfc; }
     <div class="nav-item" onclick="showPage('reserva')"><span class="ico">⚓</span> Reserva</div>
     <div class="nav-item" onclick="showPage('analisis')"><span class="ico">🔎</span> Análisis</div>
     <div class="nav-item" onclick="showPage('reportes')"><span class="ico">📈</span> Reportes</div>
+    <div class="nav-item" onclick="showPage('puntos')"><span class="ico">🎖️</span> Puntos Norte</div>
     <div class="nav-item" onclick="showPage('cuaderno')"><span class="ico">📒</span> El Cuaderno<span class="badge-nuevo" id="navCuNuevo" style="display:none">nuevo</span></div>
     <div class="nav-item disabled nortia-item" id="navNortia"><span class="nortia-nav-icon" style="display:inline-block;background-image:var(--nortia-icon-url);background-size:72%;background-repeat:no-repeat;background-position:center;background-color:#fff;border-radius:6px;"></span> <strong>NortIA</strong> <span class="badge-soon" id="navNortiaBadge">Próximamente</span></div>
         <div class="nav-item gps-nav-item" id="navTuGps" onclick="showPage('tugps')"><span class="ico">🧭</span> Novedades<span id="gpsNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
@@ -2199,6 +2295,18 @@ tr:hover td { background: #fafbfc; }
       <!-- Alertas inteligentes -->
       <div class="alertas-wrap" id="alertasWrap"></div>
 
+      <!-- Lanzamiento de Puntos Norte. Se apaga solo (ver pnPintarAviso). -->
+      <div class="pn-aviso" id="pnAviso" style="display:none">
+        <div class="pn-aviso-arte" aria-hidden="true"></div>
+        <div class="pn-aviso-ico" id="pnAvisoIco"></div>
+        <div class="pn-aviso-txt">
+          <div class="pn-aviso-tit">Puntos Norte ya está andando</div>
+          <div class="pn-aviso-sub">Cada vez que usás Norte sumás puntos — y ya contamos lo que venías haciendo.</div>
+        </div>
+        <button class="pn-aviso-btn" onclick="pnAbrirLanzamiento()">Cómo funciona</button>
+        <button class="pn-aviso-x" onclick="pnCerrarAviso()" aria-label="Ocultar este aviso" title="Ocultar">&times;</button>
+      </div>
+
       <div class="dash-grid">
         <div class="card">
           <div class="report-title">Gastos por rubro este mes</div>
@@ -2234,10 +2342,39 @@ tr:hover td { background: #fafbfc; }
                                                           <span style="font-size:12px;color:var(--primary);font-weight:600">Ver niveles y logros →</span>
                                                                   </div>
                                                                           <div id="d-progreso"></div>
+        </div>
+        <div class="card" style="cursor:pointer;margin-top:18px" onclick="showPage('puntos')">
+          <div class="report-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <span>🎖️ Puntos Norte</span>
+            <span style="font-size:12px;color:var(--primary);font-weight:600">Ver tu índice y tus puntos →</span>
+          </div>
+          <div id="d-puntos"></div>
                                                                                 </div>
     </div>
 
     <!-- TRANSACCIONES -->
+    <!-- La explicación de lanzamiento de Puntos Norte. Vive fuera de las
+         pantallas a propósito: un elemento fijo adentro de un .page que está
+         en display:none no se vería. -->
+    <div id="pnLanzaOverlay" class="hidden">
+      <div class="ob-card">
+        <div class="ob-header">
+          <div class="ob-step-ico" id="pnLanzaIco" style="line-height:0;margin-bottom:12px"></div>
+          <div class="ob-step-title">Puntos Norte</div>
+          <div class="ob-step-sub">Dos números nuevos en Norte. Esto es lo que son, y lo que todavía no son.</div>
+        </div>
+        <div class="ob-body">
+          <div id="pnLanzaCuerpo"></div>
+        </div>
+        <div class="pn-lanza-pie">
+          <div class="ob-actions">
+            <button class="ob-btn-skip" onclick="pnCerrarLanzamiento(false)">Después</button>
+            <button class="ob-btn-next" onclick="pnCerrarLanzamiento(true)">Ver mis puntos</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="page-transacciones" class="page">
       <div class="table-wrap">
         <div class="table-head">
@@ -2377,6 +2514,10 @@ tr:hover td { background: #fafbfc; }
         <canvas id="progresoEvolChart" height="80"></canvas>
         <div id="progresoEvolEmpty" class="empty" style="display:none"><div class="ei">📭</div><p>Aún no hay historial suficiente</p></div>
       </div>
+    </div>
+
+    <div id="page-puntos" class="page">
+      <div id="puntosBody"></div>
     </div>
 
     <div id="page-reportes" class="page">
@@ -4829,12 +4970,17 @@ async function bootApp(firebaseUser) {
   // Mostrar Admin nav si corresponde
   if (isAdmin()) document.getElementById('navAdmin').style.display = 'flex';
 
-  // NortIA en beta cerrada: solo para cuentas de prueba, mientras se valida antes del lanzamiento general
+  // NortIA ya no esta en beta cerrada: esta habilitada para todos y forma parte
+  // de lo que se paga en cada plan. El cartel de «Beta» que quedaba en el menu
+  // era de la epoca en que se prendia para unas pocas cuentas, y le bajaba la
+  // expectativa a una funcion terminada. Se saca el texto y se esconde el
+  // recuadro; el elemento queda, por si algun dia hay que rotular otra cosa ahi.
   if (nortiaBetaHabilitado()) {
     const navN = document.getElementById('navNortia');
     navN.classList.remove('disabled');
     navN.onclick = () => showPage('consultas');
-    document.getElementById('navNortiaBadge').textContent = 'Beta';
+    const badgeN = document.getElementById('navNortiaBadge');
+    if (badgeN) { badgeN.textContent = ''; badgeN.style.display = 'none'; }
   }
 
   // Inicializar sync con la empresa del usuario
@@ -4843,6 +4989,14 @@ async function bootApp(firebaseUser) {
   // Y el resumen de uso, con holgura: primero que baje lo que haya en la nube,
   // si no calcularíamos el nivel sobre datos a medias en un aparato nuevo.
   try { progAgendarSubida(5000); } catch (e) {}
+
+  // Puntos Norte. Primero hay que saber quién es el titular del hogar: todo lo
+  // que se cargó antes de que existiera el registro de autoría es suyo, y
+  // hasta que se sepa esos eventos esperan sin acreditarse a nadie. Después,
+  // con la misma holgura que Progreso, se concilia y se sube el resumen.
+  try { pnResolverTitular(); } catch (e) {}
+  try { pnEscucharReglas(); } catch (e) {}
+  try { pnAgendarSubida(6000); } catch (e) {}
 
   // Renderizar app
   curMonth = new Date().getMonth();
@@ -5582,6 +5736,8 @@ const saveData = d => {
   try { pushNow(); } catch (e) {}
   // El progreso sale de estos mismos datos: si cambiaron, hay que recalcularlo.
   try { progAgendarSubida(); } catch (e) {}
+  // Y los puntos también. Son dos cálculos distintos sobre los mismos datos.
+  try { pnAgendarSubida(); } catch (e) {}
 };
 // ── BASE MAESTRA DE RUBROS ───────────────────────────────────────
 // Antes había dos listas: 26 rubros fijos escritos en el código y una lista de
@@ -6244,7 +6400,10 @@ const CALC_TX = ['txImpPesos', 'txImpUSD', 'txPagado'];
 
 // ── PRESUPUESTO / META DE AHORRO ────────────────────────────
 const getBudgets  = ()  => JSON.parse(localStorage.getItem(`fin_budgets_${curEmpresa()}`) || '{}');
-const saveBudgets = b   => localStorage.setItem(`fin_budgets_${curEmpresa()}`, JSON.stringify(b));
+const saveBudgets = b   => {
+  localStorage.setItem(`fin_budgets_${curEmpresa()}`, JSON.stringify(b));
+  try { pnAgendarSubida(); } catch (e) {}
+};
 // La Meta de ahorro mensual quedó reemplazada por la Reserva (v005.6.000).
 // Las funciones siguen acá y la clave `fin_meta_ahorro_*` no se borra: si
 // alguien tenía una meta cargada, su número sigue en su dispositivo y en la
@@ -6278,6 +6437,7 @@ function saveReserva(r) {
     destinos: (r && r.destinos) || {}, movimientos: (r && r.movimientos) || {}
   }));
   try { schedulePush(); } catch (e) {}
+  try { pnAgendarSubida(); } catch (e) {}
 }
 
 // Acumulado de un destino: saldo inicial + aportes − retiros.
@@ -6661,6 +6821,7 @@ function rsGuardarDestino() {
       id, nombre, meta, moneda: 'ARS', fechaMeta: fecha, saldoInicial: saldo,
       creado: new Date().toISOString(), estado: 'activo', cerrado: null
     };
+    try { pnMarcarAutor('rsdes:' + id); } catch (e) {}
   }
   saveReserva(r);
   rsCerrarDestino();
@@ -6916,6 +7077,7 @@ function rsGuardarApartar() {
       const mid = rsNuevoId('m');
       r.movimientos[mid] = { id: mid, destinoId: id, mes, tipo: 'aporte', monto,
                              nota: '', ts: new Date().toISOString() };
+      try { pnMarcarAutor('rsap:' + mid); } catch (e) {}
       hubo++;
     }
   });
@@ -8121,9 +8283,12 @@ function getSyncKeys() {
   // integrante del hogar. Ahora viaja como un dato más.
   // fin_reservas: la Reserva es del hogar, no de la persona ni del aparato —
   // si uno aparta desde el celular, el otro lo tiene que ver en la notebook.
+  // fin_pnledger / fin_pnautor: los puntos se ganan en el celular y se miran
+  // en la notebook. Si no viajaran, cada aparato tendría su propio saldo y
+  // ninguno de los dos sería el verdadero.
   return [`fin_data_${eid}`, `fin_budgets_${eid}`, `fin_meta_ahorro_${eid}`,
           `fin_bankconfigs_${eid}`, `fin_rubros_${eid}`, `fin_reservas_${eid}`,
-          `fin_cuaderno_${eid}`];
+          `fin_cuaderno_${eid}`, `fin_pnledger_${eid}`, `fin_pnautor_${eid}`];
 }
 function getSyncPath() { return `norteSync/empresas/${curEmpresa()}`; }
 // Compat aliases (se sobreescriben después del login)
@@ -8355,15 +8520,17 @@ window.scrollTo(0, 0);
   // El orden tiene que coincidir con el de los .nav-item del menú: se marca el
   // activo por posición. Al insertar Reserva entre Presupuesto y Análisis, sin
   // esta línea se subrayaba el ítem equivocado de ahí para abajo.
-  const navIdx = ['dashboard','transacciones','presupuesto','reserva','analisis','reportes','cuaderno','consultas'].indexOf(p);
+  const navIdx = ['dashboard','transacciones','presupuesto','reserva','analisis','reportes','puntos','cuaderno','consultas'].indexOf(p);
   if (navIdx >= 0) document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
-  document.getElementById('pageTitle').textContent = {dashboard:'Mi Rumbo',transacciones:'Transacciones',presupuesto:'Presupuesto',reserva:'Reserva',analisis:'Análisis',progreso:'Progreso',reportes:'Reportes',cuaderno:'El Cuaderno',consultas:'NortIA',admin:'Administración',tugps:'Novedades'}[p] || p;
+  document.getElementById('pageTitle').textContent = {dashboard:'Mi Rumbo',transacciones:'Transacciones',presupuesto:'Presupuesto',reserva:'Reserva',analisis:'Análisis',progreso:'Progreso',puntos:'Puntos Norte',reportes:'Reportes',cuaderno:'El Cuaderno',consultas:'NortIA',admin:'Administración',tugps:'Novedades'}[p] || p;
   curPage = p;
   /* El selector de meses sólo tiene sentido donde los datos son de un mes.
      En estas pantallas no filtra nada —está verificado, ninguna lee el mes— y
      Progreso a propósito siempre habla de hoy. Un control que se puede tocar y
      no hace nada confunde más que no estar. */
-  const SIN_MES = ['cuaderno', 'progreso', 'consultas', 'tugps', 'admin'];
+  // Puntos Norte tiene su propio selector de mes adentro de la tarjeta del
+  // índice: dos controles de mes en la misma pantalla es uno de más.
+  const SIN_MES = ['cuaderno', 'progreso', 'consultas', 'tugps', 'admin', 'puntos'];
   const _mnav = document.querySelector('.month-nav');
   if (_mnav) _mnav.style.display = SIN_MES.indexOf(p) >= 0 ? 'none' : '';
   if (p === 'reportes') initReportesFiltros();
@@ -8371,10 +8538,11 @@ window.scrollTo(0, 0);
   if (p === 'admin') { try { renderNovedadesAdmin(); } catch (e) {} }
   if (p === 'admin') { try { renderChatsAdmin(); } catch (e) {} }
   if (p === 'admin') { try { iniciarListenerChatsAdmin(); pintarBadgeAdmin(); } catch (e) {} }
+  if (p === 'admin') { try { pnAdmRefrescar(); } catch (e) {} }
   const fabEl = document.querySelector('.fab');
   // En Administración el botón flotante tapaba las acciones de la lista de
   // rubros, y ahí no se cargan movimientos: se esconde, igual que en NortIA.
-  if (fabEl) fabEl.style.display = (p === 'consultas' || p === 'admin' || p === 'reserva') ? 'none' : '';
+  if (fabEl) fabEl.style.display = (p === 'consultas' || p === 'admin' || p === 'reserva' || p === 'puntos') ? 'none' : '';
   render();
   if (p === 'consultas') actualizarNortiaChatCounter();
   if (p === 'reportes') fijarArribaAlEntrar();
@@ -8473,6 +8641,7 @@ function render() { if (curPage !== 'dashboard') { const _mn = document.querySel
   else if (curPage === 'reserva')       renderReserva();
   else if (curPage === 'analisis')      renderAnalisis();
   else if (curPage === 'progreso')      renderProgreso();
+  else if (curPage === 'puntos')        renderPuntos();
   else if (curPage === 'reportes')      renderReportes();
   else if (curPage === 'cuaderno')    { renderCuaderno(); cuTutoQuizas(); }
   else if (curPage === 'admin')         renderAdmin();
@@ -8890,6 +9059,8 @@ function renderDash() {
             // Mini-resumen de la Reserva. Si el hogar no tiene ningún destino la
             // tarjeta no aparece: nada de estados vacíos pidiendo que configures algo.
             try { rsPintarDash(); } catch (e) {}
+            try { pnPintarDash(); } catch (e) {}
+            try { pnPintarAviso(); } catch (e) {}
                                                                                                           
                                                                                                             // Mini-resumen Progreso
   // Mismo cálculo que la pantalla y que la ficha del pie: un solo lugar decide
@@ -9308,7 +9479,10 @@ function setBudget(rubro, val) {
   const budgets = getBudgets();
   if (!budgets[key]) budgets[key] = {};
   if (val === '' || val == null || Number(val) <= 0) delete budgets[key][rubro];
-  else budgets[key][rubro] = Number(val);
+  else {
+    budgets[key][rubro] = Number(val);
+    try { pnMarcarAutor('presu:' + key + '|' + rubro); } catch (e) {}
+  }
   if (!Object.keys(budgets[key]).length) delete budgets[key];
   saveBudgets(budgets);
   renderPresupuesto();
@@ -10190,6 +10364,1266 @@ function maxStreak(balances) {
 // getMetaAhorro/saveMetaAhorro y la clave fin_meta_ahorro_* se quedan: los
 // hogares que definieron una meta siguen teniendo su medalla.
 
+// ── PUNTOS NORTE ─────────────────────────────────────────────
+// Dos cosas distintas que conviene no confundir, ni acá ni en pantalla:
+//
+//   • PROGRESO (más arriba en este archivo) es el logro acumulado. Mide todo
+//     el histórico, nunca baja, y su regla de oro es que un tablero que hoy te
+//     resta lo que ayer te dio no motiva a nadie. Sigue existiendo igual.
+//
+//   • PUNTOS NORTE, esto, es un saldo. Se gana, vence a los seis meses y algún
+//     día se va a poder canjear. Y encima trae un segundo número, el Índice de
+//     Hábito, que mide CÓMO usás Norte este mes — ese sí sube y baja.
+//
+// Son dos relojes diferentes a propósito. Uno cuenta lo que lograste; el otro,
+// lo que estás haciendo ahora. Mezclarlos habría obligado a romper la regla de
+// Progreso o a mentir sobre el vencimiento de los puntos.
+//
+// CÓMO SE CUENTA. No hay instrumentación repartida por las pantallas: los
+// eventos se DERIVAN de los datos que ya existen (`pnEventos`). Un movimiento
+// lleva su fecha de carga adentro de la id, un aporte a Reserva tiene `ts`,
+// una nota del Cuaderno tiene `creadoAt`. Eso tiene dos consecuencias buenas:
+// el cálculo es retroactivo desde el día uno sin haber instrumentado nada
+// antes, y es auditable —se puede recalcular y da lo mismo—. Y una mala: lo
+// que los datos no registran, no se puede puntuar. Por eso hay dos parches
+// mínimos: `via` en los movimientos cargados por foto o voz, y `fin_pnautor_*`,
+// un mapa de autoría para las acciones que no guardaban quién las hizo.
+//
+// QUÉ ES INMUTABLE. El ledger (`fin_pnledger_*`) es append-only y está indexado
+// por la id estable del evento: una acción se acredita UNA vez y nunca se
+// vuelve a tocar, aunque después cambien los datos que la originaron. El
+// vencimiento no se guarda como asiento: se deriva de la fecha de cada
+// acreditación, que es inmutable. Un saldo que se recalcula hacia atrás es un
+// saldo en el que nadie puede confiar.
+
+// ── Las reglas ───────────────────────────────────────────────────────────
+// Todo lo que se va a recalibrar vive acá y se puede pisar desde Admin sin
+// subir un archivo nuevo. La economía de puntos no se acierta a la primera:
+// si cada ajuste pide un deploy, en la práctica no se ajusta.
+const PN_REGLAS_DEF = {
+  vence: 180,                 // días que dura un punto desde que se acredita
+  graciaVence: 30,            // se avisa cuando faltan menos de estos días
+  acciones: {
+    mov:    { pts: 2,  tope: 40, por: 'semana', nom: 'Cargar un movimiento' },
+    ia:     { pts: 3,  tope: 30, por: 'semana', nom: 'Cargarlo por foto o voz' },
+    presu:  { pts: 10, tope: 60, por: 'mes',    nom: 'Definir un presupuesto' },
+    rsap:   { pts: 15, tope: 45, por: 'mes',    nom: 'Apartar en la Reserva' },
+    rsdes:  { pts: 25, tope: 50, por: 'mes',    nom: 'Abrir un destino de Reserva' },
+    cua:    { pts: 5,  tope: 25, por: 'mes',    nom: 'Anotar en El Cuaderno' },
+    sem:    { pts: 20, tope: 20, por: 'semana', nom: 'Semana activa' },
+    racha:  { pts: 50, tope: 50, por: 'mes',    nom: 'Cuatro semanas seguidas' },
+    mes:    { pts: 60, tope: 60, por: 'mes',    nom: 'Mes completo' }
+  },
+  // Pesos del Índice de Hábito. Tienen que sumar 100.
+  pesos: { constancia: 35, cobertura: 25, planificacion: 20, integral: 15, cierre: 5 },
+  coberturaMeta: 6,           // rubros distintos en el mes para dar cobertura plena
+  mesMinMovs: 8,              // movimientos propios para que el mes cuente como completo
+  mesMinSemanas: 2,           // semanas activas para que el mes cuente como completo
+  multiplicadores: { FOCO: 1, PRO: 1.25, TOP: 1.5 }
+};
+
+// Los cinco subíndices, con el nombre y la explicación que ve la persona.
+// El texto vive al lado del cálculo a propósito: si algún día se cambia la
+// fórmula y no el texto, queda a la vista en la misma pantalla del editor.
+const PN_SUBS = [
+  { k: 'constancia',    nom: 'Constancia',    exp: 'En cuántas semanas del mes registraste algo. No hace falta todos los días: alcanza con no desaparecer una semana entera.' },
+  { k: 'cobertura',     nom: 'Cobertura',     exp: 'Qué tan completa queda la foto del mes: variedad de rubros, que los ingresos estén, y que los movimientos tengan fecha.' },
+  { k: 'planificacion', nom: 'Planificación', exp: 'Si definiste presupuesto para los rubros que efectivamente usás, y si apartaste algo en la Reserva.' },
+  { k: 'integral',      nom: 'Uso integral',  exp: 'Cuántas partes de Norte usaste este mes: movimientos, presupuesto, Reserva, El Cuaderno y la carga por foto o voz.' },
+  { k: 'cierre',        nom: 'Cierre',        exp: 'Si el mes quedó terminado: sin gastos fijos a los que les falte el importe y sin nada en Sin clasificar.' }
+];
+
+// Los rangos del Índice. Son de navegación y no de mérito a propósito: estar
+// en puerto no es un fracaso, y este número no es una nota de conducta.
+const PN_RANGOS = [
+  { min: 0,  nom: 'En puerto',      sub: 'Todavía no hay suficiente actividad este mes para leer un hábito.', c1: '#8FA0AE', c2: '#5C6B78' },
+  { min: 20, nom: 'Zarpando',       sub: 'Empezaste a registrar. Lo que falta es repetirlo la semana que viene.', c1: '#7FA8C9', c2: '#4A7296' },
+  { min: 40, nom: 'En rumbo',       sub: 'Ya hay una rutina reconocible. Se nota mes contra mes.', c1: '#6FBFA8', c2: '#2F8570' },
+  { min: 60, nom: 'Viento a favor', sub: 'Usás Norte completo y con regularidad.', c1: '#C88F5E', c2: '#92613A' },
+  { min: 80, nom: 'Rumbo firme',    sub: 'Constancia, cobertura y planificación juntas. Es el techo del índice.', c1: '#F3D98C', c2: '#C79A2E' }
+];
+
+let _pnReglasRemotas = null;   // lo que haya escrito el superadmin, si lo hay
+let _pnSubidoHash    = '';
+let _pnTimer         = null;
+
+function pnReglas() {
+  const base = JSON.parse(JSON.stringify(PN_REGLAS_DEF));
+  const r = _pnReglasRemotas;
+  if (!r || typeof r !== 'object') return base;
+  ['vence', 'graciaVence', 'coberturaMeta', 'mesMinMovs', 'mesMinSemanas'].forEach(k => {
+    if (Number(r[k]) > 0) base[k] = Number(r[k]);
+  });
+  if (r.acciones) Object.keys(base.acciones).forEach(k => {
+    const a = r.acciones[k];
+    if (!a) return;
+    if (a.pts  !== undefined && Number(a.pts)  >= 0) base.acciones[k].pts  = Number(a.pts);
+    if (a.tope !== undefined && Number(a.tope) >= 0) base.acciones[k].tope = Number(a.tope);
+  });
+  if (r.pesos) {
+    const p = {};
+    let suma = 0;
+    Object.keys(base.pesos).forEach(k => { p[k] = Number(r.pesos[k]); suma += p[k]; });
+    // Sólo se aceptan si suman 100: unos pesos que suman 87 dan un índice que
+    // no llega nunca a 100 y nadie entendería por qué.
+    if (Math.abs(suma - 100) < 0.01) base.pesos = p;
+  }
+  return base;
+}
+
+// ── Claves y acceso ──────────────────────────────────────────────────────
+const pnKeyLedger = () => `fin_pnledger_${curEmpresa()}`;
+const pnKeyAutor  = () => `fin_pnautor_${curEmpresa()}`;
+
+const PN_LEDGER_VACIO = { v: 1, u: [], r: [] };
+
+function pnGetLedger() {
+  try {
+    const l = JSON.parse(localStorage.getItem(pnKeyLedger()) || 'null');
+    if (!l || !Array.isArray(l.r) || !Array.isArray(l.u)) return { v: 1, u: [], r: [] };
+    return { v: 1, u: l.u, r: l.r };
+  } catch (e) { return { v: 1, u: [], r: [] }; }
+}
+function pnSaveLedger(l) {
+  localStorage.setItem(pnKeyLedger(), JSON.stringify({ v: 1, u: l.u || [], r: l.r || [] }));
+  try { schedulePush(); } catch (e) {}
+}
+
+// El mapa de autoría. Existe sólo para las acciones que no guardan quién las
+// hizo: definir un presupuesto, apartar en la Reserva, abrir un destino. Los
+// movimientos y El Cuaderno ya traen su autor y no pasan por acá.
+function pnAutores() {
+  try {
+    const a = JSON.parse(localStorage.getItem(pnKeyAutor()) || 'null');
+    return (a && typeof a === 'object') ? a : {};
+  } catch (e) { return {}; }
+}
+function pnMarcarAutor(clave, cuando) {
+  try {
+    const u = curUserId();
+    if (!u || u === 'desconocido' || !clave) return;
+    const a = pnAutores();
+    if (a[clave]) return;                      // el primero que la hizo se la queda
+    a[clave] = { por: u, ts: Number(cuando) || Date.now() };
+    localStorage.setItem(pnKeyAutor(), JSON.stringify(a));
+    try { schedulePush(); } catch (e) {}
+  } catch (e) {}
+}
+
+// ── El titular ───────────────────────────────────────────────────────────
+// Todo lo que quedó sin dueño —los datos anteriores a que existiera el campo
+// de autoría, y la planificación cargada antes de este cambio— se le atribuye
+// al titular del hogar. En un hogar de una sola persona, que hoy son casi
+// todos, eso es exactamente correcto.
+//
+// Si todavía no sabemos quién es, NO se adivina: esos eventos no se acreditan
+// y esperan. Como el ledger está indexado por la id del evento, en cuanto se
+// resuelva el titular se acreditan solos en la siguiente conciliación. Es
+// preferible acreditar tarde que acreditarle a la persona equivocada.
+// No se memoriza en una variable: se lee de localStorage cada vez. Una copia en
+// memoria sobrevive al cambio de hogar y al logout, y ahí empieza a atribuirle
+// los huérfanos de una casa al titular de otra. Leer una clave es barato;
+// equivocarse de dueño, no.
+function pnTitular() {
+  try {
+    const c = localStorage.getItem(`fin_pntitular_${curEmpresa()}`);
+    if (c) return c;
+  } catch (e) {}
+  // Si quien está usando la app es admin del hogar y nadie más lo reclamó,
+  // sirve como respuesta provisoria hasta que llegue la lista de integrantes.
+  try { if (isAdmin()) return curUserId(); } catch (e) {}
+  return '';
+}
+
+function pnResolverTitular() {
+  try {
+    if (typeof firebase === 'undefined' || !firebase.database) return;
+    const eid = curEmpresa();
+    if (!eid || eid === 'JLL') return;
+    firebase.database().ref('norteSync/empresaMiembros/' + eid).once('value').then(snap => {
+      const m = snap.val() || {};
+      let elegido = '';
+      Object.keys(m).forEach(uid => {
+        const v = m[uid] || {};
+        if (String(v.rol || v.role || '') === 'admin' && !elegido) elegido = uid;
+      });
+      if (!elegido) return;
+      try { localStorage.setItem(`fin_pntitular_${eid}`, elegido); } catch (e) {}
+      pnAgendarSubida(1500);
+    }).catch(() => {});
+  } catch (e) {}
+}
+
+// ── Tiempo ───────────────────────────────────────────────────────────────
+const PN_SEM = 604800000;   // una semana en milisegundos
+
+// El timestamp que lleva adentro la id de un movimiento. Mismo criterio y
+// mismas guardas que progFechaCarga: una id que no sea un tiempo razonable no
+// se usa para nada.
+function pnTsDeId(id) {
+  const ts = parseInt(String(id || '').slice(0, 8), 36);
+  if (ts && ts >= 1577836800000 && ts <= Date.now() + 86400000) return ts;
+  return 0;
+}
+// El lunes de esa semana, al mediodía, como número. Al mediodía porque anclar
+// a medianoche hace que un cambio de horario corra el día entero.
+function pnLunesTs(ts) {
+  const d = new Date(Number(ts) || 0);
+  d.setHours(12, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d.getTime();
+}
+function pnYM(ts) {
+  const d = new Date(Number(ts) || 0);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+function pnTsDeMes(ym) {
+  const p = String(ym || '').split('-');
+  return new Date(Number(p[0]), Number(p[1]) - 1, 15, 12, 0, 0).getTime();
+}
+// Las semanas de un mes que YA EMPEZARON. Si contáramos las cuatro o cinco
+// semanas del mes en curso, el índice del día 3 arrancaría castigado por tres
+// semanas que todavía no ocurrieron.
+function pnSemanasDeMes(ym) {
+  const p = String(ym || '').split('-');
+  const y = Number(p[0]), m = Number(p[1]) - 1;
+  if (!y || m < 0) return [];
+  const fin = new Date(y, m + 1, 0, 12, 0, 0).getTime();
+  const hoy = Date.now();
+  const tope = Math.min(fin, hoy);
+  const out = [];
+  let l = pnLunesTs(new Date(y, m, 1, 12, 0, 0).getTime());
+  // El primer lunes puede caer en el mes anterior; se cuenta igual, porque esa
+  // semana es parte del mes para quien la vivió.
+  while (l <= tope) { out.push(l); l += PN_SEM; }
+  return out;
+}
+
+// ── El flujo de eventos ──────────────────────────────────────────────────
+// Se deriva entero de los datos. Cada evento tiene una id estable —siempre la
+// misma para la misma acción— que es lo que hace que el ledger sea idempotente:
+// conciliar dos veces no acredita dos veces.
+function pnEventos() {
+  const tit = pnTitular();
+  const aut = pnAutores();
+  const ev  = [];
+  const dueno = (raw) => {
+    const u = String(raw || '');
+    if (u && u !== 'legacy' && u !== 'desconocido') return u;
+    return tit;     // '' si todavía no se sabe: el evento queda fuera
+  };
+  const push = (k, e, ts, u) => {
+    if (!k || !e || !ts || !u) return;
+    ev.push({ k: k, e: String(e), ts: ts, uid: u });
+  };
+
+  // Movimientos. La fecha de carga sale de la id, no de `fecha`: `fecha` es
+  // opcional en el alta y `venc` es la de la factura, no la del registro.
+  let data = [];
+  try { data = getData() || []; } catch (e) { data = []; }
+  data.forEach(t => {
+    if (!t || !t.id) return;
+    const ts = pnTsDeId(t.id);
+    const u  = dueno(t.creadoPor);
+    push('mov', t.id, ts, u);
+    if (t.via === 'ia') push('ia', t.id, ts, u);
+  });
+
+  // Reserva: destinos abiertos y aportes. Ninguno de los dos guardaba autor,
+  // así que salen del mapa de autoría o, si no están, del titular.
+  let R = { destinos: {}, movimientos: {} };
+  try { R = getReserva() || R; } catch (e) {}
+  Object.keys(R.destinos || {}).forEach(id => {
+    const d = R.destinos[id];
+    if (!d) return;
+    const a = aut['rsdes:' + id];
+    const ts = a ? a.ts : (Date.parse(d.creado || '') || 0);
+    push('rsdes', id, ts, dueno(a && a.por));
+  });
+  Object.keys(R.movimientos || {}).forEach(id => {
+    const m = R.movimientos[id];
+    if (!m || m.tipo !== 'aporte') return;   // un retiro no es un hábito a premiar
+    const a = aut['rsap:' + id];
+    const ts = a ? a.ts : (Date.parse(m.ts || '') || 0);
+    push('rsap', id, ts, dueno(a && a.por));
+  });
+
+  // Presupuestos. Es un mapa {mes:{rubro:monto}} sin ítems ni fechas, así que
+  // la clave del evento es mes|rubro y el momento sale del mapa de autoría; si
+  // la línea es anterior a este cambio, se la ubica a mediados de su mes.
+  let B = {};
+  try { B = getBudgets() || {}; } catch (e) {}
+  Object.keys(B).forEach(mes => {
+    Object.keys(B[mes] || {}).forEach(rubro => {
+      const clave = mes + '|' + rubro;
+      const a = aut['presu:' + clave];
+      push('presu', clave, a ? a.ts : pnTsDeMes(mes), dueno(a && a.por));
+    });
+  });
+
+  // El Cuaderno ya guarda quién anotó cada precio y cuándo.
+  let C = { items: {} };
+  try { C = cuGet() || C; } catch (e) {}
+  Object.keys(C.items || {}).forEach(id => {
+    const it = C.items[id];
+    if (!it) return;
+    push('cua', id, Number(it.creadoAt) || 0, dueno(it.por));
+  });
+
+  // Derivados de los anteriores: semana activa, racha de cuatro y mes completo.
+  // Se calculan por persona sobre lo que ya juntamos.
+  const R2 = pnReglas();
+  const porPersona = {};
+  ev.forEach(x => {
+    if (!porPersona[x.uid]) porPersona[x.uid] = [];
+    porPersona[x.uid].push(x);
+  });
+  Object.keys(porPersona).forEach(u => {
+    const mios = porPersona[u];
+    const semanas = {};
+    const meses   = {};
+    mios.forEach(x => {
+      const l = pnLunesTs(x.ts);
+      semanas[l] = (semanas[l] || 0) + 1;
+      const ym = pnYM(x.ts);
+      if (!meses[ym]) meses[ym] = { movs: 0, sem: {} };
+      if (x.k === 'mov') meses[ym].movs++;
+      meses[ym].sem[l] = 1;
+    });
+    // La id de estos tres lleva el uid adentro. Sin eso, la semana de Ana y la
+    // de Beto serían el mismo evento y el segundo de los dos no cobraría nunca:
+    // el ledger está indexado por id de evento y la habría dado por acreditada.
+    // El bono se gana al terminar la semana, pero se fecha el DOMINGO de esa
+    // semana y no el lunes siguiente. Con `l + PN_SEM - 1` caía un lunes a las
+    // 11:59, que pnLunesTs mapea a la semana SIGUIENTE: el bono de una semana
+    // llenaba el tope de la otra y una de cada dos semanas se quedaba sin nada.
+    // Se vio recién dibujando la pantalla, no en las pruebas de lógica.
+    const finDeSemana = l => l + 6 * 86400000;
+    const ls = Object.keys(semanas).map(Number).sort((a, b) => a - b);
+    ls.forEach(l => push('sem', u + ':' + l, finDeSemana(l), u));
+    // Racha: la cuarta semana consecutiva paga el bono, y después cada cuarta.
+    let seguidas = 0;
+    ls.forEach((l, i) => {
+      seguidas = (i > 0 && l - ls[i - 1] === PN_SEM) ? seguidas + 1 : 1;
+      if (seguidas % 4 === 0) push('racha', u + ':' + l, finDeSemana(l), u);
+    });
+    Object.keys(meses).forEach(ym => {
+      const m = meses[ym];
+      if (m.movs >= R2.mesMinMovs && Object.keys(m.sem).length >= R2.mesMinSemanas) {
+        push('mes', u + ':' + ym, pnTsDeMes(ym), u);
+      }
+    });
+  });
+
+  ev.sort((a, b) => a.ts - b.ts || (a.k + a.e < b.k + b.e ? -1 : 1));
+  return ev;
+}
+
+// ── El ledger ────────────────────────────────────────────────────────────
+// Acredita lo que todavía no estaba acreditado y nada más. Una fila es
+// {e, k, t, i, p}: la id del evento, su tipo, cuándo se acreditó, el índice de
+// la persona en l.u, y los puntos. Las filas con p:0 son las que toparon el
+// límite y se guardan igual — el día que alguien pregunte por qué tiene 340 y
+// no 400, la respuesta tiene que estar acá y no en una reconstrucción.
+function pnConciliar() {
+  const R = pnReglas();
+  const l = pnGetLedger();
+  const idxU = {};
+  l.u.forEach((u, i) => { idxU[u] = i; });
+  const vistos = {};
+  l.r.forEach(f => { vistos[f.k + ':' + f.e] = 1; });
+
+  // Cuánto lleva acreditado cada persona por tipo y por período, para los topes.
+  const usado = {};
+  const cubo = (k, i, ts) => {
+    const a = R.acciones[k];
+    const per = (a && a.por === 'semana') ? pnLunesTs(ts) : pnYM(ts);
+    return k + '|' + i + '|' + per;
+  };
+  l.r.forEach(f => { const c = cubo(f.k, f.i, f.t); usado[c] = (usado[c] || 0) + (Number(f.p) || 0); });
+
+  const ahora = Date.now();
+  let nuevas = 0;
+  pnEventos().forEach(x => {
+    const eid = x.k + ':' + x.e;
+    if (vistos[eid]) return;
+    const a = R.acciones[x.k];
+    if (!a) return;
+    if (idxU[x.uid] === undefined) { idxU[x.uid] = l.u.length; l.u.push(x.uid); }
+    const i = idxU[x.uid];
+    // Se acredita con la fecha del evento, no con la de hoy: un movimiento
+    // cargado en marzo vence a los seis meses de marzo, no de la conciliación
+    // que recién ahora lo vio. Si no, migrar la app regalaría medio año.
+    const t = Math.min(x.ts, ahora);
+    const c = cubo(x.k, i, t);
+    const ya = usado[c] || 0;
+    const pts = Math.max(0, Math.min(Number(a.pts) || 0, (Number(a.tope) || 0) - ya));
+    usado[c] = ya + pts;
+    l.r.push({ e: x.e, k: x.k, t: t, i: i, p: pts });
+    vistos[eid] = 1;
+    nuevas++;
+  });
+
+  if (nuevas) {
+    l.r.sort((a, b) => a.t - b.t);
+    pnSaveLedger(l);
+  }
+  return nuevas;
+}
+
+// Un punto acreditado en `t` vive `vence` días. El vencimiento no se guarda
+// como asiento: se deriva de la fecha de acreditación, que es inmutable. Así
+// el saldo se puede recalcular siempre y siempre da lo mismo.
+function pnSaldoDe(uid) {
+  const R = pnReglas();
+  const l = pnGetLedger();
+  const i = l.u.indexOf(uid);
+  if (i < 0) return { saldo: 0, vencidos: 0, porVencer: 0, ganados: 0, proximo: 0 };
+  const ahora = Date.now();
+  const ms = R.vence * 86400000;
+  const gracia = R.graciaVence * 86400000;
+  let saldo = 0, vencidos = 0, porVencer = 0, ganados = 0, proximo = 0;
+  l.r.forEach(f => {
+    if (f.i !== i) return;
+    const p = Number(f.p) || 0;
+    if (p <= 0) return;
+    ganados += p;
+    const vence = f.t + ms;
+    if (vence <= ahora) { vencidos += p; return; }
+    saldo += p;
+    if (vence - ahora <= gracia) {
+      porVencer += p;
+      if (!proximo || vence < proximo) proximo = vence;
+    }
+  });
+  return { saldo, vencidos, porVencer, ganados, proximo };
+}
+
+// El detalle que se muestra en pantalla, de lo más nuevo a lo más viejo.
+function pnMovimientosDe(uid, limite) {
+  const R = pnReglas();
+  const l = pnGetLedger();
+  const i = l.u.indexOf(uid);
+  if (i < 0) return [];
+  const ms = R.vence * 86400000;
+  const ahora = Date.now();
+  return l.r.filter(f => f.i === i)
+    .sort((a, b) => b.t - a.t)
+    .slice(0, limite || 60)
+    .map(f => {
+      const a = R.acciones[f.k] || {};
+      return {
+        k: f.k, pts: Number(f.p) || 0, ts: f.t,
+        nom: a.nom || f.k,
+        vence: f.t + ms,
+        vencido: (f.t + ms) <= ahora,
+        tope: (Number(f.p) || 0) === 0
+      };
+    });
+}
+
+// ── El Índice de Hábito ──────────────────────────────────────────────────
+// Cinco subíndices de 0 a 100 que se combinan con sus pesos. A diferencia de
+// los puntos, este número sube y baja: mide el mes, no la historia.
+function pnIndice(uid, ym) {
+  const R = pnReglas();
+  const vacio = { total: 0, subs: {}, hayDatos: false };
+  if (!uid) return vacio;
+  const pct = (n, d) => (d > 0 ? Math.max(0, Math.min(100, (n / d) * 100)) : 0);
+
+  const evs = pnEventos().filter(e => e.uid === uid && pnYM(e.ts) === ym);
+  const tit = pnTitular();
+  const mio = (raw) => {
+    const u = String(raw || '');
+    return (u && u !== 'legacy' && u !== 'desconocido') ? u === uid : tit === uid;
+  };
+
+  // 1) CONSTANCIA — en cuántas de las semanas ya transcurridas hubo actividad.
+  const semanas = pnSemanasDeMes(ym);
+  const activas = {};
+  evs.forEach(e => { activas[pnLunesTs(e.ts)] = 1; });
+  const semActivas = semanas.filter(l => activas[l]).length;
+  const constancia = pct(semActivas, semanas.length);
+
+  // 2) COBERTURA — qué tan completa queda la foto del mes.
+  let data = [];
+  try { data = getData() || []; } catch (e) {}
+  const mios = data.filter(t => t && t.mes === ym && mio(t.creadoPor));
+  const rubros = {};
+  let conFecha = 0, ingresos = 0;
+  mios.forEach(t => {
+    if (t.rubro && t.rubro !== 'Sin clasificar') rubros[t.rubro] = 1;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(String(t.fecha || ''))) conFecha++;
+    if (t.tipo === 'Ingreso') ingresos++;
+  });
+  const cobertura = mios.length
+    ? pct(Object.keys(rubros).length, R.coberturaMeta) * 0.5
+      + (ingresos > 0 ? 25 : 0)
+      + pct(conFecha, mios.length) * 0.25
+    : 0;
+
+  // 3) PLANIFICACIÓN — presupuesto sobre lo que realmente se usa, y Reserva.
+  let B = {};
+  try { B = getBudgets() || {}; } catch (e) {}
+  const presu = B[ym] || {};
+  const usados = Object.keys(rubros);
+  const conPresu = usados.filter(r => Number(presu[r]) > 0).length;
+  const hayAporte = evs.some(e => e.k === 'rsap' || e.k === 'rsdes');
+  const planificacion = (usados.length ? pct(conPresu, usados.length) * 0.6
+                                       : (Object.keys(presu).length ? 60 : 0))
+                      + (hayAporte ? 40 : 0);
+
+  // 4) USO INTEGRAL — cuántas partes de Norte se tocaron este mes.
+  const modulos = { mov: 0, presu: 0, rs: 0, cua: 0, ia: 0 };
+  evs.forEach(e => {
+    if (e.k === 'mov') modulos.mov = 1;
+    if (e.k === 'presu') modulos.presu = 1;
+    if (e.k === 'rsap' || e.k === 'rsdes') modulos.rs = 1;
+    if (e.k === 'cua') modulos.cua = 1;
+    if (e.k === 'ia') modulos.ia = 1;
+  });
+  const integral = pct(Object.keys(modulos).filter(k => modulos[k]).length, 5);
+
+  // 5) CIERRE — el mes terminado: sin esqueletos sin importe, sin sin-clasificar.
+  const delMes = data.filter(t => t && t.mes === ym);
+  const esqueletos = delMes.filter(t => t.tipoGasto === 'Fijo' && (Number(t.impPesos) || 0) === 0).length;
+  const sinClas = delMes.filter(t => !t.rubro || t.rubro === 'Sin clasificar').length;
+  const cierre = delMes.length
+    ? (pct(delMes.length - esqueletos, delMes.length) * 0.6 + pct(delMes.length - sinClas, delMes.length) * 0.4)
+    : 0;
+
+  const subs = { constancia, cobertura, planificacion, integral, cierre };
+  let total = 0;
+  Object.keys(R.pesos).forEach(k => { total += (subs[k] || 0) * (R.pesos[k] / 100); });
+  Object.keys(subs).forEach(k => { subs[k] = Math.round(subs[k]); });
+  return { total: Math.round(total), subs: subs, hayDatos: evs.length > 0, eventos: evs.length };
+}
+
+// Semanas seguidas con actividad, contando hacia atrás desde la semana actual.
+// Se admite que la semana en curso todavía esté vacía: la racha se corta recién
+// cuando pasa una semana entera completa sin nada.
+function pnRacha(uid) {
+  const activas = {};
+  pnEventos().forEach(e => { if (e.uid === uid) activas[pnLunesTs(e.ts)] = 1; });
+  let l = pnLunesTs(Date.now());
+  if (!activas[l]) l -= PN_SEM;
+  let n = 0;
+  while (activas[l]) { n++; l -= PN_SEM; }
+  return n;
+}
+
+function pnRango(idx) {
+  let r = PN_RANGOS[0];
+  PN_RANGOS.forEach(x => { if (idx >= x.min) r = x; });
+  const i = PN_RANGOS.indexOf(r);
+  return { rango: r, i: i, sig: PN_RANGOS[i + 1] || null };
+}
+
+// Todo lo que las pantallas necesitan, calculado una sola vez.
+function pnResumen(uid, ym) {
+  const u = uid || curUserId();
+  const m = ym || new Date().toISOString().slice(0, 7);
+  const idx = pnIndice(u, m);
+  const rg = pnRango(idx.total);
+  return {
+    uid: u, ym: m,
+    saldo: pnSaldoDe(u),
+    indice: idx,
+    racha: pnRacha(u),
+    rango: rg.rango,
+    siguiente: rg.sig,
+    titularConocido: !!pnTitular()
+  };
+}
+
+// ── Lo que viaja a la nube ───────────────────────────────────────────────
+// Sólo el resumen: nivel, índice, racha y totales de puntos. Ni un movimiento,
+// ni un importe, ni un rubro. Lo mismo que ya hace Progreso, y por la misma
+// razón: sirve para saber si el producto funciona, y no hace falta nada más.
+function pnResumenParaNube() {
+  const l = pnGetLedger();
+  const ym = new Date().toISOString().slice(0, 7);
+  const personas = l.u.map(u => {
+    const s = pnSaldoDe(u);
+    const i = pnIndice(u, ym);
+    return { u: String(u).slice(0, 8), saldo: s.saldo, ganados: s.ganados,
+             vencidos: s.vencidos, idx: i.total, rango: pnRango(i.total).rango.nom,
+             racha: pnRacha(u) };
+  });
+  const idxs = personas.map(p => p.idx).filter(n => n > 0);
+  return {
+    v: (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''),
+    ts: Date.now(), ym: ym,
+    personas: personas,
+    filas: l.r.length,
+    idxProm: idxs.length ? Math.round(idxs.reduce((a, b) => a + b, 0) / idxs.length) : 0
+  };
+}
+
+function pnSubirResumen() {
+  try {
+    if (typeof firebase === 'undefined' || !firebase.database) return;
+    const eid = curEmpresa();
+    if (!eid || eid === 'JLL') return;
+    const r = pnResumenParaNube();
+    const sinTs = JSON.stringify(Object.assign({}, r, { ts: 0, v: '' }));
+    if (sinTs === _pnSubidoHash) return;
+    firebase.database().ref('norteSync/puntos/' + eid).set(r)
+      .then(() => { _pnSubidoHash = sinTs; })
+      .catch(() => {});
+  } catch (e) {}
+}
+
+// Conciliar y subir, con holgura. Se llama desde donde cambian los datos, y
+// varias llamadas seguidas se colapsan en una.
+function pnAgendarSubida(ms) {
+  try { clearTimeout(_pnTimer); } catch (e) {}
+  _pnTimer = setTimeout(() => {
+    try { pnConciliar(); } catch (e) {}
+    try { pnSubirResumen(); } catch (e) {}
+    try { if (curPage === 'puntos') renderPuntos(); } catch (e) {}
+    try { pnPintarDash(); } catch (e) {}
+  }, ms === undefined ? 4000 : ms);
+}
+
+// Las reglas que haya escrito el superadmin. Se escuchan en vivo: si cambia un
+// ponderador, la app lo toma sin que nadie suba un archivo.
+function pnEscucharReglas() {
+  try {
+    if (typeof firebase === 'undefined' || !firebase.database) return;
+    firebase.database().ref('norteSync/puntosReglas').on('value', snap => {
+      _pnReglasRemotas = snap.val() || null;
+      try { pnAgendarSubida(1000); } catch (e) {}
+    }, () => {});
+  } catch (e) {}
+}
+
+window.pnAgendarSubida   = pnAgendarSubida;
+window.pnSubirResumen    = pnSubirResumen;
+window.pnResumenParaNube = pnResumenParaNube;
+window.pnMarcarAutor     = pnMarcarAutor;
+
+// ── El símbolo de Puntos Norte ───────────────────────────────────────────
+// Una brújula con un cúmulo de esferas en el centro.
+//
+// NO LLEVA EL SIGNO $, y no es una decisión estética: ninguna de las
+// recompensas del programa es plata. Son un mes de PRO, cupo extra de IA,
+// acceso anticipado. Un $ en el símbolo promete dinero, y prometer lo que no
+// se va a dar es exactamente la letra chica que Norte dice no tener — en el
+// logo, que es donde más se ve. Si alguna vez alguien lo quiere volver a
+// poner, que sea porque el programa efectivamente reparte plata.
+//
+// El cúmulo es la idea del programa dibujada: puntos que se juntan.
+//
+// EL DETALLE SE ADAPTA AL TAMAÑO. Tres esferas separadas necesitan espacio
+// para leerse como tres; abajo de cierto tamaño ese espacio no existe y el
+// cúmulo se convierte en una mancha. Así que hay tres versiones del mismo
+// símbolo y cada tamaño usa la que le entra. Los tamaños que la app usa hoy
+// —42 en el aviso, 46 en la ventana— caen en el cúmulo completo.
+//
+// Va dibujado con trazos y no con texto: una fuente que no esté instalada en
+// el aparato cambiaría el dibujo, y este símbolo tiene que verse igual en la
+// app, en el menú y en cualquier pieza que salga de acá.
+function pnBrujula(tam, claro) {
+  const aguja  = '#FF8A5C';
+  const cuerpo = claro ? 'rgba(255,255,255,.72)' : '#1B3A4B';
+  const disco  = claro ? 'rgba(255,255,255,.06)' : '#fff';
+  let centro;
+  if (tam >= 36) {
+    // Cúmulo completo: cinco esferas de distinto tamaño, una mayor adelante.
+    centro =
+      '<circle cx="31.4" cy="30.6" r="6.3" fill="' + aguja + '"/>' +
+      '<circle cx="23.8" cy="27.2" r="3.2" fill="' + cuerpo + '"/>' +
+      '<circle cx="40.1" cy="26.6" r="2.6" fill="' + cuerpo + '"/>' +
+      '<circle cx="25.9" cy="38.9" r="2.4" fill="' + cuerpo + '"/>' +
+      '<circle cx="38.6" cy="38.4" r="3.6" fill="' + aguja + '" opacity=".58"/>';
+  } else if (tam >= 24) {
+    // Tres esferas, más grandes y más separadas.
+    centro =
+      '<circle cx="30.4" cy="30.2" r="7" fill="' + aguja + '"/>' +
+      '<circle cx="39.4" cy="27.4" r="3.6" fill="' + cuerpo + '"/>' +
+      '<circle cx="37.6" cy="38.8" r="4.4" fill="' + aguja + '" opacity=".6"/>';
+  } else {
+    // Un punto. A 18px el disco mide seis píxeles: no entra nada más, y
+    // fingir que sí entra es cómo se consiguen los logos ilegibles.
+    centro = '<circle cx="32" cy="32" r="7.4" fill="' + aguja + '"/>';
+  }
+  return '<svg width="' + tam + '" height="' + tam + '" viewBox="0 0 64 64" fill="none" ' +
+    'role="img" aria-label="Puntos Norte">' +
+    // Los cuatro rumbos. El norte en naranja, como la aguja de una brújula.
+    '<path d="M32 2.5 L27 14 L37 14 Z" fill="' + aguja + '"/>' +
+    '<path d="M32 61.5 L27 50 L37 50 Z" fill="' + cuerpo + '"/>' +
+    '<path d="M61.5 32 L50 27 L50 37 Z" fill="' + cuerpo + '"/>' +
+    '<path d="M2.5 32 L14 27 L14 37 Z" fill="' + cuerpo + '"/>' +
+    '<circle cx="32" cy="32" r="19" fill="' + disco + '" stroke="' + cuerpo + '" stroke-width="2.4"/>' +
+    centro +
+    '</svg>';
+}
+
+// ── El aviso de Mi Rumbo ─────────────────────────────────────────────────
+// Se apaga cuando la persona lo cierra o cuando leyó la explicación, y en
+// cualquier caso el 31/12/2026. La fecha dura es para que no quede un cartel
+// de lanzamiento colgado meses después de haber lanzado, que es exactamente
+// lo que hace que la gente deje de mirar los carteles.
+const PN_AVISO_HASTA = Date.parse('2026-12-31T23:59:59-03:00');
+const pnAvisoKey = () => `fin_pnaviso_${curEmpresa()}`;
+
+function pnAvisoYaVisto() {
+  try { return !!localStorage.getItem(pnAvisoKey()); } catch (e) { return false; }
+}
+function pnPintarAviso() {
+  const el = document.getElementById('pnAviso');
+  if (!el) return;
+  const mostrar = !pnAvisoYaVisto() && Date.now() < PN_AVISO_HASTA;
+  el.style.display = mostrar ? '' : 'none';
+  if (!mostrar) return;
+  const ico = document.getElementById('pnAvisoIco');
+  if (ico && !ico.innerHTML) ico.innerHTML = pnBrujula(42, false);
+}
+function pnCerrarAviso() {
+  try { localStorage.setItem(pnAvisoKey(), String(Date.now())); } catch (e) {}
+  pnPintarAviso();
+}
+
+// ── La ventana de lanzamiento ────────────────────────────────────────────
+// Se escribe desde acá y no en el HTML para que el texto quede al lado de los
+// números que describe: si mañana cambia un tope desde Admin, el que edite la
+// regla ve en el mismo archivo la frase que la explica.
+function pnAbrirLanzamiento() {
+  const ov = document.getElementById('pnLanzaOverlay');
+  if (!ov) return;
+  const R = pnReglas();
+  const bloque = (tit, txt) =>
+    '<div style="margin-bottom:17px"><div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:4px">' +
+    tit + '</div><div style="font-size:13.5px;line-height:1.62;color:var(--muted)">' + txt + '</div></div>';
+
+  document.getElementById('pnLanzaIco').innerHTML = pnBrujula(46, true);
+  document.getElementById('pnLanzaCuerpo').innerHTML =
+    bloque('No es un juego de premios',
+           'Norte no sirve de mucho si lo abrís una vez. Puntos Norte mide y premia lo único que hace que ' +
+           'estos números signifiquen algo: que vuelvas.') +
+    bloque('Dos números, y conviene no confundirlos',
+           'El <b>Índice de Hábito</b> va de 0 a 100 y mide cómo usás Norte <b>este mes</b>: sube y baja. ' +
+           'Los <b>puntos</b> se ganan y se acumulan, y duran ' + R.vence + ' días. ' +
+           'Y <b>Progreso</b> sigue igual que siempre, midiendo todo lo que lograste desde que empezaste, sin bajar nunca.') +
+    bloque('Aparecer pesa más que acumular',
+           'Una semana en la que registraste algo vale ' + R.acciones.sem.pts + ' puntos. Un movimiento vale ' +
+           R.acciones.mov.pts + ', con un tope de ' + R.acciones.mov.tope + ' por semana. ' +
+           'Cargar cincuenta movimientos un domingo vale menos que cargar tres por semana durante un mes. Es a propósito.') +
+    bloque('Son tuyos, no del hogar',
+           'Si en tu casa usan Norte dos personas, cada una junta los suyos.') +
+    bloque('Ya cuenta lo que venías haciendo',
+           'No arranca en cero: el índice y los puntos se calcularon sobre todo tu historial. ' +
+           'Lo único que no se pudo contar hacia atrás es la carga por foto y por voz, porque hasta ahora Norte ' +
+           'no guardaba <i>cómo</i> había entrado cada movimiento. Desde esta versión sí.') +
+    bloque('Todavía no se canjean, y te lo decimos ahora',
+           'Los puntos se acumulan pero el canje no está abierto, y no hay fecha prometida. ' +
+           'Preferimos que juntes unos meses y abrirlo cuando haya algo que valga la pena, antes que abrirlo vacío.');
+  ov.classList.remove('hidden');
+}
+function pnCerrarLanzamiento(irAPuntos) {
+  const ov = document.getElementById('pnLanzaOverlay');
+  if (ov) ov.classList.add('hidden');
+  pnCerrarAviso();                       // lo leyó: el aviso ya cumplió
+  if (irAPuntos) showPage('puntos');
+}
+
+// ── PUNTOS NORTE: lo que se ve ───────────────────────────────────────────
+// Dos números y una explicación. El saldo, que sube y vence; y el Índice de
+// Hábito del mes, que sube y baja. Se muestran juntos pero separados, porque
+// son cosas distintas y confundirlos sería exactamente el tipo de letra chica
+// que Norte promete no tener.
+
+function pnFmt(n) { return Number(n || 0).toLocaleString('es-AR'); }
+function pnFecha(ts) {
+  const d = new Date(Number(ts) || 0);
+  return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+}
+function pnDiasHasta(ts) { return Math.ceil((Number(ts) - Date.now()) / 86400000); }
+
+// El anillo del índice. Un círculo simple: el número adentro y el arco
+// proporcional afuera. Sin animación: es un dato, no un premio.
+function pnAnillo(idx, rango, tam) {
+  const T = tam || 132, r = (T / 2) - 11, c = 2 * Math.PI * r;
+  const frac = Math.max(0, Math.min(100, idx)) / 100;
+  return `<svg width="${T}" height="${T}" viewBox="0 0 ${T} ${T}" aria-label="Índice de hábito ${idx} de 100">
+    <defs><linearGradient id="pnG${T}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="${rango.c1}"/><stop offset="100%" stop-color="${rango.c2}"/>
+    </linearGradient></defs>
+    <circle cx="${T / 2}" cy="${T / 2}" r="${r}" fill="none" stroke="var(--border)" stroke-width="9"/>
+    <circle cx="${T / 2}" cy="${T / 2}" r="${r}" fill="none" stroke="url(#pnG${T})" stroke-width="9"
+            stroke-linecap="round" stroke-dasharray="${(c * frac).toFixed(1)} ${c.toFixed(1)}"
+            transform="rotate(-90 ${T / 2} ${T / 2})"/>
+    <text x="${T / 2}" y="${T / 2 + 2}" text-anchor="middle" font-size="${Math.round(T * 0.29)}"
+          font-weight="800" fill="var(--text)">${idx}</text>
+    <text x="${T / 2}" y="${T / 2 + Math.round(T * 0.16)}" text-anchor="middle" font-size="${Math.round(T * 0.085)}"
+          font-weight="600" fill="var(--muted)">de 100</text>
+  </svg>`;
+}
+
+function pnBarra(v, color) {
+  const p = Math.max(0, Math.min(100, Number(v) || 0));
+  return `<div style="height:7px;background:var(--border);border-radius:99px;overflow:hidden">
+    <div style="height:100%;width:${p}%;background:${color || 'var(--primary)'};border-radius:99px"></div></div>`;
+}
+
+// ── El widget del Dashboard ──────────────────────────────────────────────
+function pnPintarDash() {
+  const el = document.getElementById('d-puntos');
+  if (!el) return;
+  let R;
+  try { R = pnResumen(); } catch (e) { el.innerHTML = ''; return; }
+  const porVencer = R.saldo.porVencer > 0
+    ? `<div style="font-size:11.5px;color:var(--warning);font-weight:700;margin-top:3px">${pnFmt(R.saldo.porVencer)} vencen el ${pnFecha(R.saldo.proximo)}</div>`
+    : '';
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:16px">
+      ${pnAnillo(R.indice.total, R.rango, 86)}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:800;color:var(--text)">${R.rango.nom}</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.4;margin-top:2px">${R.rango.sub}</div>
+        <div style="display:flex;gap:18px;margin-top:10px;flex-wrap:wrap">
+          <div><div style="font-size:19px;font-weight:800;color:var(--primary)">${pnFmt(R.saldo.saldo)}</div>
+               <div style="font-size:10.5px;color:var(--muted);font-weight:600">PUNTOS</div>${porVencer}</div>
+          <div><div style="font-size:19px;font-weight:800;color:var(--text)">${R.racha}</div>
+               <div style="font-size:10.5px;color:var(--muted);font-weight:600">SEMANA${R.racha === 1 ? '' : 'S'} SEGUIDA${R.racha === 1 ? '' : 'S'}</div></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── La pantalla ──────────────────────────────────────────────────────────
+let pnMesVisto = null;      // null = el mes en curso
+
+function pnRenderMesLabel(ym) {
+  const p = String(ym).split('-');
+  return (typeof MESES !== 'undefined' ? MESES[Number(p[1]) - 1] : p[1]) + ' ' + p[0];
+}
+function pnCambiarMes(delta) {
+  const base = pnMesVisto || new Date().toISOString().slice(0, 7);
+  const p = base.split('-');
+  const d = new Date(Number(p[0]), Number(p[1]) - 1 + delta, 15, 12);
+  const nuevo = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  if (nuevo > new Date().toISOString().slice(0, 7)) return;   // el futuro no se mide
+  pnMesVisto = nuevo;
+  renderPuntos();
+}
+
+// Las dos tablas de esta pantalla tienen una columna de apoyo —el tope, el
+// vencimiento— que en un celular no entra y quedaba cortada contra el borde,
+// sin forma de llegar a ella. En pantalla angosta esa columna desaparece y su
+// contenido pasa a una segunda línea debajo del nombre. Nada se esconde: lo que
+// cambia es dónde se lee.
+const PN_ESTILOS = `<style>
+  .pn-angosto { display:none }
+  @media (max-width:560px) {
+    .pn-ancho { display:none }
+    .pn-angosto { display:block; font-size:11px; color:var(--muted); margin-top:2px; font-weight:500 }
+  }
+</style>`;
+
+function renderPuntos() {
+  const cont = document.getElementById('puntosBody');
+  if (!cont) return;
+  try { pnConciliar(); } catch (e) {}
+
+  const ym = pnMesVisto || new Date().toISOString().slice(0, 7);
+  const R = pnResumen(curUserId(), ym);
+  const Rg = pnReglas();
+  const esMesActual = ym === new Date().toISOString().slice(0, 7);
+
+  // Aviso honesto: si todavía no sabemos quién es el titular del hogar, hay
+  // acciones viejas sin dueño que están esperando y el número está incompleto.
+  const avisoTitular = R.titularConocido ? '' : `
+    <div class="card" style="border-left:4px solid var(--warning);margin-bottom:14px">
+      <div style="font-size:13.5px;color:var(--text);line-height:1.5">
+        <b>Faltan sumar algunas cosas.</b> Norte todavía está resolviendo quién es el titular de este hogar.
+        Hasta que lo sepa, lo que se cargó antes de que existiera el registro de autoría queda sin asignar.
+        Se suma solo, sin que tengas que hacer nada.
+      </div>
+    </div>`;
+
+  // ── Cabecera: el índice del mes ──
+  const sig = R.siguiente;
+  const faltaSig = sig ? Math.max(0, sig.min - R.indice.total) : 0;
+  const cabecera = `
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:16px;font-weight:800;color:var(--text)">Tu Índice de Hábito</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="btn btn-secondary" style="padding:4px 11px;font-size:14px" onclick="pnCambiarMes(-1)">‹</button>
+          <span style="font-size:13px;font-weight:700;color:var(--muted);min-width:96px;text-align:center">${pnRenderMesLabel(ym)}</span>
+          <button class="btn btn-secondary" style="padding:4px 11px;font-size:14px${esMesActual ? ';opacity:.35;cursor:default' : ''}"
+                  ${esMesActual ? 'disabled' : ''} onclick="pnCambiarMes(1)">›</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:22px;flex-wrap:wrap">
+        ${pnAnillo(R.indice.total, R.rango, 132)}
+        <div style="flex:1;min-width:220px">
+          <div style="font-size:21px;font-weight:800;color:var(--text)">${R.rango.nom}</div>
+          <div style="font-size:13.5px;color:var(--muted);line-height:1.5;margin-top:4px">${R.rango.sub}</div>
+          ${sig ? `<div style="font-size:12.5px;color:var(--text);margin-top:10px">
+            Te faltan <b>${faltaSig}</b> punto${faltaSig === 1 ? '' : 's'} de índice para <b>${sig.nom}</b>.</div>` : ''}
+          <div style="margin-top:12px;padding:10px 12px;background:var(--bg);border-radius:9px;font-size:12.5px;color:var(--muted);line-height:1.5">
+            Este número mide <b>cómo usás Norte este mes</b>, no cómo manejás tu plata.
+            Sube y baja. Es distinto de <a href="#" onclick="showPage('progreso');return false" style="color:var(--primary);font-weight:600">Progreso</a>,
+            que mide todo lo que lograste desde que empezaste y nunca baja.
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  // ── Los cinco subíndices, desglosados ──
+  const subs = PN_SUBS.map(s => {
+    const v = R.indice.subs[s.k] || 0;
+    const peso = Rg.pesos[s.k];
+    const color = v >= 70 ? 'var(--success)' : (v >= 35 ? 'var(--primary)' : 'var(--muted)');
+    return `<div style="padding:13px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+        <div style="font-size:14px;font-weight:700;color:var(--text)">${s.nom}
+          <span style="font-size:11px;font-weight:600;color:var(--muted)">· pesa ${peso}%</span></div>
+        <div style="font-size:15px;font-weight:800;color:${color}">${v}</div>
+      </div>
+      <div style="margin:7px 0 6px">${pnBarra(v, color)}</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.45">${s.exp}</div>
+    </div>`;
+  }).join('');
+
+  const desglose = `
+    <div class="card" style="margin-bottom:14px">
+      <div class="report-title" style="margin-bottom:4px">De dónde sale ese número</div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:6px">
+        Cinco cosas, con el peso que tiene cada una. Están acá abajo enteras: no hay nada que no puedas ver.
+      </div>
+      ${subs}
+      <div style="padding-top:13px;display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:14px;font-weight:800;color:var(--text)">Índice del mes</div>
+        <div style="font-size:19px;font-weight:800;color:var(--primary)">${R.indice.total}</div>
+      </div>
+    </div>`;
+
+  // ── El saldo de puntos ──
+  const s = R.saldo;
+  const vencAviso = s.porVencer > 0
+    ? `<div style="margin-top:10px;padding:10px 12px;background:#FFF7ED;border:1px solid rgba(245,158,11,.35);border-radius:9px;font-size:12.5px;color:#92400e;line-height:1.5">
+         <b>${pnFmt(s.porVencer)} puntos vencen el ${pnFecha(s.proximo)}</b> — faltan ${pnDiasHasta(s.proximo)} días.
+       </div>` : '';
+
+  const saldo = `
+    <div class="card" style="margin-bottom:14px">
+      <div class="report-title" style="margin-bottom:12px">Tus puntos</div>
+      <div style="display:flex;gap:26px;flex-wrap:wrap">
+        <div><div style="font-size:30px;font-weight:800;color:var(--primary);line-height:1">${pnFmt(s.saldo)}</div>
+             <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:3px">DISPONIBLES</div></div>
+        <div><div style="font-size:30px;font-weight:800;color:var(--text);line-height:1">${pnFmt(s.ganados)}</div>
+             <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:3px">GANADOS EN TOTAL</div></div>
+        <div><div style="font-size:30px;font-weight:800;color:var(--muted);line-height:1">${pnFmt(s.vencidos)}</div>
+             <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:3px">VENCIDOS</div></div>
+        <div><div style="font-size:30px;font-weight:800;color:var(--text);line-height:1">${R.racha}</div>
+             <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:3px">SEMANAS SEGUIDAS</div></div>
+      </div>
+      ${vencAviso}
+      <div style="margin-top:12px;font-size:12.5px;color:var(--muted);line-height:1.5">
+        Un punto dura <b>${Rg.vence} días</b> desde que se gana. Los puntos son tuyos, no del hogar:
+        cada integrante junta los suyos.
+      </div>
+    </div>`;
+
+  // ── Cómo se ganan ──
+  const tabla = Object.keys(Rg.acciones).map(k => {
+    const a = Rg.acciones[k];
+    return `<tr>
+      <td style="padding:8px 0;font-size:13px;color:var(--text)">${a.nom}<span class="pn-angosto">hasta ${a.tope} por ${a.por}</span></td>
+      <td style="padding:8px 0;font-size:13px;font-weight:700;color:var(--primary);text-align:right;white-space:nowrap">+${a.pts}</td>
+      <td class="pn-ancho" style="padding:8px 0;font-size:11.5px;color:var(--muted);text-align:right;white-space:nowrap">hasta ${a.tope} por ${a.por}</td>
+    </tr>`;
+  }).join('');
+
+  const comoSeGanan = `
+    <div class="card" style="margin-bottom:14px">
+      <div class="report-title" style="margin-bottom:4px">Cómo se ganan</div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:8px">
+        La tabla completa, con los topes. Los topes existen para que el sistema premie el hábito y no
+        el volumen: cargar cincuenta movimientos un domingo vale menos que cargar tres por semana durante un mes.
+      </div>
+      <table style="width:100%;border-collapse:collapse">${tabla}</table>
+    </div>`;
+
+  // ── El historial ──
+  const movs = pnMovimientosDe(curUserId(), 80);
+  const filas = movs.length ? movs.map(m => `
+    <tr style="${m.vencido ? 'opacity:.45' : ''}">
+      <td style="padding:7px 0;font-size:12.5px;color:var(--muted);white-space:nowrap">${pnFecha(m.ts)}</td>
+      <td style="padding:7px 8px;font-size:13px;color:var(--text)">${m.nom}${m.tope
+        ? ' <span style="font-size:10.5px;font-weight:700;color:#92740a;background:#fde68a;border-radius:9px;padding:1px 6px">tope del período</span>' : ''}<span class="pn-angosto">${m.vencido ? 'vencido' : 'vence ' + pnFecha(m.vence)}</span></td>
+      <td style="padding:7px 0;font-size:13px;font-weight:700;text-align:right;white-space:nowrap;color:${m.pts ? 'var(--success)' : 'var(--muted)'}">${m.pts ? '+' + m.pts : '0'}</td>
+      <td class="pn-ancho" style="padding:7px 0 7px 10px;font-size:11.5px;color:var(--muted);text-align:right;white-space:nowrap">${m.vencido ? 'vencido' : 'vence ' + pnFecha(m.vence)}</td>
+    </tr>`).join('')
+    : `<tr><td colspan="4" style="padding:16px 0;font-size:13px;color:var(--muted)">Todavía no hay movimientos de puntos.</td></tr>`;
+
+  const historial = `
+    <div class="card" style="margin-bottom:14px">
+      <div class="report-title" style="margin-bottom:4px">Historial</div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:8px">
+        Todo lo que sumó y lo que no, con el motivo. Las filas en cero son acciones que llegaron
+        después del tope del período: se registran igual para que siempre se pueda explicar un saldo.
+      </div>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">${filas}</table></div>
+    </div>`;
+
+  // ── Lo que viene, con candado ──
+  // Se muestra qué va a haber y no se promete cuándo. Una pantalla vacía durante
+  // tres meses no sostiene nada, y una fecha inventada se paga más caro.
+  const recompensas = `
+    <div class="card">
+      <div class="report-title" style="margin-bottom:4px">🔒 Todavía no se canjean</div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:12px">
+        Los puntos ya se acumulan, pero el canje no está abierto. Preferimos que juntes durante
+        los primeros meses y abrirlo cuando haya algo que valga la pena, antes que abrirlo vacío.
+        Cuando esté, estos son los primeros:
+      </div>
+      ${[['Un mes de Norte PRO', 'Sin tocar tu plan actual: se extiende un mes.'],
+         ['Cupo extra de carga por foto y voz', 'Más cargas con IA durante un mes.'],
+         ['Acceso anticipado', 'Lo que se esté por lanzar, antes que el resto.']]
+        .map(([t, d]) => `<div style="display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--border)">
+          <span style="font-size:15px;line-height:1.3;opacity:.4">🔒</span>
+          <div><div style="font-size:13.5px;font-weight:700;color:var(--text)">${t}</div>
+               <div style="font-size:12px;color:var(--muted);line-height:1.45">${d}</div></div>
+        </div>`).join('')}
+    </div>`;
+
+  cont.innerHTML = PN_ESTILOS + avisoTitular + cabecera + desglose + saldo + comoSeGanan + historial + recompensas;
+}
+
+// ── PUNTOS NORTE: lo que NortIA cuenta y lo que el superadmin edita ──────
+
+// El contexto que recibe NortIA. Los números los calcula el código; la IA sólo
+// los narra. Por eso acá van los valores ya resueltos y una instrucción
+// explícita de no inventar la fórmula: si algún día NortIA se pone a explicar
+// ponderadores, va a explicar mal alguno y eso es letra chica.
+function pnContextoIA() {
+  try {
+    if (typeof pnResumen !== 'function') return '';
+    const hoy = new Date();
+    const ym = hoy.toISOString().slice(0, 7);
+    const ant = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 15);
+    const ymAnt = ant.getFullYear() + '-' + String(ant.getMonth() + 1).padStart(2, '0');
+    const R = pnResumen(curUserId(), ym);
+    if (!R.indice.hayDatos && !R.saldo.ganados) return '';
+    const prev = pnIndice(curUserId(), ymAnt);
+
+    const L = [];
+    L.push('');
+    L.push('PUNTOS NORTE — ÍNDICE DE HÁBITO DE ESTA PERSONA');
+    L.push('Índice de este mes: ' + R.indice.total + ' de 100 (' + R.rango.nom + ').' +
+           (prev.hayDatos ? ' El mes pasado fue ' + prev.total + '.' : ' No hay mes anterior con el que comparar.'));
+    L.push('Los cinco componentes, de 0 a 100 cada uno:');
+    PN_SUBS.forEach(s => {
+      const v = R.indice.subs[s.k] || 0;
+      const d = prev.hayDatos ? (v - (prev.subs[s.k] || 0)) : null;
+      L.push('  · ' + s.nom + ': ' + v +
+             (d === null ? '' : (d > 0 ? ' (subió ' + d + ')' : (d < 0 ? ' (bajó ' + (-d) + ')' : ' (igual)'))) +
+             ' — ' + s.exp);
+    });
+    L.push('Puntos disponibles: ' + R.saldo.saldo + '. Ganados en total: ' + R.saldo.ganados +
+           '. Vencidos: ' + R.saldo.vencidos + '. Racha: ' + R.racha + ' semanas seguidas.');
+    if (R.saldo.porVencer > 0) L.push('Atención: ' + R.saldo.porVencer + ' puntos vencen pronto.');
+    L.push('CÓMO HABLAR DE ESTO: si te preguntan por el índice, contá en castellano DOS O TRES ' +
+           'factores que lo movieron y qué conviene hacer ahora, mirando los componentes de arriba. ' +
+           'Nunca expliques la fórmula ni los ponderadores, nunca inventes un número que no esté acá, ' +
+           'y nunca lo presentes como una nota sobre cómo maneja su plata: mide cómo usa Norte, nada más. ' +
+           'Si el índice bajó, decilo sin dramatizar y señalá el componente concreto que lo hizo bajar.');
+    return L.join('\n');
+  } catch (e) { return ''; }
+}
+
+// ── La sección de superadmin ─────────────────────────────────────────────
+// Editar la economía sin subir un archivo. Los pesos se validan al guardar:
+// unos ponderadores que no suman 100 dan un índice que nunca llega a 100 y
+// nadie entendería por qué.
+(function () {
+  function pnEsSuper() {
+    try { return (getSession() || {}).userId === SUPER_ADMIN_UID; } catch (e) { return false; }
+  }
+
+  function pnAdminContenedor() {
+    if (document.getElementById('pnAdmSection')) return true;
+    var page = document.querySelector('#page-admin > div');
+    if (!page) return false;
+    var wrap = document.createElement('div');
+    wrap.id = 'pnAdmWrap';
+    wrap.innerHTML = '<div class="admin-group-label">Puntos Norte</div>' +
+      '<div class="card admin-section" id="pnAdmSection" style="margin-bottom:8px;padding:22px 24px">' +
+      '<div id="pnAdmBody">Cargando…</div></div>';
+    var ref = document.getElementById('bkWrap') || document.getElementById('saWrap');
+    if (ref && ref.parentNode === page) { page.insertBefore(wrap, ref.nextSibling); }
+    else { page.insertBefore(wrap, page.children[1] || null); }
+    return true;
+  }
+
+  function pnAdmRef() { return firebase.database().ref('norteSync/puntosReglas'); }
+
+  window.pnAdmGuardar = function () {
+    var R = JSON.parse(JSON.stringify(PN_REGLAS_DEF));
+    var out = { acciones: {}, pesos: {} };
+    var sumaPesos = 0;
+    var err = '';
+    Object.keys(R.acciones).forEach(function (k) {
+      var p = document.getElementById('pnAdm_p_' + k);
+      var t = document.getElementById('pnAdm_t_' + k);
+      if (!p || !t) return;
+      out.acciones[k] = { pts: Number(p.value), tope: Number(t.value) };
+      if (!(Number(p.value) >= 0) || !(Number(t.value) >= 0)) err = 'Hay un valor que no es un número válido en "' + R.acciones[k].nom + '".';
+    });
+    Object.keys(R.pesos).forEach(function (k) {
+      var el = document.getElementById('pnAdm_w_' + k);
+      if (!el) return;
+      out.pesos[k] = Number(el.value);
+      sumaPesos += Number(el.value);
+    });
+    ['vence', 'graciaVence', 'coberturaMeta', 'mesMinMovs', 'mesMinSemanas'].forEach(function (k) {
+      var el = document.getElementById('pnAdm_g_' + k);
+      if (el) out[k] = Number(el.value);
+    });
+    if (Math.abs(sumaPesos - 100) > 0.01) err = 'Los pesos del índice suman ' + sumaPesos + ' y tienen que sumar 100.';
+    var st = document.getElementById('pnAdmEstado');
+    if (err) { st.textContent = '⚠️ ' + err + ' No se guardó nada.'; st.style.color = 'var(--danger)'; return; }
+    st.textContent = 'Guardando…'; st.style.color = 'var(--muted)';
+    pnAdmRef().set(out)
+      .then(function () {
+        st.textContent = '✅ Guardado. Los cambios ya rigen: no hace falta subir un archivo.';
+        st.style.color = 'var(--success)';
+      })
+      .catch(function (e) { st.textContent = '⚠️ No se pudo guardar: ' + (e && e.message || e); st.style.color = 'var(--danger)'; });
+  };
+
+  window.pnAdmRestaurar = function () {
+    if (!confirm('Vuelve a los valores de fábrica y borra los que hayas configurado.\n\n¿Seguís?')) return;
+    pnAdmRef().remove().then(function () { pnAdmPintar(); });
+  };
+
+  function num(id, val, ancho) {
+    return '<input type="number" id="' + id + '" value="' + val + '" style="width:' + (ancho || 62) +
+           'px;padding:5px 7px;border:1px solid var(--border);border-radius:6px;font-size:13px;text-align:right">';
+  }
+
+  function pnAdmPintar() {
+    var body = document.getElementById('pnAdmBody');
+    if (!body) return;
+    var R = (typeof pnReglas === 'function') ? pnReglas() : PN_REGLAS_DEF;
+
+    var filas = Object.keys(R.acciones).map(function (k) {
+      var a = R.acciones[k];
+      return '<tr><td style="padding:6px 0;font-size:13px;color:var(--text)">' + a.nom +
+             ' <span style="font-size:11px;color:var(--muted)">(por ' + a.por + ')</span></td>' +
+             '<td style="padding:6px 8px;text-align:right">' + num('pnAdm_p_' + k, a.pts) + '</td>' +
+             '<td style="padding:6px 0;text-align:right">' + num('pnAdm_t_' + k, a.tope) + '</td></tr>';
+    }).join('');
+
+    var pesos = PN_SUBS.map(function (s) {
+      return '<tr><td style="padding:6px 0;font-size:13px;color:var(--text)">' + s.nom + '</td>' +
+             '<td style="padding:6px 0;text-align:right">' + num('pnAdm_w_' + s.k, R.pesos[s.k]) + '</td></tr>';
+    }).join('');
+
+    var gen = [['vence', 'Días que dura un punto'], ['graciaVence', 'Días de aviso antes de vencer'],
+               ['coberturaMeta', 'Rubros para cobertura plena'], ['mesMinMovs', 'Movimientos para un mes completo'],
+               ['mesMinSemanas', 'Semanas para un mes completo']]
+      .map(function (g) {
+        return '<tr><td style="padding:6px 0;font-size:13px;color:var(--text)">' + g[1] + '</td>' +
+               '<td style="padding:6px 0;text-align:right">' + num('pnAdm_g_' + g[0], R[g[0]]) + '</td></tr>';
+      }).join('');
+
+    body.innerHTML =
+      '<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px">La economía de puntos</div>' +
+      '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:14px">' +
+      'Se edita acá y rige al instante para todos, sin subir un archivo nuevo. ' +
+      'Lo que ya se acreditó no se recalcula: cambiar un valor afecta de acá en adelante.</div>' +
+      '<div style="display:flex;gap:26px;flex-wrap:wrap">' +
+        '<div style="flex:1;min-width:290px"><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px">PUNTOS Y TOPES</div>' +
+          '<table style="width:100%;border-collapse:collapse"><tr>' +
+          '<th style="text-align:left;font-size:11px;color:var(--muted);padding-bottom:4px">Acción</th>' +
+          '<th style="text-align:right;font-size:11px;color:var(--muted);padding-bottom:4px">Puntos</th>' +
+          '<th style="text-align:right;font-size:11px;color:var(--muted);padding-bottom:4px">Tope</th></tr>' + filas + '</table></div>' +
+        '<div style="flex:1;min-width:230px">' +
+          '<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px">PESOS DEL ÍNDICE (suman 100)</div>' +
+          '<table style="width:100%;border-collapse:collapse">' + pesos + '</table>' +
+          '<div style="font-size:12px;font-weight:700;color:var(--muted);margin:16px 0 5px">GENERALES</div>' +
+          '<table style="width:100%;border-collapse:collapse">' + gen + '</table>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:10px;align-items:center;margin-top:18px;flex-wrap:wrap">' +
+        '<button class="btn btn-primary" onclick="pnAdmGuardar()">Guardar reglas</button>' +
+        '<button class="btn btn-secondary" onclick="pnAdmRestaurar()">Volver a los valores de fábrica</button>' +
+        '<span id="pnAdmEstado" style="font-size:12.5px;color:var(--muted)"></span>' +
+      '</div>' +
+      '<div id="pnAdmAnalitica" style="margin-top:22px;border-top:1px solid var(--border);padding-top:16px">Cargando la analítica…</div>';
+
+    pnAdmAnalitica();
+  }
+
+  // ── Analítica (PTS-012) ────────────────────────────────────────────────
+  // Instrumentada desde el día uno a propósito: si se midiera después, el
+  // primer mes —el único que muestra el efecto del lanzamiento— se pierde
+  // para siempre y no hay forma de recuperarlo.
+  function pnAdmAnalitica() {
+    var el = document.getElementById('pnAdmAnalitica');
+    if (!el) return;
+    firebase.database().ref('norteSync/puntos').once('value').then(function (snap) {
+      var v = snap.val() || {};
+      var hogares = Object.keys(v);
+      var personas = [];
+      hogares.forEach(function (eid) { (v[eid].personas || []).forEach(function (p) { personas.push(p); }); });
+      if (!personas.length) { el.innerHTML = '<div style="font-size:13px;color:var(--muted)">Todavía no subió ningún hogar.</div>'; return; }
+
+      var conIdx = personas.filter(function (p) { return p.idx > 0; });
+      var prom = conIdx.length ? Math.round(conIdx.reduce(function (a, p) { return a + p.idx; }, 0) / conIdx.length) : 0;
+      var emitidos = personas.reduce(function (a, p) { return a + (p.ganados || 0); }, 0);
+      var vencidos = personas.reduce(function (a, p) { return a + (p.vencidos || 0); }, 0);
+      var conRacha = personas.filter(function (p) { return (p.racha || 0) >= 4; }).length;
+
+      var porRango = {};
+      PN_RANGOS.forEach(function (r) { porRango[r.nom] = 0; });
+      personas.forEach(function (p) { if (porRango[p.rango] !== undefined) porRango[p.rango]++; });
+
+      var kpi = function (n, l, c) {
+        return '<div style="min-width:104px"><div style="font-size:24px;font-weight:800;color:' + (c || 'var(--text)') + ';line-height:1">' + n + '</div>' +
+               '<div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-top:3px">' + l + '</div></div>';
+      };
+
+      el.innerHTML =
+        '<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:10px">Cómo va</div>' +
+        '<div style="display:flex;gap:22px;flex-wrap:wrap;margin-bottom:16px">' +
+          kpi(hogares.length, 'HOGARES') + kpi(personas.length, 'PERSONAS') +
+          kpi(prom, 'ÍNDICE PROMEDIO', 'var(--primary)') +
+          kpi(conRacha, 'CON RACHA ≥ 4 SEM.') +
+          kpi(emitidos.toLocaleString('es-AR'), 'PUNTOS EMITIDOS') +
+          kpi(vencidos.toLocaleString('es-AR'), 'PUNTOS VENCIDOS', 'var(--muted)') +
+        '</div>' +
+        '<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px">DISTRIBUCIÓN POR RANGO</div>' +
+        PN_RANGOS.map(function (r) {
+          var n = porRango[r.nom] || 0;
+          var p = personas.length ? (n / personas.length) * 100 : 0;
+          return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:5px">' +
+                 '<div style="width:120px;font-size:12.5px;color:var(--text)">' + r.nom + '</div>' +
+                 '<div style="flex:1;height:8px;background:var(--border);border-radius:99px;overflow:hidden">' +
+                 '<div style="height:100%;width:' + p.toFixed(1) + '%;background:linear-gradient(90deg,' + r.c1 + ',' + r.c2 + ')"></div></div>' +
+                 '<div style="width:34px;text-align:right;font-size:12.5px;font-weight:700;color:var(--text)">' + n + '</div></div>';
+        }).join('') +
+        '<div style="font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:12px">' +
+        'Sale de <code>norteSync/puntos</code>, que sólo lleva el resumen: índice, rango, racha y totales de puntos. ' +
+        'Ni un movimiento, ni un importe, ni un rubro.</div>';
+    }).catch(function (e) {
+      el.innerHTML = '<div style="font-size:13px;color:var(--danger)">No se pudo leer la analítica: ' + (e && e.message || e) + '</div>';
+    });
+  }
+
+  window.pnAdmRefrescar = function () {
+    if (!pnEsSuper()) return;
+    if (!pnAdminContenedor()) return;
+    pnAdmPintar();
+  };
+})();
+
 // ── REPORTES ─────────────────────────────────────────────────
 let curRepTab = 'evol';
 let repMoneda = 'ARS'; // 'ARS' | 'USD' | 'AMBAS'
@@ -10363,6 +11797,7 @@ function cuGet() {
 function cuSave(c) {
   localStorage.setItem(cuKey(), JSON.stringify({ items: (c && c.items) || {} }));
   try { schedulePush(); } catch (e) {}
+  try { pnAgendarSubida(); } catch (e) {}
 }
 
 /* La clave con la que se agrupan las anotaciones de un mismo producto.
@@ -12109,7 +13544,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.22.001';
+const APP_VERSION = 'v005.24.003';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -14068,6 +15503,7 @@ function populateQpRubros(tipo) {
 function resetQpForm() {
   qpTipo = 'Gasto';
   qpTipoGasto = 'Variable';
+  qpVia = '';
   setQpTipo('Gasto');
   ['qpDetalle','qpPesos','qpUSD','qpRubro','qpRubroCustom','qpPagado','qpDueno'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('qpDuenoField').style.display = 'none';
@@ -14138,6 +15574,10 @@ function closeAc() {
 }
 
 // ── Captura de gasto por foto o voz (NortIA) ──────────────────
+// Cómo entró el movimiento que se está por guardar. Lo pone la carga por foto
+// o por voz y lo limpia el reset del panel; si está vacío, entró a mano. Es el
+// único dato que Puntos Norte no puede derivar de lo que ya estaba guardado.
+let qpVia = '';
 let qpMediaRecorder = null;
 let qpAudioChunks = [];
 let qpMimeAudio = '';
@@ -14337,6 +15777,7 @@ async function qpProcesarIA(base64, mimeType) {
     return;
   }
   actualizarQpIaContador(cupo.usados);
+  qpVia = 'ia';
   try {
     const datos = await window.nortiaExtraerGasto(base64, mimeType);
     /* Queda a mano para diagnosticar: en la consola, window.__ultimaIA muestra
@@ -14391,6 +15832,7 @@ function saveQuickTx() {
     pagado: pagadoFinal, saldo: Math.max(0, pesos - pagadoFinal),
     creadoPor: dueno.id, creadoPorNombre: dueno.nombre
   };
+  if (qpVia) tx.via = qpVia;
   saveData([...getData(), tx]);
   // Sube ya. Las operaciones grandes (importar, carga masiva, pagar tarjeta)
   // siempre hicieron esto; la carga de a uno se había quedado esperando el
@@ -14931,7 +16373,8 @@ DETALLE MOVIMIENTO POR MOVIMIENTO — ${rotulo} (${recientes.length}):
 ${detalle || 'Sin movimientos'}
 
 Los meses que no figuran en ese detalle no vienen listados uno por uno, pero sus totales SÍ están completos en los dos bloques de arriba. Si te preguntan por uno de esos meses, contestá con esos totales: son exactos. Nunca digas que no tenés el dato si el total está, y nunca inventes movimientos individuales que no estén listados.
-${rsContextoIA()}`;
+${rsContextoIA()}
+${pnContextoIA()}`;
 }
 
 // Una línea por movimiento, con el mismo formato en todos lados.
@@ -17449,7 +18892,9 @@ function subtituloRumbo() {
     {"cod":"PTS-015","tit":"Beneficios bloqueados visibles durante los primeros 3 meses","desc":"Se ve qué hay y cuánto falta para activarlo, sin poder canjear todavía.","fun":"Pantalla Puntos Norte.","ben":"La espera de tres meses necesita algo que la sostenga. Un candado con fecha es mejor que una pantalla vacía.","tipo":"Mejora","prio":"Media","est":"Pendiente","proy":"PUNTOS"},
     {"cod":"PTS-016","tit":"Gatillo de escala: cuándo salir a buscar comercios","desc":"Fijar el número de usuarios activos por zona que hace falta antes de tocarle la puerta al primer comercio. De referencia: una cafetería necesita ver del orden de 20 a 50 canjes por mes para repetir, lo que con 5% de canje son 400 a 1.000 activos en su radio.","fun":"Decisión, no desarrollo.","ben":"Salir antes de tener masa quema los contactos: un partner que probó y no vio tráfico no vuelve a atender. Es más barato esperar que recuperar.","tipo":"Mejora","prio":"Alta","est":"Pendiente","proy":"PUNTOS"},
     {"cod":"PTS-017","tit":"Motor de beneficios y catálogo de partners","desc":"Partner, categoría, zona, costo en puntos, cupo, vigencia, elegibilidad, reglas de renovación y código o QR de canje.","fun":"Backend y pantalla nueva.","ben":"Es la mitad B2B2C del plan. Queda en Baja a propósito: no se empieza hasta que el gatillo de PTS-016 se cumpla, por más que el diseño ya esté escrito.","tipo":"Mejora","prio":"Baja","est":"Pendiente","proy":"PUNTOS"},
-    {"cod":"PTS-018","tit":"Panel de partners y modelos de cobro","desc":"Métricas agregadas para la marca —impresiones, activaciones, canjes— sin datos individuales, y los modelos de fee, CPA o revenue share.","fun":"Admin y backend.","ben":"Es por donde el proyecto se paga a sí mismo, y es lo último de todo: sin partners activos no hay nada que cobrar.","tipo":"Mejora","prio":"Baja","est":"Pendiente","proy":"PUNTOS"}
+    {"cod":"PTS-018","tit":"Panel de partners y modelos de cobro","desc":"Métricas agregadas para la marca —impresiones, activaciones, canjes— sin datos individuales, y los modelos de fee, CPA o revenue share.","fun":"Admin y backend.","ben":"Es por donde el proyecto se paga a sí mismo, y es lo último de todo: sin partners activos no hay nada que cobrar.","tipo":"Mejora","prio":"Baja","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-019","tit":"Compactar el ledger de puntos cuando se haga grande","desc":"Hoy queda una fila por cada accion, incluidas las que no sumaron por tope, y nunca se borra ninguna. Con 500 movimientos son 25 KB y no molesta; con tres anios de uso intenso puede pasar los 500 KB, y eso viaja en el snapshot de sincronizacion cada vez. Hay que juntar las filas viejas en resumenes por mes SIN perder la capacidad de saber que un evento ya se acredito, que es lo unico que impide pagar dos veces la misma accion.","fun":"Puntos Norte.","ben":"No es urgente y se puede medir: el panel de Admin ya muestra cuantas filas tiene cada hogar. Pero si se resuelve mal se rompe la idempotencia y el saldo de alguien se duplica, asi que conviene pensarlo con tiempo y no el dia que alguien se queda sin espacio.","tipo":"Mejora","prio":"Baja","est":"Pendiente","proy":"PUNTOS"},
+    {"cod":"PTS-020","tit":"La carga por foto y voz no tiene historia para puntuar","desc":"Todo el resto del indice se calcula retroactivo desde el primer dia, porque los datos ya guardaban lo necesario. La carga por IA no: hasta ahora nadie registraba que un movimiento hubiera entrado por foto o por audio. Desde esta version se guarda (campo via), pero lo anterior es irrecuperable. Queda decidir si se deja asi o si se le acredita algo a los que ya venian usandola, cruzando los contadores mensuales de uso que si existen en norteSync.","fun":"Puntos Norte.","ben":"Es la unica parte del indice que arranca en cero para todos, y justo es la accion que mas distingue a Norte. Si se decide compensar, hay que hacerlo antes de que los primeros meses queden consolidados.","tipo":"Mejora","prio":"Media","est":"Pendiente","proy":"PUNTOS"}
   ];
 
   var _bkItems = null;
