@@ -3,7 +3,12 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<!-- viewport-fit=cover: sin esto, en iOS TODAS las env(safe-area-inset-*)
+     valen cero, y como la app corre con la barra de estado translúcida se
+     dibuja desde el píxel cero de la pantalla. La reserva para el notch estaba
+     escrita desde agosto y no valía nada: la cabecera de Mi Rumbo quedaba
+     abajo de la hora en cualquier iPhone con notch. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Norte — La brújula de tus finanzas</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Ccircle cx='28' cy='28' r='26' fill='%231B3A4B'/%3E%3Cpath d='M28 12 L34 28 L28 44 L22 28 Z' fill='%23FF8A5C'/%3E%3Cpath d='M28 12 L34 28 L28 28 Z' fill='%23FFB199'/%3E%3C/svg%3E">
 
@@ -1087,7 +1092,10 @@ tr:hover td { background: #fafbfc; }
 .ing-total-row td { font-weight:700; background:#f0fdf4 !important; color:var(--success); }
 
 /* QUICK-ADD FAB */
-.fab { position:fixed; bottom:28px; right:28px; z-index:160; }
+/* Con viewport-fit=cover la página también se dibuja sobre el borde de
+   abajo, así que el botón flotante se sube por encima del indicador de inicio
+   del iPhone. Sin esto queda justo arriba de la barrita y cuesta tocarlo. */
+.fab { position:fixed; bottom:calc(28px + env(safe-area-inset-bottom, 0px)); right:28px; z-index:160; }
 .fab-btn { width:52px; height:52px; border-radius:50%; background:var(--primary); color:white; border:none; font-size:26px; cursor:pointer; box-shadow:0 4px 18px rgba(37,99,235,0.45); transition:all 0.2s; display:flex; align-items:center; justify-content:center; line-height:1; }
 .fab-btn:hover { background:var(--primary-dark); transform:scale(1.06); }
 .fab-btn.open { background:#64748b; transform:rotate(45deg); }
@@ -11202,19 +11210,31 @@ function pnBrujula(tam, claro) {
     '</svg>';
 }
 
-// El cartelito de «nuevo» del menú. Se apaga cuando la persona entra a la
-// pantalla por primera vez, y de todas formas cuando pasa la fecha de corte:
-// un «nuevo» que sigue colgado tres meses después deja de leerse y encima
-// contagia al resto de los carteles.
+// El cartelito de «nuevo» del menú. Misma regla que estrenó El Cuaderno: se
+// apaga cuando pasaron unos días Y ADEMÁS la persona entró. Entrar una vez,
+// de casualidad y por dos segundos, no es haber conocido la función — y con
+// la regla anterior eso alcanzaba para apagarlo para siempre.
+//
+// El reloj arranca la primera vez que esta persona abre la app con la función
+// ya publicada, no cuando se subió: a quien estuvo de viaje una semana el
+// cartel no se le vence antes de haberlo visto.
 const PN_NUEVO_HASTA = Date.parse('2026-12-31T23:59:59-03:00');
-const pnVistoKey = () => `fin_pnvisto_${curEmpresa()}`;
+const PN_NUEVO_DIAS  = 5;
+const pnVistoKey  = () => `fin_pnvisto_${curEmpresa()}`;
+const pnDesdeKey  = () => `fin_pndesde_${curEmpresa()}`;
 
 function pnPintarNuevo() {
   const el = document.getElementById('navPuntosNuevo');
   if (!el) return;
-  let visto = false;
-  try { visto = !!localStorage.getItem(pnVistoKey()); } catch (e) {}
-  el.style.display = (!visto && Date.now() < PN_NUEVO_HASTA) ? '' : 'none';
+  let visto = false, desde = 0;
+  try {
+    visto = !!localStorage.getItem(pnVistoKey());
+    desde = Number(localStorage.getItem(pnDesdeKey())) || 0;
+    if (!desde) { desde = Date.now(); localStorage.setItem(pnDesdeKey(), String(desde)); }
+  } catch (e) { desde = Date.now(); }
+  const cumplio = Date.now() >= desde + PN_NUEVO_DIAS * 86400000;
+  const mostrar = !(cumplio && visto) && Date.now() < PN_NUEVO_HASTA;
+  el.style.display = mostrar ? '' : 'none';
 }
 function pnMarcarVisto() {
   try { localStorage.setItem(pnVistoKey(), String(Date.now())); } catch (e) {}
@@ -11375,6 +11395,53 @@ function pnPintarDash() {
 }
 
 
+// El flujo mes a mes. Es la vista que contesta «cómo llegué hasta acá»:
+// cuánto sumó cada mes, uno abajo del otro, y el detalle sólo del mes que se
+// toca. Mostrar todas las acciones de toda la historia juntas —que es lo que
+// hacía antes— con ochocientos puntos da una lista que nadie lee.
+function pnPorMes(uid) {
+  const R = pnReglas();
+  const l = pnGetLedger();
+  const i = l.u.indexOf(uid);
+  if (i < 0) return [];
+  const ms = R.vence * 86400000;
+  const ahora = Date.now();
+  const g = {};
+  l.r.forEach(function (f) {
+    const p = Number(f.p) || 0;
+    if (f.i !== i) return;
+    const ym = pnYM(f.t);
+    if (!g[ym]) g[ym] = { ym: ym, pts: 0, vencidos: 0, sinPuntos: 0, acc: {} };
+    const b = g[ym];
+    if (p <= 0) { b.sinPuntos++; return; }
+    b.pts += p;
+    if (f.t + ms <= ahora) b.vencidos += p;
+    if (!b.acc[f.k]) b.acc[f.k] = { k: f.k, n: 0, pts: 0 };
+    b.acc[f.k].n++;
+    b.acc[f.k].pts += p;
+  });
+  return Object.keys(g).sort().reverse().map(function (ym) {
+    const b = g[ym];
+    b.lineas = Object.keys(b.acc).map(function (k) {
+      return Object.assign({ nom: (R.acciones[k] || {}).nom || k }, b.acc[k]);
+    }).sort(function (a, c) { return c.pts - a.pts; });
+    delete b.acc;
+    return b;
+  });
+}
+
+// Abrir y cerrar el detalle de un mes. Se toca el DOM directamente en vez de
+// repintar la pantalla entera: repintar perdería la posición del scroll, y
+// esta lista puede tener un año de meses.
+function pnAbrirMes(ym) {
+  const d = document.getElementById('pnMes_' + ym);
+  const f = document.getElementById('pnFlecha_' + ym);
+  if (!d) return;
+  const abierto = d.style.display !== 'none';
+  d.style.display = abierto ? 'none' : '';
+  if (f) f.style.transform = abierto ? '' : 'rotate(90deg)';
+}
+
 // La cuenta, hecha. Agrupa el ledger por tipo de acción y devuelve de dónde
 // salió cada punto. Nadie va a sumar ciento treinta filas para entender un
 // saldo: si el número no se puede explicar en seis renglones, no se explica.
@@ -11527,26 +11594,38 @@ function renderPuntos() {
   // La cuenta, renglón por renglón. Es la tarjeta más importante de la
   // pantalla: es la que contesta «¿por qué tengo este número?».
   const C = pnCuenta(curUserId());
-  const filasCuenta = C.lineas.map(function (x) {
-    return `<tr>
-      <td style="padding:7px 0;font-size:13.5px;color:var(--text)">${x.nom}</td>
-      <td style="padding:7px 10px;font-size:12px;color:var(--muted);text-align:right;white-space:nowrap">${x.n} ${x.n === 1 ? 'vez' : 'veces'}</td>
-      <td style="padding:7px 0;font-size:14px;font-weight:800;color:var(--text);text-align:right;white-space:nowrap">+${pnFmt(x.pts)}</td>
-    </tr>`;
+  const meses = pnPorMes(curUserId());
+  const mayor = meses.reduce(function (m, x) { return Math.max(m, x.pts); }, 1);
+  const filasCuenta = meses.map(function (x) {
+    const detalle = x.lineas.map(function (l) {
+      return `<div style="display:flex;gap:10px;padding:5px 0;font-size:12.5px">
+        <span style="flex:1;color:var(--muted)">${l.nom}</span>
+        <span style="color:var(--muted);white-space:nowrap">${l.n} ${l.n === 1 ? 'vez' : 'veces'}</span>
+        <span style="width:46px;text-align:right;font-weight:700;color:var(--text);white-space:nowrap">+${pnFmt(l.pts)}</span>
+      </div>`;
+    }).join('');
+    const tope = x.sinPuntos
+      ? `<div style="font-size:11.5px;color:var(--muted);padding-top:6px;border-top:1px solid var(--border);margin-top:5px">
+           ${pnFmt(x.sinPuntos)} ${x.sinPuntos === 1 ? 'acción llegó' : 'acciones llegaron'} después del tope y no ${x.sinPuntos === 1 ? 'sumó' : 'sumaron'} puntos.
+         </div>` : '';
+    return `<div style="border-top:1px solid var(--border)">
+      <div onclick="pnAbrirMes('${x.ym}')" style="display:flex;align-items:center;gap:11px;padding:11px 0;cursor:pointer">
+        <span id="pnFlecha_${x.ym}" style="font-size:11px;color:var(--muted);transition:transform .15s;display:inline-block;width:9px">&#9654;</span>
+        <span style="width:122px;font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap">${pnRenderMesLabel(x.ym)}</span>
+        <span style="flex:1;min-width:30px;height:8px;background:var(--border);border-radius:99px;overflow:hidden">
+          <span style="display:block;height:100%;width:${Math.round((x.pts / mayor) * 100)}%;background:var(--primary);border-radius:99px"></span>
+        </span>
+        <span style="width:54px;text-align:right;font-size:14px;font-weight:800;color:var(--text);white-space:nowrap">+${pnFmt(x.pts)}</span>
+      </div>
+      <div id="pnMes_${x.ym}" style="display:none;padding:2px 0 12px 20px">${detalle}${tope}</div>
+    </div>`;
   }).join('');
-
-  const notaTope = C.sinPuntos > 0
-    ? `<div style="font-size:12px;color:var(--muted);line-height:1.5;margin-top:10px">
-         Hubo <b>${pnFmt(C.sinPuntos)}</b> ${C.sinPuntos === 1 ? 'acción que llegó' : 'acciones que llegaron'}
-         después del tope de su período y no ${C.sinPuntos === 1 ? 'sumó' : 'sumaron'} puntos.
-         Los topes están para que el sistema premie el hábito y no el volumen.
-       </div>` : '';
 
   const saldo = `
     <div class="card pn-saldo" style="margin-bottom:14px">
       <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:3px">Tus puntos</div>
       <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:16px">
-        De dónde salió cada uno. La cuenta completa, sin nada abreviado.
+        Cuánto sumaste cada mes. Tocá uno para ver de dónde salió cada punto.
       </div>
       <div style="display:flex;gap:26px;flex-wrap:wrap;margin-bottom:18px">
         <div><div style="font-size:38px;font-weight:800;color:var(--primary);line-height:1">${pnFmt(s.saldo)}</div>
@@ -11554,17 +11633,19 @@ function renderPuntos() {
         <div><div style="font-size:38px;font-weight:800;color:var(--text);line-height:1">${R.racha}</div>
              <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:4px">SEMANA${R.racha === 1 ? '' : 'S'} SEGUIDA${R.racha === 1 ? '' : 'S'}</div></div>
       </div>
-      ${C.lineas.length ? `
-      <table style="width:100%;border-collapse:collapse;border-top:1px solid var(--border)">
-        ${filasCuenta}
-        <tr><td colspan="2" style="padding:11px 0 7px;font-size:13.5px;font-weight:700;color:var(--text);border-top:2px solid var(--border)">Ganaste en total</td>
-            <td style="padding:11px 0 7px;font-size:15px;font-weight:800;color:var(--text);text-align:right;border-top:2px solid var(--border)">${pnFmt(C.ganados)}</td></tr>
-        ${C.vencidos ? `<tr><td colspan="2" style="padding:5px 0;font-size:13.5px;color:var(--muted)">Vencieron (pasaron ${Rg.vence} días)</td>
-            <td style="padding:5px 0;font-size:14px;font-weight:700;color:var(--muted);text-align:right">−${pnFmt(C.vencidos)}</td></tr>` : ''}
-        <tr><td colspan="2" style="padding:9px 0 2px;font-size:14.5px;font-weight:800;color:var(--text);border-top:1px solid var(--border)">Te quedan</td>
-            <td style="padding:9px 0 2px;font-size:19px;font-weight:800;color:var(--primary);text-align:right;border-top:1px solid var(--border)">${pnFmt(C.saldo)}</td></tr>
-      </table>` : `<div style="font-size:13px;color:var(--muted)">Todavía no sumaste puntos.</div>`}
-      ${notaTope}
+      ${meses.length ? `
+      <div style="font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.04em;margin-bottom:2px">MES A MES · TOCÁ UNO PARA VER EL DETALLE</div>
+      ${filasCuenta}
+      <div style="border-top:2px solid var(--border);display:flex;padding:11px 0 6px">
+        <span style="flex:1;font-size:13.5px;font-weight:700;color:var(--text)">Ganaste en total</span>
+        <span style="font-size:15px;font-weight:800;color:var(--text)">${pnFmt(C.ganados)}</span></div>
+      ${C.vencidos ? `<div style="display:flex;padding:3px 0">
+        <span style="flex:1;font-size:13.5px;color:var(--muted)">Vencieron (pasaron ${Rg.vence} días)</span>
+        <span style="font-size:14px;font-weight:700;color:var(--muted)">−${pnFmt(C.vencidos)}</span></div>` : ''}
+      <div style="border-top:1px solid var(--border);display:flex;align-items:baseline;padding:9px 0 2px;margin-top:4px">
+        <span style="flex:1;font-size:14.5px;font-weight:800;color:var(--text)">Te quedan</span>
+        <span style="font-size:19px;font-weight:800;color:var(--primary)">${pnFmt(C.saldo)}</span></div>
+      ` : `<div style="font-size:13px;color:var(--muted)">Todavía no sumaste puntos.</div>`}
       ${vencAviso}
       <div style="margin-top:12px;font-size:12.5px;color:var(--muted);line-height:1.5">
         Un punto dura <b>${Rg.vence} días</b> desde que se gana. Los puntos son tuyos, no del hogar:
@@ -11652,7 +11733,9 @@ function renderPuntos() {
       </div>
     </div>`;
 
-  cont.innerHTML = PN_ESTILOS + avisoTitular + cabecera + desglose + saldo + comoSeGanan + historial + recompensas;
+  // El historial plano ya no se arma: la vista mes a mes, con su detalle
+  // desplegable, dice exactamente lo mismo y sin la lista de sesenta filas.
+  cont.innerHTML = PN_ESTILOS + avisoTitular + cabecera + desglose + saldo + comoSeGanan + recompensas;
 }
 
 // ── PUNTOS NORTE: lo que NortIA cuenta y lo que el superadmin edita ──────
@@ -13804,7 +13887,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.26.002';
+const APP_VERSION = 'v005.27.001';
 let novEntradas = [];
 
 function novLeida(e) {
