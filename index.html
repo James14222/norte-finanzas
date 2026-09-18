@@ -728,21 +728,31 @@ tr:hover td { background: #fafbfc; }
   font-size: 34px; font-weight: 800; color: #fff; letter-spacing: -.8px; line-height: 1.02;
 }
 .pn-lanza-baja {
-  font-size: 15px; color: rgba(255,255,255,.72); line-height: 1.45; margin-top: 11px;
+  font-size: 17px; color: rgba(255,255,255,.78); line-height: 1.4; margin-top: 12px;
 }
-.pn-bloque { display: flex; gap: 14px; margin-bottom: 20px; }
-.pn-bloque-n {
-  flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%;
-  background: rgba(255,138,92,.14); color: var(--primary-dark, #E8714A);
-  font-size: 12.5px; font-weight: 800; display: flex; align-items: center; justify-content: center;
-}
-.pn-bloque-tit { font-size: 15.5px; font-weight: 800; color: var(--text); line-height: 1.28; }
-.pn-bloque-txt { font-size: 13.5px; line-height: 1.6; color: var(--muted); margin-top: 4px; }
+/* Sin numeritos al costado: numeraban un argumento y hacian que el cartel se
+   leyera como un instructivo. Ahora cada bloque es un beneficio suelto, y lo
+   que lo separa del anterior es una linea fina y aire. */
+.pn-bloque { margin-bottom: 26px; padding-top: 22px; border-top: 1px solid var(--border); }
+.pn-bloque:first-child { padding-top: 0; border-top: none; }
+/* Grande a proposito: es una pieza de venta, no un texto de ayuda. */
+.pn-bloque-tit { font-size: 21px; font-weight: 800; color: var(--text); line-height: 1.22; letter-spacing: -.35px; }
+.pn-bloque-txt { font-size: 16px; line-height: 1.52; color: var(--muted); margin-top: 7px; }
 .pn-remate {
-  background: var(--bg); border-radius: 11px; padding: 14px 16px; margin-top: 4px;
-  font-size: 13px; line-height: 1.55; color: var(--muted);
+  background: linear-gradient(135deg, #0c1c2b 0%, #1a3c4e 100%); color: #fff;
+  border-radius: 13px; padding: 20px 22px; margin-top: 10px;
+  font-size: 15px; line-height: 1.5;
 }
-.pn-remate b { color: var(--text); }
+/* Blanco y grande: es el titulo del remate, sobre fondo oscuro. Habia una
+   segunda regla heredada de cuando el remate era claro, que pintaba este mismo
+   texto de gris oscuro; venia despues y ganaba, asi que el titulo quedaba
+   ilegible sobre el azul. Se borro: una sola regla decide el color. */
+.pn-remate b { color: #fff; font-size: 17px; display: block; margin-bottom: 6px; }
+.pn-remate-chica { font-size: 13px; color: rgba(255,255,255,.62); line-height: 1.5; margin-top: 11px; }
+@media (max-width: 620px) {
+  .pn-bloque-tit { font-size: 19px; }
+  .pn-bloque-txt { font-size: 15px; }
+}
 @media (max-width: 620px) {
   .pn-lanza-cab { padding: 26px 22px 22px; }
   .pn-lanza-tit { font-size: 29px; }
@@ -1757,8 +1767,11 @@ tr:hover td { background: #fafbfc; }
            max() lo resuelve siempre esta constante, porque env() devuelve 0
            mientras el viewport no pida `viewport-fit=cover` (se probo activarlo
            y dejo la app sin poder salir). Si en algun modelo la cabecera vuelve
-           a quedar abajo del reloj, se sube ESTE numero y nada mas. */
-        padding-top: max(38px, calc(16px + env(safe-area-inset-top, 0px))) !important;
+           a quedar abajo del reloj, se sube ESTE numero y nada mas.
+           38 -> 28: seguia sobrando entre media y una linea en un iPhone de
+           430pt. Que alcance con tan poco indica que en la PWA la vista ya
+           arranca debajo del reloj, o sea que esto es aire, no resguardo. */
+        padding-top: max(28px, calc(16px + env(safe-area-inset-top, 0px))) !important;
     padding-left: 20px !important;
   }
   /* Numeros largos ($X.XXX.XXX,XX) podian forzar el ancho de la tarjeta mas alla de
@@ -11351,35 +11364,32 @@ function pnAbrirLanzamiento() {
     '<div style="margin-bottom:17px"><div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:4px">' +
     tit + '</div><div style="font-size:13.5px;line-height:1.62;color:var(--muted)">' + txt + '</div></div>';
 
-  // Un bloque = una idea. El número al costado no es decoración: son cuatro
-  // pasos de un mismo argumento y conviene que se lean en orden.
-  const paso = (n, tit, txt) =>
-    '<div class="pn-bloque"><div class="pn-bloque-n">' + n + '</div><div>' +
+  // Un bloque = un beneficio. El titulo dice qué gana la persona; el texto de
+  // abajo es una sola frase que lo sostiene. Nada más: es una pieza de venta.
+  const paso = (tit, txt) =>
+    '<div class="pn-bloque">' +
     '<div class="pn-bloque-tit">' + tit + '</div>' +
-    '<div class="pn-bloque-txt">' + txt + '</div></div></div>';
+    '<div class="pn-bloque-txt">' + txt + '</div></div>';
 
   document.getElementById('pnLanzaIco').innerHTML = pnBrujula(52, true);
   document.getElementById('pnLanzaCuerpo').innerHTML =
-    paso(1, 'Norte es tan bueno como lo que tiene adentro',
-         'Te puede decir en qué se te va la plata, cuánto te sale vivir y cuánto podés apartar sin ' +
-         'quedarte corto. Pero sólo si el registro está completo. Un mes a medias da una respuesta a medias.') +
-    paso(2, 'Y lo que lo completa no es el esfuerzo: es volver',
-         'Tres movimientos por semana durante un mes arman una foto que sirve. Cincuenta un domingo, no. ' +
-         'Por eso una semana en la que apareciste vale ' + R.acciones.sem.pts + ' puntos y un movimiento vale ' +
-         R.acciones.mov.pts + '. El sistema entero está armado para premiar la vuelta, no la maratón.') +
-    paso(3, 'Tu índice es qué tan completa está la foto de este mes',
-         'Un número del 0 al 100 que junta cinco cosas: si apareciste todas las semanas, si están todos ' +
-         'los rubros, si planificaste, si usaste Norte entero y si cerraste el mes. ' +
-         'Están las cinco desglosadas en la pantalla: no hay nada que no puedas ver.') +
-    paso(4, 'Sube y baja, y está bien que lo haga',
-         'Mide el mes, no te mide a vos. Un mes flojo no borra nada: al siguiente el número vuelve a subir. ' +
-         'No es una nota sobre cómo manejás tu plata — es cuánto de tu plata está registrada.') +
+    paso('Sabé en qué se te va la plata',
+         'Cuánto te sale vivir. Cuánto podés apartar sin quedarte corto. ' +
+         'Norte te lo dice — cuando el mes está completo.') +
+    paso('Dos minutos por semana alcanzan',
+         'No hace falta un mes heroico. Hace falta volver. ' +
+         'Una semana en la que apareciste vale ' + R.acciones.sem.pts + ' puntos; un movimiento suelto, ' +
+         R.acciones.mov.pts + '.') +
+    paso('Un número te dice cómo vas',
+         'Del 0 al 100. Se arma con cinco cosas y las cinco están a la vista en tu pantalla.') +
+    paso('Un mes flojo no te borra nada',
+         'Mide el mes, no te mide a vos. El que viene arranca de nuevo.') +
     '<div class="pn-remate">' +
-    '<b>Y mientras tanto, juntás puntos.</b> Cada cosa que hacés en Norte suma, y los puntos duran ' +
-    R.vence + ' días. El mes completo —usar Norte entero, tarjeta incluida— es el más grande de todos: ' +
-    R.acciones.mes.pts + ' puntos. ' +
-    'El canje todavía no está abierto y no hay fecha prometida: preferimos que juntes unos meses y abrirlo ' +
-    'cuando haya algo que valga la pena, antes que abrirlo vacío.' +
+    '<b>Y todo lo que hacés suma puntos.</b>' +
+    'El mes completo es el premio grande: ' + R.acciones.mes.pts + ' puntos de una. ' +
+    'Te duran ' + R.vence + ' días.' +
+    '<div class="pn-remate-chica">El canje todavía no está abierto y no prometemos fecha. ' +
+    'Preferimos abrirlo cuando haya algo que valga la pena, y no antes.</div>' +
     '</div>';
   ov.classList.remove('hidden');
 }
@@ -14064,7 +14074,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.32.003';
+const APP_VERSION = 'v005.33.003';
 let novEntradas = [];
 
 function novLeida(e) {
