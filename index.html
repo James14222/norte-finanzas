@@ -4868,10 +4868,15 @@ function norteMirarCupoPionero() {
           { cache: 'no-store' })
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (!d || !d.abierto || !(d.restantes > 0)) return;
+        // `restantes` puede no venir: el servidor lo manda sólo cuando quedan
+        // pocos. Sin la cifra se dice el trato, sin inventar urgencia.
+        if (!d || !d.abierto || !d.hayLugar) return;
         const el = document.getElementById('loginLandingLink');
         if (!el) return;
-        el.innerHTML = 'Quedan <b style="color:#FF8A5C">' + d.restantes + '</b> lugares gratis en el Club Pioneros ' +
+        const cifra = (typeof d.restantes === 'number')
+          ? ('Quedan <b style="color:#FF8A5C">' + d.restantes + '</b> lugares gratis en el Club Pioneros ')
+          : 'Hay lugares gratis en el Club Pioneros ';
+        el.innerHTML = cifra +
           '<a href="https://norteapp.ar" style="color:#FF8A5C;font-weight:600;text-decoration:none">Ver cómo entrar →</a>';
       })
       .catch(function () {});
@@ -14094,7 +14099,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.36.002';
+const APP_VERSION = 'v005.37.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -19419,19 +19424,43 @@ function subtituloRumbo() {
             cbKpi(d.enCurso || 0, 'En curso') +
             cbKpi(d.enEspera || 0, 'En lista de espera') +
             '</div>';
+          // El estado de AHORA va como cartel, aparte del control. Y la etiqueta
+          // del checkbox dice lo que pasa al tildarlo, no como esta: al reves
+          // se lee como lo contrario de lo que hace.
+          html += '<div style="margin-bottom:14px">' +
+            '<span style="display:inline-block;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800;' +
+            (d.abierto
+              ? 'background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.4);color:#16a34a">AHORA: ABIERTO — se pueden anotar'
+              : 'background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.35);color:#ef4444">AHORA: CERRADO — nadie se puede anotar') +
+            '</span></div>';
           html += '<div style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap">' +
             '<label style="font-size:13px;display:flex;align-items:center;gap:8px;cursor:pointer">' +
               '<input type="checkbox" id="cbAbierto"' + (d.abierto ? ' checked' : '') + '> ' +
-              '<span>El Club esta <b>' + (d.abierto ? 'abierto' : 'cerrado') + '</b></span></label>' +
+              '<span>Dejar que se anoten</span></label>' +
             '<div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Lugares en total</div>' +
               '<input type="number" id="cbTope" min="1" max="500" value="' + (d.tope || 25) + '" ' +
               'style="width:90px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"></div>' +
-            '<button class="btn" style="padding:8px 16px" onclick="cbGuardar()">Guardar</button>' +
+            '<div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Mostrar el numero desde</div>' +
+              '<input type="number" id="cbUmbral" min="0" max="500" value="' + (d.umbral === undefined ? 10 : d.umbral) + '" ' +
+              'style="width:90px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)"></div>' +
+            '<button class="btn" style="padding:8px 16px" onclick="cbGuardar()">' +
+              (d.abierto ? 'Guardar' : 'Abrir el Club') + '</button>' +
             '<span id="cbMsg" style="font-size:12.5px;color:var(--muted)"></span></div>';
+          // Que Jaime sepa, sin abrir la landing, si el publico esta viendo la
+          // cifra o no. Es la pregunta que se va a hacer cada vez que mire esto.
+          var loVe = (d.restantes || 0) <= (d.umbral === undefined ? 10 : d.umbral);
+          html += '<div style="font-size:12.5px;margin-top:12px;color:' + (loVe ? '#b45309' : 'var(--muted)') + '">' +
+            (loVe
+              ? 'En la landing <b>se esta mostrando</b> que quedan ' + (d.restantes || 0) + ' lugares.'
+              : 'En la landing <b>no se muestra el numero</b>: solo el trato. Aparece cuando queden ' +
+                (d.umbral === undefined ? 10 : d.umbral) + ' o menos.') + '</div>';
           html += '<div style="font-size:12px;color:var(--muted);margin-top:14px;line-height:1.55;border-top:1px solid var(--border);padding-top:12px">' +
             'Los <b>tomados</b> no se editan a mano: los lleva el alta y los devuelve la revision diaria ' +
             'cuando alguien no verifica el mail en 48 h o no completa los cuatro capitulos en 30 dias. ' +
-            'Si baja el tope por debajo de los tomados, no se echa a nadie: simplemente no entran mas.</div>';
+            'Si baja el tope por debajo de los tomados, no se echa a nadie: simplemente no entran mas. ' +
+            '<br><br>El <b>numero de lugares libres no se publica</b> hasta que queden pocos: un contador ' +
+            'que no se mueve es un cartel que dice que nadie se anoto. Arriba del umbral el servidor ' +
+            'directamente no lo manda, asi que tampoco se puede leer abriendo la direccion a mano.</div>';
           body.innerHTML = html;
         } catch (e) {
           body.innerHTML = '<div style="font-size:13px;color:#ef4444;padding:12px 0">No pudimos cargar el cupo: ' + esc(e.message) + '</div>';
@@ -19443,7 +19472,8 @@ function subtituloRumbo() {
         try {
           await cbLlamar({ accion: 'guardar',
             abierto: document.getElementById('cbAbierto').checked,
-            tope: Number(document.getElementById('cbTope').value) });
+            tope: Number(document.getElementById('cbTope').value),
+            umbral: Number(document.getElementById('cbUmbral').value) });
           msg.textContent = 'Listo';
           cbRender();
         } catch (e) { msg.textContent = 'No se pudo: ' + e.message; }
