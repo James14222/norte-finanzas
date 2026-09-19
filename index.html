@@ -2239,7 +2239,7 @@ tr:hover td { background: #fafbfc; }
         <div class="login-forgot-link"><a onclick="showLoginState('forgot');return false;">¿Olvidaste tu contraseña?</a></div>
         <div id="loginError">Email o contraseña incorrectos</div>
         <button type="submit" class="login-btn">Ingresar →</button>
-              <div class="login-landing-link" style="text-align:center;margin-top:16px;font-size:13px;color:#64748B">¿No tenés cuenta todavía? <a href="https://norteapp.ar" style="color:#FF8A5C;font-weight:600;text-decoration:none">Conocé Norte →</a></div>
+              <div class="login-landing-link" id="loginLandingLink" style="text-align:center;margin-top:16px;font-size:13px;color:#64748B">¿No tenés cuenta todavía? <a href="https://norteapp.ar" style="color:#FF8A5C;font-weight:600;text-decoration:none">Conocé Norte →</a></div>
       </form>
     </div>
 
@@ -3916,7 +3916,7 @@ tr:hover td { background: #fafbfc; }
             <p>Norte no borra ni bloquea nada. Si te quedás sin cargas de foto/voz o sin consultas de NortIA, esas dos funciones esperan al 1° del mes siguiente — el resto de la aplicación sigue funcionando igual, y <strong>la carga manual nunca tiene límite</strong>. El cupo es por hogar y se comparte entre los integrantes.</p>
             <p>Los cupos son los que figuran arriba, sin excepciones ni asteriscos. Ningún plan dice «ilimitado»: preferimos escribir el número, aunque sea alto, antes que prometer un techo que en algún momento existe igual.</p>
           </div>
-          <div class="ayuda-tip">Si entraste por el <strong>Club Pioneros</strong>, tenés Norte FOCO gratis para siempre y conservás el cupo con el que entraste: <span data-cupo="PIONERO.capturas">50</span> cargas por foto/voz y <span data-cupo="PIONERO.chat">60</span> consultas a NortIA al mes. El Club ya está cerrado y el cupo de FOCO cambió después, pero lo que se prometió ahí sigue en pie.</div>
+          <div class="ayuda-tip">Si entraste por el <strong>Club Pioneros</strong>, tenés Norte FOCO gratis para siempre y conservás el cupo con el que entraste: <span data-cupo="PIONERO.capturas">50</span> cargas por foto/voz y <span data-cupo="PIONERO.chat">60</span> consultas a NortIA al mes. Si entraste en la primera camada, conservás ese cupo aunque el de FOCO haya cambiado después: lo que se prometió sigue en pie. La segunda camada entra con el cupo FOCO de hoy.</div>
         </div>
 
         <!-- TU CUENTA -->
@@ -4856,6 +4856,33 @@ async function runMigration() {
 }
 
 // Login
+// Si el Club Pioneros tiene lugares, el pie del login lo dice. Usa el mismo
+// endpoint publico que la landing y no necesita sesion: es la unica pantalla
+// que ve alguien que todavia no tiene cuenta.
+//
+// Si no hay cupo, o el endpoint no contesta, la linea queda exactamente como
+// esta hoy. Nunca promete un lugar que no existe.
+function norteMirarCupoPionero() {
+  try {
+    fetch('https://us-central1-norte-finanzas.cloudfunctions.net/estadoClubPioneros',
+          { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.abierto || !(d.restantes > 0)) return;
+        const el = document.getElementById('loginLandingLink');
+        if (!el) return;
+        el.innerHTML = 'Quedan <b style="color:#FF8A5C">' + d.restantes + '</b> lugares gratis en el Club Pioneros ' +
+          '<a href="https://norteapp.ar" style="color:#FF8A5C;font-weight:600;text-decoration:none">Ver cómo entrar →</a>';
+      })
+      .catch(function () {});
+  } catch (e) {}
+}
+try {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', norteMirarCupoPionero);
+  } else { norteMirarCupoPionero(); }
+} catch (e) {}
+
 async function doLogin(e) {
   e.preventDefault();
   const email  = document.getElementById('loginEmail').value.trim().toLowerCase();
@@ -14067,7 +14094,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.35.001';
+const APP_VERSION = 'v005.36.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -20100,11 +20127,10 @@ function subtituloRumbo() {
       // heredar el distintivo del que estaba logueado antes en la misma pestaña.
       _gpsParticipa = false; _gpsCapPendiente = false;
       try { window.gpsPintarBadgeTotal(); } catch (e) {}
-      // El Club Pioneros se cerró, pero las novedades y el canal privado no eran
-      // un premio del club: son la forma de enterarse de lo que cambia y de
-      // contestarme. Ahora los ve cualquiera que haya comprado Norte. Lo único
-      // que queda reservado es el programa guiado de cuatro semanas, que sólo
-      // tiene sentido para quienes ya lo arrancaron.
+      // Las novedades y el canal privado no son un premio del Club: son la
+      // forma de enterarse de lo que cambia y de contestarme. Los ve cualquiera
+      // que tenga Norte. Lo único reservado es el programa guiado de cuatro
+      // semanas, que sólo tiene sentido para quien está haciéndolo.
       body.innerHTML =
         '<div id="gpsRefTop"></div>' +
         '<div id="gpsNovWrap"></div>' +
@@ -20167,7 +20193,7 @@ function subtituloRumbo() {
       filas + cardAcceso +
       // Las novedades y el canal privado van al pie, después del programa.
       // Los arman las DOS ramas de esta función —ésta y la de quien no está en
-      // el programa guiado—, porque desde que se cerró el Club Pioneros los ve
+      // el programa guiado—, porque no son un premio del Club: los ve
       // cualquiera que tenga Norte.
       '<div id="gpsRefTop" style="margin-top:28px"></div>' +
       '<div id="gpsNovWrap" style="margin-top:28px"></div>' +
