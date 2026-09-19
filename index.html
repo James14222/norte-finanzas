@@ -14094,7 +14094,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.36.001';
+const APP_VERSION = 'v005.36.002';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -20516,7 +20516,11 @@ if ('serviceWorker' in navigator) {
 <script>
 (function () {
   var SUPER = "RUO9uxaH26QZDC1eMVuA0kjMYkw2";
-  var MAPA  = { saRender: "saWrap", pnRender: "pnWrap", wbRender: "wbSection" };
+  // OJO: un panel nuevo NO se dibuja solo por envolver renderAdmin — hay que
+  // sumarlo ACA. Pasó con el cupo del Club Pioneros: el código estaba
+  // completo y correcto, y no aparecía nunca porque faltaba esta línea.
+  var MAPA  = { saRender: "saWrap", pnRender: "pnWrap", wbRender: "wbSection",
+                cbRender: "cbWrap", bkRender: "bkWrap" };
   function esSuper() {
     try { return (getSession() || {}).userId === SUPER; } catch (e) { return false; }
   }
