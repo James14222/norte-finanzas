@@ -14211,7 +14211,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.41.001';
+const APP_VERSION = 'v005.42.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -18990,6 +18990,9 @@ function subtituloRumbo() {
   // lo escribe el aparato de cada persona y la regla deja leer el nodo entero
   // sólo al superadmin.
   var _saPuntos = {};
+  // Por qué no hay datos. Vacío = se leyó bien y no hay nada reportado; con
+  // texto = la lectura falló. Sin esto, los dos casos se ven igual.
+  var _saPuntosFalla = '';
 
   function esSuper() {
     try { return (getSession() || {}).userId === SUPER_ADMIN_UID; } catch (e) { return false; }
@@ -19109,11 +19112,14 @@ function subtituloRumbo() {
         var snapP = await firebase.database().ref('norteSync/progreso').once('value');
         _saProgreso = snapP.val() || {};
       } catch (e) { _saProgreso = {}; }
-      _saPuntos = {};
+      _saPuntos = {}; _saPuntosFalla = '';
       try {
         var snapPn = await firebase.database().ref('norteSync/puntos').once('value');
         _saPuntos = snapPn.val() || {};
-      } catch (e) { _saPuntos = {}; }
+      } catch (e) {
+        _saPuntos = {};
+        _saPuntosFalla = (e && e.message) ? String(e.message) : 'no se pudo leer';
+      }
       var us = d.usuarios || [];
       // Cuántas personas entraron de verdad en el último mes. Es el número que
       // la suma de cuentas no dice.
@@ -19289,6 +19295,11 @@ function subtituloRumbo() {
   }
 
   function saCeldaPuntos(u, hogar) {
+    // Primero lo que le pasó al panel, después lo que le pasa a la cuenta.
+    if (_saPuntosFalla) {
+      return '<span style="font-size:12px;color:#E8C050;font-weight:600" title="' +
+        esc(_saPuntosFalla) + '">no se pudo leer</span>';
+    }
     var r = saPuntosDe(u, hogar);
     if (!r) {
       return '<span style="font-size:12px;color:var(--muted)" ' +
