@@ -11035,6 +11035,22 @@ function pnSaldoDe(uid) {
   return { saldo, vencidos, porVencer, ganados, proximo };
 }
 
+// Lo ganado DENTRO de un mes, sin mirar vencimientos. Es otra pregunta que
+// el saldo: el saldo dice cuánto le queda vivo hoy, esto dice cuánto sumó en
+// septiembre. Un mes flojo puede convivir con un saldo alto de meses buenos.
+function pnGanadosEnMes(uid, ym) {
+  const l = pnGetLedger();
+  const i = l.u.indexOf(uid);
+  if (i < 0) return 0;
+  let total = 0;
+  l.r.forEach(f => {
+    if (f.i !== i) return;
+    const p = Number(f.p) || 0;
+    if (p > 0 && pnYM(f.t) === ym) total += p;
+  });
+  return total;
+}
+
 // El detalle que se muestra en pantalla, de lo más nuevo a lo más viejo.
 function pnMovimientosDe(uid, limite) {
   const R = pnReglas();
@@ -11183,7 +11199,9 @@ function pnResumenParaNube() {
     const s = pnSaldoDe(u);
     const i = pnIndice(u, ym);
     return { u: String(u).slice(0, 8), saldo: s.saldo, ganados: s.ganados,
-             vencidos: s.vencidos, idx: i.total, rango: pnRango(i.total).rango.nom,
+             vencidos: s.vencidos, porVencer: s.porVencer,
+             mes: pnGanadosEnMes(u, ym),
+             idx: i.total, rango: pnRango(i.total).rango.nom,
              racha: pnRacha(u) };
   });
   const idxs = personas.map(p => p.idx).filter(n => n > 0);
@@ -11840,6 +11858,12 @@ function renderPuntos() {
 // la tercera dejó el menú abajo del reloj, sin forma de tocarlo. El próximo
 // intento sale de estos números y no de una hipótesis.
 (function () {
+  // El mismo UID que filtra los demás paneles del superadmin.
+  function encEsSuper() {
+    try { return (getSession() || {}).userId === 'RUO9uxaH26QZDC1eMVuA0kjMYkw2'; }
+    catch (e) { return false; }
+  }
+
   function encContenedor() {
     if (document.getElementById('encSection')) return true;
     var page = document.querySelector('#page-admin > div');
@@ -11854,6 +11878,16 @@ function renderPuntos() {
   }
 
   window.encPintar = function () {
+    // SÓLO el superadmin. Al admin de un hogar esto no le sirve para nada y
+    // le muestra las tripas del aparato. Se colaba porque showPage('admin')
+    // llama acá derecho, sin pasar por el MAPA de paneles del super.
+    // El remove() no sobra: si en la misma pestaña se cierra la sesión del
+    // super y entra otra cuenta, el panel ya está dibujado y hay que sacarlo.
+    if (!encEsSuper()) {
+      var viejo = document.getElementById('encWrap');
+      if (viejo && viejo.parentNode) viejo.parentNode.removeChild(viejo);
+      return;
+    }
     if (!encContenedor()) return;
     var el = document.getElementById('encBody');
     if (!el) return;
@@ -14099,7 +14133,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.38.001';
+const APP_VERSION = 'v005.39.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -18855,6 +18889,10 @@ function subtituloRumbo() {
   var FN = 'https://us-central1-norte-finanzas.cloudfunctions.net';
   var _saHogares = [];
   var _saProgreso = {};
+  // El resumen de Puntos Norte de cada hogar. Mismo camino que el progreso:
+  // lo escribe el aparato de cada persona y la regla deja leer el nodo entero
+  // sólo al superadmin.
+  var _saPuntos = {};
 
   function esSuper() {
     try { return (getSession() || {}).userId === SUPER_ADMIN_UID; } catch (e) { return false; }
@@ -18974,6 +19012,11 @@ function subtituloRumbo() {
         var snapP = await firebase.database().ref('norteSync/progreso').once('value');
         _saProgreso = snapP.val() || {};
       } catch (e) { _saProgreso = {}; }
+      _saPuntos = {};
+      try {
+        var snapPn = await firebase.database().ref('norteSync/puntos').once('value');
+        _saPuntos = snapPn.val() || {};
+      } catch (e) { _saPuntos = {}; }
       var us = d.usuarios || [];
       // Cuántas personas entraron de verdad en el último mes. Es el número que
       // la suma de cuentas no dice.
@@ -19092,6 +19135,12 @@ function subtituloRumbo() {
             '</div>';
         }
 
+        // ── Puntos Norte, de la persona (no del hogar).
+        // El progreso es del hogar porque los movimientos son compartidos;
+        // los puntos NO: cada integrante tiene su propio saldo. Por eso acá
+        // se busca a esta cuenta adentro del resumen y no se muestra el total.
+        var celdaPuntos = saCeldaPuntos(u, hogar);
+
         var selPlan = hogar
           ? '<select onchange="saPlan(\'' + hogar.id + '\', this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)">' +
               ['FOCO', 'PRO', 'TOP'].map(function (p) {
@@ -19106,6 +19155,7 @@ function subtituloRumbo() {
           '<td style="font-size:12px">' + chip + extra + '</td>' +
           '<td>' + perfil + '</td>' +
           '<td>' + celdaUso + '</td>' +
+          '<td>' + celdaPuntos + '</td>' +
           '<td>' + selPlan + '</td>' +
           '<td>' + estado + '</td>' +
           '<td style="cursor:help" title="' + esc(detalleActividad(u)) + '">' + celdaActividad(u, esCompartido) + '</td>' +
@@ -19115,7 +19165,7 @@ function subtituloRumbo() {
 
       body.innerHTML =
         '<div style="overflow-x:auto"><table class="admin-table" style="width:100%">' +
-          '<thead><tr><th>Nombre</th><th>Email</th><th>Hogar</th><th title="Lo que contestó en el formulario, antes de pagar. Las cuentas anteriores a septiembre de 2026 no lo tienen.">Ciudad y objetivos</th><th title="El nivel de progreso del hogar: dice cuánto usan Norte de verdad, no sólo si entraron. Se calcula en el aparato de cada uno y sólo viaja el resultado — nunca sus movimientos.">Uso</th><th>Plan</th><th>Estado</th><th title="Cuándo entró ESTA persona: la más reciente entre abrir la app y loguearse. No incluye la carga de datos, que es del hogar y la comparten todos los integrantes — esa va en la segunda línea. Pasá el mouse por cada fila para ver las señales una por una.">Última actividad</th><th></th></tr></thead>' +
+          '<thead><tr><th>Nombre</th><th>Email</th><th>Hogar</th><th title="Lo que contestó en el formulario, antes de pagar. Las cuentas anteriores a septiembre de 2026 no lo tienen.">Ciudad y objetivos</th><th title="El nivel de progreso del hogar: dice cuánto usan Norte de verdad, no sólo si entraron. Se calcula en el aparato de cada uno y sólo viaja el resultado — nunca sus movimientos.">Uso</th><th title="Puntos Norte de ESTA persona. A diferencia del uso, que es del hogar, cada integrante tiene su propio saldo. Tocá para ver el detalle.">Puntos Norte</th><th>Plan</th><th>Estado</th><th title="Cuándo entró ESTA persona: la más reciente entre abrir la app y loguearse. No incluye la carga de datos, que es del hogar y la comparten todos los integrantes — esa va en la segunda línea. Pasá el mouse por cada fila para ver las señales una por una.">Última actividad</th><th></th></tr></thead>' +
           '<tbody>' + filas + '</tbody>' +
         '</table></div>';
     } catch (e) {
@@ -19128,6 +19178,97 @@ function subtituloRumbo() {
   // Lo que la última conexión no dice: en qué está parado el hogar, qué ya
   // consiguió y qué le falta. Todo sale del resumen que subió su propio
   // aparato; acá no se lee ni un movimiento.
+  // ── PUNTOS NORTE EN LA TABLA ───────────────────────────────────
+  // El resumen guarda a cada persona con los primeros 8 caracteres de su uid
+  // (`u`), no el uid entero: alcanza para reconocerla y no deja el
+  // identificador completo dando vueltas en un nodo que se lee entero.
+  function saPuntosDe(u, hogar) {
+    if (!hogar || !u || !u.uid) return null;
+    var res = _saPuntos[hogar.id];
+    if (!res || !Array.isArray(res.personas)) return null;
+    var corto = String(u.uid).slice(0, 8);
+    var p = res.personas.filter(function (x) { return x && x.u === corto; })[0];
+    return p ? { p: p, ts: res.ts, ym: res.ym } : { p: null, ts: res.ts, ym: res.ym };
+  }
+
+  function saCeldaPuntos(u, hogar) {
+    var r = saPuntosDe(u, hogar);
+    if (!r) {
+      return '<span style="font-size:12px;color:var(--muted)" ' +
+        'title="Todavía no reportó. El resumen se escribe cuando la persona abre Norte.">—</span>';
+    }
+    if (!r.p) {
+      // El hogar reportó, pero esta cuenta no aparece: todavía no hizo nada
+      // que sume. No es lo mismo que «no reportó», y decirlo igual confunde.
+      return '<span style="font-size:12px;color:var(--muted)" ' +
+        'title="El hogar ya reportó, pero esta cuenta todavía no sumó ningún punto.">sin puntos</span>';
+    }
+    var p = r.p;
+    var mes = Number(p.mes) || 0;
+    var saldo = Number(p.saldo) || 0;
+    var porVencer = Number(p.porVencer) || 0;
+    return '<div style="cursor:pointer" onclick="saVerPuntos(\'' + u.uid + '\',\'' + hogar.id + '\')" ' +
+        'title="Tocá para ver el detalle · calculado ' + esc(haceCuanto(r.ts)) + '">' +
+        '<div style="font-size:12.5px;font-weight:700;color:var(--text)">' + saldo.toLocaleString('es-AR') + ' activos</div>' +
+        '<div style="font-size:11.5px;color:var(--muted)">' + mes.toLocaleString('es-AR') + ' este mes · índice ' + (Number(p.idx) || 0) + '</div>' +
+        (porVencer
+          ? '<div style="font-size:11px;color:#E8C050;margin-top:2px">' + porVencer.toLocaleString('es-AR') + ' por vencer</div>'
+          : '') +
+        '<div style="font-size:11px;color:var(--primary);margin-top:2px">ver detalle ›</div>' +
+      '</div>';
+  }
+
+  window.saVerPuntos = function (uid, empresaId) {
+    var u = { uid: uid };
+    var hogar = { id: empresaId };
+    var r = saPuntosDe(u, hogar);
+    var datos = (_saHogares || []).filter(function (x) { return x.id === empresaId; })[0];
+    var ov = document.getElementById('saPtsOverlay');
+    if (!ov) {
+      ov = document.createElement('div'); ov.id = 'saPtsOverlay'; ov.className = 'overlay';
+      ov.innerHTML = '<div class="modal" style="max-width:460px">' +
+        '<div class="modal-title" id="saPtsTit">Puntos Norte</div>' +
+        '<div id="saPtsBody"></div>' +
+        '<div style="text-align:right;margin-top:16px">' +
+        '<button class="btn" onclick="document.getElementById(\'saPtsOverlay\').style.display=\'none\'">Cerrar</button>' +
+        '</div></div>';
+      document.body.appendChild(ov);
+    }
+    ov.style.display = 'flex';
+    var b = document.getElementById('saPtsBody');
+    document.getElementById('saPtsTit').textContent =
+      'Puntos Norte' + (datos && datos.nombre ? ' · ' + datos.nombre : '');
+    if (!r || !r.p) {
+      b.innerHTML = '<div style="font-size:13.5px;color:var(--muted);line-height:1.6">' +
+        'Esta cuenta todavía no sumó puntos.</div>';
+      return;
+    }
+    var p = r.p;
+    var fila = function (rot, val, nota, color) {
+      return '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px;' +
+             'padding:11px 0;border-bottom:1px solid var(--border)">' +
+             '<div><div style="font-size:13.5px;color:var(--text)">' + rot + '</div>' +
+             (nota ? '<div style="font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45">' + nota + '</div>' : '') +
+             '</div><div style="font-size:16px;font-weight:800;white-space:nowrap;color:' +
+             (color || 'var(--text)') + '">' + val + '</div></div>';
+    };
+    var mil = function (n) { return (Number(n) || 0).toLocaleString('es-AR'); };
+    b.innerHTML =
+      fila('Puntos de este mes', mil(p.mes), 'Lo que sumó en ' + esc(r.ym || '—') + '. Cada mes arranca de cero.', 'var(--primary)') +
+      fila('Acumulados activos', mil(p.saldo), 'Los que todavía no vencieron: esto es lo que podría canjear.') +
+      (Number(p.porVencer)
+        ? fila('De esos, por vencer', mil(p.porVencer), 'Se le caen pronto si no los usa.', '#E8C050')
+        : '') +
+      fila('Ganados en total', mil(p.ganados), 'Desde que existe Puntos Norte.', 'var(--muted)') +
+      fila('Ya vencidos', mil(p.vencidos), 'Se cayeron por no usarse a tiempo.', 'var(--muted)') +
+      fila('Índice de Hábito', (Number(p.idx) || 0) + ' / 100', esc(p.rango || '—')) +
+      fila('Racha', (Number(p.racha) || 0) + (Number(p.racha) === 1 ? ' semana' : ' semanas'),
+           'Semanas seguidas con actividad.') +
+      '<div style="font-size:11.5px;color:var(--muted);line-height:1.55;margin-top:14px">' +
+      'Sale de <code>norteSync/puntos</code>, el resumen que escribe el aparato de cada persona. ' +
+      'Calculado ' + esc(haceCuanto(r.ts)) + '. Ni un movimiento, ni un importe, ni un rubro.</div>';
+  };
+
   window.saVerProgreso = function (empresaId) {
     if (!esSuper()) return;
     var pr = _saProgreso[empresaId];
