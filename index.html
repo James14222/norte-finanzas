@@ -2225,6 +2225,12 @@ tr:hover td { background: #fafbfc; }
       </div>
     </div>
 
+    <!-- Aviso arriba del formulario. Lo usa el link de confirmación de
+         mail, que aterriza acá: si la persona no tiene la sesión abierta en
+         este aparato, por lo menos tiene que leer en castellano que salió
+         bien y qué hacer ahora. -->
+    <div id="loginAviso" style="display:none;margin-bottom:14px"></div>
+
     <!-- ── Bloque: LOGIN ── -->
     <div id="loginFormBlock">
       <form onsubmit="doLogin(event)">
@@ -5043,6 +5049,48 @@ function checkPasswordResetLink() {
     showLoginState('forgot');
     document.getElementById('forgotPwdErr').textContent = 'El link venció o no es válido. Pedí uno nuevo.';
     document.getElementById('forgotPwdErr').style.display = 'block';
+  });
+  return true;
+}
+
+// El aviso de arriba del formulario de login.
+function loginAviso(texto, esError) {
+  const el = document.getElementById('loginAviso');
+  if (!el) return;
+  el.textContent = texto;
+  el.className = esError ? 'login-msg-err' : 'login-msg-ok';
+  el.style.display = 'block';
+}
+
+// Detecta el link de confirmación de mail (?mode=verifyEmail&oobCode=...).
+//
+// El mail de bienvenida al Pionero trae ese link apuntando acá y no a la
+// página de Firebase, que está en inglés y no tiene salida. Acá el camino
+// termina donde tiene que terminar: si la sesión está abierta en este
+// aparato —el caso normal, porque se anotó hace dos minutos en este mismo
+// navegador— applyActionCode confirma en silencio y onAuthStateChanged lo
+// mete en la app. No hay pantalla intermedia ni botón de más.
+//
+// A diferencia del de contraseña, este NO devuelve true para frenar el
+// arranque: confirmar el mail no es una pantalla, es un trámite que pasa
+// mientras la app carga.
+function checkVerifyEmailLink() {
+  const params = new URLSearchParams(location.search);
+  const modo   = params.get('mode');
+  const codigo = params.get('oobCode');
+  if ((modo !== 'verifyEmail' && modo !== 'verifyAndChangeEmail') || !codigo) return false;
+
+  history.replaceState({}, '', location.pathname); // limpiar la URL
+
+  firebase.auth().applyActionCode(codigo).then(() => {
+    // Si ya hay sesión, esto no se ve: la persona está entrando a Norte.
+    loginAviso('Listo, tu mail quedó confirmado. Entrá con tu mail y tu contraseña.');
+    const u = firebase.auth().currentUser;
+    if (u) u.reload().catch(() => {});
+  }).catch(() => {
+    // Un link ya usado da el mismo error que uno vencido, y el caso común es
+    // el primero: alguien que hace click dos veces. No hay que asustarlo.
+    loginAviso('Ese link ya lo habías usado o venció. No pasa nada: entrá con tu mail y tu contraseña.');
   });
   return true;
 }
@@ -14219,7 +14267,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.44.001';
+const APP_VERSION = 'v005.45.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -17872,6 +17920,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAyuda()
   // Inicializar Firebase y esperar estado de autenticación
   if (typeof firebase !== 'undefined') {
     if (!firebase.apps?.length) firebase.initializeApp(firebaseConfig);
+    checkVerifyEmailLink();
     checkPasswordResetLink();
     firebase.auth().onAuthStateChanged(user => bootApp(user));
   } else {
