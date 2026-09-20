@@ -5856,6 +5856,14 @@ const getData  = () => {
     if (norm) r = { ...r, rubro: norm };
     // TC nunca puede ser Fijo: se importa vía resumen cada mes
     if (isTCOrigen(r) && r.tipoGasto === 'Fijo') r = { ...r, tipoGasto: 'Variable' };
+    // Quién mandó la plata, sacado de la descripción del resumen. Va acá —y no
+    // en una migración que corre una vez— por la misma razón que los rubros:
+    // el snapshot de Firebase pisa lo guardado y se lleva puesto cualquier
+    // arreglo que sólo se haya escrito en el aparato.
+    if (!r.cliente && r.origen === 'TARJETA') {
+      const quien = tdClienteDeDesc(r.detalle);
+      if (quien) r = { ...r, cliente: quien };
+    }
     return r;
   });
 };
@@ -14211,7 +14219,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.42.001';
+const APP_VERSION = 'v005.43.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -16063,24 +16071,10 @@ function esc(s) {
   if (changed) saveData(fixed);
 })();
 
-// ── CLIENTE DE LOS MOVIMIENTOS YA IMPORTADOS ──────────────────────────
-// Los movimientos que motivaron el pedido ya estaban cargados, así que
-// arreglar sólo el importador no alcanzaba. Corre al abrir, como la
-// normalización de rubros de arriba, y es inofensivo repetirlo: sólo toca
-// los que vinieron del resumen Y tienen el casillero vacío. Un cliente
-// escrito a mano no se pisa nunca.
-(function completarClienteImportado() {
-  const data = getData();
-  let cambios = 0;
-  const fixed = data.map(t => {
-    if (t.cliente || t.origen !== 'TARJETA') return t;
-    const c = tdClienteDeDesc(t.detalle);
-    if (!c) return t;
-    cambios++;
-    return Object.assign({}, t, { cliente: c });
-  });
-  if (cambios) saveData(fixed);
-})();
+// La corrección del cliente vivía acá, en un IIFE que corría al cargar el
+// archivo. Se sacó a propósito: perdía la carrera contra el snapshot de
+// Firebase, que pisa lo guardado unos segundos después con la copia vieja.
+// Ahora se hace en getData(), en cada lectura, igual que RUBRO_NORMALIZE.
 
 // ── QUICK-ADD FAB ────────────────────────────────────────────
 let qpTipo = 'Gasto';
