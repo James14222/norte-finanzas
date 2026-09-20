@@ -14219,7 +14219,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.43.001';
+const APP_VERSION = 'v005.44.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -19667,6 +19667,77 @@ function subtituloRumbo() {
             cbKpi(d.enCurso || 0, 'En curso') +
             cbKpi(d.enEspera || 0, 'En lista de espera') +
             '</div>';
+
+          // ── Los intentos ────────────────────────────────────────────
+          // «0 tomados» puede ser que no vino nadie, o que vinieron y los
+          // rebotamos. Son dos mundos y el panel los mostraba igual.
+          var T = (d.intentos && d.intentos.totales) || {};
+          var rebotes = (T.lleno || 0) + (T.cerrado || 0) + (T.error || 0) + (T.ip || 0);
+          var hubo = rebotes + (T.alta || 0) + (T.yaEstaba || 0);
+          html += '<div style="font-size:12px;font-weight:800;color:var(--muted);' +
+                  'text-transform:uppercase;letter-spacing:.05em;margin:4px 0 8px">Intentos de alta</div>';
+          if (!hubo) {
+            html += '<div style="font-size:13px;color:var(--muted);margin-bottom:16px">' +
+              'Todavia nadie intento anotarse. Cuando alguien lo intente, aca va a decir ' +
+              'que paso — se haya anotado o no.</div>';
+          } else {
+            html += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">' +
+              cbKpi(hubo, 'Intentos') +
+              cbKpi(T.alta || 0, 'Se anotaron', '#16a34a') +
+              cbKpi(rebotes, 'Rebotaron', rebotes ? '#ef4444' : 'var(--muted)') +
+              '</div>';
+            // El aviso que hubiera ahorrado el dia perdido. Se mira lo
+            // RECIENTE y no los totales: un Club que estuvo cerrado un mes
+            // acumula «cerrado» de sobra, y con los totales el cartel quedaria
+            // encendido para siempre. Y NO cuenta la IP repetida: esa es la
+            // defensa haciendo su trabajo, no una falla.
+            var UA = (d.intentos && d.intentos.ultimos) || [];
+            var corte24 = Date.now() - 24 * 60 * 60 * 1000;
+            var raros = UA.filter(function (x) {
+              return Number(x.ts) > corte24 &&
+                     (x.motivo === 'lleno' || x.motivo === 'cerrado' || x.motivo === 'error');
+            }).length;
+            if (raros && libre > 0) {
+              html += '<div style="background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.35);' +
+                'border-radius:10px;padding:11px 14px;margin-bottom:12px;font-size:13px;color:#ef4444;line-height:1.5">' +
+                '<b>' + raros + (raros === 1 ? ' alta rebotó' : ' altas rebotaron') + ' en las ultimas 24 h, ' +
+                'y hay lugares libres.</b> Eso no deberia pasar: si el Club esta abierto y quedan lugares, ' +
+                'un alta tiene que entrar. Mira los motivos de abajo.</div>';
+            }
+            var ROTULO = { alta: 'Se anoto', yaEstaba: 'Ya tenia cuenta', lleno: 'Cupo lleno',
+                           cerrado: 'Club cerrado', ip: 'Misma IP repetida', error: 'Error nuestro' };
+            var COLOR  = { alta: '#16a34a', yaEstaba: 'var(--muted)', lleno: '#E8C050',
+                           cerrado: '#ef4444', ip: '#E8C050', error: '#ef4444' };
+            var filas = Object.keys(T).filter(function (k) { return T[k]; })
+              .sort(function (a, b) { return T[b] - T[a]; })
+              .map(function (k) {
+                return '<div style="display:flex;justify-content:space-between;gap:12px;padding:6px 0;' +
+                  'border-bottom:1px solid var(--border);font-size:13px">' +
+                  '<span style="color:' + (COLOR[k] || 'var(--text)') + ';font-weight:600">' +
+                  esc(ROTULO[k] || k) + '</span><b>' + T[k] + '</b></div>';
+              }).join('');
+            html += '<div style="margin-bottom:14px">' + filas + '</div>';
+
+            var U = (d.intentos && d.intentos.ultimos) || [];
+            if (U.length) {
+              html += '<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px">' +
+                      'Los ultimos ' + U.length + '</div>' +
+                '<div style="max-height:190px;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:8px 12px">' +
+                U.map(function (x) {
+                  var f = new Date(Number(x.ts) || 0);
+                  var cuando = isNaN(f) ? '—' :
+                    (String(f.getDate()).padStart(2, '0') + '/' + String(f.getMonth() + 1).padStart(2, '0') +
+                     ' ' + String(f.getHours()).padStart(2, '0') + ':' + String(f.getMinutes()).padStart(2, '0'));
+                  return '<div style="display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0">' +
+                    '<span style="color:var(--muted)">' + cuando + '</span>' +
+                    '<span style="color:' + (COLOR[x.motivo] || 'var(--text)') + ';font-weight:600">' +
+                    esc(ROTULO[x.motivo] || x.motivo || '—') + '</span>' +
+                    '<span style="color:var(--muted);font-family:monospace;font-size:11.5px">' + esc(x.u || '') + '</span>' +
+                    '</div>';
+                }).join('') + '</div>';
+            }
+            html += '<div style="height:16px"></div>';
+          }
           // El estado de AHORA va como cartel, aparte del control. Y la etiqueta
           // del checkbox dice lo que pasa al tildarlo, no como esta: al reves
           // se lee como lo contrario de lo que hace.
