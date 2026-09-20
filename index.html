@@ -2751,6 +2751,10 @@ tr:hover td { background: #fafbfc; }
           <div class="report-card">
             <div class="report-title">🍩 Ingresos por rubro</div>
             <canvas id="ingRubroChart" height="280"></canvas>
+            <!-- La lista no es la leyenda del gráfico: es la que garantiza que
+                 un rubro chico se vea. El dónut no puede dibujar una porción
+                 de 0,03 %, y sin esto ese rubro no existe en la pantalla. -->
+            <div id="ingRubroLista" style="margin-top:16px"></div>
           </div>
           <div class="report-card full">
             <div class="report-title">📋 Detalle de ingresos</div>
@@ -7373,7 +7377,39 @@ const TC_RUBRO_MAP = [
 ];
 
 // Intenta deducir el rubro a partir de la descripción
-const TC_RUBRO_MAP_ING = [{rubro:'Sueldo',keys:['sueldo','haberes','salario','remuneracion','nomina','aguinaldo','sac ']},{rubro:'Inversiones / Dividendos',keys:['rendimiento','interes','plazo fijo','fci','fondo comun','dividendo','cupon','renta','cauci']},{rubro:'Alquiler cobrado',keys:['alquiler cobrado','cobro alquiler','renta inmueble','inquilino']},{rubro:'Freelance / Consultoría',keys:['honorarios','factura','freelance','consultoria','cobro cliente','cobro qr','venta online','mercado libre','tiendanube','paypal','payoneer','wise','deel']},{rubro:'Bono / Extra',keys:['bono','gratificacion','premio','incentivo','reintegro','devolucion','cashback']},{rubro:'Otros ingresos',keys:['transferencia','transf ','deposito','dinero recibido','recibiste','cvu','alias','recarga']}]; const TC_RUBRO_MAP_EXTRA = [{rubro:'Transporte',keys:['remis','flete','didi','tren','colectivo','estacionamiento','parking','cochera','vtv','carga sube','buquebus']},{rubro:'Auto',keys:['puma energ','gulf','refinor','estacion de servicio','lubricentro','cubierta','autopartes','mecanico']},{rubro:'Supermercado / Alimentación',keys:['panificadora','fiambreria','carniceria','pescaderia','dietetica','kiosco','maxikiosco','autoservicio','mayorista','makro','diarco','la anonima','chango mas','frutas','verduras','heladeria','rotiseria','parrilla','cerveceria','cafeteria','havanna','mostaza','subway','freddo']},{rubro:'Salud / Médico',keys:['drogueria','bioquimic','kinesio','psicolog','terapia','oftalmolog','dermatolog','vacuna','sanatorio','radiolog','ecografia']},{rubro:'Entretenimiento / Ocio',keys:['cinemark','hoyts','showcase','village','ticketek','plateanet','boliche','gimnasio','smartfit','megatlon','sportclub','padel','museo']},{rubro:'Indumentaria',keys:['dexter','stock center','grimoldi','prune','todomoda','isadora','vitamina','akiabara','portsaid','yagmour','sarkany','vans','topper']},{rubro:'Servicios (luz, gas, agua)',keys:['camuzzi','naturgy','ecogas','gasnor','edesa','absa','obras sanitarias']},{rubro:'Telefonía / Cable',keys:['telecentro','starlink','internet','banda ancha']},{rubro:'Impuestos / Tasas',keys:['afip','arca','arba','agip','rentas','monotributo','ingresos brutos','abl','inmobiliario','iibb','municipalidad']},{rubro:'Educación',keys:['platzi','domestika','crehana','uade','utn','posgrado','maestria','ingles','libreria']},{rubro:'Banco',keys:['comision','mantenimiento cuenta','sellado','percepcion','impuesto pais','debito automatico']},{rubro:'Seguros',keys:['la caja','sancor seguros','allianz','federacion patronal','san cristobal','experta']},{rubro:'Ahorro / Inversión',keys:['plazo fijo','compra dolar','suscripcion fci','inversion']},{rubro:'Alquiler / Vivienda',keys:['expensas','consorcio','alquiler','inmobiliaria']},{rubro:'Deudas / Cuotas',keys:['prestamo','credito personal','refinanciacion']}]; function tcGuessRubro(desc, tipo) {
+const TC_RUBRO_MAP_ING = [{rubro:'Sueldo',keys:['sueldo','haberes','salario','remuneracion','nomina','aguinaldo','sac ']},{rubro:'Inversiones / Dividendos',keys:['rendimiento','interes','plazo fijo','fci','fondo comun','dividendo','cupon','renta','cauci']},{rubro:'Alquiler cobrado',keys:['alquiler cobrado','cobro alquiler','renta inmueble','inquilino']},{rubro:'Freelance / Consultoría',keys:['honorarios','factura','freelance','consultoria','cobro cliente','cobro qr','venta online','mercado libre','tiendanube','paypal','payoneer','wise','deel']},{rubro:'Bono / Extra',keys:['bono','gratificacion','premio','incentivo','reintegro','devolucion','cashback']},{rubro:'Otros ingresos',keys:['transferencia','transf ','deposito','dinero recibido','recibiste','cvu','alias','recarga']}]; const TC_RUBRO_MAP_EXTRA = [{rubro:'Transporte',keys:['remis','flete','didi','tren','colectivo','estacionamiento','parking','cochera','vtv','carga sube','buquebus']},{rubro:'Auto',keys:['puma energ','gulf','refinor','estacion de servicio','lubricentro','cubierta','autopartes','mecanico']},{rubro:'Supermercado / Alimentación',keys:['panificadora','fiambreria','carniceria','pescaderia','dietetica','kiosco','maxikiosco','autoservicio','mayorista','makro','diarco','la anonima','chango mas','frutas','verduras','heladeria','rotiseria','parrilla','cerveceria','cafeteria','havanna','mostaza','subway','freddo']},{rubro:'Salud / Médico',keys:['drogueria','bioquimic','kinesio','psicolog','terapia','oftalmolog','dermatolog','vacuna','sanatorio','radiolog','ecografia']},{rubro:'Entretenimiento / Ocio',keys:['cinemark','hoyts','showcase','village','ticketek','plateanet','boliche','gimnasio','smartfit','megatlon','sportclub','padel','museo']},{rubro:'Indumentaria',keys:['dexter','stock center','grimoldi','prune','todomoda','isadora','vitamina','akiabara','portsaid','yagmour','sarkany','vans','topper']},{rubro:'Servicios (luz, gas, agua)',keys:['camuzzi','naturgy','ecogas','gasnor','edesa','absa','obras sanitarias']},{rubro:'Telefonía / Cable',keys:['telecentro','starlink','internet','banda ancha']},{rubro:'Impuestos / Tasas',keys:['afip','arca','arba','agip','rentas','monotributo','ingresos brutos','abl','inmobiliario','iibb','municipalidad']},{rubro:'Educación',keys:['platzi','domestika','crehana','uade','utn','posgrado','maestria','ingles','libreria']},{rubro:'Banco',keys:['comision','mantenimiento cuenta','sellado','percepcion','impuesto pais','debito automatico']},{rubro:'Seguros',keys:['la caja','sancor seguros','allianz','federacion patronal','san cristobal','experta']},{rubro:'Ahorro / Inversión',keys:['plazo fijo','compra dolar','suscripcion fci','inversion']},{rubro:'Alquiler / Vivienda',keys:['expensas','consorcio','alquiler','inmobiliaria']},{rubro:'Deudas / Cuotas',keys:['prestamo','credito personal','refinanciacion']}];
+
+// ── QUIÉN MANDÓ LA PLATA ────────────────────────────────────────────────
+// El resumen de débito dice en la descripción de dónde vino cada ingreso, y
+// hasta ahora ese dato se descartaba: el importador guardaba `cliente: ''` y
+// el ranking de Reportes juntaba todo en «(sin cliente)».
+//
+// Dos reglas, nada más:
+//   «Transferencia recibida FULANO»  ->  FULANO
+//   «Rendimientos …»                 ->  MERCADOPAGO
+//
+// El nombre se recorta del texto ORIGINAL, no de una versión en minúsculas:
+// el banco escribe los nombres en mayúsculas y así se ven en el ranking, al
+// lado de BAITCON o ITPS. Si no queda un nombre legible devuelve '' y el
+// movimiento se queda sin cliente — inventar uno sería peor que no tenerlo.
+function tdClienteDeDesc(desc) {
+  const d = String(desc || '').trim();
+  if (!d) return '';
+  if (/rendimiento/i.test(d)) return 'MERCADOPAGO';
+  const m = d.match(/transferencia\s+recibida\b/i);
+  if (!m) return '';
+  let nombre = d.slice(m.index + m[0].length);
+  nombre = nombre.replace(/^\s*(?:de|desde)\b/i, '');   // «recibida DE Fulano»
+  nombre = nombre.replace(/^[\s:;,.\-–—]+/, '');
+  // El banco suele pegar el CUIT, el CBU o el número de operación al final.
+  // Todo lo que vaya de un número largo en adelante no es parte del nombre.
+  nombre = nombre.replace(/\b\d{7,}\b[\s\S]*$/, '');
+  nombre = nombre.replace(/\s{2,}/g, ' ').trim();
+  // Dos letras no son un nombre: mejor vacío que «SA» o «JL».
+  return nombre.length >= 3 ? nombre : '';
+}
+
+function tcGuessRubro(desc, tipo) {
   const d = (desc || '').toLowerCase();
   for (const { rubro, keys } of (tipo === 'Ingreso' ? TC_RUBRO_MAP_ING : TC_RUBRO_MAP.concat(TC_RUBRO_MAP_EXTRA))) {
     if (keys.some(k => d.includes(k))) return rubro;
@@ -8244,7 +8280,8 @@ function confirmTCImport() {
       tipoGasto: r.tipoMov === 'Ingreso' ? '' : (r.esImpuesto ? 'Fijo' : 'Variable'),
       rubro:     r.rubro || (r.tipoMov === 'Ingreso' ? 'Otros ingresos' : 'Otros gastos'),
       detalle: r.desc + (r.cuota ? ` [${r.cuota}]` : ''),
-      cliente:   '',
+      // Lo que el resumen dice sobre el origen de la plata. Ver tdClienteDeDesc.
+      cliente:   tdClienteDeDesc(r.desc),
       impPesos:  impP,
       impUSD:    impU,
       // El resumen trae la fecha de cada consumo: se leía en `fechaOrig` y se
@@ -13331,13 +13368,15 @@ function renderRepIngresos() {
     }).join('');
 
   const filtered = prevMes ? yearIngs.filter(t=>t.mes===prevMes) : yearIngs;
-  const totalIng = filtered.reduce((s,t)=>s+(Number(t.impPesos)||0),0);
+  // getField() respeta el selector de moneda de Reportes. Esta pestaña era la
+  // unica que leia impPesos a pelo: puesta en dolares seguia mostrando pesos.
+  const totalIng = filtered.reduce((s,t)=>s+getField(t),0);
 
   // Ranking clientes
   const clienteMap = {};
   filtered.forEach(t => {
     const c = t.cliente || '(sin cliente)';
-    clienteMap[c] = (clienteMap[c]||0) + (Number(t.impPesos)||0);
+    clienteMap[c] = (clienteMap[c]||0) + getField(t);
   });
   const clienteEntries = Object.entries(clienteMap).sort((a,b)=>b[1]-a[1]);
   document.getElementById('ingClienteList').innerHTML = clienteEntries.length
@@ -13347,34 +13386,63 @@ function renderRepIngresos() {
             <div class="top-rank" style="background:var(--success)">${i+1}</div>
             <div>
               <div class="top-detail">${esc(c)}</div>
-              <div class="top-sub">${((v/totalIng)*100).toFixed(1)}% del total</div>
+              <div class="top-sub">${ingPct(v, totalIng)} del total</div>
             </div>
           </div>
-          <div class="top-amount" style="color:var(--success)">${fmtP(v)}</div>
+          <div class="top-amount" style="color:var(--success)">${fmtM(v)}</div>
         </div>`).join('')
     : '<div class="empty"><div class="ei">📭</div><p>Sin datos</p></div>';
 
-  // Doughnut por rubro
-  const rubroMap = {};
-  filtered.forEach(t => { rubroMap[t.rubro] = (rubroMap[t.rubro]||0)+(Number(t.impPesos)||0); });
+  // ── Por rubro: el donut manda el color, la lista manda la informacion ──
+  // Antes esto era un donut con leyenda y nada mas. Con dos rubros que se
+  // llevan el 99,6 % del ano, los otros dos quedaban en una porcion de una
+  // decima de grado: invisibles. La lista de abajo los pone en un renglon
+  // propio, con cuantos movimientos tiene cada uno.
+  const rubroMap = {}, rubroCant = {};
+  filtered.forEach(t => {
+    const k = t.rubro || '(sin rubro)';
+    rubroMap[k]  = (rubroMap[k] || 0) + getField(t);
+    rubroCant[k] = (rubroCant[k] || 0) + 1;
+  });
   const rubroEntries = Object.entries(rubroMap).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);
-  if (rubroEntries.length) drawDoughnut('ingRubroChart', rubroEntries);
+  if (rubroEntries.length) drawDoughnutCompact('ingRubroChart', rubroEntries);
+  else if (charts.ingRubroChart) { charts.ingRubroChart.destroy(); delete charts.ingRubroChart; }
+
+  const totalRubros = rubroEntries.reduce((s,e)=>s+e[1],0);
+  const listaEl = document.getElementById('ingRubroLista');
+  if (listaEl) {
+    listaEl.innerHTML = rubroEntries.length
+      ? rubroEntries.map(([r,v],i) => {
+          const n = rubroCant[r] || 0;
+          return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+            <span style="width:11px;height:11px;border-radius:3px;flex:0 0 auto;background:${COLORS[i % COLORS.length]}"></span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13.5px;color:var(--text);font-weight:600">${esc(r)}</div>
+              <div style="font-size:11.5px;color:var(--muted)">${n} movimiento${n===1?'':'s'}</div>
+            </div>
+            <div style="text-align:right;white-space:nowrap">
+              <div style="font-size:13.5px;font-weight:700;color:var(--success)">${fmtM(v)}</div>
+              <div style="font-size:11.5px;color:var(--muted)">${ingPct(v, totalRubros)}</div>
+            </div></div>`;
+        }).join('')
+      : '<div class="empty" style="padding:20px"><div class="ei">📭</div><p>Sin datos</p></div>';
+  }
 
   // Detalle table por mes
   const grouped = {};
   filtered.forEach(t => { if (!grouped[t.mes]) grouped[t.mes]=[]; grouped[t.mes].push(t); });
   const tableRows = Object.entries(grouped).sort().flatMap(([k,items]) => {
     const [,m] = k.split('-');
-    const subtot = items.reduce((s,t)=>s+(Number(t.impPesos)||0),0);
+    const subtot = items.reduce((s,t)=>s+getField(t),0);
     return [
       `<tr style="background:#eff6ff"><td colspan="4" style="font-weight:700;color:var(--primary)">${MESES[parseInt(m)-1]} ${curYear}</td></tr>`,
       ...items.map(t=>`<tr>
         <td>${esc(t.detalle)}</td>
         <td><span class="rubro-tag">${esc(t.rubro||'—')}</span></td>
         <td>${t.cliente?`<strong style="color:var(--primary)">${esc(t.cliente)}</strong>`:'<span style="color:var(--muted)">—</span>'}</td>
-        <td class="positive" style="font-weight:600">${fmtP(t.impPesos)}</td>
+        <td class="positive" style="font-weight:600">${fmtM(getField(t))}</td>
       </tr>`),
-      `<tr class="ing-total-row"><td colspan="3" style="font-size:12px">Subtotal ${MESES[parseInt(m)-1]}</td><td>${fmtP(subtot)}</td></tr>`
+      `<tr class="ing-total-row"><td colspan="3" style="font-size:12px">Subtotal ${MESES[parseInt(m)-1]}</td><td>${fmtM(subtot)}</td></tr>`
     ];
   });
   document.getElementById('ingDetalleTable').innerHTML = `
@@ -13590,6 +13658,16 @@ function renderRepTarjetas() {
   if (!filtered.length) tableHTML += `<tr><td colspan="6"><div class="empty"><div class="ei">💳</div><p>Sin transacciones TC para el período</p></div></td></tr>`;
   tableHTML += '</tbody>';
   document.getElementById('tcDetalleTable').innerHTML = tableHTML;
+}
+
+// Un porcentaje que no se redondea a cero. Con 41 movimientos que suman el
+// 0,03 % del año, «0 %» se lee como «no lo contó» — que es justamente el
+// reclamo que originó este arreglo.
+function ingPct(v, total) {
+  if (!total || !v) return '0%';
+  const p = (v / total) * 100;
+  if (p < 0.01) return '<0,01%';
+  return (p < 1 ? p.toFixed(2) : p.toFixed(1)).replace('.', ',') + '%';
 }
 
 // ── CHART HELPERS ────────────────────────────────────────────
@@ -14133,7 +14211,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.39.001';
+const APP_VERSION = 'v005.41.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -15983,6 +16061,25 @@ function esc(s) {
     return t;
   });
   if (changed) saveData(fixed);
+})();
+
+// ── CLIENTE DE LOS MOVIMIENTOS YA IMPORTADOS ──────────────────────────
+// Los movimientos que motivaron el pedido ya estaban cargados, así que
+// arreglar sólo el importador no alcanzaba. Corre al abrir, como la
+// normalización de rubros de arriba, y es inofensivo repetirlo: sólo toca
+// los que vinieron del resumen Y tienen el casillero vacío. Un cliente
+// escrito a mano no se pisa nunca.
+(function completarClienteImportado() {
+  const data = getData();
+  let cambios = 0;
+  const fixed = data.map(t => {
+    if (t.cliente || t.origen !== 'TARJETA') return t;
+    const c = tdClienteDeDesc(t.detalle);
+    if (!c) return t;
+    cambios++;
+    return Object.assign({}, t, { cliente: c });
+  });
+  if (cambios) saveData(fixed);
 })();
 
 // ── QUICK-ADD FAB ────────────────────────────────────────────
