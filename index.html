@@ -11682,6 +11682,15 @@ function pnCuenta(uid) {
 
 // ── La pantalla ──────────────────────────────────────────────────────────
 let pnMesVisto = null;      // null = el mes en curso
+// Cuál de los tres bloques de arriba está desplegado: '', 'saldo', 'mes' o
+// 'indice'. Arranca cerrado: la gracia es ver los tres números de una y
+// abrir sólo el que interesa.
+let pnBloqueAbierto = '';
+
+function pnToggleBloque(cual) {
+  pnBloqueAbierto = (pnBloqueAbierto === cual) ? '' : cual;
+  renderPuntos();
+}
 
 function pnRenderMesLabel(ym) {
   const p = String(ym).split('-');
@@ -11703,6 +11712,33 @@ function pnCambiarMes(delta) {
 // contenido pasa a una segunda línea debajo del nombre. Nada se esconde: lo que
 // cambia es dónde se lee.
 const PN_ESTILOS = `<style>
+  /* Los tres bloques de arriba. Se tocan como un botón, así que tienen que
+     parecerlo: borde, sombra y una flecha que gira al abrirse. */
+  .pn-blq { position:relative; padding:16px 14px 14px; border-radius:14px;
+            border:1px solid var(--border); background:var(--card); cursor:pointer;
+            box-shadow:0 1px 3px rgba(12,28,43,.06);
+            transition:border-color .15s, box-shadow .15s }
+  .pn-blq:hover { border-color:var(--primary) }
+  .pn-blq .pn-rot { font-size:11.5px; font-weight:700; letter-spacing:.04em;
+                    text-transform:uppercase; color:var(--muted); line-height:1.25 }
+  .pn-blq .pn-gran { font-size:40px; font-weight:800; letter-spacing:-1.5px;
+                     line-height:1.05; margin:8px 0 2px; font-variant-numeric:tabular-nums }
+  .pn-blq .pn-pie { font-size:12px; color:var(--muted); line-height:1.4 }
+  .pn-blq .pn-chev { position:absolute; top:14px; right:12px; font-size:15px;
+                     color:var(--muted); transition:transform .2s }
+  .pn-blq.pn-on .pn-chev { transform:rotate(90deg) }
+  .pn-blq.pn-on { border-color:var(--primary) }
+  .pn-fila { display:flex; gap:10px; margin-bottom:10px }
+  .pn-fila > .pn-blq { flex:1; min-width:0 }
+  .pn-idx-cuerpo { display:flex; align-items:center; gap:16px }
+  .pn-idx-cuerpo > div { flex:1; min-width:0 }
+  .pn-det { margin:0 0 14px; padding:15px 14px; border-radius:12px;
+            background:var(--card); border:1px solid var(--border) }
+  .pn-det-tit { font-size:13.5px; font-weight:800; color:var(--text); margin-bottom:9px }
+  .pn-cta { display:flex; justify-content:space-between; gap:12px; padding:8px 0;
+            border-bottom:1px solid var(--border); font-size:13.5px }
+  .pn-cta b { font-variant-numeric:tabular-nums }
+
   .pn-angosto { display:none }
   @media (max-width:560px) {
     .pn-ancho { display:none }
@@ -11731,32 +11767,58 @@ function renderPuntos() {
       </div>
     </div>`;
 
-  // ── Cabecera: el índice del mes ──
+  // ── Los tres números de arriba ──
+  // El orden importa: primero cuánto tenés, después cuánto sumaste este mes,
+  // y recién ahí el índice. Antes era al revés y el saldo estaba a cuatro
+  // tarjetas de scroll.
   const sig = R.siguiente;
   const faltaSig = sig ? Math.max(0, sig.min - R.indice.total) : 0;
-  const cabecera = `
-    <div class="card" style="margin-bottom:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-        <div style="font-size:16px;font-weight:800;color:var(--text)">Tu Índice de Hábito</div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <button class="btn btn-secondary" style="padding:4px 11px;font-size:14px" onclick="pnCambiarMes(-1)">‹</button>
-          <span style="font-size:13px;font-weight:700;color:var(--muted);min-width:96px;text-align:center">${pnRenderMesLabel(ym)}</span>
-          <button class="btn btn-secondary" style="padding:4px 11px;font-size:14px${esMesActual ? ';opacity:.35;cursor:default' : ''}"
-                  ${esMesActual ? 'disabled' : ''} onclick="pnCambiarMes(1)">›</button>
-        </div>
+  const puntosMes = pnGanadosEnMes(curUserId(), ym);
+  const mesPrevio = (function () {
+    const p = ym.split('-');
+    const d = new Date(Number(p[0]), Number(p[1]) - 2, 15, 12);
+    return pnGanadosEnMes(curUserId(), d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
+  })();
+  const dif = puntosMes - mesPrevio;
+
+  const encabezado = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:17px;font-weight:800;color:var(--text)">Tus Puntos Norte</div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button class="btn btn-secondary" style="padding:4px 11px;font-size:14px" onclick="pnCambiarMes(-1)">‹</button>
+        <span style="font-size:13px;font-weight:700;color:var(--muted);min-width:96px;text-align:center">${pnRenderMesLabel(ym)}</span>
+        <button class="btn btn-secondary" style="padding:4px 11px;font-size:14px${esMesActual ? ';opacity:.35;cursor:default' : ''}"
+                ${esMesActual ? 'disabled' : ''} onclick="pnCambiarMes(1)">›</button>
       </div>
-      <div style="display:flex;align-items:center;gap:22px;flex-wrap:wrap">
-        ${pnAnillo(R.indice.total, R.rango, 132)}
-        <div style="flex:1;min-width:220px">
-          <div style="font-size:21px;font-weight:800;color:var(--text)">${R.rango.nom}</div>
-          <div style="font-size:13.5px;color:var(--muted);line-height:1.5;margin-top:4px">${R.rango.sub}</div>
-          ${sig ? `<div style="font-size:12.5px;color:var(--text);margin-top:10px">
-            Te faltan <b>${faltaSig}</b> punto${faltaSig === 1 ? '' : 's'} de índice para <b>${sig.nom}</b>.</div>` : ''}
-          <div style="margin-top:12px;padding:10px 12px;background:var(--bg);border-radius:9px;font-size:12.5px;color:var(--muted);line-height:1.5">
-            Este número mide <b>cómo usás Norte este mes</b>, no cómo manejás tu plata.
-            Sube y baja. Es distinto de <a href="#" onclick="showPage('progreso');return false" style="color:var(--primary);font-weight:600">Progreso</a>,
-            que mide todo lo que lograste desde que empezaste y nunca baja.
-          </div>
+    </div>`;
+
+  const ab = pnBloqueAbierto;
+  const bloques = `
+    <div class="pn-fila">
+      <div class="pn-blq${ab === 'saldo' ? ' pn-on' : ''}" onclick="pnToggleBloque('saldo')">
+        <div class="pn-chev">&#8250;</div>
+        <div class="pn-rot">Disponibles</div>
+        <div class="pn-gran" style="color:var(--primary)">${pnFmt(R.saldo.saldo)}</div>
+        <div class="pn-pie">puntos acumulados<br>sin vencer</div>
+      </div>
+      <div class="pn-blq${ab === 'mes' ? ' pn-on' : ''}" onclick="pnToggleBloque('mes')">
+        <div class="pn-chev">&#8250;</div>
+        <div class="pn-rot">${esMesActual ? 'Este mes' : pnRenderMesLabel(ym).split(' ')[0]}</div>
+        <div class="pn-gran" style="color:${puntosMes > 0 ? 'var(--success)' : 'var(--muted)'}">${puntosMes > 0 ? '+' : ''}${pnFmt(puntosMes)}</div>
+        <div class="pn-pie">${mesPrevio
+          ? (dif >= 0 ? '&#9650; ' : '&#9660; ') + pnFmt(Math.abs(dif)) + ' vs. el mes anterior'
+          : 'puntos ganados en el mes'}</div>
+      </div>
+    </div>
+
+    <div class="pn-blq${ab === 'indice' ? ' pn-on' : ''}" style="margin-bottom:10px" onclick="pnToggleBloque('indice')">
+      <div class="pn-chev">&#8250;</div>
+      <div class="pn-idx-cuerpo">
+        ${pnAnillo(R.indice.total, R.rango, 104)}
+        <div>
+          <div class="pn-rot">Índice de Hábito</div>
+          <div style="font-size:21px;font-weight:800;color:var(--text);margin:4px 0 3px">${R.rango.nom}</div>
+          <div style="font-size:12.5px;color:var(--muted);line-height:1.4">${R.rango.sub}</div>
         </div>
       </div>
     </div>`;
@@ -11777,16 +11839,19 @@ function renderPuntos() {
     </div>`;
   }).join('');
 
-  const desglose = `
-    <div class="card" style="margin-bottom:14px">
-      <div class="report-title" style="margin-bottom:4px">De dónde sale ese número</div>
+  const detalleIndice = `
+    <div class="pn-det">
+      <div class="pn-det-tit">De dónde sale ese número</div>
       <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:6px">
-        Cinco cosas, con el peso que tiene cada una. Están acá abajo enteras: no hay nada que no puedas ver.
+        Cinco cosas, con el peso que tiene cada una. Están acá enteras: no hay nada que no puedas ver.
       </div>
       ${subs}
-      <div style="padding-top:13px;display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:14px;font-weight:800;color:var(--text)">Índice del mes</div>
-        <div style="font-size:19px;font-weight:800;color:var(--primary)">${R.indice.total}</div>
+      ${sig ? `<div style="font-size:12.5px;color:var(--text);margin-top:13px">
+        Te faltan <b>${faltaSig}</b> punto${faltaSig === 1 ? '' : 's'} de índice para <b>${sig.nom}</b>.</div>` : ''}
+      <div style="margin-top:12px;padding:10px 12px;background:var(--bg);border-radius:9px;font-size:12.5px;color:var(--muted);line-height:1.5">
+        Este número mide <b>cómo usás Norte este mes</b>, no cómo manejás tu plata.
+        Sube y baja. Es distinto de <a href="#" onclick="showPage('progreso');return false" style="color:var(--primary);font-weight:600">Progreso</a>,
+        que mide todo lo que lograste desde que empezaste y nunca baja.
       </div>
     </div>`;
 
@@ -11827,35 +11892,53 @@ function renderPuntos() {
     </div>`;
   }).join('');
 
-  const saldo = `
-    <div class="card pn-saldo" style="margin-bottom:14px">
-      <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:3px">Tus puntos</div>
-      <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:16px">
-        Cuánto sumaste cada mes. Tocá uno para ver de dónde salió cada punto.
-      </div>
-      <div style="display:flex;gap:26px;flex-wrap:wrap;margin-bottom:18px">
-        <div><div style="font-size:38px;font-weight:800;color:var(--primary);line-height:1">${pnFmt(s.saldo)}</div>
-             <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:4px">DISPONIBLES</div></div>
-        <div><div style="font-size:38px;font-weight:800;color:var(--text);line-height:1">${R.racha}</div>
-             <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:4px">SEMANA${R.racha === 1 ? '' : 'S'} SEGUIDA${R.racha === 1 ? '' : 'S'}</div></div>
+  // El detalle del saldo: la cuenta completa y el mes a mes. Es lo que
+  // contesta «¿por qué tengo este número?», y por eso vive donde se toca ese
+  // número y no cuatro tarjetas más abajo.
+  const detalleSaldo = `
+    <div class="pn-det">
+      <div class="pn-det-tit">De dónde sale tu saldo</div>
+      <div class="pn-cta"><span>Ganados desde que empezaste</span><b>${pnFmt(C.ganados)}</b></div>
+      ${C.vencidos ? `<div class="pn-cta"><span style="color:var(--muted)">Vencieron (pasaron ${Rg.vence} días)</span>
+        <b style="color:var(--muted)">− ${pnFmt(C.vencidos)}</b></div>` : ''}
+      <div class="pn-cta" style="border-bottom:none;padding-top:10px">
+        <span style="font-weight:800">Disponibles hoy</span>
+        <b style="font-weight:800;color:var(--primary);font-size:16px">${pnFmt(C.saldo)}</b></div>
+      ${vencAviso}
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+        <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:8px">
+          Llevás <b style="color:var(--text)">${R.racha}</b> semana${R.racha === 1 ? '' : 's'} seguida${R.racha === 1 ? '' : 's'} con actividad.
+        </div>
       </div>
       ${meses.length ? `
       <div style="font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.04em;margin-bottom:2px">MES A MES · TOCÁ UNO PARA VER EL DETALLE</div>
       ${filasCuenta}
-      <div style="border-top:2px solid var(--border);display:flex;padding:11px 0 6px">
-        <span style="flex:1;font-size:13.5px;font-weight:700;color:var(--text)">Ganaste en total</span>
-        <span style="font-size:15px;font-weight:800;color:var(--text)">${pnFmt(C.ganados)}</span></div>
-      ${C.vencidos ? `<div style="display:flex;padding:3px 0">
-        <span style="flex:1;font-size:13.5px;color:var(--muted)">Vencieron (pasaron ${Rg.vence} días)</span>
-        <span style="font-size:14px;font-weight:700;color:var(--muted)">−${pnFmt(C.vencidos)}</span></div>` : ''}
-      <div style="border-top:1px solid var(--border);display:flex;align-items:baseline;padding:9px 0 2px;margin-top:4px">
-        <span style="flex:1;font-size:14.5px;font-weight:800;color:var(--text)">Te quedan</span>
-        <span style="font-size:19px;font-weight:800;color:var(--primary)">${pnFmt(C.saldo)}</span></div>
       ` : `<div style="font-size:13px;color:var(--muted)">Todavía no sumaste puntos.</div>`}
-      ${vencAviso}
       <div style="margin-top:12px;font-size:12.5px;color:var(--muted);line-height:1.5">
         Un punto dura <b>${Rg.vence} días</b> desde que se gana. Los puntos son tuyos, no del hogar:
         cada integrante junta los suyos.
+      </div>
+    </div>`;
+
+  // El detalle del mes: de dónde salieron los puntos de ESTE mes, por tipo
+  // de acción. Sale del mismo sitio que la lista mes a mes —pnPorMes ya
+  // agrupa por acción— así que no hay una segunda fuente que pueda discrepar.
+  const bloqueMes = meses.filter(function (x) { return x.ym === ym; })[0];
+  const detalleMes = `
+    <div class="pn-det">
+      <div class="pn-det-tit">Cómo sumaste ${puntosMes > 0 ? 'los ' + pnFmt(puntosMes) : 'los puntos'} de ${pnRenderMesLabel(ym)}</div>
+      ${bloqueMes && bloqueMes.lineas.length ? bloqueMes.lineas.map(function (l) {
+        return `<div class="pn-cta"><span>${l.nom}
+          <span style="color:var(--muted);font-size:12px">· ${l.n} ${l.n === 1 ? 'vez' : 'veces'}</span></span>
+          <b style="color:var(--success)">+${pnFmt(l.pts)}</b></div>`;
+      }).join('') : `<div style="font-size:13px;color:var(--muted)">
+        En ${pnRenderMesLabel(ym)} todavía no sumaste puntos.</div>`}
+      ${bloqueMes && bloqueMes.sinPuntos ? `<div style="margin-top:10px;font-size:12px;color:var(--muted);line-height:1.5">
+        ${pnFmt(bloqueMes.sinPuntos)} ${bloqueMes.sinPuntos === 1 ? 'acción llegó' : 'acciones llegaron'} después del tope
+        y no ${bloqueMes.sinPuntos === 1 ? 'sumó' : 'sumaron'} puntos.</div>` : ''}
+      <div style="margin-top:12px;font-size:12.5px;color:var(--muted);line-height:1.5">
+        ${mesPrevio ? 'El mes anterior sumaste <b>' + pnFmt(mesPrevio) + '</b>. ' : ''}Esto cuenta lo que ganaste
+        en el mes, sin mirar vencimientos: es otra pregunta que el saldo.
       </div>
     </div>`;
 
@@ -11877,30 +11960,6 @@ function renderPuntos() {
         el volumen: cargar cincuenta movimientos un domingo vale menos que cargar tres por semana durante un mes.
       </div>
       <table style="width:100%;border-collapse:collapse">${tabla}</table>
-    </div>`;
-
-  // ── El historial ──
-  // Sólo lo que sumó. Las acciones topeadas siguen guardadas en el ledger
-  // —son lo que impide acreditar dos veces la misma cosa— pero no se listan:
-  // en una cuenta real son dos de cada tres filas y tapan lo que importa. Su
-  // resumen está arriba, en la cuenta.
-  const movs = pnMovimientosDe(curUserId(), 400).filter(function (m) { return m.pts > 0; }).slice(0, 60);
-  const filas = movs.length ? movs.map(m => `
-    <tr style="${m.vencido ? 'opacity:.45' : ''}">
-      <td style="padding:7px 0;font-size:12.5px;color:var(--muted);white-space:nowrap">${pnFecha(m.ts)}</td>
-      <td style="padding:7px 8px;font-size:13px;color:var(--text)">${m.nom}<span class="pn-angosto">${m.vencido ? 'vencido' : 'vence ' + pnFecha(m.vence)}</span></td>
-      <td style="padding:7px 0;font-size:13px;font-weight:700;text-align:right;white-space:nowrap;color:var(--success)">+${m.pts}</td>
-      <td class="pn-ancho" style="padding:7px 0 7px 10px;font-size:11.5px;color:var(--muted);text-align:right;white-space:nowrap">${m.vencido ? 'vencido' : 'vence ' + pnFecha(m.vence)}</td>
-    </tr>`).join('')
-    : `<tr><td colspan="4" style="padding:16px 0;font-size:13px;color:var(--muted)">Todavía no hay movimientos de puntos.</td></tr>`;
-
-  const historial = `
-    <div class="card" style="margin-bottom:14px">
-      <div class="report-title" style="margin-bottom:4px">Historial</div>
-      <div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:8px">
-        Lo último que sumó, de lo más reciente para atrás.
-      </div>
-      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">${filas}</table></div>
     </div>`;
 
   // ── Lo que viene, con candado ──
@@ -11941,7 +12000,12 @@ function renderPuntos() {
 
   // El historial plano ya no se arma: la vista mes a mes, con su detalle
   // desplegable, dice exactamente lo mismo y sin la lista de sesenta filas.
-  cont.innerHTML = PN_ESTILOS + avisoTitular + cabecera + desglose + saldo + comoSeGanan + recompensas;
+  const detalle = ab === 'saldo'  ? detalleSaldo
+                : ab === 'mes'    ? detalleMes
+                : ab === 'indice' ? detalleIndice : '';
+
+  cont.innerHTML = PN_ESTILOS + avisoTitular + encabezado + bloques + detalle
+                 + comoSeGanan + recompensas;
 }
 
 // ── EL ENCUADRE DE ESTE TELÉFONO ─────────────────────────────────────────
@@ -14267,7 +14331,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.45.001';
+const APP_VERSION = 'v005.46.002';
 let novEntradas = [];
 
 function novLeida(e) {
