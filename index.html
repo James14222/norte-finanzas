@@ -14331,7 +14331,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.46.003';
+const APP_VERSION = 'v005.46.004';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -20960,9 +20960,14 @@ function subtituloRumbo() {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/norte-finanzas/sw.js', { scope: '/norte-finanzas/' })
+    // Ruta RELATIVA al documento, a proposito. Con '/norte-finanzas/sw.js'
+    // —la ruta de cuando la app vivia en github.io— el registro daba 404 en
+    // app.norteapp.ar y la PWA no existia: ni cache, ni offline, ni boton
+    // de instalar. Relativa funciona en el dominio propio y tambien si
+    // algun dia vuelve a colgar de un subdirectorio.
+    navigator.serviceWorker.register('sw.js')
       .then(reg => console.log('SW registrado:', reg.scope))
-      .catch(err => console.warn('SW error:', err));
+      .catch(err => console.error('SW NO registrado:', err));
   });
 }
 </script>
