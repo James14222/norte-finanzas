@@ -8457,7 +8457,7 @@ function renderPagarTCCombos(mes) {
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:2px solid var(--border);border-radius:12px;gap:12px">
       <div>
         <div style="font-weight:700;font-size:14px">🏦 ${esc(label)} — ${g.moneda}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:3px">${n} transacción${n!==1?'es':''} pendiente${n!==1?'s':''} · Total: <strong>${totalStr}</strong></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">${n} transacci${n!==1?'ones':'ón'} pendiente${n!==1?'s':''} · Total: <strong>${totalStr}</strong></div>
       </div>
       <button class="btn btn-primary" style="white-space:nowrap;font-size:13px"
         onclick="ejecutarPagoTC(${gi},'${g.moneda}','${mes}')">
@@ -14331,7 +14331,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.46.002';
+const APP_VERSION = 'v005.46.003';
 let novEntradas = [];
 
 function novLeida(e) {
