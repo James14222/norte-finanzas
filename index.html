@@ -1662,6 +1662,119 @@ tr:hover td { background: #fafbfc; }
 .logout-btn { width:100%;text-align:left;background:none;border:none;color:rgba(255,255,255,0.5);font-size:12px;padding:6px 20px 14px;cursor:pointer;display:flex;align-items:center;gap:6px; }
 .logout-btn:hover { color:#fff; }
 
+/* ── LA GUÍA DE PRIMERA VEZ ─────────────────────────────────────
+   Reusa el lenguaje visual del asistente de bienvenida (.ob-*) y del
+   tutorial de El Cuaderno: misma cabecera oscura en degradé, mismos
+   botones, mismo radio. No inventa una tercera manera de verse.
+
+   Lo único nuevo es el foco: un recorte que deja iluminado el ítem del
+   menú del que se está hablando. Se hace con una sombra gigante sobre un
+   rectángulo posicionado encima del ítem, que es la forma de hacer un
+   agujero sin recortar nada ni duplicar el menú. */
+
+#guiaCapa { position: fixed; inset: 0; z-index: 2900; pointer-events: none; }
+#guiaCapa.oculta { display: none; }
+
+/* El velo con agujero. El box-shadow de 9999px ES el velo: lo de adentro
+   del rectángulo queda sin tapar. */
+#guiaFoco {
+  position: fixed; border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(6, 15, 26, 0.80),
+              0 0 0 2px var(--primary, #FF8A5C),
+              0 0 28px 4px rgba(255, 138, 92, 0.42);
+  transition: top .28s cubic-bezier(.4,0,.2,1), left .28s cubic-bezier(.4,0,.2,1),
+              width .28s cubic-bezier(.4,0,.2,1), height .28s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+}
+/* Cuando el paso no tiene a qué hacerle foco —NortIA en celular, por
+   ejemplo— el velo se pone entero y el rectángulo se esconde. */
+#guiaFoco.sinfoco { box-shadow: 0 0 0 9999px rgba(6, 15, 26, 0.80); width: 0; height: 0; }
+
+#guiaCaja {
+  position: fixed; pointer-events: auto;
+  width: 380px; max-width: calc(100vw - 32px);
+  background: var(--card, #fff); border-radius: 20px; overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.07);
+  transition: top .28s cubic-bezier(.4,0,.2,1), left .28s cubic-bezier(.4,0,.2,1);
+}
+
+.guia-cab { background: linear-gradient(135deg, #0c1c2b 0%, #1a3c4e 100%); padding: 20px 24px 18px; }
+.guia-barra { display: flex; gap: 4px; margin-bottom: 14px; }
+.guia-tramo { height: 4px; border-radius: 2px; flex: 1; background: rgba(255,255,255,0.16); transition: background .3s; }
+.guia-tramo.hecho { background: rgba(255,138,92,0.45); }
+.guia-tramo.actual { background: var(--primary, #FF8A5C); }
+
+.guia-paso {
+  display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--primary, #FF8A5C);
+  background: rgba(255,138,92,0.13); border-radius: 999px; padding: 4px 10px; margin-bottom: 10px;
+}
+.guia-titulo-fila { display: flex; align-items: center; gap: 10px; }
+.guia-ico { font-size: 26px; line-height: 1; }
+.guia-titulo { font-size: 21px; font-weight: 700; color: #fff; letter-spacing: -0.4px; }
+.guia-pronto {
+  font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  color: #9db6c9; background: rgba(255,255,255,0.10); border-radius: 999px; padding: 3px 8px;
+}
+.guia-que { font-size: 13.5px; color: rgba(255,255,255,0.62); line-height: 1.5; margin-top: 7px; }
+
+.guia-cuerpo { padding: 20px 24px 22px; }
+.guia-detalle { font-size: 14.5px; line-height: 1.6; color: var(--text, #14232f); }
+/* El renglón del beneficio va marcado porque es el único que se lee si la
+   persona está apurada. Si el paso entero se lee en diagonal, que se lleve
+   esto. */
+.guia-sirve {
+  margin-top: 14px; padding: 12px 14px; border-radius: 12px;
+  background: rgba(255,138,92,0.09); border-left: 3px solid var(--primary, #FF8A5C);
+  font-size: 14px; line-height: 1.5; font-weight: 600; color: var(--text, #14232f);
+}
+
+.guia-pie { display: flex; align-items: center; gap: 10px; margin-top: 20px; }
+/* El botón de cortar va SOLO, en su propio renglón y a lo ancho. Apretado
+   contra «Siguiente» se partía en dos líneas y quedaba como un descarte;
+   es la salida que el usuario tiene que ver sin buscarla. */
+.guia-cortar {
+  display: block; width: 100%; margin-top: 12px;
+  background: none; border: 1px solid transparent; color: var(--muted, #6b8196);
+  font-size: 13px; cursor: pointer; padding: 10px 8px; text-align: center;
+  line-height: 1.35; border-radius: 10px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.guia-cortar:hover { color: var(--text, #14232f); border-color: var(--line, #dde5ec); background: var(--bg, #eef2f6); }
+.guia-atras {
+  background: none; border: none; color: var(--muted, #6b8196);
+  font-size: 19px; cursor: pointer; padding: 6px 10px; border-radius: 8px; line-height: 1;
+}
+.guia-atras:hover { background: var(--bg, #eef2f6); }
+.guia-atras[disabled] { opacity: .3; cursor: default; }
+.guia-seguir {
+  background: var(--primary, #FF8A5C); color: #fff; border: none;
+  border-radius: 11px; padding: 12px 20px; font-size: 14.5px; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+}
+.guia-seguir:hover { opacity: .88; }
+
+/* ── Celular ────────────────────────────────────────────────────
+   Abajo de los 880 px la barra lateral vive fuera de pantalla, así que no
+   hay ítem de menú al que hacerle foco. En vez de abrir el menú para
+   iluminar un renglón —que taparía justo la pantalla de la que se está
+   hablando— la guía navega a la pantalla y la ventana se apoya abajo. El
+   foco en celular es la pantalla misma. */
+@media (max-width: 880px) {
+  #guiaCaja {
+    left: 12px !important; right: 12px; width: auto;
+    top: auto !important; bottom: 14px;
+    max-height: 72vh; overflow-y: auto;
+  }
+  #guiaFoco { box-shadow: 0 0 0 9999px rgba(6, 15, 26, 0.62); width: 0; height: 0; }
+  .guia-cab { padding: 16px 20px 14px; }
+  .guia-cuerpo { padding: 16px 20px 18px; }
+  .guia-titulo { font-size: 19px; }
+  .guia-detalle { font-size: 14px; }
+  .guia-cortar { font-size: 12.5px; }
+}
+
+
 /* ── ONBOARDING WIZARD ─────────────────────────────────────── */
 #onboardingOverlay {
   position:fixed;inset:0;z-index:3000;
@@ -3155,6 +3268,10 @@ tr:hover td { background: #fafbfc; }
         <div class="ayuda-section active" id="ayuda-inicio">
           <h3>🏠 Bienvenido a Norte</h3>
           <p class="subtitulo">La brújula de las finanzas de tu hogar</p>
+          <div class="ayuda-bloque" style="text-align:center">
+            <button class="btn btn-primary" onclick="document.getElementById('ayudaOverlay').classList.remove('show'); guiaAbrir(false);">🧭 Ver la guía de los menús</button>
+            <div style="font-size:12px;color:var(--muted);margin-top:8px">Un repaso de once pasos por cada pantalla de Norte.</div>
+          </div>
           <div class="ayuda-bloque">
             <p>Norte es una aplicación para <strong>ver con claridad qué entra, qué sale y qué queda</strong> en tu hogar cada mes. No es una planilla ni un sistema contable: es una herramienta para tomar decisiones con datos propios, sin tener que saber de finanzas.</p>
             <p>Con Norte podés registrar ingresos y gastos (a mano, por foto o hablándole), importar los resúmenes de tus tarjetas, ponerte límites por rubro, seguir tu progreso mes a mes, ver reportes anuales y conversar con <strong>NortIA</strong>, un asistente que analiza tus propios números.</p>
@@ -5218,6 +5335,9 @@ function obMarkDone() {
   const sess = getSession();
   if (sess) localStorage.setItem('fin_onboarding_done_' + sess.userId, '1');
   document.getElementById('onboardingOverlay').classList.add('hidden');
+  // Recien ahora la guia tiene lugar: el asistente pidio los datos y se
+  // fue. Medio segundo para que termine de cerrarse y no se pisen.
+  setTimeout(function () { try { guiaQuizas(); } catch (e) {} }, 500);
   // El asistente pide el nombre del hogar en un campo de texto. Al tocarlo,
   // iOS sube la página para dejarlo arriba del teclado — y cuando el asistente
   // se cierra, la página queda ahí. El espacio de la barra de estado sigue
@@ -14220,7 +14340,7 @@ function rbRefrescarPantallas() {
 //
 // La regla ata el nodo al propio uid: nadie puede marcar como leído ni votar en
 // nombre de otro, así que no hace falta pasar por una Cloud Function.
-let lect = { nov: {}, votos: {}, novHasta: 0, chat: 0, caps: {}, capsVisto: 0, cuTuto: 0, cuNuevoDesde: 0 };
+let lect = { nov: {}, votos: {}, novHasta: 0, chat: 0, caps: {}, capsVisto: 0, cuTuto: 0, cuNuevoDesde: 0, guiaMenus: 0 };
 let lectListo = false;   // ¿ya contestó la nube? Hasta que conteste no se
                          // decide nada: en un dispositivo nuevo el caché
                          // está vacío y el tutorial saldría de nuevo.
@@ -14313,6 +14433,7 @@ function iniciarLecturas() {
         lectGuardarLocal();
       }
       lectListo = true;
+      try { guiaQuizas(); } catch (e) {}
       try {
         cuPintarNuevo();
         // Si la persona ya estaba parada en El Cuaderno cuando llegó la
@@ -14331,7 +14452,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.46.004';
+const APP_VERSION = 'v005.47.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -17992,6 +18113,345 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAyuda()
     document.getElementById('loginScreen').style.display = 'flex';
   }
 })();
+// La guía de primera vez: qué dice cada paso.
+//
+// El texto NO está inventado: sale de la Ayuda que ya está escrita y
+// aprobada dentro de la app, condensado a lo que entra en una ventana chica.
+// Eso importa por dos motivos. Uno, que la guía no prometa nada que la app
+// no haga —el argumento de Norte es «sin letra chica», y una guía que
+// exagera es letra chica al revés—. Dos, que el día que cambie una función
+// haya un solo lugar donde estaba dicha de más.
+//
+// Cada paso tiene:
+//   nav     el id del ítem del menú al que se le hace foco
+//   pagina  a qué pantalla lleva la app mientras se muestra el paso
+//   que     una línea: qué es esa pantalla
+//   detalle dos o tres renglones: qué se hace ahí
+//   sirve   para qué le sirve al usuario. Es lo único que se lee si apura.
+const GUIA_PASOS = [
+
+  { nav: 'dashboard', pagina: 'dashboard', ico: '📊', titulo: 'Mi Rumbo',
+    que: 'Cómo venís este mes, de un vistazo.',
+    detalle: 'Es la pantalla que abre por defecto. Sin buscar ni filtrar nada ves '
+           + 'si estás en verde o en rojo, cuánto falta pagar y qué rubro se te está yendo.',
+    sirve: 'Entrás diez segundos y ya sabés cómo estás.' },
+
+  { nav: 'transacciones', pagina: 'transacciones', ico: '📋', titulo: 'Transacciones',
+    que: 'Acá se registra cada movimiento.',
+    detalle: 'Todo lo que ves en el resto de la app sale de esta pantalla. Cargás a '
+           + 'mano, sacándole una foto al ticket o diciéndolo en voz alta. Y acá también '
+           + 'subís el resumen de la <b>tarjeta de crédito</b> en PDF.',
+    sirve: 'Cuanto más completa esté, más te sirve todo lo demás.' },
+
+  { nav: 'presupuesto', pagina: 'presupuesto', ico: '🎯', titulo: 'Presupuesto',
+    que: 'Ponete un techo por rubro.',
+    detalle: 'Registrar gastos te dice qué pasó. El presupuesto te deja decidir '
+           + 'qué querés que pase.',
+    sirve: 'Te enterás antes de pasarte, no a fin de mes.' },
+
+  { nav: 'reserva', pagina: 'reserva', ico: '⚓', titulo: 'Reserva',
+    que: 'Lo que apartás para algo concreto.',
+    detalle: 'Las vacaciones de enero, cambiar el auto, un curso. Definís el destino '
+           + 'y registrás cuánto apartaste para cada uno.',
+    sirve: 'Ahorrar «en general» no dura. Juntar para algo, sí.' },
+
+  { nav: 'analisis', pagina: 'analisis', ico: '🔎', titulo: 'Análisis',
+    que: 'Las conclusiones del mes, en castellano.',
+    detalle: 'No hay nada que configurar: el informe se rearma solo cada vez '
+           + 'que cargás movimientos.',
+    sirve: 'Te ahorra el paso que casi nadie hace: mirar los números y sacar conclusiones.' },
+
+  { nav: 'reportes', pagina: 'reportes', ico: '📈', titulo: 'Reportes',
+    que: 'El año completo, no la foto del mes.',
+    detalle: 'Seis vistas: si venís mejorando, en qué se te va la plata de verdad, '
+           + 'el promedio de cada rubro y cómo se comparan los integrantes del hogar.',
+    sirve: 'Acá ves tendencias, que es donde están las decisiones.' },
+
+  { nav: 'puntos', pagina: 'puntos', ico: '⭐', titulo: 'Puntos Norte',
+    que: 'Norte te premia por volver.',
+    detalle: 'Cada vez que usás la app sumás puntos, y un índice del 0 al 100 te dice '
+           + 'cómo venís con el hábito. El canje todavía no está abierto.',
+    sirve: 'Dos minutos por semana alcanzan. Un mes flojo no te borra nada.' },
+
+  { nav: 'cuaderno', pagina: 'cuaderno', ico: '📒', titulo: 'El Cuaderno',
+    que: 'La libreta de precios del hogar.',
+    detalle: 'Anotás lo que te cobran: la garrafa, el service, lo que te presupuestó '
+           + 'el plomero. No entra en tu Balance, tu Presupuesto ni tus Reportes.',
+    sirve: 'Cuando vuelvas a anotar lo mismo, te dice cuánto cambió y hace cuánto.' },
+
+  // El renglón del beneficio dice de dónde salen las cifras porque es la
+  // diferencia real con cualquier chatbot: el código calcula los números y
+  // NortIA los cuenta. Si una cifra no está en el resumen calculado, el
+  // hallazgo se descarta entero antes de mostrarse.
+  { nav: 'nortia', pagina: 'consultas', ico: '✨', titulo: 'NortIA',
+    que: 'Tu asistente financiero, conversando.',
+    detalle: 'Te deja hasta tres hallazgos sobre tu situación —qué vio, con qué '
+           + 'número, por qué importa y qué podés hacer— y además le preguntás lo '
+           + 'que quieras sobre tus finanzas, cuando quieras.',
+    sirve: 'Los números salen de tus propios datos. NortIA los explica, no los inventa.' },
+
+  { nav: 'tugps', pagina: 'tugps', ico: '🧭', titulo: 'Novedades',
+    que: 'Qué cambió y para qué te sirve.',
+    detalle: 'Cada mejora que le hacemos a Norte se cuenta acá en criollo, y podés '
+           + 'votarla del 1 al 5 con un toque, sin escribir nada.',
+    sirve: 'Tu voto decide en qué se trabaja después.' },
+
+  { nav: 'pie', pagina: null, ico: '👤', titulo: 'Tu cuenta',
+    que: 'Perfil, plan, hogares y ayuda.',
+    detalle: 'Acá abajo están tus datos, tu plan, los hogares que compartís con '
+           + 'quien convivís, y la Ayuda completa de cada pantalla.',
+    sirve: 'Si algo no se entiende, el signo de pregunta lo explica en detalle.' },
+];
+
+// La ventana de apertura y la de cierre. No llevan número: los pasos
+// numerados son los menús, y meter la bienvenida como «paso 1 de 12» hace
+// que la guía parezca más larga de lo que es.
+const GUIA_ENTRADA = {
+  ico: '🧭',
+  titulo: 'Bienvenido a Norte',
+  que: 'Te muestro los menús en un minuto.',
+  detalle: 'Son ' + GUIA_PASOS.length + ' pantallas. De cada una te digo para qué está '
+         + 'y qué ganás usándola. Podés cortar cuando quieras.',
+  ver: 'Ver la guía',
+  cortar: 'Quiero empezar a usar la aplicación',
+};
+
+const GUIA_SALIDA = {
+  ico: '✅',
+  titulo: 'Listo',
+  que: 'Ya sabés dónde está cada cosa.',
+  detalle: 'Si arrancás por cargar un gasto en Transacciones, el resto se arma solo. '
+         + 'Podés volver a ver esta guía cuando quieras desde el signo de pregunta, '
+         + 'abajo a la izquierda.',
+  boton: 'Empezar a usar Norte',
+};
+
+// ── LA GUÍA DE PRIMERA VEZ ──────────────────────────────────────────
+//
+// Recorre los menús una sola vez, cuando la persona entra por primera vez.
+// Vale igual para una cuenta paga y para un Pionero: la app es la misma y
+// los menús son los mismos, así que no hay dos guiones.
+//
+// Dónde se guarda que ya la vio: en el registro de lecturas por PERSONA
+// —`lect` / `fin_lecturas_<uid>`, que se sincroniza con la nube—, igual que
+// el tutorial de El Cuaderno. No en localStorage a secas: si no, la guía
+// vuelve a salir en el teléfono después de haberla visto en la compu, que
+// es exactamente la clase de detalle que hace que una app parezca hecha a
+// las apuradas.
+//
+// Cuándo sale: DESPUÉS del asistente de bienvenida, no encima. El asistente
+// pide datos; la guía cuenta la casa. Si salieran juntos se pisan y ninguno
+// de los dos se lee.
+
+let guiaPaso = 0;            // 0 = ventana de entrada; 1..N = los menús; N+1 = salida
+let guiaAbierta = false;
+let guiaPaginaPrevia = null;
+
+function guiaEsCelular() { return window.innerWidth <= 880; }
+
+// El ítem del menú de cada paso. Se busca por el onclick que ya tiene el
+// menú en vez de agregarle ids a mano: así el día que se agregue un menú
+// nuevo no hay que acordarse de tocar dos lugares.
+function guiaNavEl(clave) {
+  if (clave === 'nortia') return document.getElementById('navNortia');
+  if (clave === 'pie')    return document.getElementById('acctLinks');
+  return document.querySelector('.sidebar-nav .nav-item[onclick*="showPage(\'' + clave + '\')"]');
+}
+
+function guiaQuizas() {
+  // lectListo es la señal de que ya llegó de la nube el registro de
+  // lecturas. Antes de eso no se sabe si la vio o no, y mostrarla por las
+  // dudas es peor que esperar.
+  if (typeof lectListo === 'undefined' || !lectListo) return;
+  if (lect && lect.guiaMenus) return;
+  if (guiaAbierta) return;
+  // Si el asistente de bienvenida sigue abierto, la guía espera su turno y
+  // vuelve a preguntar. No alcanza con salir: el asistente decide si se
+  // muestra o no DESPUÉS de consultar el perfil en la nube, así que cuando
+  // la guía pregunta puede estar todavía sin abrir y abrirse un segundo
+  // después. Sin el reintento, al que tarda la red le salen las dos.
+  const ob = document.getElementById('onboardingOverlay');
+  if (ob && !ob.classList.contains('hidden')) {
+    if (guiaEsperas < 20) { guiaEsperas++; setTimeout(guiaQuizas, 700); }
+    return;
+  }
+  guiaAbrir();
+}
+let guiaEsperas = 0;
+
+function guiaAbrir(desdeElPrincipio) {
+  if (guiaAbierta) return;
+  guiaAbierta = true;
+  guiaPaso = desdeElPrincipio === false ? 1 : 0;
+  guiaPaginaPrevia = (typeof curPage !== 'undefined') ? curPage : 'dashboard';
+  guiaArmarCapa();
+  document.getElementById('guiaCapa').classList.remove('oculta');
+  guiaPintar();
+  if (typeof track === 'function') track('guia_abierta');
+}
+
+// Cortar y terminar son lo mismo para el usuario —la guía se va y no
+// vuelve— pero se miden distinto: dónde corta la gente es el dato que dice
+// si la guía es larga o si un paso no se entiende.
+function guiaCerrar(motivo) {
+  const capa = document.getElementById('guiaCapa');
+  if (capa) capa.classList.add('oculta');
+  guiaAbierta = false;
+  if (typeof lect !== 'undefined' && lect && !lect.guiaMenus) {
+    lect.guiaMenus = Date.now();
+    try { lectEscribir('guiaMenus', lect.guiaMenus); } catch (e) {}
+  }
+  if (typeof track === 'function') {
+    track(motivo === 'cortada' ? 'guia_cortada' : 'guia_completada', { paso: guiaPaso });
+  }
+  // Se vuelve a donde estaba antes de empezar, que casi siempre es Mi Rumbo.
+  if (guiaPaginaPrevia && typeof showPage === 'function') showPage(guiaPaginaPrevia);
+}
+
+function guiaSiguiente() {
+  if (guiaPaso > GUIA_PASOS.length) { guiaCerrar('terminada'); return; }
+  guiaPaso++;
+  guiaPintar();
+}
+
+function guiaAtras() {
+  if (guiaPaso <= 1) return;
+  guiaPaso--;
+  guiaPintar();
+}
+
+// Apagar el foco NO es solo ponerle la clase: guiaPintar() le escribe el
+// alto y el ancho como estilo en linea, y el estilo en linea le gana a la
+// hoja de estilos. Sin limpiarlos, la ventana de cierre quedaba con el
+// recuadro naranja iluminando los botones del pie, hablando de otra cosa.
+function guiaApagarFoco(foco) {
+  foco.classList.add('sinfoco');
+  foco.style.width = ''; foco.style.height = '';
+  foco.style.top = ''; foco.style.left = '';
+}
+
+function guiaArmarCapa() {
+  if (document.getElementById('guiaCapa')) return;
+  const d = document.createElement('div');
+  d.id = 'guiaCapa'; d.className = 'oculta';
+  d.innerHTML = '<div id="guiaFoco"></div><div id="guiaCaja"></div>';
+  document.body.appendChild(d);
+}
+
+function guiaPintar() {
+  const caja = document.getElementById('guiaCaja');
+  const foco = document.getElementById('guiaFoco');
+  const total = GUIA_PASOS.length;
+
+  // ── La ventana de entrada ──────────────────────────────────────
+  if (guiaPaso === 0) {
+    guiaApagarFoco(foco);
+    caja.innerHTML = guiaCabecera(GUIA_ENTRADA, null, total)
+      + '<div class="guia-cuerpo">'
+      + '<div class="guia-detalle">' + GUIA_ENTRADA.detalle + '</div>'
+      + '<div class="guia-pie">'
+      +   '<span style="flex:1"></span>'
+      +   '<button class="guia-seguir" onclick="guiaSiguiente()">' + GUIA_ENTRADA.ver + '</button>'
+      + '</div>'
+      + '<button class="guia-cortar" onclick="guiaCerrar(\'cortada\')">' + GUIA_ENTRADA.cortar + '</button>'
+      + '</div>';
+    guiaUbicar(null);
+    return;
+  }
+
+  // ── La ventana de cierre ───────────────────────────────────────
+  if (guiaPaso > total) {
+    guiaApagarFoco(foco);
+    caja.innerHTML = guiaCabecera(GUIA_SALIDA, null, total)
+      + '<div class="guia-cuerpo">'
+      + '<div class="guia-detalle">' + GUIA_SALIDA.detalle + '</div>'
+      + '<div class="guia-pie">'
+      +   '<span style="flex:1"></span>'
+      +   '<button class="guia-seguir" onclick="guiaCerrar(\'terminada\')">' + GUIA_SALIDA.boton + '</button>'
+      + '</div></div>';
+    guiaUbicar(null);
+    return;
+  }
+
+  // ── Un menú ────────────────────────────────────────────────────
+  const P = GUIA_PASOS[guiaPaso - 1];
+
+  // La app navega de verdad a la pantalla: la guía la recorre, no la
+  // cuenta. NortIA no tiene pantalla porque todavía no está.
+  if (P.pagina && typeof showPage === 'function' && curPage !== P.pagina) showPage(P.pagina);
+
+  caja.innerHTML = guiaCabecera(P, guiaPaso, total)
+    + '<div class="guia-cuerpo">'
+    + '<div class="guia-detalle">' + P.detalle + '</div>'
+    + '<div class="guia-sirve">' + P.sirve + '</div>'
+    + '<div class="guia-pie">'
+    +   '<button class="guia-atras" onclick="guiaAtras()"' + (guiaPaso <= 1 ? ' disabled' : '') + ' aria-label="Paso anterior">‹</button>'
+    +   '<span style="flex:1"></span>'
+    +   '<button class="guia-seguir" onclick="guiaSiguiente()">'
+    +     (guiaPaso === total ? 'Terminar' : 'Siguiente') + '</button>'
+    + '</div>'
+    + '<button class="guia-cortar" onclick="guiaCerrar(\'cortada\')">Quiero empezar a usar la aplicación</button>'
+    + '</div>';
+
+  const el = guiaEsCelular() ? null : guiaNavEl(P.nav);
+  if (el) {
+    foco.classList.remove('sinfoco');
+    const r = el.getBoundingClientRect();
+    foco.style.top = (r.top - 6) + 'px';
+    foco.style.left = (r.left - 6) + 'px';
+    foco.style.width = (r.width + 12) + 'px';
+    foco.style.height = (r.height + 12) + 'px';
+  } else {
+    guiaApagarFoco(foco);
+  }
+  guiaUbicar(el);
+}
+
+function guiaCabecera(P, nro, total) {
+  let barra = '';
+  if (nro) {
+    barra = '<div class="guia-barra">';
+    for (let i = 1; i <= total; i++) {
+      barra += '<div class="guia-tramo ' + (i < nro ? 'hecho' : i === nro ? 'actual' : '') + '"></div>';
+    }
+    barra += '</div>';
+  }
+  const ico = '<span class="guia-ico">' + P.ico + '</span>';
+  return '<div class="guia-cab">' + barra
+    + (nro ? '<div class="guia-paso">Paso ' + nro + ' de ' + total + '</div>' : '')
+    + '<div class="guia-titulo-fila">' + ico
+    + '<span class="guia-titulo">' + P.titulo + '</span>'
+    + (P.proximamente ? '<span class="guia-pronto">Próximamente</span>' : '')
+    + '</div>'
+    + '<div class="guia-que">' + P.que + '</div></div>';
+}
+
+// La ventana se apoya al lado del ítem iluminado y, si no entra abajo, se
+// sube. En celular la manda el CSS: va fija abajo y esto no la toca.
+function guiaUbicar(el) {
+  if (guiaEsCelular()) return;
+  const caja = document.getElementById('guiaCaja');
+  const alto = caja.offsetHeight || 340;
+  const ancho = caja.offsetWidth || 380;
+  if (!el) {
+    caja.style.left = Math.round((window.innerWidth - ancho) / 2) + 'px';
+    caja.style.top = Math.round((window.innerHeight - alto) / 2) + 'px';
+    return;
+  }
+  const r = el.getBoundingClientRect();
+  let left = r.right + 22;
+  if (left + ancho > window.innerWidth - 16) left = Math.max(16, r.left - ancho - 22);
+  let top = r.top + r.height / 2 - alto / 2;
+  top = Math.max(16, Math.min(top, window.innerHeight - alto - 16));
+  caja.style.left = Math.round(left) + 'px';
+  caja.style.top = Math.round(top) + 'px';
+}
+
+// Si la ventana cambia de tamaño, el foco tiene que seguir al ítem. Sin
+// esto, girar el teléfono deja el recuadro iluminando un pedazo de nada.
+window.addEventListener('resize', function () { if (guiaAbierta) guiaPintar(); });
+
+
 // ── ANALYTICS (Google Analytics vía Firebase) ────────────────
 // Mide CÓMO se usa Norte para decidir qué mejorar y qué nadie usa.
 // Privacidad: NO se envían montos, rubros reales, descripciones,
