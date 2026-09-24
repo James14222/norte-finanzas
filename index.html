@@ -178,6 +178,11 @@ Reglas:
   --muted: #64748b; --border: #e2e8f0; --sw: 224px;
   --brand-navy: #1B3A4B; --brand-navy-light: #28506A; --brand-accent: #FF8A5C; --brand-accent-soft: #FFB199;
   --nortia-icon-url: url("assets/nortia/nortia-bust.png"); --nortia-pointing-url: url("assets/nortia/nortia-pointing.png");
+  /* El personaje entero, recortado y CON canal alfa. El archivo viejo
+     —nortia-watermark.png— no tenía alfa: su fondo era negro casi puro, y por
+     eso la marca de agua se veía como un cuadrado oscuro asomado en la
+     esquina. Ese archivo ya no se usa en ningún lado. */
+  --nortia-marca-url: url("assets/nortia/nortia-marca.webp");
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
@@ -873,6 +878,14 @@ tr:hover td { background: #fafbfc; }
   background-size: contain;
   mix-blend-mode: multiply; opacity: .13; pointer-events: none;
 }
+/* En la compu, de borde a borde. `contain` en una caja más ancha que alta
+   escala por el ALTO, así que la hoja ocupaba sólo la derecha y en una
+   pantalla grande quedaba como una estampita en un costado. `cover` a todo el
+   ancho la estira y recorta por arriba, que es el lado sin dibujo. El celular
+   tiene su propia regla más abajo y no se toca. */
+@media (min-width: 881px) {
+  .cu-hoja::after { width: 100%; background-position: center bottom; background-size: cover; }
+}
 .cu-fila, .cu-vacio { position: relative; z-index: 1; }
 .cu-hoja::before {
   content: ""; position: absolute; left: 0; top: 0; bottom: 0; z-index: 2;
@@ -1142,9 +1155,31 @@ tr:hover td { background: #fafbfc; }
 .consultas-layout {
   display:flex; flex-direction:column; height:calc(100vh - 128px);
   position:relative; border-radius:18px; padding:20px 22px;
-  background:
-    url("assets/nortia/nortia-watermark.png") no-repeat right -20px bottom -10px / 300px 300px,
-    linear-gradient(180deg, rgba(255,138,92,0.05), rgba(27,58,75,0.05));
+  background: linear-gradient(180deg, rgba(255,138,92,0.05), rgba(27,58,75,0.05));
+}
+/* La marca de agua, en su propia capa. Va grande —el 86 % del alto del
+   panel—, centrada y apoyada abajo, y bien apagada para que no compita con lo
+   que se escribe encima. La opacidad vive acá y no horneada en la imagen:
+   subirla o bajarla es cambiar un número. */
+.consultas-layout::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: var(--nortia-marca-url) no-repeat center bottom;
+  background-size: auto 86%;
+  opacity: .07;
+}
+/* Todo lo que va adentro del panel queda por encima de la marca de agua. Sin
+   esto, los hijos sin posición comparten el plano del ::before y el orden lo
+   decide el HTML. */
+.consultas-layout > * { position: relative; z-index: 1; }
+/* En el celular el panel es angosto: la MISMA proporción de alto hace que la
+   figura sea mucho más ancha respecto de la pantalla y se mete entre los
+   globos del chat. Se la baja a poco menos de la mitad, para que viva en el
+   espacio vacío de abajo.
+   Va ACÁ y no en el @media general de la app: ese bloque está antes en la
+   hoja, y con la misma especificidad gana la regla que viene después. Puesto
+   allá, el override no se aplicaba nunca. */
+@media (max-width: 880px) {
+  .consultas-layout::before { background-size: auto 44%; opacity: .055; }
 }
 .chat-sugs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
 .chat-sug { padding:6px 14px; border-radius:20px; border:1px solid var(--border); background:var(--card); font-size:12.5px; cursor:pointer; transition:all 0.15s; color:var(--muted); }
@@ -14456,7 +14491,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.47.002';
+const APP_VERSION = 'v005.47.003';
 let novEntradas = [];
 
 function novLeida(e) {
