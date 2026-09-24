@@ -14359,6 +14359,7 @@ function lectNormalizar(o) {
     caps:      o.caps  || {},
     capsVisto: Number(o.capsVisto) || 0,
     cuTuto:    Number(o.cuTuto)    || 0,
+    guiaMenus: Number(o.guiaMenus) || 0,
     cuNuevoDesde: Number(o.cuNuevoDesde) || 0
   };
 }
@@ -14426,6 +14427,9 @@ function iniciarLecturas() {
           caps:      Object.assign({}, lect.caps,  r.caps),
           capsVisto: Math.max(lect.capsVisto, r.capsVisto),
           cuTuto:    Math.max(lect.cuTuto,    r.cuTuto),
+          // Sin este renglon la guia volvia a empezar sola: el merge
+          // rearmaba `lect` sin el campo y el enganche de abajo la reabria.
+          guiaMenus: Math.max(lect.guiaMenus || 0, r.guiaMenus || 0),
           cuNuevoDesde: (lect.cuNuevoDesde && r.cuNuevoDesde)
             ? Math.min(lect.cuNuevoDesde, r.cuNuevoDesde)
             : (lect.cuNuevoDesde || r.cuNuevoDesde)
@@ -14452,7 +14456,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.47.001';
+const APP_VERSION = 'v005.47.002';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -18244,6 +18248,7 @@ const GUIA_SALIDA = {
 // de los dos se lee.
 
 let guiaPaso = 0;            // 0 = ventana de entrada; 1..N = los menús; N+1 = salida
+let guiaItem = null;         // el ítem del menú que está iluminado ahora
 let guiaAbierta = false;
 let guiaPaginaPrevia = null;
 
@@ -18258,11 +18263,18 @@ function guiaNavEl(clave) {
   return document.querySelector('.sidebar-nav .nav-item[onclick*="showPage(\'' + clave + '\')"]');
 }
 
+let guiaCerradaAca = false;   // seguro de esta sesión, aparte del dato
+
 function guiaQuizas() {
   // lectListo es la señal de que ya llegó de la nube el registro de
   // lecturas. Antes de eso no se sabe si la vio o no, y mostrarla por las
   // dudas es peor que esperar.
   if (typeof lectListo === 'undefined' || !lectListo) return;
+  // Dos cerrojos a propósito. El de arriba es el dato que viaja entre
+  // aparatos; éste es de esta sesión y no depende de que el dato sobreviva
+  // el viaje. Una pantalla que puede dejar encerrado al usuario no puede
+  // quedar colgada de un solo cerrojo.
+  if (guiaCerradaAca) return;
   if (lect && lect.guiaMenus) return;
   if (guiaAbierta) return;
   // Si el asistente de bienvenida sigue abierto, la guía espera su turno y
@@ -18281,6 +18293,7 @@ let guiaEsperas = 0;
 
 function guiaAbrir(desdeElPrincipio) {
   if (guiaAbierta) return;
+  guiaEsperas = 0;
   guiaAbierta = true;
   guiaPaso = desdeElPrincipio === false ? 1 : 0;
   guiaPaginaPrevia = (typeof curPage !== 'undefined') ? curPage : 'dashboard';
@@ -18297,6 +18310,7 @@ function guiaCerrar(motivo) {
   const capa = document.getElementById('guiaCapa');
   if (capa) capa.classList.add('oculta');
   guiaAbierta = false;
+  guiaCerradaAca = true;
   if (typeof lect !== 'undefined' && lect && !lect.guiaMenus) {
     lect.guiaMenus = Date.now();
     try { lectEscribir('guiaMenus', lect.guiaMenus); } catch (e) {}
@@ -18394,17 +18408,35 @@ function guiaPintar() {
     + '</div>';
 
   const el = guiaEsCelular() ? null : guiaNavEl(P.nav);
-  if (el) {
-    foco.classList.remove('sinfoco');
-    const r = el.getBoundingClientRect();
-    foco.style.top = (r.top - 6) + 'px';
-    foco.style.left = (r.left - 6) + 'px';
-    foco.style.width = (r.width + 12) + 'px';
-    foco.style.height = (r.height + 12) + 'px';
-  } else {
-    guiaApagarFoco(foco);
-  }
+  guiaItem = el;
+  // La barra lateral tiene overflow-y:auto. Con la caja de cuenta, la
+  // constancia, el progreso y Admin desborda en una notebook, y entonces la
+  // fila de abajo —perfil, plan, hogares, ayuda— queda debajo del borde
+  // visible. Antes el foco se dibujaba donde ESTÁ el elemento, o sea fuera
+  // de la pantalla, y parecía que el paso 11 no resaltaba nada. Se lo trae
+  // a la vista primero.
+  if (el) { try { el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {} }
+  guiaColocarFoco();
   guiaUbicar(el);
+}
+
+// Dibujar el recuadro donde está el ítem AHORA. Va aparte de guiaPintar()
+// porque también corre cuando la persona mueve la barra con el dedo o la
+// rueda: el foco tiene que seguir al menú, no quedarse donde estaba.
+function guiaColocarFoco() {
+  const foco = document.getElementById('guiaFoco');
+  if (!foco) return;
+  const el = guiaItem;
+  if (!el) { guiaApagarFoco(foco); return; }
+  const r = el.getBoundingClientRect();
+  // Si aun así quedó fuera de la ventana, se apaga: mejor el velo entero
+  // que un recuadro iluminando un pedazo de nada.
+  if (r.width < 2 || r.bottom < 6 || r.top > window.innerHeight - 6) { guiaApagarFoco(foco); return; }
+  foco.classList.remove('sinfoco');
+  foco.style.top = (r.top - 6) + 'px';
+  foco.style.left = (r.left - 6) + 'px';
+  foco.style.width = (r.width + 12) + 'px';
+  foco.style.height = (r.height + 12) + 'px';
 }
 
 function guiaCabecera(P, nro, total) {
@@ -18450,6 +18482,20 @@ function guiaUbicar(el) {
 // Si la ventana cambia de tamaño, el foco tiene que seguir al ítem. Sin
 // esto, girar el teléfono deja el recuadro iluminando un pedazo de nada.
 window.addEventListener('resize', function () { if (guiaAbierta) guiaPintar(); });
+
+// Y si se mueve la barra lateral, también. Acá NO se vuelve a pintar la
+// ventana entera —eso rearmaría el HTML en cada cuadro del scroll—: se
+// mueve nada más el recuadro, que es lo único que cambió de lugar.
+(function () {
+  const enganchar = function () {
+    const sb = document.querySelector('.sidebar');
+    if (!sb || sb.dataset.guiaScroll) return;
+    sb.dataset.guiaScroll = '1';
+    sb.addEventListener('scroll', function () { if (guiaAbierta) guiaColocarFoco(); }, { passive: true });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', enganchar);
+  else enganchar();
+})();
 
 
 // ── ANALYTICS (Google Analytics vía Firebase) ────────────────
