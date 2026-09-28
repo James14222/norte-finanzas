@@ -85,7 +85,7 @@
     });
     const modelChat = getGenerativeModel(ai, {
       model: "gemini-3.7-flash",
-      generationConfig: { temperature: 0.3, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 0 } }
+      generationConfig: { temperature: 0.3, maxOutputTokens: 1500, thinkingConfig: { thinkingBudget: 0 } }
     });
 
         const GASTO_EXTRACT_SCHEMA = {
@@ -14491,7 +14491,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.47.003';
+const APP_VERSION = 'v005.47.004';
 let novEntradas = [];
 
 function novLeida(e) {
