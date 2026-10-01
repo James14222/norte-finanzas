@@ -7864,68 +7864,111 @@ function tcpDetectarBanco(paginas) {
   return m ? m[0].replace(/\s+/g, ' ').trim() : '';
 }
 
-/* Perfil: formato clasico Prisma (Banco Provincia y similares) */
+/* Mes escrito como lo imprima el banco: "Setiem.", "Set", "Sept", "Noviem.",
+   "Octubre"… Se compara contra el nombre completo por prefijo (minimo 3 letras),
+   sin tildes ni puntos. "MARCA" no es marzo: tiene que ser prefijo del nombre. */
+var TCP_MESES_LARGOS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+function tcpMesDe(tok) {
+  var s = String(tok || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, '');
+  if (s.length < 3) return 0;
+  if (s.indexOf('set') === 0) s = 'sept' + s.slice(3);         // "Setiem." -> "septiem"
+  for (var i = 0; i < 12; i++) if (TCP_MESES_LARGOS[i].indexOf(s) === 0) return i + 1;
+  return 0;
+}
+/* Inicio de un renglon de movimiento, ya unido aunque pdf.js lo entregue en
+   uno, dos o tres pedazos: [AA Mes] DD [comprobante] [letra] [resto]. */
+var TCP_RE_INICIO = /^(?:(\d{2})\s+([A-Za-zÁÉÍÓÚáéíóúÑñ]{3,}\.?)\s+)?(\d{1,2})(?:\s+(\d{5,8}))?(?:\s+([A-Z*]))?(?:\s+(.+))?$/;
+var TCP_RE_IMPUESTO = /IMPUESTO|SELLOS|IIBB|I\.?V\.?A\b|PERCEP|\bRG\s?\d|DB\.?\s?RG|INTERES|COMISION|CARGO|MANTENIMIENTO|RENOVACION|SEGURO DE VIDA|PUNITORIO/i;
+var TCP_RE_NO_ES_MOV = /^SU PAGO\b|SALDO ANTERIOR|TRANSFERENCIA DEUDA|^PAGO\b/i;
+
+/* Perfil: formato clasico Prisma (Banco Provincia, Santander Rio viejo y similares).
+   Recorre el resumen por SECCIONES, no por como pdf.js corte el texto:
+     pre     → arriba de la linea de guiones: saldo anterior, pagos, ajustes.
+     bloque  → consumos de cada tarjeta, hasta su linea "Total Consumos".
+     post    → despues del ultimo total: impuestos, percepciones y cargos.
+   Nada se descarta en silencio: los creditos (importe con "-") entran como
+   creditos, y lo que queda arriba de la linea entra destildado para revisar. */
 function tcpParsePrisma(paginas) {
   var filas = [], control = { ars: null, usd: null }, banco = tcpDetectarBanco(paginas), titular = '', colArs = null, colUsd = null;
+  var hayGuiones = false, totalesVistos = 0, totalesDoc = 0;
   paginas.forEach(function (pg) {
     pg.lineas.forEach(function (ln) {
       var txt = ln.map(function (w) { return w.t; }).join(' ');
+      if (/^_{10,}$/.test(txt.replace(/\s/g, ''))) hayGuiones = true;
       if (/Total Consumos/i.test(txt)) {
+        totalesDoc++;
         var m = ln.filter(function (w) { return tcpEsMonto(w.t); });
-        if (m.length >= 2) {
-            /* Un resumen con adicionales trae una linea de cierre por tarjeta
-               ("Tarjeta 8780 Total Consumos de ..."): los subtotales se SUMAN. */
-            if (colArs === null) { colArs = m[0].x1; colUsd = m[m.length - 1].x1; }
-            control.ars = (control.ars || 0) + tcpNum(m[0].t);
-            control.usd = (control.usd || 0) + tcpNum(m[m.length - 1].t);
-          }
+        if (m.length >= 1) {
+          /* Un resumen con adicionales trae una linea de cierre por tarjeta: los subtotales se SUMAN. */
+          if (colArs === null && m.length >= 2) { colArs = m[0].x1; colUsd = m[m.length - 1].x1; }
+          control.ars = (control.ars || 0) + tcpNum(m[0].t);
+          control.usd = (control.usd || 0) + (m.length >= 2 ? tcpNum(m[m.length - 1].t) : 0);
+        }
         var nm = txt.match(/Total Consumos de\s+(.+?)\s*(?:[\d.,]+\s*\*|$)/i);
-        /* Con adicionales hay una linea de cierre por tarjeta: el titular principal
-             es el del primer bloque, y es a quien se le imputan los impuestos. */
-          if (nm && !titular) titular = nm[1].trim();
+        if (nm && !titular) titular = nm[1].trim();
       }
     });
   });
   if (colArs === null) { colArs = paginas[0].ancho * 0.77; colUsd = paginas[0].ancho * 0.925; }
-  var corte = (colArs + colUsd) / 2, anio = null, mes = null, _pend = [];
+  var corte = (colArs + colUsd) / 2, anio = null, mes = null, _pend = [], ultima = null;
+  var seccion = hayGuiones ? 'pre' : 'bloque';
   paginas.forEach(function (pg) {
     pg.lineas.forEach(function (ln) {
-      var txt = ln.map(function (w) { return w.t; }).join(' '), idx = 0;
-        /* Linea de cierre de una tarjeta: todo lo acumulado desde el cierre
-           anterior pertenece a esa persona (titular o adicional). */
-        if (/Total Consumos/i.test(txt)) {
-          var _nm = txt.match(/Total Consumos de\s+(.+?)\s*(?:[\d.,]+\s*\*|$)/i);
-          var _nom = _nm ? _nm[1].trim() : '';
-          if (_nom) { _pend.forEach(function (f) { f.titular = _nom; }); }
-          _pend = [];
-          return;
-        }
-      var m0 = ln[0] && ln[0].t.match(/^(\d{2})\s+([A-Za-zAEIOUaeiouáéíóú]+)$/);
-        var _salto = 1;
-        /* Segun como el generador del PDF agrupe el texto, pdf.js puede devolver
-           el anclaje de periodo en un solo item ("26 Agosto") o partido en dos
-           ("26" + "Agosto"). Se aceptan las dos formas. */
-        if (!m0 && ln[0] && ln[1] && /^\d{2}$/.test(ln[0].t.trim()) && /^[A-Za-zAEIOUaeiouáéíóú]+$/.test(ln[1].t.trim())) {
-          m0 = [null, ln[0].t.trim(), ln[1].t.trim()]; _salto = 2;
-        }
-        if (m0 && ln[0].x0 < 40 && TCP_MESES[m0[2].toLowerCase()]) { anio = 2000 + parseInt(m0[1], 10); mes = TCP_MESES[m0[2].toLowerCase()]; idx = _salto; }
-      var head = ln[idx];
-      if (!head || head.x0 < 60 || head.x0 > 100) return;
-      var mh = head.t.match(/^(\d{1,2})(?:\s+(\d{6}))?(?:\s+([A-Z*]))?$/);
-      if (!mh || anio === null) return;
-      if (/SU PAGO|SALDO ANTERIOR/i.test(txt)) return;
-      var resto = ln.slice(idx + 1);
+      var txt = ln.map(function (w) { return w.t; }).join(' ');
+      if (seccion === 'fin') return;
+      if (/^_{10,}$/.test(txt.replace(/\s/g, ''))) { seccion = 'bloque'; ultima = null; return; }
+      /* Despues de impuestos vienen la financiacion, la leyenda y el cupon de
+         pago, que tambien tiene "fecha + importe": ahi termina el detalle. */
+      if (seccion === 'post' && /Plan V\b|DEBITAREMOS|SALDO ACTUAL|PAGO M[IÍ]NIMO|CFTEA/i.test(txt)) { seccion = 'fin'; return; }
+      /* Cierre de una tarjeta: lo acumulado desde el cierre anterior es de esa persona. */
+      if (/Total Consumos/i.test(txt)) {
+        var _nm = txt.match(/Total Consumos de\s+(.+?)\s*(?:[\d.,]+\s*\*|$)/i);
+        var _nom = _nm ? _nm[1].trim() : '';
+        if (_nom) _pend.forEach(function (f) { f.titular = _nom; });
+        _pend = []; ultima = null;
+        totalesVistos++;
+        if (totalesVistos >= totalesDoc) seccion = 'post';
+        return;
+      }
+      var izq = ln.filter(function (w) { return w.x0 < 128; });
+      if (!izq.length || izq[0].x0 > 100) { ultima = null; return; }
+      var mi = izq.map(function (w) { return w.t; }).join(' ').replace(/\s+/g, ' ').trim().match(TCP_RE_INICIO);
+      if (!mi) { ultima = null; return; }
+      if (mi[1]) {
+        var _a = 2000 + parseInt(mi[1], 10), _m = tcpMesDe(mi[2]);
+        if (!_m || _a < 2015 || _a > 2045) { ultima = null; return; }   // ej. "05 Oct 26" del cupon de pago
+        anio = _a; mes = _m;
+      }
+      if (anio === null) return;
+      var resto = ln.filter(function (w) { return w.x0 >= 128; });
       var montos = resto.filter(function (w) { return tcpEsMonto(w.t); });
-      if (!montos.length) return;
+      var cuota = '';
+      var palabras = resto.filter(function (w) {
+        if (w.x1 > colArs - 60 || tcpEsMonto(w.t) || /^(USD|U\$S|\$)$/i.test(w.t)) return false;
+        var mc = w.t.match(/^C(?:UOTA)?\.?\s?(\d{1,2})\/(\d{1,2})$/i);
+        if (mc) { cuota = ('0' + mc[1]).slice(-2) + '/' + ('0' + mc[2]).slice(-2); return false; }
+        return true;
+      }).map(function (w) { return w.t; });
+      if (mi[6]) palabras.unshift(mi[6]);
+      var desc = palabras.join(' ').replace(/\s+/g, ' ').trim();
+      /* Renglon sin importe que sigue a un movimiento: es la aclaracion del
+         anterior, ej. "(CREDITO PROV. CONSUMO CUEST. TJ. 5857)". */
+      if (!montos.length) { if (ultima && desc && /^\(/.test(desc)) ultima.desc = (ultima.desc + ' ' + desc).replace(/\s+/g, ' ').trim(); return; }
+      /* Un movimiento siempre dice algo: un renglon sin letras (ej. el numero
+         de cuenta del cupon) no es un consumo. */
+      if (!desc || !/[A-Za-zÁÉÍÓÚÑáéíóúñ]{2,}/.test(desc) || TCP_RE_NO_ES_MOV.test(desc)) { ultima = null; return; }
       var ult = montos[montos.length - 1], monto = tcpNum(ult.t);
-      if (monto <= 0) return;
-      var desc = resto.filter(function (w) { return w.x0 >= 125 && w.x1 <= colArs - 60 && !tcpEsMonto(w.t) && !/^(USD|U\$S|\$)$/i.test(w.t); }).map(function (w) { return w.t; }).join(' ').replace(/\s+/g, ' ').trim();
-      if (!desc) return;
-      var _f = { fecha: tcpFecha(anio, mes, parseInt(mh[1], 10)), desc: desc, monto: monto, moneda: ult.x1 > corte ? 'USD' : 'ARS', cuota: '', comprobante: mh[2] || '', titular: '', tipo: mh[2] ? 'consumo' : 'impuesto' };
-        filas.push(_f); _pend.push(_f);
+      if (!monto) return;
+      var credito = monto < 0, tipo;
+      if (credito) tipo = 'credito';
+      else if (seccion === 'bloque') tipo = 'consumo';
+      else tipo = TCP_RE_IMPUESTO.test(desc) ? 'impuesto' : 'cargo';
+      var _f = { fecha: tcpFecha(anio, mes, parseInt(mi[3], 10)), desc: desc, monto: Math.abs(monto), moneda: ult.x1 > corte ? 'USD' : 'ARS',
+                 cuota: cuota, comprobante: mi[4] || '', titular: '', tipo: tipo, seccion: seccion };
+      filas.push(_f); ultima = _f;
+      if (seccion === 'bloque') _pend.push(_f);
     });
   });
-  /* Filas sin bloque de cierre propio: quedan a nombre del titular principal. */
   filas.forEach(function (f) { if (!f.titular) f.titular = titular; });
   return { banco: banco || 'Tarjeta de crédito', filas: filas, control: control, subtotales: [] };
 }
@@ -7982,8 +8025,18 @@ function tcpParseSantander(paginas) {
 var TCP_PERFILES = { PRISMA: tcpParsePrisma, SANTANDER: tcpParseSantander };
 
 function tcpTotales(filas) {
-  var s = function (tipo, mon) { return filas.reduce(function (a, f) { return a + ((f.moneda === mon) && (!tipo || f.tipo === tipo) ? f.monto : 0); }, 0); };
-  var v = { consumosArs: +s('consumo', 'ARS').toFixed(2), consumosUsd: +s('consumo', 'USD').toFixed(2), impuestosArs: +s('impuesto', 'ARS').toFixed(2), impuestosUsd: +s('impuesto', 'USD').toFixed(2) };
+  var s = function (pred, mon) { return filas.reduce(function (a, f) { return a + (f.moneda === mon && pred(f) ? f.monto : 0); }, 0); };
+  var esCons = function (f) { return f.tipo === 'consumo'; };
+  var esCredBloque = function (f) { return f.tipo === 'credito' && f.seccion !== 'pre' && f.seccion !== 'post'; };
+  var esImp = function (f) { return f.tipo === 'impuesto'; };
+  var esCargo = function (f) { return f.tipo === 'cargo'; };
+  var esCredFuera = function (f) { return f.tipo === 'credito' && (f.seccion === 'pre' || f.seccion === 'post'); };
+  var v = {
+    consumosArs: +(s(esCons, 'ARS') - s(esCredBloque, 'ARS')).toFixed(2),
+    consumosUsd: +(s(esCons, 'USD') - s(esCredBloque, 'USD')).toFixed(2),
+    impuestosArs: +(s(esImp, 'ARS') + s(esCargo, 'ARS') - s(esCredFuera, 'ARS')).toFixed(2),
+    impuestosUsd: +(s(esImp, 'USD') + s(esCargo, 'USD') - s(esCredFuera, 'USD')).toFixed(2)
+  };
   v.totalArs = +(v.consumosArs + v.impuestosArs).toFixed(2);
   v.totalUsd = +(v.consumosUsd + v.impuestosUsd).toFixed(2);
   return v;
@@ -8067,10 +8120,16 @@ async function tcpFallbackIA(paginas) {
 function tcFilasDesdePdf(res) {
   return res.filas.map(function (f) {
     var esImp = f.tipo === 'impuesto';
+    /* Credito del banco (bonificacion, devolucion, reintegro de percepcion):
+       Norte todavia no registra importes negativos en la tarjeta, y cargarlo
+       como gasto positivo seria sumar plata que el banco descuenta. Se muestra
+       en la previa, sin tilde y sin poder tildarse, y el control del total si
+       lo cuenta: asi no desaparece nada en silencio. */
+    var esCred = f.tipo === 'credito';
     var rubro = esImp ? 'Impuestos / Tasas' : tcGuessRubro(f.desc, 'Gasto');
     return { id: uid(), desc: f.desc, monto: f.monto, esUSD: f.moneda === 'USD', cuota: f.cuota || '',
-             titular: f.titular || '', tipoMov: 'Gasto', rubro: rubro, selected: true,
-             fechaOrig: f.fecha || '', esImpuesto: esImp };
+             titular: f.titular || '', tipoMov: 'Gasto', rubro: esCred ? '' : rubro, selected: !esCred,
+             fechaOrig: f.fecha || '', esImpuesto: esImp, esCredito: esCred };
   });
 }
 
@@ -8079,7 +8138,10 @@ function tcPdfBadge() {
   var t = tcPdfRes.totales, n = tcPdfRes.filas.filter(function (f) { return f.tipo === 'impuesto'; }).length;
   var s = '';
   if (n) s += ' · <span style="background:#e0e7ff;color:#3730a3;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700">' + n + ' de impuestos incluidos</span>';
+  var nc = tcPdfRes.filas.filter(function (f) { return f.tipo === 'credito'; }).length;
+  if (nc) s += ' · <span title="Bonificaciones, devoluciones o reintegros del banco. Se ven en la lista pero no se importan: Norte todavía no registra créditos de tarjeta." style="background:#f1f5f9;color:#334155;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700">↩ ' + nc + ' crédito' + (nc !== 1 ? 's' : '') + ' del banco, sin importar</span>';
   if (tcPdfRes.cuadra === true) s += ' · <span style="background:#d1fae5;color:#065f46;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700">✓ cuadra con el total del resumen</span>';
+  else if (tcPdfRes.cuadra === null && !tcPdfRes.viaIA) s += ' · <span style="background:#fef3c7;color:#92400e;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700">⚠ no encontré el total del resumen para verificar: revisá la lista</span>';
   else if (tcPdfRes.cuadra === false) s += ' · <span style="background:#fef3c7;color:#92400e;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700">⚠ revisá: no cuadra con el total del resumen</span>';
   return s;
 }
@@ -8108,12 +8170,13 @@ async function tcPdfPreparar(file) {
     var tits = [];
     res.filas.forEach(function (f) { if (f.titular && tits.indexOf(f.titular) < 0) tits.push(f.titular); });
     var nCons = res.filas.filter(function (f) { return f.tipo === 'consumo'; }).length;
-    var nImp = res.filas.length - nCons;
+    var nCred = res.filas.filter(function (f) { return f.tipo === 'credito'; }).length;
+    var nImp = res.filas.length - nCons - nCred;
     var html = '<div style="background:rgba(37,99,235,0.06);border:1px solid rgba(37,99,235,0.22);border-radius:10px;padding:14px 16px">' +
       '<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">1. Resumen reconocido</div>' +
       '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:17px">🏦</span><input id="tcPdfBancoInput" value="' + esc(res.banco) + '" oninput="if(tcPdfRes)tcPdfRes.banco=this.value" style="font-size:15px;font-weight:800;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:5px 10px;max-width:250px;background:var(--card)">' + (res.viaIA ? '<span style="font-size:11px;font-weight:700;color:var(--primary)">· leído por NortIA</span>' : '') + '</div>' +
       '<div style="font-size:11px;color:var(--muted);margin-top:4px">Así vas a ver esta tarjeta al pagar el resumen. Si el nombre no es exacto, corregilo acá.</div>' +
-      '<div style="font-size:13px;color:var(--text);margin-top:6px">' + nCons + ' consumos' + (nImp ? ' · ' + nImp + ' impuestos y percepciones' : '') + '</div>' +
+      '<div style="font-size:13px;color:var(--text);margin-top:6px">' + nCons + ' consumos' + (nImp ? ' · ' + nImp + ' impuestos y percepciones' : '') + (nCred ? ' · ' + nCred + ' crédito' + (nCred !== 1 ? 's' : '') + ' del banco' : '') + '</div>' +
       (tits.length ? '<div style="font-size:13px;color:var(--text);margin-top:4px">👤 ' + tits.map(esc).join(' · ') + '</div>' : '') +
       (res.cuadra === true ? '<div style="font-size:12.5px;color:#16a34a;font-weight:700;margin-top:8px">✓ Los totales cuadran con el resumen</div>' :
        res.cuadra === false ? '<div style="font-size:12.5px;color:#b45309;font-weight:700;margin-top:8px">⚠ Los totales no cuadran con el resumen — revisá la vista previa</div>' : '') +
@@ -8351,9 +8414,10 @@ function tcSetTipo(i, tipo) { tcRows[i].tipoMov = tipo; tcRows[i].rubro = tcGues
   const tbody = document.getElementById('importTableBody');
   tbody.innerHTML = tcRows.map((r, i) => `
     <tr id="tcrow-${i}" class="${r.selected?'':'row-skip'}">
-      <td><input type="checkbox" ${r.selected?'checked':''} onchange="tcToggleRow(${i},this.checked)"></td>
+      <td><input type="checkbox" ${r.selected?'checked':''} ${r.esCredito?'disabled title="Crédito del banco: no se importa"':''} onchange="tcToggleRow(${i},this.checked)"></td>
       <td>
         <input type="text" value="${esc(r.desc)}" oninput="tcRows[${i}].desc=this.value" style="min-width:120px">
+        ${r.esCredito ? '<div style="font-size:11px;color:#334155;margin-top:2px">↩ crédito del banco — resta del total, no se importa</div>' : ''}
       </td>
       ${hasTitular ? `<td>${tcSelectPortador(i, r)}</td>` : ''}
       <td style="white-space:nowrap">
@@ -8387,8 +8451,8 @@ function tcToggleRow(i, checked) {
 }
 
 function tcToggleAll(checked) {
-  tcRows.forEach((r, i) => { r.selected = checked; document.getElementById(`tcrow-${i}`).classList.toggle('row-skip', !checked); });
-  document.querySelectorAll('#importTableBody input[type=checkbox]').forEach(cb => cb.checked = checked);
+  tcRows.forEach((r, i) => { if (r.esCredito) return; r.selected = checked; document.getElementById(`tcrow-${i}`).classList.toggle('row-skip', !checked); });
+  document.querySelectorAll('#importTableBody input[type=checkbox]:not([disabled])').forEach(cb => cb.checked = checked);
   tcUpdateSummary();
 }
 
@@ -8474,7 +8538,7 @@ function tcOpcionesMesResumen() {
 }
 
 function confirmTCImport() {
-  const sel = tcRows.filter(r => r.selected && r.monto > 0);
+  const sel = tcRows.filter(r => r.selected && r.monto > 0 && !r.esCredito);
   if (!sel.length) { alert('No hay movimientos seleccionados.'); return; }
   const data = getData();
   const mes  = tcTargetMes || curKey();
@@ -14491,7 +14555,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.47.004';
+const APP_VERSION = 'v005.47.005';
 let novEntradas = [];
 
 function novLeida(e) {
