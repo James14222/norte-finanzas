@@ -4610,6 +4610,9 @@ tr:hover td { background: #fafbfc; }
           <input class="money" id="txImpUSD" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
         </div>
       </div>
+      <div id="txReintegroAviso" style="display:none;margin:-4px 0 12px;padding:8px 12px;border-radius:8px;background:#dcfce7;color:#166534;font-size:12.5px;line-height:1.4">
+        <strong>↩ Reintegro.</strong> Un gasto con importe negativo es plata que vuelve (bonificación, devolución). Resta del gasto del mes y del pago de la tarjeta.
+      </div>
       <div class="form-group">
         <label>Fecha <span style="font-weight:400;text-transform:none;opacity:0.6">(cuándo pasó)</span></label>
         <input type="date" id="txFecha">
@@ -8977,6 +8980,13 @@ function initSync() { let myRef;
 // ── FORMAT ──────────────────────────────────────────────────
 const fmtP = v => v ? (Number(v) < 0 ? '-' : '') + '$' + Math.abs(Number(v)).toLocaleString('es-AR', {minimumFractionDigits:0, maximumFractionDigits:2}) : '-';
 const fmtU = v => v ? (Number(v) < 0 ? '-' : '') + 'USD ' + Math.abs(Number(v)).toLocaleString('es-AR', {minimumFractionDigits:0, maximumFractionDigits:2}) : '-';
+/* Reintegro: gasto con importe negativo (bonificacion, devolucion de percepcion).
+   Se guarda negativo para que reste solo en todos los totales; en pantalla se
+   muestra como plata que vuelve: "↩ Reintegro" y "+$68.159,91" en verde. */
+const esReintegro = t => !!t && t.tipo === 'Gasto' && ((Number(t.impPesos) || 0) < 0 || (Number(t.impUSD) || 0) < 0);
+const fmtPR = v => v ? '+' + fmtP(Math.abs(Number(v))) : '-';
+const fmtUR = v => v ? '+' + fmtU(Math.abs(Number(v))) : '-';
+const BADGE_REINTEGRO = '<span class="badge" style="background:#dcfce7;color:#166534;padding-left:7px;padding-right:7px;white-space:nowrap" title="Plata que vuelve: bonificación o devolución. Resta del gasto del mes y del pago de la tarjeta.">Reintegro</span>';
 const fmtD = d => { if (!d) return '-'; const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; };
 
 // ── NAV ─────────────────────────────────────────────────────
@@ -9853,21 +9863,24 @@ function renderTx() {
     // Para TC: usar tcPagado como flag explícito (cubre ARS y USD)
     const isTCTx  = isTCOrigen(t);
     const tcPendiente = isTCTx && t.tcPagado === false;
+    const reint = esReintegro(t);
     return `<tr${pendiente ? ' style="background:#fffbeb"' : ''}>
       <td><input type="checkbox" class="tx-check" data-id="${t.id}" ${selectedTx.has(t.id)?'checked':''} onchange="toggleSelectTx('${t.id}', this.checked)"></td>
       <td><strong>${esc(t.detalle)}</strong>${pendiente ? ' <span title="Esqueleto de movimiento fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de ${tcLabel(t)==='TD'?'Débito':'Crédito'}" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>${(t.origen === 'TARJETA' && t.creadoPorNombre) ? '<span style="font-size:10.5px;font-weight:600;color:#5B6B7C;background:rgba(91,107,124,0.10);border:1px solid rgba(91,107,124,0.22);border-radius:6px;padding:1px 6px;margin-left:6px;white-space:nowrap">\uD83D\uDC64 ' + t.creadoPorNombre + '</span>' : ''}` : ''}</td>
-      <td><span class="badge badge-${t.tipo.toLowerCase()}">${t.tipo}</span></td>
+      <td>${reint ? BADGE_REINTEGRO : `<span class="badge badge-${t.tipo.toLowerCase()}">${t.tipo}</span>`}</td>
       <td><span class="rubro-tag">${esc(t.rubro||'-')}</span>${t.tipoGasto ? `<span style="display:inline-block;margin-left:5px;font-size:10.5px;font-weight:600;color:var(--muted)">· <span class="tg-full">${t.tipoGasto}</span><span class="tg-abbr">${t.tipoGasto.charAt(0)}</span></span>` : ''}</td>
       <td>${t.cliente ? `<span style="font-size:12px;font-weight:600;color:var(--primary)">${esc(t.cliente)}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
-      <td class="amt ${t.tipo==='Ingreso'?'positive':'negative'}">${fmtP(t.impPesos)}</td>
-      <td style="color:var(--muted)">${fmtU(t.impUSD)}</td>
+      <td class="amt ${(t.tipo==='Ingreso'||reint)?'positive':'negative'}">${reint ? fmtPR(t.impPesos) : fmtP(t.impPesos)}</td>
+      <td style="color:${reint && Number(t.impUSD) ? 'var(--success)' : 'var(--muted)'}">${reint ? fmtUR(t.impUSD) : fmtU(t.impUSD)}</td>
       <td>${fmtD(t.venc)}</td>
-      <td>${fmtP(t.pagado)}</td>
+      <td>${reint ? fmtPR(t.pagado) : fmtP(t.pagado)}</td>
       <td>${
         pendiente
           ? '<span style="color:var(--muted)">—</span>'
           : tcPendiente
-            ? `<span class="saldo-pend" style="font-size:11px">💳 ${(Number(t.impUSD)||0) !== 0 && !(Number(t.impPesos)||0) ? 'U$S '+((Number(t.impUSD)||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})) : fmtP(Number(t.impPesos)||0)}</span>`
+            ? (reint
+                ? `<span class="saldo-ok" style="font-size:11px" title="Se descuenta del próximo pago de la tarjeta">↩ ${(Number(t.impUSD)||0) !== 0 && !(Number(t.impPesos)||0) ? fmtUR(t.impUSD) : fmtPR(t.impPesos)}</span>`
+                : `<span class="saldo-pend" style="font-size:11px">💳 ${(Number(t.impUSD)||0) !== 0 && !(Number(t.impPesos)||0) ? 'U$S '+((Number(t.impUSD)||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})) : fmtP(Number(t.impPesos)||0)}</span>`)
             : (isTCTx && t.tcPagado === true)
               ? '<span class="saldo-ok">✓ ' + tcLabel(t) + '</span>'
               : saldo<=0 ? '<span class="saldo-ok">✓</span>' : '<span class="saldo-pend">'+fmtP(saldo)+'</span>'
@@ -14007,8 +14020,8 @@ function renderRepTarjetas() {
           <td style="padding-left:28px">${esc(t.detalle||'—')}</td>
           <td><span class="rubro-tag">${esc(t.rubro||'—')}</span></td>
           <td style="color:var(--muted)">${MESES[parseInt(m)-1]}</td>
-          <td>${t.impPesos?fmtP(Number(t.impPesos)):'—'}</td>
-          <td>${t.impUSD?'U$S '+Number(t.impUSD).toFixed(2):'—'}</td>
+          <td${esReintegro(t) && Number(t.impPesos) ? ' style="color:var(--success);font-weight:600"' : ''}>${t.impPesos?(esReintegro(t)?'↩ '+fmtPR(t.impPesos):fmtP(Number(t.impPesos))):'—'}</td>
+          <td${esReintegro(t) && Number(t.impUSD) ? ' style="color:var(--success);font-weight:600"' : ''}>${t.impUSD?(esReintegro(t)?'↩ +U$S '+Math.abs(Number(t.impUSD)).toFixed(2):'U$S '+Number(t.impUSD).toFixed(2)):'—'}</td>
           <td><span class="rubro-tag" style="background:var(--primary);color:#fff">${esc(bLabel)}</span></td>
         </tr>`;
       });
@@ -14576,7 +14589,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.47.007';
+const APP_VERSION = 'v005.47.008';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -15600,7 +15613,17 @@ function populateRubros(tipo, selected) {
     all.map(r => `<option value="${esc(r)}" ${r === selected ? 'selected' : ''}>${esc(r)}</option>`).join('');
 }
 
+function txPintarReintegro() {
+  const av = document.getElementById('txReintegroAviso');
+  if (!av) return;
+  const esGasto = (document.getElementById('txTipo') || {}).value === 'Gasto';
+  av.style.display = (esGasto && (numVal('txImpPesos') < 0 || numVal('txImpUSD') < 0)) ? 'block' : 'none';
+}
+document.addEventListener('input', function (e) {
+  if (e.target && (e.target.id === 'txImpPesos' || e.target.id === 'txImpUSD')) txPintarReintegro();
+});
 function setTipoForm(tipo) {
+  setTimeout(txPintarReintegro, 0);
   document.getElementById('txTipo').value = tipo;
   document.getElementById('btnIng').classList.toggle('active', tipo==='Ingreso');
   document.getElementById('btnGas').classList.toggle('active', tipo==='Gasto');
@@ -15684,6 +15707,7 @@ function openModal(id) {
     document.getElementById('txMes').value = curKey();
     document.getElementById('txFecha').value = fechaPorDefecto(curKey());
   }
+  txPintarReintegro();
   document.getElementById('modalOverlay').classList.add('show');
 }
 
