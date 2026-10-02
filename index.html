@@ -3523,12 +3523,31 @@ tr:hover td { background: #fafbfc; }
               <strong>✓</strong> — pagado en su totalidad<br>
               <strong>$45.000</strong> en naranja — todavía falta pagar ese importe<br>
               <strong>💳 $7.556</strong> en naranja — consumo de tarjeta pendiente del pago del resumen<br>
-              <strong>✓ TC</strong> en verde — consumo de tarjeta ya cubierto por el pago del resumen
+              <strong>✓ TC</strong> en verde — consumo de tarjeta ya cubierto por el pago del resumen<br>
+              <strong>↩ +$12.400</strong> en verde — un <strong>reintegro</strong> de la tarjeta que todavía se va a descontar del pago del resumen
             </div>
           </div>
           <div class="ayuda-bloque">
             <h4>Filtros y búsqueda</h4>
             <p>La barra superior te permite buscar por texto y filtrar por tipo (Ingresos / Gastos), por rubro y por integrante (<strong>Todos</strong> o <strong>Solo yo</strong>). Los filtros se combinan entre sí.</p>
+            <p>Buscan en <strong>todos</strong> los movimientos del mes por igual, también en los que están adentro de un resumen de tarjeta cerrado. No hace falta abrir nada para encontrar algo.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>💳 Los resúmenes de tarjeta, agrupados</h4>
+            <p>Un resumen de tarjeta puede traer sesenta líneas, y con dos tarjetas el mes se vuelve una lista eterna. Por eso cada resumen aparece como <strong>una sola fila</strong>, arriba de todo, con lo que importa a la vista:</p>
+            <div class="ayuda-ejemplo">
+              ▸ 💳 <strong>Banco Galicia</strong> · resumen sep. 2026 · 58 mov. · <em>pendiente</em> · <strong>$1.240.500 + USD 120</strong>
+            </div>
+            <p>Tocás la fila y se abre el detalle completo, para editar, borrar o seleccionar como siempre. Volvés a tocar y se cierra. Norte se acuerda de cuáles dejaste abiertos.</p>
+            <div class="ayuda-ejemplo">
+              <strong>El subtotal</strong> es el del resumen, en pesos y en dólares, ya con los reintegros descontados.<br>
+              <strong>El estado</strong> dice <em>pendiente</em>, <em>N pendientes</em> o <em>✓ pagado</em>.<br>
+              <strong>«N sin rubro»</strong> en naranja te avisa si quedó algo sin clasificar adentro, para que cerrar el bloque no te esconda un pendiente.<br>
+              <strong>La casilla</strong> de la fila selecciona el resumen entero de una vez.
+            </div>
+            <p><strong>Con un filtro o una búsqueda activos</strong>, los resúmenes que tienen coincidencias se abren solos y muestran solo esas líneas, con el subtotal de lo filtrado (por ejemplo, <em>8 de 58 mov.</em>). Los que no tienen coincidencias no aparecen. Al limpiar el filtro, todo vuelve a como lo tenías.</p>
+            <div class="ayuda-tip">Es solo una forma de mostrar la lista. Los totales del mes, el saldo pendiente, Pagar TC, los reportes y «seleccionar todo» cuentan cada movimiento igual que antes, esté el bloque abierto o cerrado.</div>
+            <p>Debajo de los resúmenes van el resto de tus movimientos, <strong>con lo más nuevo arriba</strong>. Los que no tienen fecha quedan al final. Adentro de cada resumen se respeta el orden del banco, así podés compararlo línea por línea con el PDF.</p>
           </div>
           <div class="ayuda-bloque">
             <h4>Editar, borrar y selección múltiple</h4>
@@ -3636,7 +3655,8 @@ tr:hover td { background: #fafbfc; }
               • <strong>Cada consumo</strong> con su fecha, comercio, importe y moneda<br>
               • <strong>Las cuotas</strong> (ej: <em>3 de 9</em>)<br>
               • <strong>El titular y los adicionales</strong>, si el resumen tiene más de una tarjeta<br>
-              • <strong>Los impuestos y percepciones</strong> — sellos, IIBB, IVA RG 4240, DB. RG 5617
+              • <strong>Los impuestos y percepciones</strong> — sellos, IIBB, IVA RG 4240, DB. RG 5617<br>
+              • <strong>Las bonificaciones y devoluciones</strong> — el descuento de una promo, el reintegro de la percepción del 30% cuando pagaste los dólares con dólares
             </div>
             <div class="ayuda-tip">Los impuestos son la diferencia grande. El Excel de "últimos consumos" que baja el banco no los trae, así que el saldo de la tarjeta en Norte quedaba corto. Con el PDF entran todos, y el total coincide exactamente con lo que el banco te va a debitar.</div>
           </div>
@@ -3644,6 +3664,17 @@ tr:hover td { background: #fafbfc; }
             <h4>El control que hace Norte solo</h4>
             <p>Antes de importar nada, Norte suma lo que leyó y lo compara contra el total que declara el propio resumen. Si coincide, ves un <strong>✓ Los totales cuadran con el resumen</strong>. Si no coincide, te avisa en amarillo para que revises antes de confirmar.</p>
             <p>Es un chequeo que el Excel no tiene: con el PDF sabés que no se perdió ni se duplicó ninguna línea.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>↩ Reintegros: la plata que el banco te devuelve</h4>
+            <p>Los resúmenes también traen líneas con signo menos: una <strong>bonificación</strong> de una promo, una <strong>devolución</strong> de un comercio, o el <strong>reintegro de la percepción del 30%</strong> cuando pagaste el saldo en dólares con dólares. Norte las importa como <strong>Reintegro</strong>.</p>
+            <div class="ayuda-ejemplo">
+              En la vista previa aparecen tildadas, con un <strong>−</strong> adelante del importe y el tipo <strong>Crédito</strong>.<br>
+              En Transacciones se ven con el rótulo <strong>Reintegro</strong> y el importe en verde: <strong>+$12.400</strong>.<br>
+              Restan del gasto del mes, del rubro y del pago de la tarjeta. Así el total de Norte coincide con lo que el banco te debita de verdad.
+            </div>
+            <p>El rubro lo elige Norte según de qué se trate: la devolución de una percepción va a <strong>Impuestos / Tasas</strong>, y una bonificación va al mismo rubro del consumo que bonifica (la de PedidosYa, a Supermercado).</p>
+            <div class="ayuda-tip">No se cargan como ingreso a propósito: esa plata no la ganaste, es un gasto que se achicó. Si fuera ingreso, tus ingresos y tus impuestos aparecerían inflados, y el pago de la tarjeta te pediría de más. Si cargás uno a mano, poné el importe con signo menos en un gasto y Norte lo muestra como reintegro.</div>
           </div>
           <div class="ayuda-bloque">
             <h4>Revisar y confirmar</h4>
@@ -9009,7 +9040,7 @@ const fmtP = v => v ? (Number(v) < 0 ? '-' : '') + '$' + Math.abs(Number(v)).toL
 const fmtU = v => v ? (Number(v) < 0 ? '-' : '') + 'USD ' + Math.abs(Number(v)).toLocaleString('es-AR', {minimumFractionDigits:0, maximumFractionDigits:2}) : '-';
 /* Reintegro: gasto con importe negativo (bonificacion, devolucion de percepcion).
    Se guarda negativo para que reste solo en todos los totales; en pantalla se
-   muestra como plata que vuelve: "↩ Reintegro" y "+$68.159,91" en verde. */
+   muestra como plata que vuelve: "↩ Reintegro" y "+$12.400" en verde. */
 const esReintegro = t => !!t && t.tipo === 'Gasto' && ((Number(t.impPesos) || 0) < 0 || (Number(t.impUSD) || 0) < 0);
 const fmtPR = v => v ? '+' + fmtP(Math.abs(Number(v))) : '-';
 const fmtUR = v => v ? '+' + fmtU(Math.abs(Number(v))) : '-';
@@ -14714,7 +14745,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.48.001';
+const APP_VERSION = 'v005.48.002';
 let novEntradas = [];
 
 function novLeida(e) {
