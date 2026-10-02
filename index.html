@@ -1477,6 +1477,33 @@ tr:hover td { background: #fafbfc; }
   #page-transacciones tbody tr td:nth-child(11) button { font-size: 14px !important; padding: 1px 2px !important; }
 }
 .tg-abbr { display: none; }
+/* Transacciones: bloques de resumen de tarjeta */
+#page-transacciones tbody tr.tx-grupo td { padding: 0 !important; background: rgba(124,58,237,0.06); border-bottom: 1px solid var(--border); }
+.txg { display: flex; align-items: center; gap: 10px; padding: 11px 14px; cursor: pointer; user-select: none; flex-wrap: wrap; }
+.txg:hover { background: rgba(124,58,237,0.10); }
+.txg:focus-visible { outline: 2px solid #7c3aed; outline-offset: -2px; }
+.txg.txg-filtro { cursor: default; }
+.txg .tx-gcheck { width: 16px; height: 16px; cursor: pointer; accent-color: var(--brand-navy); margin: 0; }
+.txg-flecha { width: 12px; color: #7c3aed; font-size: 12px; }
+.txg-filtro .txg-flecha { opacity: .35; }
+.txg-nom { font-weight: 800; color: #7c3aed; font-size: 14px; }
+.txg-res, .txg-n { font-size: 12px; color: var(--muted); }
+.txg-sp { flex: 1; }
+.txg-tot { font-weight: 800; font-size: 14.5px; color: var(--text); white-space: nowrap; }
+.txg-pend, .txg-ok, .txg-alerta { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+.txg-pend { color: #92400e; background: #fef3c7; }
+.txg-ok { color: #065f46; background: #d1fae5; }
+.txg-alerta { color: #9a3412; background: #fed7aa; }
+#page-transacciones tbody tr.tx-en-grupo td:first-child { box-shadow: inset 3px 0 0 rgba(124,58,237,0.35); }
+#page-transacciones tbody tr.tx-oculta { display: none !important; }
+@media (max-width: 880px) {
+  #page-transacciones tbody tr.tx-grupo { display: block !important; padding: 0 !important; margin-bottom: 8px !important; border-radius: 12px; overflow: hidden; }
+  #page-transacciones tbody tr.tx-grupo td { display: block !important; grid-area: auto !important; }
+  #page-transacciones tbody tr.tx-en-grupo { box-shadow: inset 3px 0 0 rgba(124,58,237,0.35); }
+  #page-transacciones tbody tr.tx-en-grupo td:first-child { box-shadow: none; }
+  .txg { gap: 6px 8px; padding: 11px 12px; }
+  .txg-sp { flex-basis: 100%; height: 0; }
+}
 
 /* Sidebar: que se pueda scrollear cuando no entra todo (Exportar / Importar) */
 .sidebar { overflow-y: auto; overscroll-behavior: contain; }
@@ -9829,6 +9856,103 @@ function evolEsAngosto() {
 })();
 
 // ── TRANSACCIONES ────────────────────────────────────────────
+/* ── TRANSACCIONES: RESUMENES DE TARJETA AGRUPADOS ──────────────────────
+   Cada resumen de tarjeta del mes es un bloque que se abre y se cierra, con
+   su subtotal. Es SOLO una forma de mostrar la lista: los filtros y la
+   busqueda se aplican antes, sobre todas las lineas al mismo nivel. Con un
+   filtro activo, los bloques con coincidencias se abren solos y muestran
+   solo eso. Las filas de un bloque cerrado igual se dibujan (ocultas): asi
+   "seleccionar todo" y las acciones en lote las alcanzan. */
+var TX_GRUPOS_KEY = 'norte_txGruposAbiertos';
+function txGruposAbiertos() { try { return new Set(JSON.parse(localStorage.getItem(TX_GRUPOS_KEY) || '[]')); } catch (e) { return new Set(); } }
+function txGuardarGrupos(s) { try { localStorage.setItem(TX_GRUPOS_KEY, JSON.stringify(Array.from(s).slice(-80))); } catch (e) {} }
+function txGrupoDe(t) {
+  if (!isTCOrigen(t)) return '';
+  var b = (typeof getBancoLabel === 'function' && getBancoLabel(t)) || getBanco(t) || 'Tarjeta';
+  return t.mes + '|' + b + '|' + (t.mesResumen || '');
+}
+function txFiltroActivo() { return fTipo !== 'Todos' || !!fRubro || !!fSearch || fAutor === 'yo'; }
+function txToggleGrupo(gi) {
+  if (txFiltroActivo()) return;   // con filtro, los bloques muestran las coincidencias
+  var k = (window._txGrupoKeys || [])[gi]; if (!k) return;
+  var s = txGruposAbiertos(); if (s.has(k)) s.delete(k); else s.add(k);
+  txGuardarGrupos(s); renderTx();
+}
+function txSelGrupo(gi, checked) {
+  document.querySelectorAll('#txTable tr[data-g="' + gi + '"] .tx-check').forEach(function (cb) {
+    cb.checked = checked; if (checked) selectedTx.add(cb.dataset.id); else selectedTx.delete(cb.dataset.id);
+  });
+  updateBulkBar(); txSyncChecks();
+}
+function txSyncChecks() {
+  document.querySelectorAll('#txTable .tx-gcheck').forEach(function (g) {
+    var cbs = Array.from(document.querySelectorAll('#txTable tr[data-g="' + g.dataset.gi + '"] .tx-check'));
+    g.checked = cbs.length > 0 && cbs.every(function (c) { return selectedTx.has(c.dataset.id); });
+  });
+  var todas = Array.from(document.querySelectorAll('.tx-check'));
+  var sa = document.getElementById('selectAllTx');
+  if (sa) sa.checked = todas.length > 0 && todas.every(function (c) { return selectedTx.has(c.dataset.id); });
+}
+function txOrdenFecha(a, b) {
+  var fa = a.fecha || a.venc || '', fb = b.fecha || b.venc || '';
+  if (!fa && !fb) return 0; if (!fa) return 1; if (!fb) return -1;
+  return fa < fb ? -1 : fa > fb ? 1 : 0;
+}
+/* Sueltos: lo mas nuevo arriba; sin fecha, al final. */
+function txOrdenFechaDesc(a, b) {
+  var fa = a.fecha || a.venc || '', fb = b.fecha || b.venc || '';
+  if (!fa && !fb) return 0; if (!fa) return 1; if (!fb) return -1;
+  return fa > fb ? -1 : fa < fb ? 1 : 0;
+}
+function txGrupoHeader(k, gi, items, total, abierto, filtro) {
+  var p = k.split('|'), banco = p[1], mr = p[2], res = '';
+  if (mr) { var ym = mr.split('-').map(Number); if (ym[1]) res = 'resumen ' + MESES[ym[1] - 1].slice(0, 3).toLowerCase() + '. ' + ym[0]; }
+  var ars = items.reduce(function (s, t) { return s + (Number(t.impPesos) || 0); }, 0);
+  var usd = items.reduce(function (s, t) { return s + (Number(t.impUSD) || 0); }, 0);
+  var pend = items.filter(function (t) { return t.tcPagado === false; }).length;
+  var sinRubro = items.filter(function (t) { return !t.rubro || t.rubro === RUBRO_SIN; }).length;
+  var sel = items.length > 0 && items.every(function (t) { return selectedTx.has(t.id); });
+  var parcial = filtro && items.length !== total;
+  var plata = [ars ? fmtP(+ars.toFixed(2)) : '', usd ? fmtU(+usd.toFixed(2)) : ''].filter(Boolean).join(' + ') || '$0';
+  var estado = pend
+    ? '<span class="txg-pend">' + (pend === items.length ? 'pendiente' : pend + ' pendientes') + '</span>'
+    : '<span class="txg-ok">✓ pagado</span>';
+  return '<tr class="tx-grupo' + (abierto ? ' abierto' : '') + '"><td colspan="11">' +
+    '<div class="txg' + (filtro ? ' txg-filtro' : '') + '" role="button" tabindex="0" aria-expanded="' + abierto + '"' +
+      ' title="' + (filtro ? 'Con un filtro activo se muestran solo las coincidencias' : (abierto ? 'Cerrar el resumen' : 'Ver los movimientos del resumen')) + '"' +
+      ' onclick="if(!event.target.closest(\'input\'))txToggleGrupo(' + gi + ')"' +
+      ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();txToggleGrupo(' + gi + ')}">' +
+      '<input type="checkbox" class="tx-gcheck" data-gi="' + gi + '"' + (sel ? ' checked' : '') + ' onchange="txSelGrupo(' + gi + ',this.checked)" title="Seleccionar todo el resumen">' +
+      '<span class="txg-flecha">' + (abierto ? '▾' : '▸') + '</span>' +
+      '<span class="txg-nom">💳 ' + esc(banco) + '</span>' +
+      (res ? '<span class="txg-res">' + res + '</span>' : '') +
+      '<span class="txg-n">' + (parcial ? items.length + ' de ' + total + ' mov.' : total + ' mov.') + '</span>' +
+      '<span class="txg-sp"></span>' +
+      (sinRubro ? '<span class="txg-alerta">' + sinRubro + ' sin rubro</span>' : '') +
+      estado +
+      '<span class="txg-tot">' + (parcial ? '<span class="txg-res" style="font-weight:600">filtrado </span>' : '') + plata + '</span>' +
+    '</div></td></tr>';
+}
+function txArmarFilas(rows, all, filaTx) {
+  var filtro = txFiltroActivo(), abiertos = txGruposAbiertos();
+  var grupos = {}, sueltos = [], total = {};
+  rows.forEach(function (t) { var k = txGrupoDe(t); if (k) (grupos[k] = grupos[k] || []).push(t); else sueltos.push(t); });
+  all.forEach(function (t) { var k = txGrupoDe(t); if (k) total[k] = (total[k] || 0) + 1; });
+  var keys = Object.keys(grupos).sort();
+  window._txGrupoKeys = keys;
+  var html = '';
+  keys.forEach(function (k, gi) {
+    var items = grupos[k].slice().sort(txOrdenFecha);
+    var abierto = filtro || abiertos.has(k);
+    html += txGrupoHeader(k, gi, items, total[k] || items.length, abierto, filtro);
+    items.forEach(function (t) {
+      html += filaTx(t).replace(/^\s*<tr/, '<tr data-g="' + gi + '" class="tx-en-grupo' + (abierto ? '' : ' tx-oculta') + '"');
+    });
+  });
+  sueltos.slice().sort(txOrdenFechaDesc).forEach(function (t) { html += filaTx(t); });
+  return html;
+}
+
 function renderTx() {
   pintarPendienteTx();
   const all = getData().filter(t => t.mes === curKey());
@@ -9857,7 +9981,7 @@ function renderTx() {
     return;
   }
   empty.style.display = 'none';
-  tbody.innerHTML = rows.map(t => {
+  const filaTx = t => {
     const saldo = (Number(t.impPesos)||0) - (Number(t.pagado)||0);
     const pendiente = t.tipoGasto === 'Fijo' && (Number(t.impPesos)||0) === 0;
     // Para TC: usar tcPagado como flag explícito (cubre ARS y USD)
@@ -9890,7 +10014,8 @@ function renderTx() {
         <button class="act-btn" onclick="askDelete('${t.id}')" title="Eliminar">🗑️</button>
       </td>
     </tr>`;
-  }).join('');
+  };
+  tbody.innerHTML = txArmarFilas(rows, all, filaTx);
 
   // Sincronizar checkbox "seleccionar todo" con la selección visible
   const visibleIds = rows.map(t => t.id);
@@ -14589,7 +14714,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.47.008';
+const APP_VERSION = 'v005.48.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -15787,6 +15912,7 @@ function saveTx(e) {
 function toggleSelectTx(id, checked) {
   if (checked) selectedTx.add(id); else selectedTx.delete(id);
   updateBulkBar();
+  if (typeof txSyncChecks === 'function') txSyncChecks();
   const visibleIds = [...document.querySelectorAll('.tx-check')].map(cb => cb.dataset.id);
   const selectAllCb = document.getElementById('selectAllTx');
   if (selectAllCb) selectAllCb.checked = visibleIds.length > 0 && visibleIds.every(i => selectedTx.has(i));
@@ -15797,10 +15923,11 @@ function toggleSelectAllTx(checked) {
     if (checked) selectedTx.add(cb.dataset.id); else selectedTx.delete(cb.dataset.id);
   });
   updateBulkBar();
+  if (typeof txSyncChecks === 'function') txSyncChecks();
 }
 function clearSelectionTx() {
   selectedTx.clear();
-  document.querySelectorAll('.tx-check').forEach(cb => cb.checked = false);
+  document.querySelectorAll('.tx-check, .tx-gcheck').forEach(cb => cb.checked = false);
   const selectAllCb = document.getElementById('selectAllTx');
   if (selectAllCb) selectAllCb.checked = false;
   updateBulkBar();
