@@ -14745,7 +14745,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.48.002';
+const APP_VERSION = 'v005.48.003';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -15921,14 +15921,18 @@ function saveTx(e) {
     const i = data.findIndex(x => x.id === id);
     if (i >= 0) {
       const prev = data[i];
-      // Preservar campos TC que no son editables en el modal
+      /* Se parte del movimiento como estaba y se pisan solo los campos que el
+         modal muestra. Antes se armaba `tx` de cero y se reemplazaba entero:
+         se perdían el dueño (creadoPor/creadoPorNombre), el titular de la
+         tarjeta, mesResumen, cardTipo y `via`, y saveData, al no ver dueño,
+         le asignaba el gasto a quien estaba editando. El dueño de un gasto es
+         quien lo originó, no quien lo corrigió. */
+      const nuevo = Object.assign({}, prev, tx);
+      if (!tx.cta) delete nuevo.cta;   // la cuenta vieja ya no explica el importe
       if (isTCOrigen(prev)) {
-        tx.origen    = prev.origen;
-        tx.banco     = prev.banco;
-        tx.tcPagado  = prev.tcPagado;
-        tx.tipoGasto = 'Variable'; // TC nunca puede ser Fijo — se importa vía resumen cada mes
+        nuevo.tipoGasto = 'Variable'; // TC nunca puede ser Fijo — se importa vía resumen cada mes
       }
-      data[i] = tx;
+      data[i] = nuevo;
     }
   } else {
     data.push(tx);
