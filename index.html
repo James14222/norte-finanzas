@@ -2674,7 +2674,7 @@ tr:hover td { background: #fafbfc; }
         <div class="pn-aviso-ico" id="pnAvisoIco"></div>
         <div class="pn-aviso-txt">
           <div class="pn-aviso-tit">Puntos Norte ya está andando</div>
-          <div class="pn-aviso-sub">Cada vez que usás Norte sumás puntos — y ya contamos lo que venías haciendo.</div>
+          <div class="pn-aviso-sub">Cada vez que usás Norte <strong style="color:#C2410C;font-weight:800">sumás puntos</strong>, y los vas a poder canjear por beneficios.</div>
         </div>
         <button class="pn-aviso-btn" onclick="pnAbrirLanzamiento()">Cómo funciona</button>
       </div>
@@ -15169,7 +15169,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.49.002';
+const APP_VERSION = 'v005.49.003';
 let novEntradas = [];
 
 function novLeida(e) {
