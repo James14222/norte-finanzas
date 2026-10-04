@@ -2295,6 +2295,27 @@ tr:hover td { background: #fafbfc; }
   .dc-esc { height:170px; }
 }
 </style>
+<style id="tcImpEstilos">
+/* Importar resumen: barra de búsqueda, orden y rubro en grupo */
+.tc-herr { margin:10px 0 8px; display:flex; flex-direction:column; gap:8px; }
+.tc-herr-fila { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+#tcBuscar { flex:1 1 260px; min-width:0; padding:8px 12px; border:1px solid var(--border); border-radius:10px; font-size:13.5px; font-family:inherit; background:var(--card); }
+.tc-chip { border:1px solid var(--border); background:var(--card); border-radius:999px; padding:7px 12px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:inherit; color:var(--text); white-space:nowrap; }
+.tc-chip.on { background:var(--brand-navy); border-color:var(--brand-navy); color:#fff; }
+.tc-orden-info { font-size:12px; color:var(--muted); }
+.tc-orden-info a { color:var(--brand-navy-light); font-weight:600; }
+.tc-masivo { display:flex; gap:8px; align-items:center; flex-wrap:wrap; background:#FFF8F4; border:1px solid #FFD2BF; border-radius:10px; padding:8px 12px; font-size:13px; font-weight:600; color:#9A3412; }
+.tc-masivo select { min-width:200px; font-size:13px; padding:6px 8px; }
+.tc-masivo .btn { padding:6px 14px; font-size:13px; }
+.tc-herr-tip { font-size:11.5px; color:var(--muted); }
+.tc-th-ord { cursor:pointer; user-select:none; white-space:nowrap; }
+.tc-th-ord:hover { color:var(--brand-navy); }
+.tc-sin-coinc { text-align:center; color:var(--muted); padding:18px !important; font-size:13px; }
+.rubro-auto.igual { color:#2563eb; }
+#tcAvisoRubro { position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px); background:var(--brand-navy); color:#fff; padding:10px 18px; border-radius:999px; font-size:13.5px; font-weight:600; box-shadow:0 6px 20px rgba(0,0,0,.25); opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; z-index:10000; }
+#tcAvisoRubro.ver { opacity:1; transform:translateX(-50%) translateY(0); }
+@media (max-width:720px) { .tc-masivo select { flex:1 1 100%; } #tcBuscar { flex-basis:100%; } }
+</style>
 </head>
 <body>
 
@@ -3796,6 +3817,16 @@ tr:hover td { background: #fafbfc; }
             <p>Después de leerlo, Norte te muestra el banco detectado y te deja <strong>corregir el nombre</strong> si hiciera falta — ese nombre es el que después vas a ver al pagar el resumen. Elegís en qué mes impactan los gastos y pasás a la vista previa.</p>
             <p>En la vista previa aparece cada movimiento con su rubro propuesto. Ahí ajustás lo que quieras, destildás lo que no quieras importar, y confirmás.</p>
             <div class="ayuda-tip">Norte aprende. El rubro que le asignás a un comercio queda guardado para todo el hogar, y el mes que viene ese mismo comercio ya viene clasificado. Cada importación deja menos filas para completar a mano.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>Clasificar rápido un resumen largo</h4>
+            <p>En la vista previa tenés tres ayudas para poner los rubros sin ir fila por fila:</p>
+            <div class="ayuda-ejemplo">
+              <strong>El rubro se contagia a los iguales.</strong> Cuando le elegís el rubro a un comercio, Norte se lo pone también a las otras filas del mismo comercio, aunque cambie el número de operación (por ejemplo, las cinco de AUTOPISTAS). Te avisa con un «+4 filas iguales». Nunca pisa un rubro que elegiste vos.<br>
+              <strong>Buscar y aplicar a varios.</strong> Escribís en el buscador, por ejemplo «MERPAGO», quedan solo esas filas y con «Poner rubro a las N filas que ves» les ponés el mismo rubro a todas juntas.<br>
+              <strong>Ordenar y «Solo sin rubro».</strong> Tocando las cabeceras Concepto, Importe o Rubro ordenás la tabla; el tercer toque vuelve al orden del resumen. «Solo sin rubro» te deja nada más lo que falta clasificar.
+            </div>
+            <div class="ayuda-tip">Buscar y ordenar solo cambian lo que ves. Las casillas de la izquierda siguen decidiendo qué se importa, y el control de que cuadre con el total del resumen no cambia.</div>
           </div>
           <div class="ayuda-bloque">
             <h4>Qué nombre queda asociado al consumo</h4>
@@ -8558,7 +8589,7 @@ function tcProcesarArchivo() {
   reader.readAsArrayBuffer(file);
 }
 
-function tcSetTipo(i, tipo) { tcRows[i].tipoMov = tipo; tcRows[i].rubro = tcGuessRubro(tcRows[i].desc, tipo); renderImportPreview(window.__tcFile); } function renderImportPreview(filename) { window.__tcFile = filename; { const _tt = document.getElementById('importTipoTarjeta'); if (_tt) _tt.textContent = tcIsDebit ? 'Tarjeta de Débito' : 'Tarjeta de Crédito'; }
+function tcSetTipo(i, tipo) { tcRows[i].tipoMov = tipo; tcRows[i].rubro = tcGuessRubro(tcRows[i].desc, tipo); tcRows[i].rubroManual = false; tcRows[i].rubroPorIgual = false; renderImportPreview(window.__tcFile); } function renderImportPreview(filename) { window.__tcFile = filename; { const _tt = document.getElementById('importTipoTarjeta'); if (_tt) _tt.textContent = tcIsDebit ? 'Tarjeta de Débito' : 'Tarjeta de Crédito'; }
   document.getElementById('importDropZone').style.display = 'none';
   document.getElementById('importBody').style.display = 'block';
   document.getElementById('importFooter').style.display = 'flex';
@@ -8606,7 +8637,8 @@ function tcSetTipo(i, tipo) { tcRows[i].tipoMov = tipo; tcRows[i].rubro = tcGues
   }
 
   const tbody = document.getElementById('importTableBody');
-  tbody.innerHTML = tcRows.map((r, i) => `
+  const _vis = tcIdxVista();
+  tbody.innerHTML = (_vis.length ? '' : '<tr><td colspan="8" class="tc-sin-coinc">Ninguna fila coincide. Borrá la búsqueda o sacá «Solo sin rubro».</td></tr>') + _vis.map(i => { const r = tcRows[i]; return `
     <tr id="tcrow-${i}" class="${r.selected?'':'row-skip'}">
       <td><input type="checkbox" ${r.selected?'checked':''} onchange="tcToggleRow(${i},this.checked)"></td>
       <td>
@@ -8627,15 +8659,162 @@ function tcSetTipo(i, tipo) { tcRows[i].tipoMov = tipo; tcRows[i].rubro = tcGues
         ${r.cuota ? `<span class="cuota-badge">⟳ ${esc(r.cuota)}</span>` : '<span style="color:var(--muted);font-size:12px">—</span>'}
       </td>
       <td>
-        <select style='min-width:200px;max-width:100%' onchange="tcRows[${i}].rubro=this.value">
+        <select style='min-width:200px;max-width:100%' onchange="tcSetRubroFila(${i}, this.value)">
           <option value="">— sin rubro —</option>
           ${(r.tipoMov==='Ingreso'?rubroOptsIng:rubroOpts).replace(`value="${esc(r.rubro)}"`,`value="${esc(r.rubro)}" selected`)}
         </select>
-        ${r.rubro ? `<div class="rubro-auto">✦ detectado automáticamente</div>` : ''}
+        ${(r.rubro && !r.rubroManual) ? (r.rubroPorIgual ? `<div class="rubro-auto igual" data-i="${i}" data-igual="1">↳ igual que otra fila del resumen</div>` : `<div class="rubro-auto" data-i="${i}">✦ detectado automáticamente</div>`) : ''}
       </td>
-    <td>${r.esCredito ? '<span style="font-weight:700;color:#334155">Crédito</span>' : `<select onchange="tcSetTipo(${i},this.value)" style="font-weight:700"><option value="Gasto"${r.tipoMov!=='Ingreso'?' selected':''}>Gasto</option><option value="Ingreso"${r.tipoMov==='Ingreso'?' selected':''}>Ingreso</option></select>`}</td></tr>`).join('');
+    <td>${r.esCredito ? '<span style="font-weight:700;color:#334155">Crédito</span>' : `<select onchange="tcSetTipo(${i},this.value)" style="font-weight:700"><option value="Gasto"${r.tipoMov!=='Ingreso'?' selected':''}>Gasto</option><option value="Ingreso"${r.tipoMov==='Ingreso'?' selected':''}>Ingreso</option></select>`}</td></tr>`; }).join('');
 
+  tcHerrActualizar();
   tcUpdateSummary();
+}
+
+// ── IMPORTAR RESUMEN: buscar, ordenar, solo sin rubro y rubro a los iguales ──
+/* Es solo una forma de VER la tabla: no cambia qué se importa ni el control de
+   que cuadre con el total. Las filas conservan su índice en tcRows, así que
+   los manejadores de cada fila siguen apuntando a la fila correcta aunque la
+   tabla esté ordenada o filtrada. */
+var tcVista = { q: '', sinRubro: false, orden: '', dir: 1 };
+function tcVistaReset() {
+  tcVista = { q: '', sinRubro: false, orden: '', dir: 1 };
+  var b = document.getElementById('tcBuscar'); if (b) b.value = '';
+}
+function tcNormTxt(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
+function tcEsIngreso(r) { return r && r.tipoMov === 'Ingreso'; }
+function tcIdxVista() {
+  var q = tcNormTxt(tcVista.q).trim();
+  var idx = tcRows.map(function (_, i) { return i; }).filter(function (i) {
+    var r = tcRows[i];
+    if (q && tcNormTxt(r.desc).indexOf(q) < 0) return false;
+    if (tcVista.sinRubro && r.rubro) return false;
+    return true;
+  });
+  if (tcVista.orden) {
+    var k = tcVista.orden, d = tcVista.dir;
+    idx.sort(function (a, b) {
+      var x = tcRows[a], y = tcRows[b], c;
+      if (k === 'monto') c = ((x.esUSD ? 1 : 0) - (y.esUSD ? 1 : 0)) * d || ((Number(tcMontoFirmado(x)) || 0) - (Number(tcMontoFirmado(y)) || 0));
+      else if (k === 'rubro') c = ((x.rubro ? 1 : 0) - (y.rubro ? 1 : 0)) || tcNormTxt(x.rubro).localeCompare(tcNormTxt(y.rubro));
+      else c = tcNormTxt(x.desc).localeCompare(tcNormTxt(y.desc));
+      return c * d || a - b;   // empate: se respeta el orden del resumen
+    });
+  }
+  return idx;
+}
+/* Ordenar tocando la cabecera: primer toque ascendente (el importe arranca de
+   mayor a menor), segundo al revés, tercero vuelve al orden del resumen. */
+function tcOrdenar(k) {
+  var inicial = k === 'monto' ? -1 : 1;
+  if (tcVista.orden !== k) { tcVista.orden = k; tcVista.dir = inicial; }
+  else if (tcVista.dir === inicial) tcVista.dir = -inicial;
+  else { tcVista.orden = ''; tcVista.dir = 1; }
+  renderImportPreview(window.__tcFile);
+}
+function tcOrdenOriginal() { tcVista.orden = ''; tcVista.dir = 1; renderImportPreview(window.__tcFile); }
+
+/* Elegir el rubro de una fila. Se contagia a las demás filas del MISMO
+   comercio (misma clave que usa la memoria de rubros: sin números de
+   operación ni cuotas) que estén vacías, detectadas por Norte o contagiadas
+   antes. Nunca pisa un rubro que el usuario eligió a mano. */
+function tcSetRubroFila(i, val) {
+  var r = tcRows[i]; if (!r) return;
+  r.rubro = val; r.rubroManual = !!val; r.rubroPorIgual = false;
+  var n = 0;
+  var clave = (val && typeof tcClaveConcepto === 'function') ? tcClaveConcepto(r.desc) : '';
+  if (clave) tcRows.forEach(function (o, j) {
+    if (j === i || o.rubroManual || tcEsIngreso(o) !== tcEsIngreso(r)) return;
+    if (o.rubro === val) return;
+    if (tcClaveConcepto(o.desc) !== clave) return;
+    o.rubro = val; o.rubroPorIgual = true; n++;
+  });
+  renderImportPreview(window.__tcFile);
+  if (n) tcAviso('+' + n + (n === 1 ? ' fila igual' : ' filas iguales') + ' con «' + val + '»');
+}
+/* Rubro a todas las filas que se ven (con búsqueda o «Solo sin rubro»). Es
+   una decisión explícita: cuenta como elegida a mano. Las de Ingreso no se
+   tocan, porque sus rubros son otros. */
+function tcAplicarRubroVista() {
+  var sel = document.getElementById('tcMasivoSel'); var val = sel && sel.value;
+  if (!val) { if (sel) sel.focus(); return; }
+  var n = 0;
+  tcIdxVista().forEach(function (i) {
+    var r = tcRows[i]; if (tcEsIngreso(r)) return;
+    r.rubro = val; r.rubroManual = true; r.rubroPorIgual = false; n++;
+  });
+  renderImportPreview(window.__tcFile);
+  if (n) tcAviso(n + (n === 1 ? ' fila' : ' filas') + ' con «' + val + '»');
+}
+function tcAviso(txt) {
+  var el = document.getElementById('tcAvisoRubro');
+  if (!el) { el = document.createElement('div'); el.id = 'tcAvisoRubro'; document.body.appendChild(el); }
+  el.textContent = '✓ ' + txt;
+  el.classList.add('ver');
+  clearTimeout(el._t); el._t = setTimeout(function () { el.classList.remove('ver'); }, 2600);
+}
+
+/* La barra de arriba se crea UNA vez por importación y después solo se
+   actualizan sus números: si se rehiciera en cada tecla, el buscador perdería
+   el foco mientras escribís. */
+function tcHerrActualizar() {
+  var body = document.getElementById('importBody'); if (!body) return;
+  var wrap = body.querySelector('.import-table-wrap'); if (!wrap) return;
+  var h = document.getElementById('tcHerr');
+  if (!h) {
+    h = document.createElement('div'); h.id = 'tcHerr'; h.className = 'tc-herr';
+    h.innerHTML =
+      '<div class="tc-herr-fila">' +
+        '<input id="tcBuscar" type="search" autocomplete="off" placeholder="Buscar en el concepto, ej.: AUTOPISTA" ' +
+          'oninput="tcVista.q=this.value;renderImportPreview(window.__tcFile)">' +
+        '<button type="button" id="tcSinRubroBtn" class="tc-chip" onclick="tcVista.sinRubro=!tcVista.sinRubro;renderImportPreview(window.__tcFile)">Solo sin rubro <b id="tcSinRubroN"></b></button>' +
+        '<span id="tcOrdenInfo" class="tc-orden-info"></span>' +
+      '</div>' +
+      '<div id="tcMasivo" class="tc-masivo" style="display:none">' +
+        '<span id="tcMasivoTxt"></span>' +
+        '<select id="tcMasivoSel"></select>' +
+        '<button type="button" class="btn btn-primary" onclick="tcAplicarRubroVista()">Aplicar</button>' +
+      '</div>' +
+      '<div class="tc-herr-tip">Tip: cuando elegís el rubro de un comercio, Norte se lo pone también a las otras filas del mismo comercio.</div>';
+    body.insertBefore(h, wrap);
+  }
+  var b = document.getElementById('tcBuscar');
+  if (b && document.activeElement !== b && b.value !== tcVista.q) b.value = tcVista.q;
+  var sinR = tcRows.filter(function (r) { return !r.rubro; }).length;
+  document.getElementById('tcSinRubroN').textContent = '(' + sinR + ')';
+  document.getElementById('tcSinRubroBtn').classList.toggle('on', tcVista.sinRubro);
+  var nombres = { desc: 'concepto', monto: 'importe', rubro: 'rubro' };
+  document.getElementById('tcOrdenInfo').innerHTML = tcVista.orden
+    ? 'Ordenado por ' + nombres[tcVista.orden] + ' · <a href="#" onclick="tcOrdenOriginal();return false">volver al orden del resumen</a>'
+    : 'Tocá Concepto, Importe o Rubro para ordenar';
+  // Acción en grupo: solo con búsqueda o «Solo sin rubro», sobre lo que se ve
+  var vis = tcIdxVista().filter(function (i) { return !tcEsIngreso(tcRows[i]); });
+  var m = document.getElementById('tcMasivo');
+  var activo = (tcVista.q.trim() || tcVista.sinRubro) && vis.length;
+  m.style.display = activo ? '' : 'none';
+  if (activo) {
+    document.getElementById('tcMasivoTxt').textContent = 'Poner rubro a ' + (vis.length === 1 ? 'la fila que ves' : 'las ' + vis.length + ' filas que ves') + ':';
+    var s = document.getElementById('tcMasivoSel'), prev = s.value;
+    s.innerHTML = '<option value="">Elegí un rubro…</option>' + getAllRubros('Gasto').filter(function (r) { return r !== 'Personalizado...'; })
+      .map(function (r) { return '<option value="' + esc(r) + '"' + (r === prev ? ' selected' : '') + '>' + esc(r) + '</option>'; }).join('');
+  }
+  // Cabeceras que ordenan
+  var ths = wrap.querySelectorAll('thead th');
+  var mapa = { 'Concepto': 'desc', 'Importe $': 'monto', 'Rubro': 'rubro' };
+  ths.forEach(function (th) {
+    var base = th.dataset.base || th.textContent.trim();
+    var k = mapa[base]; if (!k) return;
+    th.dataset.base = base;
+    th.classList.add('tc-th-ord');
+    th.onclick = function () { tcOrdenar(k); };
+    th.textContent = base + (tcVista.orden === k ? (tcVista.dir === 1 ? ' ▲' : ' ▼') : '');
+    th.title = 'Ordenar por ' + nombres[k];
+  });
+  /* La columna «Quién» de la cabecera es fija, pero la celda sólo se dibuja
+     cuando el resumen trae titulares: sin titulares, todas las cabeceras
+     quedaban corridas un lugar. */
+  var hayTit = tcRows.some(function (r) { return r.titularRaw || r.titular; });
+  ths.forEach(function (th) { if (th.textContent.trim() === 'Quién') th.style.display = hayTit ? '' : 'none'; });
 }
 
 function tcToggleRow(i, checked) {
@@ -8645,7 +8824,7 @@ function tcToggleRow(i, checked) {
 }
 
 function tcToggleAll(checked) {
-  tcRows.forEach((r, i) => { r.selected = checked; document.getElementById(`tcrow-${i}`).classList.toggle('row-skip', !checked); });
+  tcRows.forEach((r, i) => { r.selected = checked; const _f = document.getElementById(`tcrow-${i}`); if (_f) _f.classList.toggle('row-skip', !checked); });
   document.querySelectorAll('#importTableBody input[type=checkbox]:not([disabled])').forEach(cb => cb.checked = checked);
   tcUpdateSummary();
 }
@@ -8797,10 +8976,12 @@ function openImportModal() {
   document.getElementById('importBody').style.display     = 'none';
   document.getElementById('importFooter').style.display   = 'none';
   tcRows = []; tcPendFile = null; tcBank = ''; tcTargetMes = ''; tcIsDebit = false; tcPdfRes = null; tcMesResumen = '';
+  tcVistaReset();
 }
 function closeImport() {
   document.getElementById('importOverlay').classList.remove('open');
   tcRows = []; tcPendFile = null; tcBank = ''; tcTargetMes = ''; tcIsDebit = false; tcMesResumen = '';
+  tcVistaReset();
 }
 
 // ── PAGAR TC ─────────────────────────────────────────────────
@@ -15169,7 +15350,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.49.003';
+const APP_VERSION = 'v005.50.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -20149,6 +20330,8 @@ function subtituloRumbo() {
     guardarMemoria(m);
   };
 
+  window.tcClaveConcepto = claveConcepto;
+
   window.rubroRecordado = function (desc) {
     var k = claveConcepto(desc);
     return k ? (leerMemoria()[k] || '') : '';
@@ -20187,9 +20370,9 @@ function subtituloRumbo() {
     setTimeout(function () {
       try {
         var filas = (typeof tcRows !== 'undefined' && tcRows) ? tcRows : [];
-        document.querySelectorAll('.rubro-auto').forEach(function (el, i) {
-          var fila = filas[i];
-          if (!fila) return;
+        document.querySelectorAll('.rubro-auto').forEach(function (el) {
+          var fila = filas[+el.dataset.i];
+          if (!fila || el.dataset.igual) return;
           if (rubroRecordado(fila.desc)) {
             el.textContent = '✓ como lo clasificaste antes';
             el.style.color = '#16a34a';
