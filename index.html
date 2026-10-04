@@ -2254,11 +2254,15 @@ tr:hover td { background: #fafbfc; }
 .dc-nota { font-size:12px; color:var(--muted); margin-top:8px; line-height:1.45; }
 .dc-gris { font-weight:500; color:var(--muted); font-size:12.5px; }
 .dc-esc { display:flex; align-items:flex-end; gap:5px; height:180px; padding:6px 2px 0; border-bottom:1px solid var(--border); overflow-x:auto; }
-.dc-col { flex:1 0 34px; display:flex; flex-direction:column; justify-content:flex-end; height:100%; position:relative; padding-bottom:18px; }
+.dc-col { flex:1 0 34px; max-width:64px; display:flex; flex-direction:column; justify-content:flex-end; height:100%; position:relative; padding-bottom:18px; }
 .dc-ctot { font-size:10px; color:var(--muted); text-align:center; margin-bottom:3px; white-space:nowrap; font-variant-numeric:tabular-nums; }
 .dc-seg { width:100%; }
 .dc-col .dc-seg:nth-child(2) { border-radius:4px 4px 0 0; }
 .dc-cmes { position:absolute; bottom:0; left:0; right:0; text-align:center; font-size:10px; color:var(--muted); white-space:nowrap; }
+.dc-pocos { display:flex; flex-direction:column; gap:6px; }
+.dc-poco { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:13.5px; }
+.dc-poco-mes { min-width:120px; color:var(--muted); }
+.dc-poco b { font-size:16px; color:var(--brand-navy); font-variant-numeric:tabular-nums; }
 .dc-ley { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:10px; }
 .dc-det { border:1px solid var(--border); border-radius:10px; margin-top:8px; background:#fff; }
 .dc-det summary { cursor:pointer; padding:10px 12px; font-size:13px; font-weight:700; color:var(--brand-navy); list-style:none; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; }
@@ -10310,7 +10314,18 @@ function renderDeudaCuotas() {
 
   // Escalera mes a mes
   var meses = Object.keys(r.escalera).sort();
-  if (meses.length) {
+  var totMes = function (m) { var s = 0; Object.keys(r.escalera[m]).forEach(function (k) { s += r.escalera[m][k]; }); return s; };
+  if (meses.length && meses.length < 3) {
+    /* Con uno o dos meses un gráfico de barras no cuenta nada: es un bloque
+       estirado. Se dice en una línea por mes. */
+    h += '<div class="dc-sec">Mes a mes <span>Cuotas ya comprometidas en cada resumen futuro</span></div><div class="dc-pocos">' +
+      meses.map(function (m) {
+        var det = r.tarjetas.filter(function (tj) { return r.escalera[m][tj.label] > 0; });
+        return '<div class="dc-poco"><span class="dc-poco-mes">' + MESES[+m.split('-')[1] - 1] + ' ' + m.split('-')[0] + '</span><b>' + dcFmt(totMes(m)) + '</b>' +
+          (det.length > 1 ? '<span class="dc-gris">' + det.map(function (tj) { return esc(tj.label) + ' ' + dcFmt(r.escalera[m][tj.label]); }).join(' · ') + '</span>' : '') + '</div>';
+      }).join('') +
+      '</div><p class="dc-nota">Después de ' + dcMesCorto(meses[meses.length - 1]) + ' no queda ninguna cuota comprometida' + (r.deudaUsd ? ' en pesos' : '') + '.</p>';
+  } else if (meses.length) {
     var tope = meses.slice(0, 24), max = 0;
     tope.forEach(function (m) { var s = 0; Object.keys(r.escalera[m]).forEach(function (k) { s += r.escalera[m][k]; }); if (s > max) max = s; });
     h += '<div class="dc-sec">Cómo baja mes a mes <span>Cuotas ya comprometidas en cada resumen futuro</span></div><div class="dc-esc">';
@@ -15139,7 +15154,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.49.000';
+const APP_VERSION = 'v005.49.001';
 let novEntradas = [];
 
 function novLeida(e) {
