@@ -1442,7 +1442,7 @@ tr:hover td { background: #fafbfc; }
   .cards-grid .card-sub { font-size: 11px; }
 }
 
-/* Transacciones y Reportes en mobile: tarjetas en vez de tabla apretada */ @media (max-width: 880px) { #page-transacciones .tx-scroll { overflow-x: visible; } #page-transacciones .tx-scroll table { display: block; width: 100%; } #page-transacciones colgroup { display: none; } #page-transacciones thead { display: none; } #page-transacciones tbody { display: block; } #page-transacciones tbody tr { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px 12px; margin-bottom: 12px; } #page-transacciones tbody tr td { display: block; border: none; padding: 0; white-space: normal; font-size: 14px; } #page-transacciones tbody tr td:nth-child(1) { order: 0; flex: 0 0 auto; } #page-transacciones tbody tr td:nth-child(2) { order: 0; flex: 1 1 auto; min-width: 0; font-size: 16px; } #page-transacciones tbody tr td:nth-child(2) strong { font-size: 16px; } #page-transacciones tbody tr td:nth-child(3) { order: 1; flex: 0 0 auto; } #page-transacciones tbody tr td:nth-child(4) { order: 1; flex: 1 1 auto; text-align: right; } #page-transacciones tbody tr td:nth-child(6) { order: 2; flex: 0 0 auto; font-size: 20px; font-weight: 800; } #page-transacciones tbody tr td:nth-child(7) { order: 2; flex: 1 1 auto; text-align: right; margin-left: auto; font-size: 13px; } #page-transacciones tbody tr td:nth-child(9) { order: 3; flex: 0 0 auto; font-size: 13px; } #page-transacciones tbody tr td:nth-child(9)::before { content: "Pagado "; color: var(--muted); font-size: 11px; } #page-transacciones tbody tr td:nth-child(10) { order: 3; flex: 1 1 auto; text-align: right; margin-left: auto; font-size: 13px; } #page-transacciones tbody tr td:nth-child(5) { order: 4; flex: 0 0 auto; font-size: 12.5px; color: var(--muted); } #page-transacciones tbody tr td:nth-child(8) { order: 4; flex: 1 1 auto; text-align: right; margin-left: auto; font-size: 12.5px; color: var(--muted); } #page-transacciones tbody tr td:nth-child(11) { order: 5; flex: 0 0 100%; display: flex; justify-content: flex-end; gap: 18px; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--border); } #page-transacciones tbody tr td:nth-child(11) button { font-size: 18px; padding: 4px 8px; } #desgloseRubroTable table { font-size: 14px !important; } #desgloseRubroTable thead { display: none !important; } #desgloseRubroTable tbody tr:not(:last-child) { display: flex !important; flex-wrap: wrap !important; align-items: center !important; gap: 4px 8px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; padding: 12px 14px !important; margin-bottom: 8px !important; } #desgloseRubroTable tbody tr:not(:last-child) td { display: block !important; padding: 0 !important; white-space: normal !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(1) { order: 1 !important; flex: 0 0 auto !important; font-size: 12px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(2) { order: 1 !important; flex: 1 1 auto !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(2) span { font-size: 15px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(3) { order: 2 !important; flex: 0 0 auto !important; font-size: 16px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(4) { order: 2 !important; flex: 1 1 auto !important; text-align: right !important; font-size: 13px !important; margin-left: auto !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(5) { order: 3 !important; flex: 0 0 100% !important; padding-top: 6px !important; width: auto !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(5) div { height: 8px !important; } #desgloseRubroTable tbody tr:last-child { display: flex !important; justify-content: space-between !important; align-items: center !important; background: var(--bg) !important; border-radius: 10px !important; padding: 12px 14px !important; border-top: none !important; } #desgloseRubroTable tbody tr:last-child td { display: inline !important; padding: 0 !important; } #desgloseRubroTable tbody tr:last-child td:nth-child(1) { font-size: 14px !important; } #desgloseRubroTable tbody tr:last-child td:nth-child(2) { font-size: 16px !important; } #desgloseRubroTable tbody tr:last-child td:nth-child(3), #desgloseRubroTable tbody tr:last-child td:nth-child(4) { display: none !important; } table, .data-table { font-size: 13.5px !important; } table th, table td, .data-table th, .data-table td { padding: 10px 10px !important; } } @media (max-width: 880px) { #rubroMesTable { display: block !important; max-width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; border-radius: 12px !important; } #rubroMesTable thead, #rubroMesTable tbody { display: table !important; width: 100% !important; } #rubroMesTable th, #rubroMesTable td { white-space: nowrap !important; font-size: 14px !important; padding: 10px 14px !important; } #rubroMesTable th:first-child, #rubroMesTable td:first-child { position: sticky !important; left: 0 !important; background: var(--card) !important; z-index: 1 !important; font-weight: 600 !important; } #rubroMesTable tbody tr:last-child td { font-weight: 800 !important; background: var(--bg) !important; } #ingDetalleTable table { font-size: 14px !important; } #ingDetalleTable thead { display: none !important; } #ingDetalleTable tbody tr:has(td[colspan]) td { font-size: 12.5px !important; font-weight: 700 !important; padding: 14px 4px 6px !important; } #ingDetalleTable tbody tr.ing-total-row { display: flex !important; justify-content: space-between !important; align-items: center !important; background: var(--bg) !important; border-radius: 8px !important; padding: 8px 12px !important; margin-bottom: 8px !important; } #ingDetalleTable tbody tr.ing-total-row td { padding: 0 !important; font-size: 13px !important; font-weight: 700 !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) { display: flex !important; flex-wrap: wrap !important; align-items: center !important; gap: 4px 10px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; padding: 10px 12px !important; margin-bottom: 6px !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) td { display: block !important; padding: 0 !important; border: none !important; white-space: normal !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) td:nth-child(1) { order: 0 !important; flex: 1 1 auto !important; font-weight: 600 !important; font-size: 14px !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) td:nth-child(4) { order: 0 !important; flex: 0 0 auto !important; margin-left: auto !important; font-weight: 800 !important; font-size: 15px !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) td:nth-child(2) { order: 1 !important; flex: 0 0 auto !important; font-size: 11.5px !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) td:nth-child(3) { order: 1 !important; flex: 1 1 auto !important; text-align: right !important; margin-left: auto !important; font-size: 11.5px !important; color: var(--muted) !important; } #tcDetalleTable table { font-size: 14px !important; } #tcDetalleTable thead { display: none !important; } #tcDetalleTable tbody tr:has(td[colspan]) { display: block !important; text-align: center !important; padding: 20px !important; color: var(--muted) !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) { display: flex !important; flex-wrap: wrap !important; align-items: center !important; gap: 4px 10px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; padding: 10px 12px !important; margin-bottom: 6px !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td { display: block !important; padding: 0 !important; border: none !important; white-space: normal !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(1) { order: 0 !important; flex: 1 1 auto !important; font-weight: 600 !important; font-size: 14px !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(4) { order: 0 !important; flex: 0 0 auto !important; margin-left: auto !important; font-weight: 800 !important; font-size: 15px !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(2) { order: 1 !important; flex: 0 0 auto !important; font-size: 11.5px !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(3) { order: 1 !important; flex: 1 1 auto !important; text-align: right !important; margin-left: auto !important; font-size: 11.5px !important; color: var(--muted) !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(6) { order: 2 !important; flex: 0 0 auto !important; font-size: 11px !important; color: var(--muted) !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(5) { order: 2 !important; flex: 1 1 auto !important; text-align: right !important; margin-left: auto !important; font-size: 11px !important; color: var(--muted) !important; } } @media (max-width: 880px) { .rep-tabs { gap: 4px !important; } .rep-tab { padding: 6px 9px !important; font-size: 11.5px !important; white-space: nowrap !important; } #desgloseRubroChart { max-width: 200px !important; max-height: 200px !important; width: 200px !important; height: 200px !important; margin: 0 auto !important; display: block !important; } } @media (max-width: 880px) { .rep-tab { padding: 7px 12px !important; font-size: 14px !important; } #desgloseRubroChart { max-width: 150px !important; max-height: 150px !important; width: 150px !important; height: 150px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(1) { font-size: 13px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(2) span { font-size: 16px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(3) { font-size: 17px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(4) { font-size: 14px !important; } } @media (max-width: 480px) {
+/* Transacciones y Reportes en mobile: tarjetas en vez de tabla apretada */ @media (max-width: 880px) { #page-transacciones .tx-scroll { overflow-x: visible; } #page-transacciones .tx-scroll table { display: block; width: 100%; } #page-transacciones colgroup { display: none; } #page-transacciones thead { display: none; } #page-transacciones tbody { display: block; } #page-transacciones tbody tr { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px 12px; margin-bottom: 12px; } #page-transacciones tbody tr td { display: block; border: none; padding: 0; white-space: normal; font-size: 14px; } #page-transacciones tbody tr td:nth-child(1) { order: 0; flex: 0 0 auto; } #page-transacciones tbody tr td:nth-child(2) { order: 0; flex: 1 1 auto; min-width: 0; font-size: 16px; } #page-transacciones tbody tr td:nth-child(2) strong { font-size: 16px; } #page-transacciones tbody tr td:nth-child(4) { order: 1; flex: 0 0 auto; } #page-transacciones tbody tr td:nth-child(5) { order: 1; flex: 1 1 auto; text-align: right; } #page-transacciones tbody tr td:nth-child(7) { order: 2; flex: 0 0 auto; font-size: 20px; font-weight: 800; } #page-transacciones tbody tr td:nth-child(8) { order: 2; flex: 1 1 auto; text-align: right; margin-left: auto; font-size: 13px; } #page-transacciones tbody tr td:nth-child(10) { order: 3; flex: 0 0 auto; font-size: 13px; } #page-transacciones tbody tr td:nth-child(10)::before { content: "Pagado "; color: var(--muted); font-size: 11px; } #page-transacciones tbody tr td:nth-child(11) { order: 3; flex: 1 1 auto; text-align: right; margin-left: auto; font-size: 13px; } #page-transacciones tbody tr td:nth-child(6) { order: 4; flex: 0 0 auto; font-size: 12.5px; color: var(--muted); } #page-transacciones tbody tr td:nth-child(9) { order: 4; flex: 1 1 auto; text-align: right; margin-left: auto; font-size: 12.5px; color: var(--muted); } #page-transacciones tbody tr td:nth-child(12) { order: 5; flex: 0 0 100%; display: flex; justify-content: flex-end; gap: 18px; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--border); } #page-transacciones tbody tr td:nth-child(12) button { font-size: 18px; padding: 4px 8px; } #desgloseRubroTable table { font-size: 14px !important; } #desgloseRubroTable thead { display: none !important; } #desgloseRubroTable tbody tr:not(:last-child) { display: flex !important; flex-wrap: wrap !important; align-items: center !important; gap: 4px 8px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; padding: 12px 14px !important; margin-bottom: 8px !important; } #desgloseRubroTable tbody tr:not(:last-child) td { display: block !important; padding: 0 !important; white-space: normal !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(1) { order: 1 !important; flex: 0 0 auto !important; font-size: 12px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(2) { order: 1 !important; flex: 1 1 auto !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(2) span { font-size: 15px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(3) { order: 2 !important; flex: 0 0 auto !important; font-size: 16px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(4) { order: 2 !important; flex: 1 1 auto !important; text-align: right !important; font-size: 13px !important; margin-left: auto !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(5) { order: 3 !important; flex: 0 0 100% !important; padding-top: 6px !important; width: auto !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(5) div { height: 8px !important; } #desgloseRubroTable tbody tr:last-child { display: flex !important; justify-content: space-between !important; align-items: center !important; background: var(--bg) !important; border-radius: 10px !important; padding: 12px 14px !important; border-top: none !important; } #desgloseRubroTable tbody tr:last-child td { display: inline !important; padding: 0 !important; } #desgloseRubroTable tbody tr:last-child td:nth-child(1) { font-size: 14px !important; } #desgloseRubroTable tbody tr:last-child td:nth-child(2) { font-size: 16px !important; } #desgloseRubroTable tbody tr:last-child td:nth-child(3), #desgloseRubroTable tbody tr:last-child td:nth-child(4) { display: none !important; } table, .data-table { font-size: 13.5px !important; } table th, table td, .data-table th, .data-table td { padding: 10px 10px !important; } } @media (max-width: 880px) { #rubroMesTable { display: block !important; max-width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; border-radius: 12px !important; } #rubroMesTable thead, #rubroMesTable tbody { display: table !important; width: 100% !important; } #rubroMesTable th, #rubroMesTable td { white-space: nowrap !important; font-size: 14px !important; padding: 10px 14px !important; } #rubroMesTable th:first-child, #rubroMesTable td:first-child { position: sticky !important; left: 0 !important; background: var(--card) !important; z-index: 1 !important; font-weight: 600 !important; } #rubroMesTable tbody tr:last-child td { font-weight: 800 !important; background: var(--bg) !important; } #ingDetalleTable table { font-size: 14px !important; } #ingDetalleTable thead { display: none !important; } #ingDetalleTable tbody tr:has(td[colspan]) td { font-size: 12.5px !important; font-weight: 700 !important; padding: 14px 4px 6px !important; } #ingDetalleTable tbody tr.ing-total-row { display: flex !important; justify-content: space-between !important; align-items: center !important; background: var(--bg) !important; border-radius: 8px !important; padding: 8px 12px !important; margin-bottom: 8px !important; } #ingDetalleTable tbody tr.ing-total-row td { padding: 0 !important; font-size: 13px !important; font-weight: 700 !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) { display: flex !important; flex-wrap: wrap !important; align-items: center !important; gap: 4px 10px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; padding: 10px 12px !important; margin-bottom: 6px !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) td { display: block !important; padding: 0 !important; border: none !important; white-space: normal !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) td:nth-child(1) { order: 0 !important; flex: 1 1 auto !important; font-weight: 600 !important; font-size: 14px !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) td:nth-child(4) { order: 0 !important; flex: 0 0 auto !important; margin-left: auto !important; font-weight: 800 !important; font-size: 15px !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) td:nth-child(2) { order: 1 !important; flex: 0 0 auto !important; font-size: 11.5px !important; } #ingDetalleTable tbody tr:not(.ing-total-row):not(:has(td[colspan])) td:nth-child(3) { order: 1 !important; flex: 1 1 auto !important; text-align: right !important; margin-left: auto !important; font-size: 11.5px !important; color: var(--muted) !important; } #tcDetalleTable table { font-size: 14px !important; } #tcDetalleTable thead { display: none !important; } #tcDetalleTable tbody tr:has(td[colspan]) { display: block !important; text-align: center !important; padding: 20px !important; color: var(--muted) !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) { display: flex !important; flex-wrap: wrap !important; align-items: center !important; gap: 4px 10px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 12px !important; padding: 10px 12px !important; margin-bottom: 6px !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td { display: block !important; padding: 0 !important; border: none !important; white-space: normal !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(1) { order: 0 !important; flex: 1 1 auto !important; font-weight: 600 !important; font-size: 14px !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(4) { order: 0 !important; flex: 0 0 auto !important; margin-left: auto !important; font-weight: 800 !important; font-size: 15px !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(2) { order: 1 !important; flex: 0 0 auto !important; font-size: 11.5px !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(3) { order: 1 !important; flex: 1 1 auto !important; text-align: right !important; margin-left: auto !important; font-size: 11.5px !important; color: var(--muted) !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(6) { order: 2 !important; flex: 0 0 auto !important; font-size: 11px !important; color: var(--muted) !important; } #tcDetalleTable tbody tr:not(:has(td[colspan])) td:nth-child(5) { order: 2 !important; flex: 1 1 auto !important; text-align: right !important; margin-left: auto !important; font-size: 11px !important; color: var(--muted) !important; } } @media (max-width: 880px) { .rep-tabs { gap: 4px !important; } .rep-tab { padding: 6px 9px !important; font-size: 11.5px !important; white-space: nowrap !important; } #desgloseRubroChart { max-width: 200px !important; max-height: 200px !important; width: 200px !important; height: 200px !important; margin: 0 auto !important; display: block !important; } } @media (max-width: 880px) { .rep-tab { padding: 7px 12px !important; font-size: 14px !important; } #desgloseRubroChart { max-width: 150px !important; max-height: 150px !important; width: 150px !important; height: 150px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(1) { font-size: 13px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(2) span { font-size: 16px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(3) { font-size: 17px !important; } #desgloseRubroTable tbody tr:not(:last-child) td:nth-child(4) { font-size: 14px !important; } } @media (max-width: 480px) {
   .health-bars { grid-template-columns: 1fr; }
   .cards-grid.budget-summary, .stat-cards { grid-template-columns: 1fr !important; }
   .month-display { min-width:96px; }
@@ -1458,23 +1458,23 @@ tr:hover td { background: #fafbfc; }
     padding: 10px 12px !important; margin-bottom: 8px !important;
   }
   #page-transacciones tbody tr td { padding: 0 !important; border: none !important; }
-  #page-transacciones tbody tr td:nth-child(5),
-  #page-transacciones tbody tr td:nth-child(7),
+  #page-transacciones tbody tr td:nth-child(6),
   #page-transacciones tbody tr td:nth-child(8),
-  #page-transacciones tbody tr td:nth-child(9) { display: none !important; }
+  #page-transacciones tbody tr td:nth-child(9),
+  #page-transacciones tbody tr td:nth-child(10) { display: none !important; }
   #page-transacciones tbody tr td:nth-child(1) { grid-area: chk !important; }
   #page-transacciones tbody tr td:nth-child(2) { grid-area: nom !important; min-width: 0 !important; font-size: 14.5px !important; line-height: 1.28 !important; display: -webkit-box !important; -webkit-line-clamp: 2 !important; -webkit-box-orient: vertical !important; overflow: hidden !important; }
   #page-transacciones tbody tr td:nth-child(2) strong { font-size: 14.5px !important; }
-  #page-transacciones tbody tr td:nth-child(6) { grid-area: monto !important; text-align: right !important; font-size: 15.5px !important; font-weight: 800 !important; white-space: nowrap !important; }
-  #page-transacciones tbody tr td:nth-child(3) { grid-area: tipo !important; }
-  #page-transacciones tbody tr td:nth-child(3) .badge { font-size: 10.5px !important; padding: 2px 7px !important; }
-  #page-transacciones tbody tr td:nth-child(4) { grid-area: rubro !important; min-width: 0 !important; display: flex !important; align-items: center !important; gap: 3px !important; }
-  #page-transacciones tbody tr td:nth-child(4) .rubro-tag { min-width: 0 !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; font-size: 11px !important; padding: 2px 7px !important; }
+  #page-transacciones tbody tr td:nth-child(7) { grid-area: monto !important; text-align: right !important; font-size: 15.5px !important; font-weight: 800 !important; white-space: nowrap !important; }
+  #page-transacciones tbody tr td:nth-child(4) { grid-area: tipo !important; }
+  #page-transacciones tbody tr td:nth-child(4) .badge { font-size: 10.5px !important; padding: 2px 7px !important; }
+  #page-transacciones tbody tr td:nth-child(5) { grid-area: rubro !important; min-width: 0 !important; display: flex !important; align-items: center !important; gap: 3px !important; }
+  #page-transacciones tbody tr td:nth-child(5) .rubro-tag { min-width: 0 !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; font-size: 11px !important; padding: 2px 7px !important; }
   #page-transacciones tbody tr .tg-full { display: none !important; }
   #page-transacciones tbody tr .tg-abbr { display: inline !important; }
-  #page-transacciones tbody tr td:nth-child(10) { grid-area: saldo !important; font-size: 12px !important; white-space: nowrap !important; }
-  #page-transacciones tbody tr td:nth-child(11) { grid-area: acc !important; display: flex !important; gap: 4px !important; justify-content: flex-end !important; margin: 0 !important; padding: 0 !important; border-top: none !important; }
-  #page-transacciones tbody tr td:nth-child(11) button { font-size: 14px !important; padding: 1px 2px !important; }
+  #page-transacciones tbody tr td:nth-child(11) { grid-area: saldo !important; font-size: 12px !important; white-space: nowrap !important; }
+  #page-transacciones tbody tr td:nth-child(12) { grid-area: acc !important; display: flex !important; gap: 4px !important; justify-content: flex-end !important; margin: 0 !important; padding: 0 !important; border-top: none !important; }
+  #page-transacciones tbody tr td:nth-child(12) button { font-size: 14px !important; padding: 1px 2px !important; }
 }
 .tg-abbr { display: none; }
 /* Transacciones: bloques de resumen de tarjeta */
@@ -2201,6 +2201,91 @@ tr:hover td { background: #fafbfc; }
 .calc-expr button:hover{color:#ef4444}
 
   </style>
+<style id="dcEstilos">
+/* ── Cuotas de tarjeta y Deuda en cuotas ── */
+.tx-cuota { display:inline-block; font-size:11.5px; font-weight:700; border-radius:999px; padding:2px 7px; background:#EEF2F6; color:#28506A; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.tx-cuota.ultima { background:#DCFCE7; color:#047857; }
+.tx-cuota-sin { color:#cbd5e1; }
+.tx-cuota-movil { display:none; font-size:11px; font-weight:700; color:#28506A; background:#EEF2F6; border-radius:999px; padding:1px 7px; margin-left:5px; white-space:nowrap; }
+.tx-cuota-movil.ultima { background:#DCFCE7; color:#047857; }
+@media (max-width: 880px) {
+  #page-transacciones tbody tr td.tx-cuota-td { display:none !important; }
+  .tx-cuota-movil { display:inline-block; }
+}
+.tc-bloque .btn-deuda { border-color:#FFD2BF; color:#C2410C; background:#FFF8F4; }
+.dc-modal { max-width:980px !important; padding:0 !important; overflow:hidden; display:flex; flex-direction:column; }
+.dc-cab { background:var(--brand-navy); color:#fff; padding:16px 20px; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-shrink:0; }
+.dc-tit { font-size:18px; font-weight:800; }
+.dc-sub { font-size:12.5px; opacity:.75; margin-top:2px; }
+.dc-cerrar { color:#fff !important; background:rgba(255,255,255,.12) !important; border:none; border-radius:8px; width:32px; height:32px; font-size:20px; cursor:pointer; flex-shrink:0; }
+.dc-cuerpo { padding:18px 20px 22px; overflow-y:auto; }
+.dc-mes { font-size:12.5px; color:var(--muted); margin-bottom:12px; }
+.dc-filtro { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
+.dc-ftit { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-right:4px; }
+.dc-fop { font-size:12.5px; font-weight:600; border:1px solid var(--border); border-radius:999px; padding:5px 12px; background:#fff; color:var(--text); cursor:pointer; font-family:inherit; }
+.dc-fop.on { background:var(--brand-navy); border-color:var(--brand-navy); color:#fff; }
+.dc-kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.dc-kpi { border:1px solid var(--border); border-radius:12px; padding:14px; }
+.dc-kpi.a { border-color:#FFD2BF; background:#FFF8F4; }
+.dc-kpi.b { border-color:#C9D6E0; background:#F5F8FB; }
+.dc-ktit { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+.dc-kval { font-size:24px; font-weight:800; margin-top:4px; font-variant-numeric:tabular-nums; }
+.dc-kpi.a .dc-kval { color:#C2410C; } .dc-kpi.b .dc-kval { color:var(--brand-navy); }
+.dc-kpie { font-size:12px; color:var(--muted); margin-top:3px; }
+.dc-kusd { font-size:12px; font-weight:700; color:var(--brand-navy-light); margin-top:4px; }
+.dc-aviso { margin-top:12px; font-size:12.5px; background:#FFFBEB; border:1px solid #FDE68A; color:#92400E; border-radius:10px; padding:9px 12px; line-height:1.45; }
+.dc-sec { font-size:13.5px; font-weight:800; color:var(--brand-navy); margin:22px 0 8px; display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; }
+.dc-sec span { font-size:12px; font-weight:500; color:var(--muted); }
+.dc-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.dc-tabla { width:100%; border-collapse:collapse; font-size:13px; }
+.dc-tabla th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:700; padding:8px 10px !important; border-bottom:1px solid var(--border); white-space:nowrap; }
+.dc-tabla td { padding:9px 10px !important; border-bottom:1px solid #f1f5f9; white-space:nowrap; }
+.dc-tabla .n { text-align:right; font-variant-numeric:tabular-nums; }
+.dc-tabla .dc-total td { font-weight:800; border-bottom:none; }
+.dc-usd { font-size:11px; color:var(--muted); }
+.dc-dot { display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:7px; vertical-align:middle; }
+.dc-peso { width:110px; height:8px; background:#EEF2F6; border-radius:4px; overflow:hidden; display:inline-block; vertical-align:middle; }
+.dc-peso i { display:block; height:100%; }
+.dc-pct { font-size:12px; color:var(--muted); margin-left:6px; font-variant-numeric:tabular-nums; }
+.dc-tag { font-size:11px; font-weight:700; border-radius:6px; padding:2px 7px; white-space:nowrap; }
+.dc-tag.pesada { background:#FEE2E2; color:#B91C1C; }
+.dc-tag.media, .dc-tag.vieja { background:#FEF3C7; color:#92400E; }
+.dc-tag.liviana { background:#DCFCE7; color:#047857; }
+.dc-nota { font-size:12px; color:var(--muted); margin-top:8px; line-height:1.45; }
+.dc-gris { font-weight:500; color:var(--muted); font-size:12.5px; }
+.dc-esc { display:flex; align-items:flex-end; gap:5px; height:180px; padding:6px 2px 0; border-bottom:1px solid var(--border); overflow-x:auto; }
+.dc-col { flex:1 0 34px; display:flex; flex-direction:column; justify-content:flex-end; height:100%; position:relative; padding-bottom:18px; }
+.dc-ctot { font-size:10px; color:var(--muted); text-align:center; margin-bottom:3px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.dc-seg { width:100%; }
+.dc-col .dc-seg:nth-child(2) { border-radius:4px 4px 0 0; }
+.dc-cmes { position:absolute; bottom:0; left:0; right:0; text-align:center; font-size:10px; color:var(--muted); white-space:nowrap; }
+.dc-ley { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:10px; }
+.dc-det { border:1px solid var(--border); border-radius:10px; margin-top:8px; background:#fff; }
+.dc-det summary { cursor:pointer; padding:10px 12px; font-size:13px; font-weight:700; color:var(--brand-navy); list-style:none; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.dc-det summary::-webkit-details-marker { display:none; }
+.dc-det .dc-tabla { font-size:12.5px; }
+.dc-vacio { text-align:center; padding:28px 12px; color:var(--text); }
+.dc-vacio p { font-size:13px; color:var(--muted); margin-top:8px; }
+@media (max-width: 720px) {
+  #dcOverlay { align-items:stretch; }
+  .dc-modal { max-width:100% !important; max-height:100vh !important; height:100%; border-radius:0 !important; }
+  .dc-kpis { grid-template-columns:1fr; }
+  .dc-kval { font-size:22px; }
+  .dc-peso { width:60px; }
+  .dc-cuerpo { padding:14px 14px 28px; }
+  .dc-apila thead { display:none; }
+  .dc-apila, .dc-apila tbody { display:block; }
+  .dc-apila tr { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px 10px; padding:11px 2px; border-bottom:1px solid var(--border); }
+  .dc-apila td { display:block; border:none !important; padding:0 !important; white-space:normal; }
+  .dc-apila td:first-child { grid-column:1 / -1; font-size:14px; }
+  .dc-apila td.n { text-align:left; }
+  .dc-apila td.dc-vac { display:none; }
+  .dc-apila td[data-l]::before { content:attr(data-l); display:block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin-bottom:1px; }
+  .dc-apila .dc-peso { width:56px; }
+  .dc-det summary { font-size:12.5px; }
+  .dc-esc { height:170px; }
+}
+</style>
 </head>
 <body>
 
@@ -2696,6 +2781,8 @@ tr:hover td { background: #fafbfc; }
             <input type="file" id="tcFileInput" accept=".pdf,.xlsx,.xls" style="display:none" onchange="handleTCImport(this)">
             <button class="btn btn-secondary" onclick="openPagarTC()"
                     title="Cuando te debitan el resumen, marcá como pagados todos los consumos de esa tarjeta de una sola vez.">Pagar</button>
+            <button class="btn btn-secondary btn-deuda" onclick="openDeudaCuotas()"
+                    title="Cuánto te falta pagar de todo lo que compraste en cuotas: el próximo resumen y la deuda total, por tarjeta, por rubro y por titular.">Deuda en cuotas</button>
             <button type="button" class="tc-ayuda-btn" onclick="tcMiniAyuda(event)" aria-label="Cómo funciona" title="Cómo funciona">?</button>
             <div class="tc-pop" id="tcPop">
               <div class="tc-pop-tit">El circuito de una tarjeta, en dos pasos</div>
@@ -2716,12 +2803,13 @@ tr:hover td { background: #fafbfc; }
         <div class="tx-scroll">
         <table>
         <colgroup>
-          <col style="width:3%"><col style="width:15%"><col style="width:7%"><col style="width:14%"><col style="width:7%"><col style="width:9%"><col style="width:8%"><col style="width:9%"><col style="width:8%"><col style="width:7%"><col style="width:7%">
+          <col style="width:3%"><col style="width:13%"><col style="width:7%"><col style="width:7%"><col style="width:11%"><col style="width:7%"><col style="width:9%"><col style="width:7%"><col style="width:8%"><col style="width:8%"><col style="width:7%"><col style="width:7%">
         </colgroup>
             <thead>
               <tr>
                 <th style="width:36px"><input type="checkbox" id="selectAllTx" onchange="toggleSelectAllTx(this.checked)" title="Seleccionar todo"></th>
                 <th>Detalle</th>
+                <th title="Cuota de un consumo en cuotas con tarjeta: cuál vino en este resumen y de cuántas">Cuota</th>
                 <th>Tipo</th>
                 <th>Rubro</th>
                 <th>Cliente</th>
@@ -3548,6 +3636,24 @@ tr:hover td { background: #fafbfc; }
             <p><strong>Con un filtro o una búsqueda activos</strong>, los resúmenes que tienen coincidencias se abren solos y muestran solo esas líneas, con el subtotal de lo filtrado (por ejemplo, <em>8 de 58 mov.</em>). Los que no tienen coincidencias no aparecen. Al limpiar el filtro, todo vuelve a como lo tenías.</p>
             <div class="ayuda-tip">Es solo una forma de mostrar la lista. Los totales del mes, el saldo pendiente, Pagar TC, los reportes y «seleccionar todo» cuentan cada movimiento igual que antes, esté el bloque abierto o cerrado.</div>
             <p>Debajo de los resúmenes van el resto de tus movimientos, <strong>con lo más nuevo arriba</strong>. Los que no tienen fecha quedan al final. Adentro de cada resumen se respeta el orden del banco, así podés compararlo línea por línea con el PDF.</p>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>⟳ La columna Cuota</h4>
+            <p>Cuando un consumo de tarjeta viene en cuotas, Norte lo muestra en su propia columna, <strong>Cuota</strong>: <span class="tx-cuota">3 de 12</span> quiere decir que en este resumen vino la tercera de doce. La descripción queda limpia, sin el «[03/12]» al final.</p>
+            <p>Cuando es la <strong>última</strong>, se ve en verde (<span class="tx-cuota ultima">6 de 6</span>): ese plan no vuelve el mes que viene. En el celular la cuota aparece al lado del nombre del consumo.</p>
+            <div class="ayuda-tip">Los resúmenes que ya tenías cargados se acomodan solos la primera vez que abrís Transacciones: la cuota pasa de la descripción a su columna. No hace falta volver a subirlos.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>📉 Deuda en cuotas</h4>
+            <p>En el bloque <strong>Tarjetas</strong>, el botón <strong>Deuda en cuotas</strong> te dice cuánto te falta pagar de todo lo que ya compraste en cuotas. Lo calcula con los resúmenes de tarjeta de crédito que subiste, a partir del mes que estás mirando.</p>
+            <div class="ayuda-ejemplo">
+              <strong>Cuotas del próximo resumen:</strong> lo que ya está comprometido para el mes que viene. Ejemplo: $95.000.<br>
+              <strong>Deuda total en cuotas:</strong> la suma de todas las cuotas que faltan, desde el mes que viene. Ejemplo: $410.000.<br>
+              <strong>Quedás libre de cuotas:</strong> el mes en que se paga la última, si no sumás compras nuevas.
+            </div>
+            <p>Abajo lo ves <strong>por tarjeta</strong> (cuál viene más cargada y cuándo se libera), <strong>mes a mes</strong> (cómo va bajando lo comprometido), <strong>por rubro</strong> y plan por plan. Si en tu hogar hay más de un titular, arriba elegís de quién ver la deuda.</p>
+            <p>La cuenta es simple: un consumo en la cuota 3 de 12 de $10.000 aporta $10.000 al próximo resumen y $90.000 a la deuda (faltan 9).</p>
+            <div class="ayuda-tip">Las cuotas que vinieron en el resumen de este mes no se cuentan: ya son gastos del mes y están en tu Saldo pendiente. Si una tarjeta no tiene cargado el resumen del mes que mirás, Norte usa el último, descuenta las cuotas que ya deberían haber venido y la marca como estimada. Supone cuotas iguales: si un plan tiene interés o cambia de valor, el número es aproximado. Las cuotas en dólares van aparte, sin convertir.</div>
           </div>
           <div class="ayuda-bloque">
             <h4>Editar, borrar y selección múltiple</h4>
@@ -8636,7 +8742,8 @@ function confirmTCImport() {
       tipo:      r.tipoMov === 'Ingreso' ? 'Ingreso' : 'Gasto',
       tipoGasto: r.tipoMov === 'Ingreso' ? '' : (r.esImpuesto ? 'Fijo' : 'Variable'),
       rubro:     r.rubro || (r.tipoMov === 'Ingreso' ? 'Otros ingresos' : 'Otros gastos'),
-      detalle: r.desc + (r.cuota ? ` [${r.cuota}]` : ''),
+      detalle: r.desc,
+      cuota: (function (c) { return c ? c.a + '/' + c.t : undefined; })(dcParseCuotaTexto(r.cuota)),
       // Lo que el resumen dice sobre el origen de la plata. Ver tdClienteDeDesc.
       cliente:   tdClienteDeDesc(r.desc),
       impPesos:  impP,
@@ -9948,7 +10055,7 @@ function txGrupoHeader(k, gi, items, total, abierto, filtro) {
   var estado = pend
     ? '<span class="txg-pend">' + (pend === items.length ? 'pendiente' : pend + ' pendientes') + '</span>'
     : '<span class="txg-ok">✓ pagado</span>';
-  return '<tr class="tx-grupo' + (abierto ? ' abierto' : '') + '"><td colspan="11">' +
+  return '<tr class="tx-grupo' + (abierto ? ' abierto' : '') + '"><td colspan="12">' +
     '<div class="txg' + (filtro ? ' txg-filtro' : '') + '" role="button" tabindex="0" aria-expanded="' + abierto + '"' +
       ' title="' + (filtro ? 'Con un filtro activo se muestran solo las coincidencias' : (abierto ? 'Cerrar el resumen' : 'Ver los movimientos del resumen')) + '"' +
       ' onclick="if(!event.target.closest(\'input\'))txToggleGrupo(' + gi + ')"' +
@@ -9964,6 +10071,291 @@ function txGrupoHeader(k, gi, items, total, abierto, filtro) {
       '<span class="txg-tot">' + (parcial ? '<span class="txg-res" style="font-weight:600">filtrado </span>' : '') + plata + '</span>' +
     '</div></td></tr>';
 }
+// ── CUOTAS DE TARJETA ─────────────────────────────────────────
+/* La cuota de un consumo de tarjeta ("3 de 12") vive en su propio campo,
+   `cuota: "3/12"`. Antes iba pegada al final de la descripción como
+   " [03/12]": se convierte una sola vez (dcMigrarCuotas) y, mientras tanto,
+   todo lo que la lee entiende los dos formatos. */
+var DC_RE_SUFIJO = /\s*\[(\d{1,2})\s*\/\s*(\d{1,2})\]\s*$/;
+function dcParseCuotaTexto(s) {
+  var m = String(s || '').match(/(\d{1,2})\s*(?:\/|de)\s*(\d{1,2})/i);
+  if (!m) return null;
+  var a = parseInt(m[1], 10), t = parseInt(m[2], 10);
+  if (!(a >= 1 && t >= 1 && a <= t && t <= 99)) return null;
+  return { a: a, t: t };
+}
+function txCuotaDe(t) {
+  if (!t) return null;
+  if (t.cuota) return dcParseCuotaTexto(t.cuota);
+  if (!isTCOrigen(t)) return null;
+  var m = String(t.detalle || '').match(DC_RE_SUFIJO);
+  return m ? dcParseCuotaTexto(m[1] + '/' + m[2]) : null;
+}
+function txDetalleLimpio(t) {
+  var d = String((t && t.detalle) || '');
+  return (t && isTCOrigen(t)) ? d.replace(DC_RE_SUFIJO, '') : d;
+}
+function txCuotaCelda(t) {
+  var c = txCuotaDe(t);
+  if (!c) return '<span class="tx-cuota-sin">—</span>';
+  var ult = c.a === c.t;
+  return '<span class="tx-cuota' + (ult ? ' ultima' : '') + '" title="' +
+    (ult ? 'Última cuota: este plan no vuelve el mes que viene' : 'Cuota ' + c.a + ' de ' + c.t + ' — faltan ' + (c.t - c.a)) +
+    '">' + c.a + ' de ' + c.t + '</span>';
+}
+function txCuotaMovil(t) {
+  var c = txCuotaDe(t);
+  if (!c) return '';
+  return ' <span class="tx-cuota-movil' + (c.a === c.t ? ' ultima' : '') + '">⟳ ' + c.a + ' de ' + c.t + '</span>';
+}
+function txCuotaBadge(t) {
+  var c = txCuotaDe(t);
+  return c ? ' <span class="cuota-badge">⟳ ' + c.a + '/' + c.t + '</span>' : '';
+}
+
+/* Conversión única de lo ya cargado. Sólo corre cuando la nube ya bajó su
+   copia (o no hay nube): si corriera antes, subiría el archivo local viejo y
+   podría pisar movimientos cargados desde otro aparato. Es idempotente: si no
+   encuentra nada que convertir, no escribe. */
+var dcSyncBajo = false;
+(function () {
+  if (typeof setSyncStatus !== 'function') return;
+  var orig = setSyncStatus;
+  setSyncStatus = function (st) { if (st === 'ok') dcSyncBajo = true; return orig.apply(this, arguments); };
+})();
+function dcMigrarCuotas() {
+  try {
+    if (typeof syncApplyingRemote !== 'undefined' && syncApplyingRemote) return false;
+    if (typeof fbRef !== 'undefined' && fbRef && !dcSyncBajo) return false;
+    var data = getData(), cambio = false;
+    var nueva = data.map(function (t) {
+      if (!t || t.cuota || !isTCOrigen(t)) return t;
+      var m = String(t.detalle || '').match(DC_RE_SUFIJO);
+      if (!m) return t;
+      var c = dcParseCuotaTexto(m[1] + '/' + m[2]);
+      if (!c) return t;
+      cambio = true;
+      return Object.assign({}, t, { cuota: c.a + '/' + c.t, detalle: String(t.detalle).replace(DC_RE_SUFIJO, '') });
+    });
+    if (cambio) saveData(nueva);
+    return cambio;
+  } catch (e) { return false; }
+}
+
+// ── DEUDA EN CUOTAS ───────────────────────────────────────────
+function dcMesSuma(ym, n) {
+  var p = ym.split('-'), y = +p[0], m = +p[1] - 1 + n;
+  y += Math.floor(m / 12); m = ((m % 12) + 12) % 12;
+  return y + '-' + ('0' + (m + 1)).slice(-2);
+}
+function dcMesDif(desde, hasta) {
+  var a = desde.split('-'), b = hasta.split('-');
+  return (+b[0] - +a[0]) * 12 + (+b[1] - +a[1]);
+}
+function dcMesCorto(ym) {
+  var p = ym.split('-');
+  return MESES[+p[1] - 1].slice(0, 3).toLowerCase() + ' ' + p[0];
+}
+function dcNorm(s) {
+  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/\s+/g, ' ').trim();
+}
+function dcTitularDe(t) { return String(t.titular || t.creadoPorNombre || '').trim() || 'Sin titular'; }
+
+/* El cálculo, separado del dibujo para poder probarlo solo.
+   - Por tarjeta (banco + tarjeta, sólo crédito) se toma el ÚLTIMO resumen con
+     mes de impacto <= el mes que se mira. Nunca dos de la misma tarjeta.
+   - Si ese resumen es de un mes anterior, se corren las cuotas: lo que ya
+     debería haber venido no se cuenta, y la tarjeta queda marcada "estimada".
+   - Cada línea "a de t" con a < t aporta: próximo resumen = valor de la cuota;
+     deuda = valor × (t − a); termina = mes + (t − a).
+   - La cuota del propio mes NO entra: ya es gasto del mes (Saldo pendiente).
+   - El titular filtra después de elegir el resumen, para que cada tarjeta use
+     siempre el mismo. */
+function dcCalcular(data, mes, titularFiltro) {
+  var porTarjeta = {}, titulares = {};
+  data.forEach(function (t) {
+    if (!t || !isTCOrigen(t) || tcLabel(t) === 'TD' || !t.mes || t.mes > mes) return;
+    var lab = getBancoLabel(t) || 'Tarjeta', k = dcNorm(lab);
+    var g = porTarjeta[k] || (porTarjeta[k] = { label: lab, base: '', filas: [] });
+    if (t.mes > g.base) { g.base = t.mes; g.filas = []; }
+    if (t.mes === g.base) g.filas.push(t);
+  });
+  var out = { mes: mes, tarjetas: [], porRubro: {}, prox: 0, deuda: 0, proxUsd: 0, deudaUsd: 0,
+              planes: 0, hasta: '', titulares: [], escalera: {} };
+  Object.keys(porTarjeta).sort().forEach(function (k) {
+    var g = porTarjeta[k], corr = dcMesDif(g.base, mes);
+    var tj = { label: g.label, base: g.base, estimada: corr > 0, planes: [], prox: 0, deuda: 0,
+               proxUsd: 0, deudaUsd: 0, terminaron: 0, hasta: '' };
+    g.filas.forEach(function (t) {
+      var c = txCuotaDe(t); if (!c) return;
+      var tit = dcTitularDe(t); titulares[dcNorm(tit)] = tit;
+      if (titularFiltro && dcNorm(tit) !== dcNorm(titularFiltro)) return;
+      var a = c.a + corr;
+      if (a >= c.t) { if (a === c.t) tj.terminaron++; return; }
+      var restan = c.t - a;
+      var usd = !(Number(t.impPesos) || 0) && !!(Number(t.impUSD) || 0);
+      var valor = usd ? Number(t.impUSD) : Number(t.impPesos) || 0;
+      var termina = dcMesSuma(mes, restan);
+      tj.planes.push({ detalle: txDetalleLimpio(t), rubro: t.rubro || 'Sin rubro', titular: tit,
+                       a: a, t: c.t, valor: valor, restan: restan, resto: valor * restan,
+                       termina: termina, usd: usd });
+      if (usd) { tj.proxUsd += valor; tj.deudaUsd += valor * restan; }
+      else {
+        tj.prox += valor; tj.deuda += valor * restan;
+        var r = out.porRubro[t.rubro || 'Sin rubro'] || (out.porRubro[t.rubro || 'Sin rubro'] = { planes: 0, prox: 0, deuda: 0 });
+        r.planes++; r.prox += valor; r.deuda += valor * restan;
+        for (var i = 1; i <= restan; i++) {
+          var mk = dcMesSuma(mes, i), e = out.escalera[mk] || (out.escalera[mk] = {});
+          e[g.label] = (e[g.label] || 0) + valor;
+        }
+      }
+      if (termina > tj.hasta) tj.hasta = termina;
+    });
+    if (!tj.planes.length) return;
+    tj.planes.sort(function (x, y) { return Math.abs(y.resto) - Math.abs(x.resto); });
+    out.tarjetas.push(tj);
+    out.prox += tj.prox; out.deuda += tj.deuda; out.proxUsd += tj.proxUsd; out.deudaUsd += tj.deudaUsd;
+    out.planes += tj.planes.length;
+    if (tj.hasta > out.hasta) out.hasta = tj.hasta;
+  });
+  out.tarjetas.sort(function (x, y) { return y.deuda - x.deuda || y.deudaUsd - x.deudaUsd; });
+  out.titulares = Object.keys(titulares).map(function (k) { return titulares[k]; }).sort();
+  return out;
+}
+
+var DC_COLORES = ['#1B3A4B', '#FF8A5C', '#2A9D8F', '#7C3AED', '#D4A017', '#E76F51', '#64748B', '#0EA5E9'];
+var dcTitular = '';
+function dcFmt(v) { return '$' + Math.round(Number(v) || 0).toLocaleString('es-AR'); }
+function dcFmtU(v) { return 'USD ' + (Number(v) || 0).toLocaleString('es-AR', { maximumFractionDigits: 2 }); }
+function dcMonto(p) { return p.usd ? dcFmtU(p.valor) : dcFmt(p.valor); }
+function dcPeso(pct, color) {
+  return '<span class="dc-peso"><i style="width:' + Math.max(1, Math.min(100, pct)) + '%;background:' + color + '"></i></span><span class="dc-pct">' + Math.round(pct) + '%</span>';
+}
+function dcTagLibera(tj, mes) {
+  var n = dcMesDif(mes, tj.hasta);
+  var cls = n <= 4 ? 'liviana' : n <= 8 ? 'media' : 'pesada';
+  return dcMesCorto(tj.hasta) + ' <span class="dc-tag ' + cls + '">' + n + (n === 1 ? ' mes' : ' meses') + '</span>';
+}
+
+function openDeudaCuotas() {
+  dcMigrarCuotas();
+  var ov = document.getElementById('dcOverlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.className = 'overlay'; ov.id = 'dcOverlay';
+    ov.innerHTML = '<div class="modal dc-modal"><div class="dc-cab"><div><div class="dc-tit">Deuda en cuotas</div>' +
+      '<div class="dc-sub">Lo que ya compraste en cuotas con tarjeta de crédito y todavía no llegó en ningún resumen</div></div>' +
+      '<button class="modal-close dc-cerrar" onclick="closeDeudaCuotas()" aria-label="Cerrar">×</button></div>' +
+      '<div class="dc-cuerpo" id="dcCuerpo"></div></div>';
+    ov.addEventListener('click', function (e) { if (e.target === ov) closeDeudaCuotas(); });
+    document.body.appendChild(ov);
+  }
+  renderDeudaCuotas();
+  ov.classList.add('show');
+}
+function closeDeudaCuotas() { var ov = document.getElementById('dcOverlay'); if (ov) ov.classList.remove('show'); }
+function dcSetTitular(v) { dcTitular = v; renderDeudaCuotas(); }
+
+function renderDeudaCuotas() {
+  var el = document.getElementById('dcCuerpo'); if (!el) return;
+  var mes = curKey();
+  var todo = dcCalcular(getData(), mes, '');
+  if (dcTitular && todo.titulares.map(dcNorm).indexOf(dcNorm(dcTitular)) < 0) dcTitular = '';
+  var r = dcTitular ? dcCalcular(getData(), mes, dcTitular) : todo;
+  var sig = dcMesSuma(mes, 1);
+  var h = '<div class="dc-mes">Desde los resúmenes de <b>' + MESES[+mes.split('-')[1] - 1] + ' ' + mes.split('-')[0] + '</b> · cambiá el mes arriba para ver otro</div>';
+  if (todo.titulares.length > 1) {
+    h += '<div class="dc-filtro"><span class="dc-ftit">Titular</span>' +
+      '<button class="dc-fop' + (dcTitular ? '' : ' on') + '" onclick="dcSetTitular(\'\')">Todos</button>' +
+      todo.titulares.map(function (n) {
+        return '<button class="dc-fop' + (dcNorm(n) === dcNorm(dcTitular) ? ' on' : '') + '" onclick="dcSetTitular(' + esc(JSON.stringify(n)) + ')">' + esc(n) + '</button>';
+      }).join('') + '</div>';
+  }
+  if (!r.tarjetas.length) {
+    h += '<div class="dc-vacio"><div style="font-size:30px">🎉</div><b>No hay cuotas pendientes' + (dcTitular ? ' de ' + esc(dcTitular) : '') + '</b>' +
+      '<p>En los resúmenes de tarjeta cargados hasta este mes no quedan planes en cuotas por pagar a partir de ' + dcMesCorto(sig) + '.</p>' +
+      '<p class="dc-nota">El cálculo sale de los resúmenes de tarjeta de crédito que subiste con «Resumen». Si compraste en cuotas y todavía no cargaste ese resumen, no aparece.</p></div>';
+    el.innerHTML = h; return;
+  }
+  var colores = {};
+  r.tarjetas.forEach(function (tj, i) { colores[tj.label] = DC_COLORES[i % DC_COLORES.length]; });
+  var nTj = r.tarjetas.length;
+  var usdTxt = function (p, d) { return (p || d) ? '<div class="dc-kusd">+ ' + dcFmtU(d) + ' en cuotas en dólares</div>' : ''; };
+  h += '<div class="dc-kpis">' +
+    '<div class="dc-kpi a"><div class="dc-ktit">Cuotas del próximo resumen</div><div class="dc-kval">' + dcFmt(r.prox) + '</div>' +
+      '<div class="dc-kpie">' + MESES[+sig.split('-')[1] - 1] + ' · ' + r.planes + (r.planes === 1 ? ' plan' : ' planes') + ' en ' + nTj + (nTj === 1 ? ' tarjeta' : ' tarjetas') + '</div>' +
+      (r.proxUsd ? '<div class="dc-kusd">+ ' + dcFmtU(r.proxUsd) + '</div>' : '') + '</div>' +
+    '<div class="dc-kpi b"><div class="dc-ktit">Deuda total en cuotas</div><div class="dc-kval">' + dcFmt(r.deuda) + '</div>' +
+      '<div class="dc-kpie">Todas las cuotas desde ' + dcMesCorto(sig) + '</div>' + usdTxt(r.proxUsd, r.deudaUsd) + '</div>' +
+    '<div class="dc-kpi"><div class="dc-ktit">Quedás libre de cuotas</div><div class="dc-kval">' + dcMesCorto(r.hasta) + '</div>' +
+      '<div class="dc-kpie">Si no sumás compras nuevas en cuotas</div></div></div>';
+  h += '<div class="dc-aviso"><b>Qué no está acá:</b> las cuotas que vinieron en los resúmenes de este mes ya son gastos del mes y están en tu Saldo pendiente. Este cálculo empieza en ' + dcMesCorto(sig) + ', así no se cuenta dos veces. Supone cuotas iguales: si un plan tiene interés o cambia de valor, es una estimación.</div>';
+
+  // Por tarjeta
+  h += '<div class="dc-sec">Por tarjeta <span>Cuál viene más cargada</span></div><div class="dc-scroll"><table class="dc-tabla dc-apila"><thead><tr>' +
+    '<th>Tarjeta</th><th class="n">Planes</th><th class="n">Próximo resumen</th><th class="n">Deuda total</th><th>Peso en la deuda</th><th>Se libera</th></tr></thead><tbody>';
+  var hayEst = false;
+  r.tarjetas.forEach(function (tj) {
+    var pct = r.deuda ? tj.deuda / r.deuda * 100 : 0;
+    if (tj.estimada) hayEst = true;
+    h += '<tr><td><span class="dc-dot" style="background:' + colores[tj.label] + '"></span><b>' + esc(tj.label) + '</b>' +
+      (tj.estimada ? ' <span class="dc-tag vieja" title="No hay resumen de este mes cargado: se usa el último y se corren las cuotas">resumen de ' + dcMesCorto(tj.base).split(' ')[0] + '.</span>' : '') + '</td>' +
+      '<td class="n" data-l="Planes">' + tj.planes.length + '</td>' +
+      '<td class="n" data-l="Próximo resumen">' + dcFmt(tj.prox) + (tj.proxUsd ? '<div class="dc-usd">+ ' + dcFmtU(tj.proxUsd) + '</div>' : '') + '</td>' +
+      '<td class="n" data-l="Deuda total"><b>' + dcFmt(tj.deuda) + '</b>' + (tj.deudaUsd ? '<div class="dc-usd">+ ' + dcFmtU(tj.deudaUsd) + '</div>' : '') + '</td>' +
+      '<td data-l="Peso en la deuda">' + dcPeso(pct, colores[tj.label]) + '</td><td data-l="Se libera">' + dcTagLibera(tj, mes) + '</td></tr>';
+  });
+  h += '<tr class="dc-total"><td>Total</td><td class="n" data-l="Planes">' + r.planes + '</td><td class="n" data-l="Próximo resumen">' + dcFmt(r.prox) + '</td><td class="n" data-l="Deuda total">' + dcFmt(r.deuda) + '</td><td class="dc-vac"></td><td data-l="Libre de cuotas">' + dcMesCorto(r.hasta) + '</td></tr></tbody></table></div>';
+  if (hayEst) h += '<p class="dc-nota">Las tarjetas marcadas no tienen cargado el resumen de este mes: se usa el último que subiste y se descuentan las cuotas que ya deberían haber venido. Es una estimación.</p>';
+
+  // Escalera mes a mes
+  var meses = Object.keys(r.escalera).sort();
+  if (meses.length) {
+    var tope = meses.slice(0, 24), max = 0;
+    tope.forEach(function (m) { var s = 0; Object.keys(r.escalera[m]).forEach(function (k) { s += r.escalera[m][k]; }); if (s > max) max = s; });
+    h += '<div class="dc-sec">Cómo baja mes a mes <span>Cuotas ya comprometidas en cada resumen futuro</span></div><div class="dc-esc">';
+    tope.forEach(function (m) {
+      var segs = '', s = 0;
+      r.tarjetas.slice().reverse().forEach(function (tj) {
+        var v = r.escalera[m][tj.label] || 0; if (v <= 0) return; s += v;
+        segs += '<div class="dc-seg" style="height:' + (max ? v / max * 130 : 0) + 'px;background:' + colores[tj.label] + '" title="' + esc(tj.label) + ': ' + dcFmt(v) + '"></div>';
+      });
+      h += '<div class="dc-col"><div class="dc-ctot">' + (s >= 1000 ? '$' + Math.round(s / 1000) + 'k' : dcFmt(s)) + '</div>' + segs +
+        '<div class="dc-cmes">' + dcMesCorto(m).replace(' 20', ' ') + '</div></div>';
+    });
+    h += '</div><div class="dc-ley">' + r.tarjetas.map(function (tj) { return '<span><span class="dc-dot" style="background:' + colores[tj.label] + '"></span>' + esc(tj.label) + '</span>'; }).join('') + '</div>';
+    if (meses.length > 24) h += '<p class="dc-nota">Se muestran los primeros 24 meses.</p>';
+  }
+
+  // Por rubro
+  var rubros = Object.keys(r.porRubro).sort(function (a, b) { return r.porRubro[b].deuda - r.porRubro[a].deuda; });
+  if (rubros.length) {
+    h += '<div class="dc-sec">Por rubro <span>En qué se fue la deuda</span></div><div class="dc-scroll"><table class="dc-tabla dc-apila"><thead><tr><th>Rubro</th><th class="n">Planes</th><th class="n">Próximo resumen</th><th class="n">Deuda total</th><th>Peso</th></tr></thead><tbody>';
+    rubros.forEach(function (k) {
+      var x = r.porRubro[k];
+      h += '<tr><td><b>' + esc(k) + '</b></td><td class="n" data-l="Planes">' + x.planes + '</td><td class="n" data-l="Próximo resumen">' + dcFmt(x.prox) + '</td><td class="n" data-l="Deuda total">' + dcFmt(x.deuda) + '</td><td data-l="Peso">' + dcPeso(r.deuda ? x.deuda / r.deuda * 100 : 0, '#28506A') + '</td></tr>';
+    });
+    h += '</tbody></table></div>';
+  }
+
+  // Detalle por tarjeta
+  h += '<div class="dc-sec">Detalle de cada plan <span>Tocá una tarjeta para abrirla</span></div>';
+  r.tarjetas.forEach(function (tj, i) {
+    h += '<details class="dc-det"' + (i === 0 ? ' open' : '') + '><summary><span><span class="dc-dot" style="background:' + colores[tj.label] + '"></span>' + esc(tj.label) +
+      ' · ' + tj.planes.length + (tj.planes.length === 1 ? ' plan' : ' planes') +
+      (tj.terminaron ? ' <span class="dc-gris">(' + tj.terminaron + (tj.terminaron === 1 ? ' terminó' : ' terminaron') + ' este mes)</span>' : '') +
+      (tj.estimada ? ' <span class="dc-gris">· estimado desde ' + dcMesCorto(tj.base) + '</span>' : '') + '</span><span class="dc-gris">' + dcFmt(tj.deuda) + (tj.deudaUsd ? ' + ' + dcFmtU(tj.deudaUsd) : '') + '</span></summary>' +
+      '<div class="dc-scroll"><table class="dc-tabla dc-apila"><thead><tr><th>Concepto</th><th>Rubro</th>' + (todo.titulares.length > 1 && !dcTitular ? '<th>Titular</th>' : '') +
+      '<th>Cuota' + (tj.estimada ? ' (estimada)' : '') + '</th><th class="n">Valor cuota</th><th class="n">Faltan</th><th class="n">Resta pagar</th><th>Termina</th></tr></thead><tbody>' +
+      tj.planes.map(function (p) {
+        return '<tr><td><b>' + esc(p.detalle) + '</b></td><td data-l="Rubro">' + esc(p.rubro) + '</td>' + (todo.titulares.length > 1 && !dcTitular ? '<td data-l="Titular">' + esc(p.titular) + '</td>' : '') +
+          '<td data-l="Cuota"><span class="tx-cuota">' + p.a + ' de ' + p.t + '</span></td><td class="n" data-l="Valor cuota">' + dcMonto(p) + '</td><td class="n" data-l="Faltan">' + p.restan + '</td>' +
+          '<td class="n" data-l="Resta pagar"><b>' + (p.usd ? dcFmtU(p.resto) : dcFmt(p.resto)) + '</b></td><td data-l="Termina">' + dcMesCorto(p.termina) + '</td></tr>';
+      }).join('') + '</tbody></table></div></details>';
+  });
+  el.innerHTML = h;
+}
+
 function txArmarFilas(rows, all, filaTx) {
   var filtro = txFiltroActivo(), abiertos = txGruposAbiertos();
   var grupos = {}, sueltos = [], total = {};
@@ -9985,6 +10377,7 @@ function txArmarFilas(rows, all, filaTx) {
 }
 
 function renderTx() {
+  dcMigrarCuotas();   // una sola vez: la cuota sale de la descripción a su campo
   pintarPendienteTx();
   const all = getData().filter(t => t.mes === curKey());
 
@@ -10021,7 +10414,8 @@ function renderTx() {
     const reint = esReintegro(t);
     return `<tr${pendiente ? ' style="background:#fffbeb"' : ''}>
       <td><input type="checkbox" class="tx-check" data-id="${t.id}" ${selectedTx.has(t.id)?'checked':''} onchange="toggleSelectTx('${t.id}', this.checked)"></td>
-      <td><strong>${esc(t.detalle)}</strong>${pendiente ? ' <span title="Esqueleto de movimiento fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de ${tcLabel(t)==='TD'?'Débito':'Crédito'}" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>${(t.origen === 'TARJETA' && t.creadoPorNombre) ? '<span style="font-size:10.5px;font-weight:600;color:#5B6B7C;background:rgba(91,107,124,0.10);border:1px solid rgba(91,107,124,0.22);border-radius:6px;padding:1px 6px;margin-left:6px;white-space:nowrap">\uD83D\uDC64 ' + t.creadoPorNombre + '</span>' : ''}` : ''}</td>
+      <td><strong>${esc(txDetalleLimpio(t))}</strong>${txCuotaMovil(t)}${pendiente ? ' <span title="Esqueleto de movimiento fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de ${tcLabel(t)==='TD'?'Débito':'Crédito'}" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>${(t.origen === 'TARJETA' && t.creadoPorNombre) ? '<span style="font-size:10.5px;font-weight:600;color:#5B6B7C;background:rgba(91,107,124,0.10);border:1px solid rgba(91,107,124,0.22);border-radius:6px;padding:1px 6px;margin-left:6px;white-space:nowrap">\uD83D\uDC64 ' + t.creadoPorNombre + '</span>' : ''}` : ''}</td>
+      <td class="tx-cuota-td">${txCuotaCelda(t)}</td>
       <td>${reint ? BADGE_REINTEGRO : `<span class="badge badge-${t.tipo.toLowerCase()}">${t.tipo}</span>`}</td>
       <td><span class="rubro-tag">${esc(t.rubro||'-')}</span>${t.tipoGasto ? `<span style="display:inline-block;margin-left:5px;font-size:10.5px;font-weight:600;color:var(--muted)">· <span class="tg-full">${t.tipoGasto}</span><span class="tg-abbr">${t.tipoGasto.charAt(0)}</span></span>` : ''}</td>
       <td>${t.cliente ? `<span style="font-size:12px;font-weight:600;color:var(--primary)">${esc(t.cliente)}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
@@ -14173,7 +14567,7 @@ function renderRepTarjetas() {
       items.sort((a,b)=>a.mes>b.mes?1:-1).forEach(t => {
         const [,m] = t.mes.split('-');
         tableHTML += `<tr>
-          <td style="padding-left:28px">${esc(t.detalle||'—')}</td>
+          <td style="padding-left:28px">${esc(txDetalleLimpio(t)||'—')}${txCuotaBadge(t)}</td>
           <td><span class="rubro-tag">${esc(t.rubro||'—')}</span></td>
           <td style="color:var(--muted)">${MESES[parseInt(m)-1]}</td>
           <td${esReintegro(t) && Number(t.impPesos) ? ' style="color:var(--success);font-weight:600"' : ''}>${t.impPesos?(esReintegro(t)?'↩ '+fmtPR(t.impPesos):fmtP(Number(t.impPesos))):'—'}</td>
@@ -14745,7 +15139,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.48.003';
+const APP_VERSION = 'v005.49.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -15842,7 +16236,7 @@ function openModal(id) {
       document.getElementById('customRubroWrap').classList.remove('show');
       document.getElementById('txRubroCustom').value = '';
     }
-    document.getElementById('txDetalle').value  = t.detalle;
+    document.getElementById('txDetalle').value  = txDetalleLimpio(t);
     document.getElementById('txCliente').value  = t.cliente   || '';
     numSet('txImpPesos', t.impPesos);
     numSet('txImpUSD', t.impUSD);
@@ -15928,6 +16322,8 @@ function saveTx(e) {
          le asignaba el gasto a quien estaba editando. El dueño de un gasto es
          quien lo originó, no quien lo corrigió. */
       const nuevo = Object.assign({}, prev, tx);
+      // Un movimiento viejo con la cuota todavía en la descripción: no perderla.
+      if (!prev.cuota) { const _c = txCuotaDe(prev); if (_c) nuevo.cuota = _c.a + '/' + _c.t; }
       if (!tx.cta) delete nuevo.cta;   // la cuenta vieja ya no explica el importe
       if (isTCOrigen(prev)) {
         nuevo.tipoGasto = 'Variable'; // TC nunca puede ser Fijo — se importa vía resumen cada mes
