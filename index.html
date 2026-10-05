@@ -2330,6 +2330,12 @@ tr:hover td { background: #fafbfc; }
 #tcAvisoRubro.ver { opacity:1; transform:translateX(-50%) translateY(0); }
 @media (max-width:720px) { .tc-masivo select { flex:1 1 100%; } #tcBuscar { flex-basis:100%; } }
 </style>
+<style id="txOrdenEstilos">
+#page-transacciones thead th.tx-th-ord { cursor:pointer; user-select:none; }
+#page-transacciones thead th.tx-th-ord:hover { color:var(--brand-navy); }
+.tx-orden-movil { display:none; }
+@media (max-width: 880px) { .tx-orden-movil { display:block; } }
+</style>
 </head>
 <body>
 
@@ -2795,6 +2801,14 @@ tr:hover td { background: #fafbfc; }
             <input class="f-search" type="text" placeholder="🔍 Buscar detalle..." oninput="setSearch(this.value)" style="width:190px">
             <select class="f-select" id="rubroFilt" onchange="setRubroFilter(this.value)">
               <option value="">Todos los rubros</option>
+            </select>
+            <select class="f-select tx-orden-movil" id="txOrdenSel" onchange="txSetOrden(this.value)" aria-label="Ordenar">
+              <option value="">Orden: por fecha</option>
+              <option value="detalle|1">Orden: detalle A-Z</option>
+              <option value="detalle|-1">Orden: detalle Z-A</option>
+              <option value="importe|-1">Orden: importe mayor</option>
+              <option value="importe|1">Orden: importe menor</option>
+              <option value="rubro|1">Orden: rubro</option>
             </select>
             <div class="tgl-group" id="autorFilterGroup">
               <button class="tgl-btn active" onclick="setAutorFilter('Todos',this)">Todos</button>
@@ -3663,6 +3677,7 @@ tr:hover td { background: #fafbfc; }
             <h4>Filtros y búsqueda</h4>
             <p>La barra superior te permite buscar por texto y filtrar por tipo (Ingresos / Gastos), por rubro y por integrante (<strong>Todos</strong> o <strong>Solo yo</strong>). Los filtros se combinan entre sí.</p>
             <p>Buscan en <strong>todos</strong> los movimientos del mes por igual, también en los que están adentro de un resumen de tarjeta cerrado. No hace falta abrir nada para encontrar algo.</p>
+            <p><strong>Ordenar.</strong> Tocá la cabecera <strong>Detalle</strong>, <strong>Importe $</strong> o <strong>Rubro</strong>: el primer toque ordena, el segundo invierte y el tercero vuelve al orden de siempre. Se ordena adentro de cada resumen de tarjeta y, aparte, entre los movimientos sueltos; los resúmenes no se mezclan. Ordenar por detalle junta todo lo de un mismo comercio (por ejemplo, las dos de Netflix), y combinado con el filtro de rubro sirve para revisar rubros de una pasada. En el celular se elige en «Orden». Norte se acuerda del orden que dejaste.</p>
           </div>
           <div class="ayuda-bloque">
             <h4>💳 Los resúmenes de tarjeta, agrupados</h4>
@@ -10590,6 +10605,62 @@ function renderDeudaCuotas() {
   el.innerHTML = h;
 }
 
+
+/* ── Orden de Transacciones (v005.51.000) ──────────────────────
+   Se ordena DENTRO de cada bloque de resumen y, aparte, entre los
+   movimientos sueltos: los bloques no se mueven ni se mezclan. Tocar la
+   cabecera: primer toque ordena, segundo invierte, tercero vuelve al orden de
+   siempre (resumen: el del banco; sueltos: lo más nuevo arriba). En el
+   celular no hay cabeceras: lo mismo se elige en un selector. Es solo una
+   forma de mostrar: totales, saldo y selección no cambian. */
+var TX_ORDEN_KEY = 'norte_txOrden';
+var txOrden = (function () { try { var o = JSON.parse(localStorage.getItem(TX_ORDEN_KEY) || 'null'); if (o && o.campo) return o; } catch (e) {} return { campo: '', dir: 1 }; })();
+function txNorm(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim(); }
+function txOrdenGuardar() { try { localStorage.setItem(TX_ORDEN_KEY, JSON.stringify(txOrden)); } catch (e) {} }
+function txCmpOrden(defecto) {
+  if (!txOrden.campo) return defecto;
+  var c = txOrden.campo, d = txOrden.dir;
+  return function (a, b) {
+    var r;
+    if (c === 'detalle') r = txNorm(txDetalleLimpio(a)).localeCompare(txNorm(txDetalleLimpio(b)));
+    else if (c === 'rubro') r = ((a.rubro ? 1 : 0) - (b.rubro ? 1 : 0)) || txNorm(a.rubro).localeCompare(txNorm(b.rubro));
+    else {
+      // Importe: primero los de pesos, después los que son solo en dólares
+      var ua = !(Number(a.impPesos) || 0) && (Number(a.impUSD) || 0) ? 1 : 0, ub = !(Number(b.impPesos) || 0) && (Number(b.impUSD) || 0) ? 1 : 0;
+      if (ua !== ub) return ua - ub;
+      r = ua ? (Number(a.impUSD) || 0) - (Number(b.impUSD) || 0) : (Number(a.impPesos) || 0) - (Number(b.impPesos) || 0);
+    }
+    return r * d || defecto(a, b);
+  };
+}
+function txOrdenar(campo) {
+  var inicial = campo === 'importe' ? -1 : 1;
+  if (txOrden.campo !== campo) txOrden = { campo: campo, dir: inicial };
+  else if (txOrden.dir === inicial) txOrden.dir = -inicial;
+  else txOrden = { campo: '', dir: 1 };
+  txOrdenGuardar(); renderTx();
+}
+function txSetOrden(v) {
+  var p = String(v || '').split('|');
+  txOrden = p[0] ? { campo: p[0], dir: Number(p[1]) || 1 } : { campo: '', dir: 1 };
+  txOrdenGuardar(); renderTx();
+}
+function txCabecerasOrden() {
+  var mapa = { 'Detalle': 'detalle', 'Rubro': 'rubro', 'Importe $': 'importe' };
+  var nombres = { detalle: 'detalle', rubro: 'rubro', importe: 'importe' };
+  document.querySelectorAll('#page-transacciones thead th').forEach(function (th) {
+    var base = th.dataset.base || th.textContent.trim();
+    var k = mapa[base]; if (!k) return;
+    th.dataset.base = base;
+    th.classList.add('tx-th-ord');
+    th.onclick = function () { txOrdenar(k); };
+    th.title = 'Ordenar por ' + nombres[k] + ' (dentro de cada resumen y entre los sueltos)';
+    th.textContent = base + (txOrden.campo === k ? (txOrden.dir === 1 ? ' ▲' : ' ▼') : '');
+  });
+  var sel = document.getElementById('txOrdenSel');
+  if (sel) sel.value = txOrden.campo ? txOrden.campo + '|' + txOrden.dir : '';
+}
+
 function txArmarFilas(rows, all, filaTx) {
   var filtro = txFiltroActivo(), abiertos = txGruposAbiertos();
   var grupos = {}, sueltos = [], total = {};
@@ -10599,14 +10670,14 @@ function txArmarFilas(rows, all, filaTx) {
   window._txGrupoKeys = keys;
   var html = '';
   keys.forEach(function (k, gi) {
-    var items = grupos[k].slice().sort(txOrdenFecha);
+    var items = grupos[k].slice().sort(txCmpOrden(txOrdenFecha));
     var abierto = filtro || abiertos.has(k);
     html += txGrupoHeader(k, gi, items, total[k] || items.length, abierto, filtro);
     items.forEach(function (t) {
       html += filaTx(t).replace(/^\s*<tr/, '<tr data-g="' + gi + '" class="tx-en-grupo' + (abierto ? '' : ' tx-oculta') + '"');
     });
   });
-  sueltos.slice().sort(txOrdenFechaDesc).forEach(function (t) { html += filaTx(t); });
+  sueltos.slice().sort(txCmpOrden(txOrdenFechaDesc)).forEach(function (t) { html += filaTx(t); });
   return html;
 }
 
@@ -10675,6 +10746,7 @@ function renderTx() {
     </tr>`;
   };
   tbody.innerHTML = txArmarFilas(rows, all, filaTx);
+  txCabecerasOrden();
 
   // Sincronizar checkbox "seleccionar todo" con la selección visible
   const visibleIds = rows.map(t => t.id);
@@ -15373,7 +15445,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.50.001';
+const APP_VERSION = 'v005.51.000';
 let novEntradas = [];
 
 function novLeida(e) {
