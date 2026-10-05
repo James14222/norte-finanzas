@@ -2331,8 +2331,16 @@ tr:hover td { background: #fafbfc; }
 @media (max-width:720px) { .tc-masivo select { flex:1 1 100%; } #tcBuscar { flex-basis:100%; } }
 </style>
 <style id="txOrdenEstilos">
-#page-transacciones thead th.tx-th-ord { cursor:pointer; user-select:none; }
-#page-transacciones thead th.tx-th-ord:hover { color:var(--brand-navy); }
+/* Cabeceras que ordenan: un ícono chico ⇅ en gris claro dice que se puede;
+   la activa muestra ▲/▼ en el naranja de la marca. */
+#page-transacciones thead th.tx-th-ord, .tc-th-ord { cursor:pointer; user-select:none; color:var(--brand-navy-light); }
+#page-transacciones thead th.tx-th-ord:hover, .tc-th-ord:hover { color:var(--brand-navy); }
+/* Si la columna es angosta se recorta el texto, nunca el ícono */
+#page-transacciones thead th.tx-th-ord .th-txt, .tc-th-ord .th-txt { display:inline-block; max-width:calc(100% - 16px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:bottom; }
+#page-transacciones thead th.tx-th-ord::after, .tc-th-ord::after { content:'⇅'; display:inline-block; margin-left:5px; font-size:.95em; font-weight:400; opacity:.38; transition:opacity .15s; }
+#page-transacciones thead th.tx-th-ord:hover::after, .tc-th-ord:hover::after { opacity:.75; }
+#page-transacciones thead th.ord-asc::after, .tc-th-ord.ord-asc::after { content:'▲'; opacity:1; color:var(--primary-dark); font-size:.75em; }
+#page-transacciones thead th.ord-desc::after, .tc-th-ord.ord-desc::after { content:'▼'; opacity:1; color:var(--primary-dark); font-size:.75em; }
 .tx-orden-movil { display:none; }
 @media (max-width: 880px) { .tx-orden-movil { display:block; } }
 </style>
@@ -8845,7 +8853,9 @@ function tcHerrActualizar() {
     th.dataset.base = base;
     th.classList.add('tc-th-ord');
     th.onclick = function () { tcOrdenar(k); };
-    th.textContent = base + (tcVista.orden === k ? (tcVista.dir === 1 ? ' ▲' : ' ▼') : '');
+    th.innerHTML = '<span class="th-txt">' + esc(base) + '</span>';
+    th.classList.toggle('ord-asc', tcVista.orden === k && tcVista.dir === 1);
+    th.classList.toggle('ord-desc', tcVista.orden === k && tcVista.dir === -1);
     th.title = 'Ordenar por ' + nombres[k];
   });
   /* La columna «Quién» de la cabecera es fija, pero la celda sólo se dibuja
@@ -10655,7 +10665,9 @@ function txCabecerasOrden() {
     th.classList.add('tx-th-ord');
     th.onclick = function () { txOrdenar(k); };
     th.title = 'Ordenar por ' + nombres[k] + ' (dentro de cada resumen y entre los sueltos)';
-    th.textContent = base + (txOrden.campo === k ? (txOrden.dir === 1 ? ' ▲' : ' ▼') : '');
+    th.innerHTML = '<span class="th-txt">' + esc(base) + '</span>';
+    th.classList.toggle('ord-asc', txOrden.campo === k && txOrden.dir === 1);
+    th.classList.toggle('ord-desc', txOrden.campo === k && txOrden.dir === -1);
   });
   var sel = document.getElementById('txOrdenSel');
   if (sel) sel.value = txOrden.campo ? txOrden.campo + '|' + txOrden.dir : '';
@@ -15445,7 +15457,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.51.000';
+const APP_VERSION = 'v005.51.001';
 let novEntradas = [];
 
 function novLeida(e) {
