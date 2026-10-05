@@ -87,6 +87,15 @@
       model: "gemini-3.7-flash",
       generationConfig: { temperature: 0.3, maxOutputTokens: 1500, thinkingConfig: { thinkingBudget: 0 } }
     });
+    /* Lector de resúmenes en PDF. Antes usaba modelChat, y cuando el chat bajó
+       a 1500 tokens de respuesta (v005.47.004) un resumen de varias decenas de
+       líneas dejó de entrar: el JSON llegaba cortado y fallaba al leerlo. Un
+       modelo aparte, con lugar de sobra y respuesta en JSON, no afecta al chat.
+       Solo se cobra lo que de verdad se escribe. */
+    const modelLector = getGenerativeModel(ai, {
+      model: "gemini-3.7-flash",
+      generationConfig: { temperature: 0.1, maxOutputTokens: 16384, responseMimeType: "application/json", thinkingConfig: { thinkingBudget: 0 } }
+    });
 
         const GASTO_EXTRACT_SCHEMA = {
       type: "object",
@@ -128,6 +137,11 @@ ${resumenCalculado}`;
       return JSON.parse(result.response.text());
     };
 
+    window.nortiaLeerResumen = async function (promptCompleto) {
+      const result = await modelLector.generateContent(promptCompleto);
+      const cand = (result.response.candidates || [])[0] || {};
+      return { texto: result.response.text(), fin: cand.finishReason || '' };
+    };
     window.nortiaChatEnviar = async function (promptCompleto) {
       const result = await modelChat.generateContent(promptCompleto);
       return result.response.text();
@@ -8275,7 +8289,7 @@ async function tcpProcesarPdf(arrayBuffer) {
 
 /* Fallback con NortIA para emisores que todavia no tienen perfil */
 async function tcpFallbackIA(paginas) {
-  if (!window.nortiaChatEnviar) throw new Error('NortIA no esta disponible en este momento.');
+  if (!window.nortiaLeerResumen && !window.nortiaChatEnviar) throw new Error('NortIA no esta disponible en este momento.');
   var txt = tcpTexto(paginas).slice(0, 60000);
   var prompt = 'Sos el lector de resumenes de tarjeta de credito de Norte. Abajo esta el texto plano de un resumen argentino.\n' +
     'Devolve UNICAMENTE un JSON valido, sin explicaciones ni markdown, con esta forma exacta:\n' +
@@ -8287,10 +8301,19 @@ async function tcpFallbackIA(paginas) {
     'moneda es "ARS" o "USD". cuota vacia si la compra no es en cuotas. ' +
     'titular es la persona a la que pertenece la tarjeta o el adicional; si el resumen no lo aclara, dejalo vacio. ' +
     'monto siempre positivo, con punto decimal. NUNCA inventes movimientos: si no lo ves en el texto, no lo pongas.\n\nTEXTO DEL RESUMEN:\n' + txt;
-  var raw = await window.nortiaChatEnviar(prompt);
+  var raw, fin = '';
+  if (window.nortiaLeerResumen) { var _r = await window.nortiaLeerResumen(prompt); raw = _r.texto; fin = _r.fin; }
+  else raw = await window.nortiaChatEnviar(prompt);
   var m = String(raw).match(/\{[\s\S]*\}/);
   if (!m) throw new Error('NortIA no pudo interpretar el resumen.');
-  var j = JSON.parse(m[0]);
+  var j;
+  try { j = JSON.parse(m[0]); }
+  catch (e) {
+    console.warn('NortIA lector: JSON inválido', fin, e);
+    throw new Error(fin === 'MAX_TOKENS'
+      ? 'el resumen es más largo de lo que NortIA puede leer de una vez.'
+      : 'NortIA devolvió una lectura incompleta. Probá de nuevo en un rato.');
+  }
   var filas = (j.filas || []).filter(function (f) { return f && f.desc && Number(f.monto) > 0; }).map(function (f) {
     return { fecha: f.fecha || '', desc: String(f.desc).trim(), monto: Number(f.monto), moneda: f.moneda === 'USD' ? 'USD' : 'ARS', cuota: f.cuota || '', comprobante: '', titular: f.titular || '', tipo: f.tipo === 'impuesto' ? 'impuesto' : 'consumo' };
   });
@@ -15350,7 +15373,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.50.000';
+const APP_VERSION = 'v005.50.001';
 let novEntradas = [];
 
 function novLeida(e) {
