@@ -2344,6 +2344,36 @@ tr:hover td { background: #fafbfc; }
 .tx-orden-movil { display:none; }
 @media (max-width: 880px) { .tx-orden-movil { display:block; } }
 </style>
+<style id="rbMasivoEstilos">
+/* Rubros: borrado y carga masiva */
+.rb-herr { display:flex; gap:8px; flex-wrap:wrap; margin:-4px 0 12px; }
+.rb-herr .btn { font-size:12.5px; padding:6px 12px; }
+.rb-sel-barra { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:8px 12px; margin-bottom:10px; position:sticky; top:var(--tbh, 0px); z-index:5; }
+.rb-sel-n { font-size:13px; font-weight:700; color:#991B1B; }
+.rb-sel-acc { display:flex; gap:6px; flex-wrap:wrap; }
+.rb-sel-acc .btn { font-size:12.5px; padding:6px 12px; }
+.rb-sel-acc .btn[disabled] { opacity:.45; cursor:not-allowed; }
+.rb-fila.selec { cursor:pointer; }
+.rb-fila.selec.on { background:#FEF2F2; }
+.rb-fila.selec input { width:16px; height:16px; accent-color:#DC2626; flex-shrink:0; pointer-events:none; }
+.rb-carga-ayuda { font-size:13px; color:var(--text); line-height:1.55; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+.rb-carga-ayuda a { color:var(--brand-navy-light); font-weight:700; }
+.rb-carga-ej { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:8px 12px; margin:8px 0; font-size:12.5px; line-height:1.5; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; white-space:pre; overflow-x:auto; }
+.rb-carga-entrada { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:14px; }
+.rb-carga-archivo { cursor:pointer; font-size:13px; }
+.rb-carga-o { font-size:12.5px; color:var(--muted); }
+#rbCargaTexto { width:100%; padding:9px 11px; border:1px solid var(--border); border-radius:8px; font-size:13.5px; font-family:inherit; background:var(--card); color:var(--text); resize:vertical; }
+.rb-c-res { font-size:13px; margin:14px 0 6px; color:var(--text); }
+.rb-c-lista { max-height:220px; overflow-y:auto; border:1px solid var(--border); border-radius:10px; }
+.rb-c-fila { display:flex; align-items:center; gap:9px; padding:7px 12px; border-bottom:1px solid var(--border); font-size:13px; }
+.rb-c-fila:last-child { border-bottom:none; }
+.rb-c-fila.existe { opacity:.6; }
+.rb-c-nom { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; }
+.rb-c-tipo { font-size:11px; color:var(--muted); }
+.rb-c-mot { font-size:11px; color:var(--muted); font-style:italic; }
+.rb-c-fila.error .rb-c-mot { color:#B91C1C; font-style:normal; }
+.rb-c-ok { color:#16a34a; font-weight:800; } .rb-c-eq { color:var(--muted); font-weight:800; } .rb-c-err { color:#DC2626; font-weight:800; }
+</style>
 </head>
 <body>
 
@@ -4384,6 +4414,14 @@ tr:hover td { background: #fafbfc; }
             <p>Ningún movimiento se pierde por tocar la lista: al renombrar, los que ya tenías y sus topes de presupuesto se reetiquetan solos; al eliminar un rubro con movimientos, Norte te pregunta a cuál pasarlos. El detalle completo está en la sección <strong>Carga de movimientos</strong> de esta ayuda.</p>
           </div>
 
+          <div class="ayuda-bloque">
+            <h4>Rubros de a muchos: carga y borrado masivo</h4>
+            <p><strong>⬆ Carga masiva</strong> agrega muchos rubros de una vez. Subís un archivo de texto (.txt o .csv) o un Excel (.xlsx), o pegás la lista directamente. El formato es simple: <strong>un rubro por renglón</strong>. Si querés aclarar el tipo, lo agregás al final después de un punto y coma (en Excel, en la columna B):</p>
+            <div class="ayuda-ejemplo">Gimnasio<br>Veterinaria;Gasto<br>Alquiler cobrado;Ingreso</div>
+            <p>Los que no dicen el tipo van a la pestaña que tengas abierta. Antes de agregar nada, Norte te muestra cuáles son nuevos, cuáles ya tenías (no se duplican) y cuáles tienen algún problema, como un nombre de más de 40 letras.</p>
+            <p><strong>☑ Borrado masivo</strong> pone casillas en la lista: marcás los rubros que quieras —o «Seleccionar todos»— y los eliminás juntos. Igual que al borrar de a uno, si alguno tiene movimientos, Norte te pregunta a qué rubro pasarlos: los movimientos nunca se borran.</p>
+          </div>
+
           <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin:24px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Importación de extractos bancarios</div>
 
           <div class="ayuda-bloque" style="border-left:3px solid var(--primary)">
@@ -4612,6 +4650,11 @@ tr:hover td { background: #fafbfc; }
                onkeydown="if(event.key==='Enter'){event.preventDefault();rbAgregar();}">
         <button class="btn btn-primary" onclick="rbAgregar()">+ Agregar</button>
       </div>
+      <div class="rb-herr">
+        <button type="button" class="btn btn-secondary" onclick="rbAbrirCarga()" title="Agregar muchos rubros de una vez desde un archivo o pegando una lista">⬆ Carga masiva</button>
+        <button type="button" class="btn btn-secondary" onclick="rbModoSeleccion(!rbSel)" title="Marcar varios rubros y eliminarlos juntos">☑ Borrado masivo</button>
+      </div>
+      <div class="rb-sel-barra" id="rbSelBarra" style="display:none"></div>
       <div class="rb-lista" id="rbLista"></div>
       <div class="rb-nota" id="rbNota"></div>
     </div>
@@ -5067,7 +5110,7 @@ tr:hover td { background: #fafbfc; }
 <div class="overlay" id="rbBorrarOverlay">
   <div class="modal" style="max-width:520px">
     <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <span>Eliminar rubro</span>
+      <span id="rbBorrarTitulo">Eliminar rubro</span>
       <button onclick="rbCerrarBorrar()" aria-label="Cerrar" style="background:none;border:none;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px">×</button>
     </div>
     <div>
@@ -5085,7 +5128,7 @@ tr:hover td { background: #fafbfc; }
     </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="rbCerrarBorrar()">Cancelar</button>
-      <button class="btn btn-danger" onclick="rbConfirmarBorrar()">Eliminar rubro</button>
+      <button class="btn btn-danger" id="rbBorrarBoton" onclick="rbConfirmarBorrar()">Eliminar rubro</button>
     </div>
   </div>
 </div>
@@ -15135,17 +15178,230 @@ function renderDrillDown(gastos, rubro) {
 // datos: renombrar reetiqueta los movimientos, borrar obliga a decir adónde van.
 let rbTipo = 'Gasto';
 let rbEditando = null;      // nombre del rubro en modo edición
-let rbPorBorrar = null;     // { tipo, nombre, usos }
+let rbPorBorrar = null;     // { tipo, nombre, usos } o { tipo, nombres, usos } en el masivo
+// ── RUBROS: BORRADO MASIVO Y CARGA MASIVA (v005.52.000) ─────────────
+/* Borrado masivo: un modo de selección sobre la misma lista. Borra igual que
+   el borrado de a uno (borrarRubro): los movimientos de esos rubros no se
+   pierden, pasan al rubro que elijas o a Sin clasificar. */
+let rbSel = null;   // Set con los nombres marcados, o null si el modo está apagado
+function rbModoSeleccion(on) {
+  rbSel = on ? new Set() : null;
+  rbEditando = null;
+  renderRubrosAdmin();
+}
+function rbToggleSel(nombre) {
+  if (!rbSel) return;
+  if (rbSel.has(nombre)) rbSel.delete(nombre); else rbSel.add(nombre);
+  renderRubrosAdmin();
+}
+function rbSelTodos(todos) {
+  if (!rbSel) return;
+  rbSel = new Set(todos ? (getRubrosMaestro()[rbTipo] || []) : []);
+  renderRubrosAdmin();
+}
+function rbBarraSeleccion() {
+  const b = document.getElementById('rbSelBarra');
+  if (!b) return;
+  if (!rbSel) { b.style.display = 'none'; b.innerHTML = ''; return; }
+  const total = (getRubrosMaestro()[rbTipo] || []).length;
+  const n = rbSel.size;
+  b.style.display = '';
+  b.innerHTML =
+    '<span class="rb-sel-n">' + (n ? n + ' seleccionado' + (n === 1 ? '' : 's') : 'Tocá los rubros que querés eliminar') + '</span>' +
+    '<span class="rb-sel-acc">' +
+      (n < total ? '<button type="button" class="btn btn-secondary" onclick="rbSelTodos(true)">Seleccionar todos</button>' : '') +
+      (n ? '<button type="button" class="btn btn-secondary" onclick="rbSelTodos(false)">Ninguno</button>' : '') +
+      '<button type="button" class="btn btn-secondary" onclick="rbModoSeleccion(false)">Cancelar</button>' +
+      '<button type="button" class="btn btn-danger"' + (n ? '' : ' disabled') + ' onclick="rbPedirBorrarMasivo()">Eliminar ' + (n || '') + '</button>' +
+    '</span>';
+}
+function rbPedirBorrarMasivo() {
+  if (!rbSel || !rbSel.size) return;
+  const nombres = Array.from(rbSel);
+  const usosMap = contarPorRubro(rbTipo);
+  const usos = nombres.reduce(function (s, r) { return s + (usosMap[r] || 0); }, 0);
+  const conUso = nombres.filter(function (r) { return usosMap[r]; }).length;
+  rbPorBorrar = { tipo: rbTipo, nombres: nombres, usos: usos };
+  const texto = document.getElementById('rbBorrarTexto');
+  const wrap  = document.getElementById('rbBorrarDestinoWrap');
+  const sel   = document.getElementById('rbBorrarDestino');
+  document.getElementById('rbBorrarTitulo').textContent = 'Eliminar ' + nombres.length + ' rubro' + (nombres.length === 1 ? '' : 's');
+  document.getElementById('rbBorrarBoton').textContent = 'Eliminar ' + nombres.length + ' rubro' + (nombres.length === 1 ? '' : 's');
+  const lista = nombres.slice(0, 8).map(esc).join(', ') + (nombres.length > 8 ? ' y ' + (nombres.length - 8) + ' más' : '');
+  if (usos > 0) {
+    texto.innerHTML = 'Vas a eliminar <strong>' + lista + '</strong>.<br><br>' + conUso + ' de ellos ' +
+      (conUso === 1 ? 'tiene' : 'tienen') + ' <strong>' + usos + ' movimiento' + (usos === 1 ? '' : 's') +
+      '</strong> en total. Los movimientos no se borran: elegí a qué rubro pasarlos.';
+    const otros = (getRubrosMaestro()[rbTipo] || []).filter(function (r) { return !rbSel.has(r); });
+    sel.innerHTML = otros.map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + '</option>'; }).join('') +
+      '<option value="' + esc(RUBRO_SIN) + '">— ' + esc(RUBRO_SIN) + ' —</option>';
+    sel.value = RUBRO_SIN;
+    wrap.style.display = 'block';
+  } else {
+    texto.innerHTML = 'Vas a eliminar <strong>' + lista + '</strong>. Ninguno tiene movimientos cargados, así que no se toca ningún dato.';
+    wrap.style.display = 'none';
+  }
+  document.getElementById('rbBorrarOverlay').classList.add('show');
+}
+
+/* Carga masiva: un rubro por renglón. Opcionalmente, al final del renglón y
+   separado por ; , o tabulación, el tipo (Gasto o Ingreso). Si no está, va a
+   la pestaña abierta. La coma sola NO separa, porque hay rubros que la llevan
+   ("Servicios (luz, gas, agua)"): solo cuenta si lo que sigue es el tipo. */
+let rbCargaFilas = [];
+function rbCargaParsearTexto(txt) {
+  return String(txt || '').split(/\r?\n/).map(function (l) {
+    const m = l.match(/^(.*?)\s*[;,\t]\s*"?\s*(gastos?|ingresos?)\s*"?\s*[;,\t]*\s*$/i);
+    return m ? [m[1], m[2]] : [l.replace(/[;\t]+\s*$/, '')];
+  });
+}
+function rbCargaNormTipo(v) {
+  const s = String(v || '').trim().toLowerCase();
+  if (s.indexOf('ing') === 0) return 'Ingreso';
+  if (s.indexOf('gas') === 0) return 'Gasto';
+  return '';
+}
+function rbCargaAnalizar(filas) {
+  const maestro = getRubrosMaestro();
+  const vistos = {};
+  const out = [];
+  filas.forEach(function (f, i) {
+    let nombre = String(f[0] == null ? '' : f[0]).trim().replace(/^"(.*)"$/, '$1').replace(/\s+/g, ' ').trim();
+    if (!nombre) return;
+    if (i === 0 && /^(rubros?|nombre|categor[ií]as?)$/i.test(nombre.split(/[;,\t]/)[0].trim())) return;   // título
+    const tipo = rbCargaNormTipo(f[1]) || rbTipo;
+    const clave = tipo + '|' + nombre.toLowerCase();
+    let estado = 'nuevo', motivo = '';
+    if (nombre === RUBRO_SIN || nombre === 'Personalizado...') { estado = 'error'; motivo = 'nombre reservado por Norte'; }
+    else if (nombre.length > 40) { estado = 'error'; motivo = 'tiene más de 40 letras'; }
+    else if (maestro[tipo].some(function (r) { return r.toLowerCase() === nombre.toLowerCase(); })) { estado = 'existe'; motivo = 'ya lo tenés'; }
+    else if (vistos[clave]) { estado = 'existe'; motivo = 'repetido en el archivo'; }
+    vistos[clave] = true;
+    out.push({ nombre: nombre, tipo: tipo, estado: estado, motivo: motivo });
+  });
+  return out;
+}
+function rbAbrirCarga() {
+  let ov = document.getElementById('rbCargaOverlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.className = 'overlay'; ov.id = 'rbCargaOverlay';
+    ov.innerHTML =
+      '<div class="modal" style="max-width:600px">' +
+        '<div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
+          '<span>Carga masiva de rubros</span>' +
+          '<button onclick="rbCerrarCarga()" aria-label="Cerrar" style="background:none;border:none;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px">×</button>' +
+        '</div>' +
+        '<div class="rb-carga-ayuda">' +
+          '<b>Formato:</b> un rubro por renglón, en un archivo de texto (.txt o .csv) o en un Excel (.xlsx, primera hoja, columna A).' +
+          '<br>Si querés indicar el tipo, agregalo al final del renglón después de <b>;</b> (en Excel, en la columna B): <b>Gasto</b> o <b>Ingreso</b>. ' +
+          'Si no lo ponés, el rubro va a la pestaña que tenés abierta (<span id="rbCargaTab"></span>).' +
+          '<pre class="rb-carga-ej">Gimnasio\nVeterinaria;Gasto\nAlquiler cobrado;Ingreso</pre>' +
+          'Una primera fila de título («Rubro», «Tipo») se ignora. Lo que ya tenés no se duplica y nada se agrega hasta que confirmes. ' +
+          '<a href="#" onclick="rbCargaEjemplo();return false">Bajar un ejemplo</a>' +
+        '</div>' +
+        '<div class="rb-carga-entrada">' +
+          '<label class="btn btn-secondary rb-carga-archivo">📄 Elegir archivo<input type="file" accept=".txt,.csv,.xlsx,.xls" onchange="rbCargaArchivo(this)" style="display:none"></label>' +
+          '<span class="rb-carga-o">o pegá la lista acá:</span>' +
+          '<textarea id="rbCargaTexto" rows="5" placeholder="Un rubro por renglón" oninput="rbCargaDesdeTexto()"></textarea>' +
+        '</div>' +
+        '<div id="rbCargaPrevia"></div>' +
+        '<div class="modal-actions">' +
+          '<button class="btn btn-secondary" onclick="rbCerrarCarga()">Cancelar</button>' +
+          '<button class="btn btn-primary" id="rbCargaBoton" onclick="rbCargaConfirmar()" disabled>Agregar</button>' +
+        '</div>' +
+      '</div>';
+    ov.addEventListener('click', function (e) { if (e.target === ov) rbCerrarCarga(); });
+    document.body.appendChild(ov);
+  }
+  rbCargaFilas = [];
+  document.getElementById('rbCargaTexto').value = '';
+  document.getElementById('rbCargaTab').textContent = rbTipo === 'Gasto' ? 'Gastos' : 'Ingresos';
+  rbCargaPintar();
+  ov.classList.add('show');
+}
+function rbCerrarCarga() { const ov = document.getElementById('rbCargaOverlay'); if (ov) ov.classList.remove('show'); }
+function rbCargaDesdeTexto() {
+  rbCargaFilas = rbCargaAnalizar(rbCargaParsearTexto(document.getElementById('rbCargaTexto').value));
+  rbCargaPintar();
+}
+function rbCargaArchivo(input) {
+  const f = input.files && input.files[0];
+  input.value = '';
+  if (!f) return;
+  const esExcel = /\.xlsx?$/i.test(f.name);
+  const lector = new FileReader();
+  lector.onload = function (e) {
+    try {
+      let filas;
+      if (esExcel) {
+        if (typeof XLSX === 'undefined') { alert('No se pudo cargar el lector de Excel. Probá de nuevo o usá un .txt.'); return; }
+        const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+        filas = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '', blankrows: false });
+        document.getElementById('rbCargaTexto').value = filas.map(function (r) { return [r[0], r[1]].filter(function (x) { return String(x).trim(); }).join(';'); }).join('\n');
+      } else {
+        const txt = String(e.target.result || '').replace(/^﻿/, '');
+        document.getElementById('rbCargaTexto').value = txt;
+        filas = rbCargaParsearTexto(txt);
+      }
+      rbCargaFilas = rbCargaAnalizar(filas);
+      rbCargaPintar();
+    } catch (err) { alert('No pudimos leer el archivo: ' + err.message); }
+  };
+  if (esExcel) lector.readAsArrayBuffer(f); else lector.readAsText(f, 'utf-8');
+}
+function rbCargaPintar() {
+  const el = document.getElementById('rbCargaPrevia'), btn = document.getElementById('rbCargaBoton');
+  if (!el) return;
+  const nuevos = rbCargaFilas.filter(function (x) { return x.estado === 'nuevo'; });
+  const existen = rbCargaFilas.filter(function (x) { return x.estado === 'existe'; });
+  const malos = rbCargaFilas.filter(function (x) { return x.estado === 'error'; });
+  btn.disabled = !nuevos.length;
+  btn.textContent = nuevos.length ? 'Agregar ' + nuevos.length + ' rubro' + (nuevos.length === 1 ? '' : 's') : 'Agregar';
+  if (!rbCargaFilas.length) { el.innerHTML = ''; return; }
+  const fila = function (x) {
+    const ic = x.estado === 'nuevo' ? '<span class="rb-c-ok">＋</span>' : x.estado === 'existe' ? '<span class="rb-c-eq">=</span>' : '<span class="rb-c-err">✕</span>';
+    return '<div class="rb-c-fila ' + x.estado + '">' + ic + '<span class="rb-c-nom">' + esc(x.nombre) + '</span>' +
+      '<span class="rb-c-tipo">' + x.tipo + '</span>' + (x.motivo ? '<span class="rb-c-mot">' + x.motivo + '</span>' : '') + '</div>';
+  };
+  el.innerHTML = '<div class="rb-c-res">' +
+      '<b>' + nuevos.length + '</b> nuevo' + (nuevos.length === 1 ? '' : 's') +
+      (existen.length ? ' · ' + existen.length + ' ya ' + (existen.length === 1 ? 'existe' : 'existen') + ' (se saltean)' : '') +
+      (malos.length ? ' · <span style="color:#B91C1C">' + malos.length + ' con problemas</span>' : '') + '</div>' +
+    '<div class="rb-c-lista">' + nuevos.concat(malos, existen).map(fila).join('') + '</div>';
+}
+function rbCargaConfirmar() {
+  const nuevos = rbCargaFilas.filter(function (x) { return x.estado === 'nuevo'; });
+  let n = 0;
+  nuevos.forEach(function (x) { if (persistCustomRubro(x.tipo, x.nombre)) n++; });
+  rbCerrarCarga();
+  renderRubrosAdmin();
+  rbRefrescarPantallas();
+  const g = nuevos.filter(function (x) { return x.tipo === 'Gasto'; }).length, i = nuevos.length - g;
+  alert('Listo: se agregaron ' + n + ' rubro' + (n === 1 ? '' : 's') +
+        (g && i ? ' (' + g + ' de gasto y ' + i + ' de ingreso)' : '') + '.');
+}
+function rbCargaEjemplo() {
+  const txt = 'Rubro;Tipo\nGimnasio;Gasto\nVeterinaria;Gasto\nRegalos;Gasto\nAlquiler cobrado;Ingreso\n';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿' + txt], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'rubros-ejemplo.csv';
+  document.body.appendChild(a); a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+
 
 window.renderRubrosAdminAlEntrar = function () {
   if (!document.getElementById('rbLista')) return;
   rbEditando = null;
+  rbSel = null;
   renderRubrosAdmin();
 };
 
 function rbSetTipo(t) {
   rbTipo = (t === 'Ingreso') ? 'Ingreso' : 'Gasto';
   rbEditando = null;
+  rbSel = null;
   const g = document.getElementById('rbTabGasto');
   const i = document.getElementById('rbTabIngreso');
   if (g) g.classList.toggle('on', rbTipo === 'Gasto');
@@ -15173,6 +15429,13 @@ function renderRubrosAdmin() {
   } else {
     let html = maestro.map(function (r) {
       const n = usos[r] || 0;
+      if (rbSel) {
+        const on = rbSel.has(r);
+        return '<div class="rb-fila selec' + (on ? ' on' : '') + '" onclick="rbToggleSel(' + JSON.stringify(r).replace(/"/g, '&quot;') + ')">' +
+          '<input type="checkbox"' + (on ? ' checked' : '') + ' tabindex="-1" aria-hidden="true">' +
+          '<span class="rb-nom" title="' + esc(r) + '">' + esc(r) + '</span>' +
+          '<span class="rb-uso' + (n ? '' : ' cero') + '">' + (n ? n + ' movimiento' + (n === 1 ? '' : 's') : 'sin uso') + '</span></div>';
+      }
       if (rbEditando === r) {
         return '<div class="rb-fila">' +
           '<input class="rb-edit" id="rbEditInput" value="' + esc(r) + '" maxlength="40" ' +
@@ -15203,6 +15466,7 @@ function renderRubrosAdmin() {
     }
     cont.innerHTML = html;
   }
+  rbBarraSeleccion();
 
   const nota = document.getElementById('rbNota');
   if (nota) {
@@ -15261,6 +15525,8 @@ function rbGuardarNombre() {
 function rbPedirBorrar(nombre) {
   const usos = contarPorRubro(rbTipo)[nombre] || 0;
   rbPorBorrar = { tipo: rbTipo, nombre: nombre, usos: usos };
+  document.getElementById('rbBorrarTitulo').textContent = 'Eliminar rubro';
+  document.getElementById('rbBorrarBoton').textContent = 'Eliminar rubro';
   const texto = document.getElementById('rbBorrarTexto');
   const wrap  = document.getElementById('rbBorrarDestinoWrap');
   const sel   = document.getElementById('rbBorrarDestino');
@@ -15292,7 +15558,12 @@ function rbConfirmarBorrar() {
   const destino = rbPorBorrar.usos > 0
     ? (document.getElementById('rbBorrarDestino').value || RUBRO_SIN)
     : RUBRO_SIN;
-  borrarRubro(rbPorBorrar.tipo, rbPorBorrar.nombre, destino);
+  if (rbPorBorrar.nombres) {
+    rbPorBorrar.nombres.forEach(function (n) { borrarRubro(rbPorBorrar.tipo, n, destino); });
+    rbSel = null;
+  } else {
+    borrarRubro(rbPorBorrar.tipo, rbPorBorrar.nombre, destino);
+  }
   rbCerrarBorrar();
   renderRubrosAdmin();
   rbRefrescarPantallas();
@@ -15457,7 +15728,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.51.001';
+const APP_VERSION = 'v005.52.000';
 let novEntradas = [];
 
 function novLeida(e) {
