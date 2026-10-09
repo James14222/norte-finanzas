@@ -981,6 +981,35 @@ tr:hover td { background: #fafbfc; }
 }
 .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: center; justify-content: center; }
 .overlay.show { display: flex; }
+/* ── Dividir (v005.53) ── */
+.dv-linea { font-size: 11.5px; font-weight: 600; color: #7c3aed; margin-top: 3px; cursor: pointer; line-height: 1.35; }
+.dv-linea:hover { text-decoration: underline; }
+.dv-hered { font-weight: 500; color: var(--muted); }
+.dv-tag { font-size: 10.5px; font-weight: 700; color: #7c3aed; background: rgba(124,58,237,0.1); border-radius: 10px; padding: 1px 6px; margin-left: 4px; white-space: nowrap; }
+.dv-modal-res { display: block; font-size: 11.5px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+#dvOverlay { z-index: 210; }
+.dv-modal { max-width: 460px; }
+.dv-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
+.dv-principal, .dv-parte { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
+.dv-principal { display: flex; justify-content: space-between; gap: 10px; background: var(--bg); }
+.dv-principal small, .dv-der small { display: block; font-size: 11.5px; color: var(--muted); font-weight: 400; margin-top: 2px; }
+.dv-der { text-align: right; white-space: nowrap; }
+.dv-fila1 { display: flex; gap: 8px; align-items: center; }
+.dv-fila1 select { flex: 1; min-width: 0; padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 13.5px; background: var(--card); color: var(--text); }
+.dv-quitar { border: none; background: transparent; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px 6px; }
+.dv-fila2 { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.dv-num { width: 120px; padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; text-align: right; }
+.dv-modo { width: fit-content; }
+.dv-eq { font-size: 12.5px; color: var(--muted); margin-left: auto; white-space: nowrap; }
+.dv-nota { width: 100%; margin-top: 8px; padding: 7px 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 12.5px; box-sizing: border-box; }
+.dv-agregar { border: 1px dashed var(--border); background: transparent; color: var(--primary-dark); font-weight: 700; border-radius: 10px; width: 100%; padding: 10px; cursor: pointer; font-size: 13.5px; }
+.dv-ayuda { font-size: 11.5px; color: var(--muted); margin: 10px 0 4px; line-height: 1.45; }
+.dv-cuotas { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; margin-top: 8px; cursor: pointer; }
+.dv-cuotas input { margin-top: 2px; }
+.dv-error { font-size: 12px; color: var(--danger); min-height: 16px; margin-top: 8px; line-height: 1.4; }
+@media (max-width: 640px) { .dv-num { width: 96px; } .dv-modal { padding: 20px 16px; } }
+@media (max-width: 480px) { #page-transacciones tbody tr td:nth-child(2):has(.dv-linea) { -webkit-line-clamp: 4 !important; } }
+
 .modal { background: var(--card); border-radius: 16px; padding: 26px 28px; width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; }
 .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 18px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -3793,6 +3822,19 @@ tr:hover td { background: #fafbfc; }
             </div>
           </div>
           <div class="ayuda-bloque">
+            <h4>✂️ Dividir una línea</h4>
+            <p>A veces una sola línea del resumen son dos gastos distintos: en la misma compra llevaste algo para vos y un regalo, o pagaste el almuerzo de todos. Con <strong>Dividir</strong> repartís esa línea sin tocar lo que dice el banco.</p>
+            <div class="ayuda-ejemplo">
+              Abrí el movimiento con ✏️ y tocá <strong>✂️ Dividir</strong>, debajo del rubro.<br>
+              • <strong>Compra mixta:</strong> una cuota de $200 → Indumentaria $100 · Regalos $100.<br>
+              • <strong>Pagaste por otros:</strong> un almuerzo de $1.000 → tu parte $200 · <strong>Me lo devuelven</strong> $800.<br>
+              Cada parte se carga en pesos o en porcentaje. El rubro de la línea se queda con el resto.
+            </div>
+            <p>La línea sigue mostrando el importe completo, porque es lo que vas a pagar: el saldo pendiente, el pago de la tarjeta y Deuda en cuotas no cambian. Lo que cambia es en qué se fue la plata: Mi Rumbo, los rubros, el presupuesto, los reportes y NortIA ven cada parte en su rubro, y lo que te devuelven no cuenta como gasto tuyo.</p>
+            <p><strong>Cuotas:</strong> si dividís una cuota, Norte te ofrece aplicar el mismo reparto a las otras cuotas ya cargadas de esa compra, y cuando importes el resumen del mes que viene la cuota nueva llega dividida igual. Si en el resumen hay dos compras idénticas y Norte no puede saber cuál es cuál, no divide ninguna: la dividís vos.</p>
+            <div class="ayuda-tip"><strong>Si te devuelven la plata por transferencia, no la cargues como ingreso.</strong> Esa parte ya quedó descontada de tu gasto al dividir: si además la cargás como ingreso, se cuenta dos veces y tu mes parece mejor de lo que fue. Si la transferencia entra en un resumen que importás (por ejemplo, el de Mercado Pago), destildala en la vista previa.</div>
+          </div>
+          <div class="ayuda-bloque">
             <h4>Vista en computadora y en celular</h4>
             <div class="ayuda-ejemplo">
               <strong>En la computadora:</strong> la cabecera de la tabla queda fija al hacer scroll, así siempre sabés qué columna estás mirando.<br>
@@ -4882,6 +4924,10 @@ tr:hover td { background: #fafbfc; }
         <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.45">
           ¿Querés ordenar toda tu lista? Se administra en <strong>Administración → Rubros</strong>.
         </div>
+        <div id="dvModalWrap" style="display:none;margin-top:10px">
+          <button type="button" class="btn btn-secondary dv-btn" onclick="dvAbrirDesdeModal()">✂️ Dividir</button>
+          <span id="dvModalResumen" class="dv-modal-res"></span>
+        </div>
       </div>
 
       <div class="form-row">
@@ -5221,6 +5267,26 @@ tr:hover td { background: #fafbfc; }
       <div style="display:flex;justify-content:flex-end;gap:8px">
         <button class="btn btn-secondary" onclick="closePagarTC()">Cerrar</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="dvOverlay">
+  <div class="modal dv-modal">
+    <div class="modal-title" style="margin-bottom:4px">✂️ Dividir</div>
+    <div class="dv-sub" id="dvSub"></div>
+    <div class="dv-principal" id="dvPrincipal"></div>
+    <div id="dvPartes"></div>
+    <button type="button" class="dv-agregar" onclick="dvAgregarFila()">+ Agregar parte</button>
+    <div class="dv-ayuda">Cada parte va a su rubro, o a «Me lo devuelven» si pagaste por otros. El importe de la línea no cambia: es lo que dice el banco.</div>
+    <label class="dv-cuotas" id="dvCuotasWrap" style="display:none"><input type="checkbox" id="dvCuotasChk" checked> <span id="dvCuotasTxt"></span></label>
+    <div class="dv-error" id="dvError"></div>
+    <div class="modal-actions" style="justify-content:space-between">
+      <button type="button" class="btn btn-secondary" id="dvQuitarTodo" onclick="dvGuardar(true)">Quitar división</button>
+      <span style="display:flex;gap:10px;margin-left:auto">
+        <button type="button" class="btn btn-secondary" onclick="dvCerrar()">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="dvGuardar(false)">Guardar</button>
+      </span>
     </div>
   </div>
 </div>
@@ -6357,6 +6423,334 @@ const getData  = () => {
     return r;
   });
 };
+/* ══════════════════════════════════════════════════════════════════════
+   DIVIDIR — una línea repartida entre rubros (v005.53)
+   ══════════════════════════════════════════════════════════════════════
+   Un gasto puede llevar `partes`: lo que se separa de su rubro, en % del total.
+     [{ rubro:'Regalos', pct:50, nota:'' }]   compra mixta
+     [{ devuelven:true, pct:80, nota:'' }]     pagaste por otros
+   El `rubro` de la línea se queda con el resto, y los importes de la línea NO
+   cambian nunca: son lo que dice el banco.
+
+   Dos lecturas de los mismos datos:
+   - getData()          lo del banco: Transacciones, saldo pendiente, Tarjetas,
+                        Deuda en cuotas, pagar la tarjeta, Puntos, Progreso.
+   - getDataAnalisis()  en qué se fue la plata: Mi Rumbo, rubros, presupuesto,
+                        reportes, NortIA. Cada línea dividida se abre en filas
+                        virtuales, una por parte; "me lo devuelven" no genera fila.
+   NUNCA expandir adentro de getData(): unas 50 funciones leen, agregan y vuelven
+   a guardar con saveData(), y las filas virtuales quedarían guardadas como
+   movimientos de verdad. Las filas virtuales llevan `_parte:true` y no tienen
+   `partes`, así que expandir dos veces no las vuelve a partir. */
+function dvR2(v) { return Math.round((Number(v) || 0) * 100) / 100; }
+function dvPartesValidas(t) {
+  if (!t || t.tipo !== 'Gasto' || !Array.isArray(t.partes) || !t.partes.length) return null;
+  if ((Number(t.impPesos) || 0) < 0 || (Number(t.impUSD) || 0) < 0) return null;
+  var ps = t.partes.filter(function (p) {
+    return p && Number(p.pct) > 0 && (p.devuelven || String(p.rubro || '').trim());
+  });
+  var tot = ps.reduce(function (s, p) { return s + Number(p.pct); }, 0);
+  if (!ps.length || tot >= 100 - 1e-9) return null;   // el rubro principal nunca queda en cero
+  return ps;
+}
+/* El reparto en plata. Cada parte se redondea a centavos y el rubro principal
+   absorbe la diferencia: la suma da siempre el total exacto de la línea. */
+function dvReparto(t) {
+  var ps = dvPartesValidas(t);
+  if (!ps) return null;
+  var P = Number(t.impPesos) || 0, U = Number(t.impUSD) || 0;
+  var out = [], sp = 0, su = 0;
+  ps.forEach(function (p) {
+    var pp = dvR2(P * Number(p.pct) / 100), pu = dvR2(U * Number(p.pct) / 100);
+    sp += pp; su += pu;
+    out.push({ rubro: p.devuelven ? '' : String(p.rubro).trim(), devuelven: !!p.devuelven,
+               pct: Number(p.pct), nota: p.nota || '', pesos: pp, usd: pu });
+  });
+  out.unshift({ rubro: t.rubro || '', principal: true, devuelven: false,
+                pct: dvR2(100 - ps.reduce(function (s, p) { return s + Number(p.pct); }, 0)),
+                pesos: dvR2(P - sp), usd: dvR2(U - su), nota: '' });
+  return out;
+}
+function dvEsDividida(t) { return !!dvPartesValidas(t); }
+function expandirPartes(rows) {
+  if (!Array.isArray(rows)) return rows;
+  var hay = false;
+  for (var i = 0; i < rows.length; i++) { if (rows[i] && rows[i].partes) { hay = true; break; } }
+  if (!hay) return rows;
+  var out = [];
+  rows.forEach(function (t) {
+    var rep = dvReparto(t);
+    if (!rep) { out.push(t); return; }
+    rep.forEach(function (p, k) {
+      var f;
+      if (p.principal) {
+        // La fila principal conserva pagado/saldo: el saldo pendiente se suma
+        // igual sobre cualquiera de las dos lecturas.
+        f = Object.assign({}, t, { impPesos: p.pesos, impUSD: p.usd, _dividida: true });
+      } else if (p.devuelven) {
+        return;                       // no es gasto tuyo: no genera fila
+      } else {
+        f = Object.assign({}, t, { id: t.id + '~p' + k, rubro: p.rubro, impPesos: p.pesos, impUSD: p.usd,
+                                   pagado: 0, saldo: 0, _parte: true, _de: t.id });
+      }
+      delete f.partes; delete f.partesDe;
+      out.push(f);
+    });
+  });
+  return out;
+}
+const getDataAnalisis = () => expandirPartes(getData());
+/* Cuenta movimientos de verdad (las filas virtuales no son movimientos). */
+function dvSoloReales(rows) { return (rows || []).filter(function (t) { return !(t && t._parte); }); }
+/* Texto corto del reparto, para Transacciones y los desgloses. */
+function dvTextoReparto(t) {
+  var rep = dvReparto(t);
+  if (!rep) return '';
+  var usd = !(Number(t.impPesos) || 0) && !!(Number(t.impUSD) || 0);
+  var m = function (p) { return usd ? fmtU(p.usd) : fmtP(p.pesos); };
+  var hayDev = rep.some(function (p) { return p.devuelven; });
+  var trozos = rep.map(function (p) {
+    if (p.devuelven) return 'me lo devuelven ' + m(p);
+    if (p.principal && hayDev && rep.length === 2) return 'tu parte ' + m(p);
+    return p.rubro + ' ' + m(p);
+  });
+  return (hayDev && rep.length === 2 ? '' : 'dividida: ') + trozos.join(' · ');
+}
+/* Rubros que usa una línea, contando sus partes. Para no borrar de la lista un
+   rubro que sólo vive adentro de una división. */
+function dvRubrosDe(t) {
+  var r = [String((t && t.rubro) || '').trim()];
+  var ps = (t && Array.isArray(t.partes)) ? t.partes : [];
+  ps.forEach(function (p) { if (p && !p.devuelven && p.rubro) r.push(String(p.rubro).trim()); });
+  return r;
+}
+/* La misma compra en cuotas, en otro mes: misma tarjeta, misma descripción
+   limpia, mismo total de cuotas, y el número de cuota corrido exactamente lo
+   mismo que los meses. Son las piezas que ya usa Deuda en cuotas. */
+function dvClaveCompra(t) {
+  if (!t || !isTCOrigen(t)) return null;
+  var c = txCuotaDe(t);
+  if (!c || c.t < 2) return null;
+  return dcNorm(getBancoLabel(t) || '') + '|' + dcNorm(txDetalleLimpio(t)) + '|' + c.t;
+}
+function dvMismaCompra(a, b) {
+  var ka = dvClaveCompra(a), kb = dvClaveCompra(b);
+  if (!ka || ka !== kb || !a.mes || !b.mes) return false;
+  var ca = txCuotaDe(a), cb = txCuotaDe(b);
+  return (cb.a - ca.a) === dcMesDif(a.mes, b.mes);
+}
+/* Al importar un resumen: si la cuota nueva es de una compra ya dividida, copia
+   el reparto de la cuota anterior más cercana. Si hay dudas (dos compras
+   iguales en la tarjeta), no divide: es mejor eso que repartir mal. */
+function dvHeredarPartes(nuevos, existentes) {
+  var heredadas = 0;
+  var claves = {};
+  nuevos.forEach(function (n) { var k = dvClaveCompra(n); if (k) claves[k + '#' + n.mes] = (claves[k + '#' + n.mes] || 0) + 1; });
+  nuevos.forEach(function (n) {
+    var k = dvClaveCompra(n);
+    if (!k || n.partes || claves[k + '#' + n.mes] > 1) return;
+    var cn = txCuotaDe(n);
+    var cands = existentes.filter(function (e) {
+      return e && e.id !== n.id && e.mes < n.mes && dvPartesValidas(e) && dvMismaCompra(e, n);
+    });
+    if (!cands.length) return;
+    var mejor = Math.max.apply(null, cands.map(function (e) { return txCuotaDe(e).a; }));
+    var top = cands.filter(function (e) { return txCuotaDe(e).a === mejor; });
+    if (top.length !== 1 || mejor >= cn.a) return;
+    n.partes = JSON.parse(JSON.stringify(top[0].partes));
+    n.partesDe = top[0].id;
+    heredadas++;
+  });
+  return heredadas;
+}
+// ── DIVIDIR: la ventana ─────────────────────────────────────────
+// Se guarda directo, aparte del formulario de edición: el reparto es un
+// porcentaje, así que no depende de que el importe del formulario esté guardado.
+var dvId = null, dvFilas = [];
+function dvFirma(rows) {
+  var s = '', h = 5381;
+  (rows || []).forEach(function (t) { if (t && t.partes) s += t.id + JSON.stringify(t.partes); });
+  for (var i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+  return h.toString(36);
+}
+function dvBase(t) {
+  var P = Number(t.impPesos) || 0, U = Number(t.impUSD) || 0;
+  return P > 0 ? { v: P, usd: false } : { v: U, usd: true };
+}
+function dvFmt(v, usd) { return usd ? fmtU(v) : fmtP(v); }
+function dvOtrasCuotas(t) {
+  if (!dvClaveCompra(t)) return [];
+  return getData().filter(function (x) { return x && x.id !== t.id && dvMismaCompra(t, x); });
+}
+function dvAbrir(id) {
+  var t = getData().find(function (x) { return x.id === id; });
+  if (!t) return;
+  if (t.tipo !== 'Gasto' || (Number(t.impPesos) || 0) < 0 || (Number(t.impUSD) || 0) < 0 || !(dvBase(t).v > 0)) {
+    alert('Sólo se puede dividir un gasto con importe mayor a cero.');
+    return;
+  }
+  dvId = id;
+  var base = dvBase(t);
+  dvFilas = (Array.isArray(t.partes) ? t.partes : []).filter(Boolean).map(function (p) {
+    return { rubro: p.devuelven ? '__dev__' : (p.rubro || ''), modo: '$', nota: p.nota || '',
+             valor: dvR2(base.v * Number(p.pct) / 100), pct: Number(p.pct) };
+  });
+  if (!dvFilas.length) dvFilas.push({ rubro: '', modo: '$', nota: '', valor: 0, pct: 0 });
+  var ov = document.getElementById('dvOverlay');
+  ov.classList.add('show');
+  dvPintar();
+}
+function dvAbrirDesdeModal() {
+  var id = (document.getElementById('txId') || {}).value;
+  if (!id) return;
+  dvAbrir(id);
+}
+function dvCerrar() {
+  document.getElementById('dvOverlay').classList.remove('show');
+  dvId = null; dvFilas = [];
+}
+function dvPctDe(f, base) {
+  var v = Number(f.valor) || 0;
+  return f.modo === '%' ? v : (base.v > 0 ? v / base.v * 100 : 0);
+}
+function dvRubrosOpciones(sel) {
+  var lista = getAllRubros('Gasto').filter(function (r) { return r && r !== 'Personalizado...'; });
+  return '<option value="">Elegí un rubro</option>' +
+    '<option value="__dev__"' + (sel === '__dev__' ? ' selected' : '') + '>↩ Me lo devuelven (no es gasto tuyo)</option>' +
+    lista.map(function (r) { return '<option value="' + esc(r) + '"' + (r === sel ? ' selected' : '') + '>' + esc(r) + '</option>'; }).join('');
+}
+function dvPintar() {
+  var t = getData().find(function (x) { return x.id === dvId; });
+  if (!t) return dvCerrar();
+  var base = dvBase(t), c = txCuotaDe(t);
+  document.getElementById('dvSub').textContent =
+    txDetalleLimpio(t) + (c ? ' · cuota ' + c.a + ' de ' + c.t : '') + ' · total ' + dvFmt(base.v, base.usd);
+  var suma = 0;
+  var filas = dvFilas.map(function (f, i) {
+    var pct = dvPctDe(f, base); suma += pct;
+    var monto = f.modo === '%' ? dvR2(base.v * pct / 100) : Number(f.valor) || 0;
+    return '<div class="dv-parte">' +
+      '<div class="dv-fila1"><select onchange="dvSet(' + i + ',\'rubro\',this.value)">' + dvRubrosOpciones(f.rubro) + '</select>' +
+      '<button type="button" class="dv-quitar" onclick="dvQuitarFila(' + i + ')" title="Quitar esta parte">✕</button></div>' +
+      '<div class="dv-fila2"><input class="dv-num" type="text" inputmode="decimal" value="' + (f.valor ? String(f.valor).replace('.', ',') : '') + '" placeholder="0" oninput="dvSet(' + i + ',\'valor\',this.value)">' +
+      '<span class="tgl-group dv-modo"><button type="button" class="tgl-btn' + (f.modo === '$' ? ' active' : '') + '" onclick="dvSet(' + i + ',\'modo\',\'$\')">' + (base.usd ? 'USD' : '$') + '</button>' +
+      '<button type="button" class="tgl-btn' + (f.modo === '%' ? ' active' : '') + '" onclick="dvSet(' + i + ',\'modo\',\'%\')">%</button></span>' +
+      '<span class="dv-eq">' + (f.modo === '%' ? dvFmt(monto, base.usd) : (Math.round(pct * 10) / 10).toLocaleString('es-AR') + '%') + '</span></div>' +
+      '<input class="dv-nota" type="text" maxlength="60" placeholder="Nota (opcional): para quién, con quién…" value="' + esc(f.nota || '') + '" oninput="dvSet(' + i + ',\'nota\',this.value)">' +
+      '</div>';
+  }).join('');
+  document.getElementById('dvPartes').innerHTML = filas;
+  var resto = 100 - suma;
+  var restoMonto = dvR2(base.v * Math.max(0, resto) / 100);
+  document.getElementById('dvPrincipal').innerHTML =
+    '<div><b>' + esc(t.rubro || 'Sin rubro') + '</b><small>rubro principal: se queda con el resto</small></div>' +
+    '<div class="dv-der"><b>' + dvFmt(restoMonto, base.usd) + '</b><small>' + (Math.round(Math.max(0, resto) * 10) / 10).toLocaleString('es-AR') + '%</small></div>';
+  // Las otras cuotas de la misma compra
+  var otras = dvOtrasCuotas(t);
+  var w = document.getElementById('dvCuotasWrap');
+  w.style.display = otras.length ? 'flex' : 'none';
+  document.getElementById('dvCuotasTxt').textContent = 'Aplicar también a ' +
+    (otras.length === 1 ? 'la otra cuota ya cargada' : 'las otras ' + otras.length + ' cuotas ya cargadas') + ' de esta compra';
+  document.getElementById('dvQuitarTodo').style.display = (Array.isArray(t.partes) && t.partes.length) ? 'inline-flex' : 'none';
+  document.getElementById('dvError').textContent = dvValidar(t) || '';
+}
+function dvSet(i, k, v) {
+  var f = dvFilas[i]; if (!f) return;
+  var t = getData().find(function (x) { return x.id === dvId; });
+  var base = t ? dvBase(t) : { v: 0 };
+  if (k === 'valor') {
+    // En pesos el punto es separador de miles (1.500); en % puede ser la coma decimal o el punto (33,3 o 33.3).
+    var txt = String(v).trim();
+    f.valor = Number(f.modo === '%' ? txt.replace(',', '.') : txt.replace(/\./g, '').replace(',', '.')) || 0;
+    f.pct = dvPctDe(f, base);
+  }
+  else if (k === 'modo') {
+    if (f.modo === v) return;
+    var pct = dvPctDe(f, base);
+    f.modo = v;
+    f.valor = v === '%' ? Math.round(pct * 100) / 100 : dvR2(base.v * pct / 100);
+  }
+  else f[k] = v;
+  // Al escribir no se repinta todo: se perdería el foco del campo.
+  if (k === 'valor' || k === 'nota') { dvPintarParcial(); return; }
+  dvPintar();
+}
+function dvPintarParcial() {
+  var t = getData().find(function (x) { return x.id === dvId; });
+  if (!t) return;
+  var base = dvBase(t), suma = 0;
+  var eqs = document.querySelectorAll('#dvPartes .dv-eq');
+  dvFilas.forEach(function (f, i) {
+    var pct = dvPctDe(f, base); suma += pct;
+    if (eqs[i]) eqs[i].textContent = f.modo === '%' ? dvFmt(dvR2(base.v * pct / 100), base.usd)
+                                                     : (Math.round(pct * 10) / 10).toLocaleString('es-AR') + '%';
+  });
+  var resto = 100 - suma;
+  var der = document.querySelector('#dvPrincipal .dv-der');
+  if (der) der.innerHTML = '<b>' + dvFmt(dvR2(base.v * Math.max(0, resto) / 100), base.usd) + '</b><small>' +
+    (Math.round(Math.max(0, resto) * 10) / 10).toLocaleString('es-AR') + '%</small>';
+  document.getElementById('dvError').textContent = dvValidar(t) || '';
+}
+function dvAgregarFila() { dvFilas.push({ rubro: '', modo: '$', nota: '', valor: 0, pct: 0 }); dvPintar(); }
+function dvQuitarFila(i) { dvFilas.splice(i, 1); if (!dvFilas.length) dvAgregarFila(); else dvPintar(); }
+function dvValidar(t) {
+  var base = dvBase(t), suma = 0, err = '';
+  var usadas = dvFilas.filter(function (f) { return (Number(f.valor) || 0) > 0 || f.rubro; });
+  usadas.forEach(function (f) {
+    var pct = dvPctDe(f, base); suma += pct;
+    if (err) return;
+    if (!f.rubro) err = 'Elegí el rubro de cada parte, o «Me lo devuelven».';
+    else if (!(pct > 0)) err = 'Cada parte necesita un importe mayor a cero.';
+    else if (f.rubro === t.rubro) err = 'Esa parte ya es del rubro principal: elegí otro rubro.';
+  });
+  if (!err && suma >= 100 - 1e-9) err = 'Las partes no pueden sumar todo el total: el rubro principal tiene que quedarse con algo. Si todo es de otro rubro, cambiá el rubro de la línea.';
+  return err;
+}
+function dvGuardar(quitar) {
+  var data = getData();
+  var t = data.find(function (x) { return x.id === dvId; });
+  if (!t) return dvCerrar();
+  var base = dvBase(t);
+  var partes = [];
+  if (!quitar) {
+    var err = dvValidar(t);
+    if (err) { document.getElementById('dvError').textContent = err; return; }
+    dvFilas.forEach(function (f) {
+      var pct = Math.round(dvPctDe(f, base) * 10000) / 10000;
+      if (!(pct > 0) || !f.rubro) return;
+      var p = f.rubro === '__dev__' ? { devuelven: true, pct: pct } : { rubro: f.rubro, pct: pct };
+      if (String(f.nota || '').trim()) p.nota = String(f.nota).trim().slice(0, 60);
+      partes.push(p);
+    });
+  }
+  var aplicarOtras = document.getElementById('dvCuotasChk').checked && document.getElementById('dvCuotasWrap').style.display !== 'none';
+  var otras = aplicarOtras ? data.filter(function (x) { return x && x.id !== t.id && dvMismaCompra(t, x); }) : [];
+  var poner = function (x, esOtra) {
+    if (partes.length) {
+      x.partes = JSON.parse(JSON.stringify(partes));
+      if (esOtra) x.partesDe = t.id; else delete x.partesDe;
+    } else { delete x.partes; delete x.partesDe; }
+  };
+  poner(t, false);
+  otras.forEach(function (x) { poner(x, true); });
+  saveData(data);
+  try { pushNow(); } catch (e) {}
+  dvCerrar();
+  try { dvPintarModal(); } catch (e) {}
+  render();
+}
+// El botón dentro del formulario de edición.
+function dvPintarModal() {
+  var wrap = document.getElementById('dvModalWrap');
+  if (!wrap) return;
+  var id = (document.getElementById('txId') || {}).value;
+  var tipo = (document.getElementById('txTipo') || {}).value;
+  var t = id ? getData().find(function (x) { return x.id === id; }) : null;
+  var ok = !!t && tipo === 'Gasto' && t.tipo === 'Gasto' && (Number(t.impPesos) || 0) >= 0 && (Number(t.impUSD) || 0) >= 0 && dvBase(t).v > 0;
+  wrap.style.display = ok ? 'block' : 'none';
+  var res = document.getElementById('dvModalResumen');
+  if (res) res.textContent = ok && dvEsDividida(t) ? dvTextoReparto(t) : 'Para una compra con cosas de distintos rubros, o si pagaste por otros.';
+}
 // creadoPor: quién cargó cada gasto/ingreso. Backfill único de datos viejos con 'legacy',
 // de ahí en más cualquier registro nuevo (sin el campo) se atribuye al usuario activo.
 // creadoPor/creadoPorNombre: quién cargó cada gasto/ingreso. Backfill único de datos
@@ -6428,6 +6822,7 @@ function sembrarRubrosMaestro() {
       const tipo = t.tipo === 'Ingreso' ? 'Ingreso' : 'Gasto';
       const r = String(t.rubro || '').trim();
       if (r && r !== RUBRO_SIN && !m[tipo].includes(r)) m[tipo].push(r);
+      dvRubrosDe(t).slice(1).forEach(function (pr) { if (pr && pr !== RUBRO_SIN && !m[tipo].includes(pr)) m[tipo].push(pr); });
     });
   } catch (e) {}
   localStorage.setItem(rubrosKey(), JSON.stringify(m));
@@ -6444,6 +6839,8 @@ function contarPorRubro(tipo) {
       if (tipo && tt !== tipo) return;
       const r = String(t.rubro || '').trim() || RUBRO_SIN;
       c[r] = (c[r] || 0) + 1;
+      // Un rubro que sólo vive adentro de una división también está en uso.
+      dvRubrosDe(t).slice(1).forEach(function (pr) { if (pr && pr !== r) c[pr] = (c[pr] || 0) + 1; });
     });
   } catch (e) {}
   return c;
@@ -6508,6 +6905,9 @@ function reasignarRubroEnDatos(tipo, desde, hacia) {
     datos.forEach(function (x) {
       const tt = x.tipo === 'Ingreso' ? 'Ingreso' : 'Gasto';
       if (tt === t && x.rubro === desde) { x.rubro = hacia; tocados++; }
+      if (tt === t && Array.isArray(x.partes)) x.partes.forEach(function (p) {
+        if (p && !p.devuelven && p.rubro === desde) { p.rubro = hacia; tocados++; }
+      });
     });
     if (tocados) saveData(datos);
   } catch (e) {}
@@ -7677,7 +8077,7 @@ function rsBalanceDelMes() {
   const k = curKey();
   let ingP = 0, gasP = 0, ingU = 0, gasU = 0;
   try {
-    getData().forEach(t => {
+    getDataAnalisis().forEach(t => {
       if (!t || t.mes !== k) return;
       const p = Number(t.impPesos) || 0, u = Number(t.impUSD) || 0;
       if (t.tipo === 'Ingreso') { ingP += p; ingU += u; } else { gasP += p; gasU += u; }
@@ -9009,6 +9409,7 @@ function confirmTCImport() {
   const data = getData();
   const mes  = tcTargetMes || curKey();
   const today = new Date().toISOString().slice(0, 10);
+  const _dvAntes = data.length;
   sel.forEach(r => {
     const _m = tcMontoFirmado(r);   // credito del banco: negativo
     const impP = r.esUSD ? 0 : _m;
@@ -9047,13 +9448,16 @@ function confirmTCImport() {
           mesResumen:  tcMesResumen || mes,   // débito: ya pagado; crédito: pendiente de pagar el resumen
     });
   });
+  // Cuotas de compras ya divididas: se dividen igual que la cuota anterior.
+  const _dvHer = dvHeredarPartes(data.slice(_dvAntes), data.slice(0, _dvAntes));
   saveData(data);
       pushNow();   // subir ya: no esperar el debounce de 900ms
   render();
   closeImport();
   // Pequeño toast de confirmación
   const msg = document.createElement('div');
-  msg.textContent = `✓ ${sel.length} movimiento${sel.length!==1?'s':''} importado${sel.length!==1?'s':''}`;
+  msg.textContent = `✓ ${sel.length} movimiento${sel.length!==1?'s':''} importado${sel.length!==1?'s':''}` +
+    (_dvHer ? ` · ${_dvHer} dividido${_dvHer!==1?'s':''} igual que la cuota anterior` : '');
   Object.assign(msg.style, {position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:'var(--success)',color:'#fff',padding:'10px 20px',borderRadius:'999px',fontSize:'14px',fontWeight:'600',zIndex:'9999',boxShadow:'0 4px 16px rgba(0,0,0,.2)',pointerEvents:'none'});
   document.body.appendChild(msg);
   setTimeout(() => msg.remove(), 3000);
@@ -9698,7 +10102,7 @@ function renderAnioPanel(){
   const wrap = document.getElementById('d-year');
   if (!wrap) return;
   const key = curKey(), anio = Number(key.split('-')[0]), hasta = Number(key.split('-')[1]);
-  const all = getData();
+  const all = getDataAnalisis();
   const rows = [];
   for (let m = 1; m <= hasta; m++){
     const mk = anio + '-' + String(m).padStart(2,'0');
@@ -9911,7 +10315,7 @@ function pintarPendienteTx() {
 }
 
 function renderDash() {
-  const all  = getData().filter(t => t.mes === curKey());
+  const all  = getDataAnalisis().filter(t => t.mes === curKey());
   const ings = all.filter(t => t.tipo === 'Ingreso');
   const gas  = all.filter(t => t.tipo === 'Gasto');
   const sum  = (arr, f) => arr.reduce((s,t) => s + (Number(t[f])||0), 0);
@@ -10058,7 +10462,7 @@ function renderDash() {
 // ── SEMÁFORO DE SALUD ────────────────────────────────────────
 function renderHealth(totIngP, totGasP, pend) {
   const C = 238.76; // 2π × 38
-  const allData = getData();
+  const allData = getDataAnalisis();
 
   // Componente 1: ratio Ingresos/Gastos (0–45 pts)
   const ratio = totGasP > 0 ? totIngP / totGasP : (totIngP > 0 ? 2 : 0);
@@ -10110,7 +10514,7 @@ function renderHealth(totIngP, totGasP, pend) {
 
 // ── ALERTAS INTELIGENTES ─────────────────────────────────────
 function renderAlertas() {
-  const allData = getData();
+  const allData = getDataAnalisis();
   const key = curKey();
   const alertas = [];
 
@@ -10483,8 +10887,11 @@ function dcCalcular(data, mes, titularFiltro) {
       if (usd) { tj.proxUsd += valor; tj.deudaUsd += valor * restan; }
       else {
         tj.prox += valor; tj.deuda += valor * restan;
-        var r = out.porRubro[t.rubro || 'Sin rubro'] || (out.porRubro[t.rubro || 'Sin rubro'] = { planes: 0, prox: 0, deuda: 0 });
-        r.planes++; r.prox += valor; r.deuda += valor * restan;
+        (dvReparto(t) || [{ rubro: t.rubro || 'Sin rubro', pct: 100 }]).forEach(function (p) {
+          var ru = p.devuelven ? 'Me lo devuelven' : (p.rubro || 'Sin rubro'), fr = p.pct / 100;
+          var r = out.porRubro[ru] || (out.porRubro[ru] = { planes: 0, prox: 0, deuda: 0 });
+          r.planes++; r.prox += valor * fr; r.deuda += valor * restan * fr;
+        });
         for (var i = 1; i <= restan; i++) {
           var mk = dcMesSuma(mes, i), e = out.escalera[mk] || (out.escalera[mk] = {});
           e[g.label] = (e[g.label] || 0) + valor;
@@ -10742,14 +11149,14 @@ function renderTx() {
   const all = getData().filter(t => t.mes === curKey());
 
   // Poblar filtro de rubros
-  const rubros = [...new Set(all.map(t=>t.rubro).filter(Boolean))];
+  const rubros = [...new Set([].concat(...all.map(dvRubrosDe)).filter(Boolean))];
   const rf = document.getElementById('rubroFilt');
   const prev = rf.value;
   rf.innerHTML = '<option value="">Todos los rubros</option>' + rubros.map(r=>`<option value="${r}" ${r===prev?'selected':''}>${r}</option>`).join('');
 
   let rows = all;
   if (fTipo !== 'Todos') rows = rows.filter(t => t.tipo === fTipo);
-  if (fRubro) rows = rows.filter(t => t.rubro === fRubro);
+  if (fRubro) rows = rows.filter(t => dvRubrosDe(t).includes(fRubro));
   if (fSearch) rows = rows.filter(t => t.detalle.toLowerCase().includes(fSearch.toLowerCase()));
   renderAutorSummary(all);
   if (fAutor === 'yo') rows = rows.filter(t => t.creadoPor === curUserId());
@@ -10774,7 +11181,7 @@ function renderTx() {
     const reint = esReintegro(t);
     return `<tr${pendiente ? ' style="background:#fffbeb"' : ''}>
       <td><input type="checkbox" class="tx-check" data-id="${t.id}" ${selectedTx.has(t.id)?'checked':''} onchange="toggleSelectTx('${t.id}', this.checked)"></td>
-      <td><strong>${esc(txDetalleLimpio(t))}</strong>${txCuotaMovil(t)}${pendiente ? ' <span title="Esqueleto de movimiento fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de ${tcLabel(t)==='TD'?'Débito':'Crédito'}" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>${(t.origen === 'TARJETA' && t.creadoPorNombre) ? '<span style="font-size:10.5px;font-weight:600;color:#5B6B7C;background:rgba(91,107,124,0.10);border:1px solid rgba(91,107,124,0.22);border-radius:6px;padding:1px 6px;margin-left:6px;white-space:nowrap">\uD83D\uDC64 ' + t.creadoPorNombre + '</span>' : ''}` : ''}</td>
+      <td><strong>${esc(txDetalleLimpio(t))}</strong>${txCuotaMovil(t)}${pendiente ? ' <span title="Esqueleto de movimiento fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de ${tcLabel(t)==='TD'?'Débito':'Crédito'}" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>${(t.origen === 'TARJETA' && t.creadoPorNombre) ? '<span style="font-size:10.5px;font-weight:600;color:#5B6B7C;background:rgba(91,107,124,0.10);border:1px solid rgba(91,107,124,0.22);border-radius:6px;padding:1px 6px;margin-left:6px;white-space:nowrap">\uD83D\uDC64 ' + t.creadoPorNombre + '</span>' : ''}` : ''}${dvEsDividida(t) ? `<div class="dv-linea" onclick="dvAbrir('${t.id}')" title="Ver o cambiar el reparto">✂️ ${esc(dvTextoReparto(t))}${t.partesDe ? ' <span class="dv-hered">· igual que la cuota anterior</span>' : ''}</div>` : ''}</td>
       <td class="tx-cuota-td">${txCuotaCelda(t)}</td>
       <td>${reint ? BADGE_REINTEGRO : `<span class="badge badge-${t.tipo.toLowerCase()}">${t.tipo}</span>`}</td>
       <td><span class="rubro-tag">${esc(t.rubro||'-')}</span>${t.tipoGasto ? `<span style="display:inline-block;margin-left:5px;font-size:10.5px;font-weight:600;color:var(--muted)">· <span class="tg-full">${t.tipoGasto}</span><span class="tg-abbr">${t.tipoGasto.charAt(0)}</span></span>` : ''}</td>
@@ -10814,7 +11221,8 @@ function renderTx() {
 function renderAutorSummary(all) {
   const el = document.getElementById('autorSummary');
   if (!el) return;
-  const gastos = all.filter(t => t.tipo === 'Gasto');
+  // "Gastos del mes" tiene que dar lo mismo que en Mi Rumbo: lee las partes.
+  const gastos = expandirPartes(all).filter(t => t.tipo === 'Gasto');
   if (!gastos.length) { el.textContent = ''; return; }
   const porAutor = {};
   gastos.forEach(t => {
@@ -10843,7 +11251,7 @@ function setAutorFilter(v, btn) {
 // ── PRESUPUESTO ──────────────────────────────────────────────
 function renderPresupuesto() {
   const key   = curKey();
-  const all   = getData().filter(t => t.mes === key && t.tipo === 'Gasto');
+  const all   = getDataAnalisis().filter(t => t.mes === key && t.tipo === 'Gasto');
   const budgets = getBudgets();
   const monthBudget = budgets[key] || {};
 
@@ -10951,7 +11359,7 @@ function copiarPresupuestoMesAnterior() {
 
 // ── ANÁLISIS ─────────────────────────────────────────────────
 function renderAnalisis() {
-  const allData = getData();
+  const allData = getDataAnalisis();
   const key  = curKey();
   const all  = allData.filter(t => t.mes === key);
   const gas  = all.filter(t => t.tipo === 'Gasto');
@@ -10972,7 +11380,7 @@ function renderAnalisis() {
     return;
   }
   emptyEl.style.display = 'none';
-  document.getElementById('anSubLabel').textContent = `${gas.length + ings.length} movimiento(s) registrados — ${gas.length} gasto(s), ${ings.length} ingreso(s)`;
+  document.getElementById('anSubLabel').textContent = `${dvSoloReales(gas).length + ings.length} movimiento(s) registrados — ${dvSoloReales(gas).length} gasto(s), ${ings.length} ingreso(s)`;
 
   const cards = [];
 
@@ -11338,7 +11746,8 @@ window.progResumenParaNube = progResumenParaNube;
 function progCalcular() {
   const all = getData();
   const key = progKeyHoy();
-  const r = computeRacha(all, key);
+  const allA = expandirPartes(all);   // las sumas por rubro y por mes leen las partes
+  const r = computeRacha(allA, key);
 
   // ── semanas y meses ───────────────────────────────────────────────────
   const semanas = new Set();
@@ -11375,7 +11784,7 @@ function progCalcular() {
   const mesesBajoTope = mesesConTope.filter(k => {
     if (k >= key) return false;                         // el mes en curso no cerró
     const gasto = {};
-    all.filter(t => t.mes === k && t.tipo === 'Gasto')
+    allA.filter(t => t.mes === k && t.tipo === 'Gasto')
        .forEach(t => { gasto[t.rubro] = (gasto[t.rubro] || 0) + (Number(t.impPesos) || 0); });
     return Object.entries(budgets[k]).every(([ru, lim]) => (gasto[ru] || 0) <= Number(lim));
   }).sort();
@@ -11407,7 +11816,7 @@ function progCalcular() {
         s + ((m && m.tipo !== 'retiro') ? (Number(m.monto) || 0) : 0), 0);
   const gastoMensual = (() => {
     const porMes = {};
-    all.filter(t => t.tipo === 'Gasto').forEach(t => { porMes[t.mes] = (porMes[t.mes] || 0) + (Number(t.impPesos) || 0); });
+    allA.filter(t => t.tipo === 'Gasto').forEach(t => { porMes[t.mes] = (porMes[t.mes] || 0) + (Number(t.impPesos) || 0); });
     const ult = Object.keys(porMes).sort().slice(-6);
     if (!ult.length) return 0;
     return ult.reduce((s, k) => s + porMes[k], 0) / ult.length;
@@ -11766,7 +12175,7 @@ function renderProgreso() {
   // El gráfico de evolución sigue abajo: es lo único de la pantalla vieja que
   // no se superpone con nada nuevo y sirve para ver el largo plazo de un vistazo.
   try {
-    const r2 = computeRacha(getData(), progKeyHoy());
+    const r2 = computeRacha(getDataAnalisis(), progKeyHoy());
     const last12 = r2.balances.slice(-12);
     const cvs = document.getElementById('progresoEvolChart');
     const vacio = document.getElementById('progresoEvolEmpty');
@@ -13663,7 +14072,10 @@ function toggleComparativoUI() {
   if (esComparativo) renderComparativoIntegrantes();
 }
 
-function getDataReportes() {
+// Reportes: en qué se fue la plata (lee las partes). El reporte Tarjetas usa
+// getDataReportesBanco(): ahí manda lo que dice el resumen.
+function getDataReportes() { return expandirPartes(getDataReportesBanco()); }
+function getDataReportesBanco() {
   const eid = empresaIdVistaEnReportes();
   let all = curRepHogarId ? (repHogarDataCache[eid] || []) : getData();
   if (curRepIntegrante && curRepIntegrante !== '__cmp__') {
@@ -14165,7 +14577,7 @@ function cuBorrar(id) {
 function renderComparativoIntegrantes() {
   const eid = empresaIdVistaEnReportes();
   const miembros = repMiembrosCache[eid] || {};
-  const all = curRepHogarId ? (repHogarDataCache[eid] || []) : getData();
+  const all = expandirPartes(curRepHogarId ? (repHogarDataCache[eid] || []) : getData());
   const yearEl = document.getElementById('repCmpYear');
   if (yearEl) yearEl.textContent = curYear;
 
@@ -14736,7 +15148,7 @@ function renderRepIngresos() {
 
 // TAB 5 — TARJETAS
 function renderRepTarjetas() {
-  const all = getDataReportes();
+  const all = getDataReportesBanco();
   const yearTC = all.filter(t =>
     t.mes.startsWith(String(curYear)) &&
     isTCOrigen(t)
@@ -15149,7 +15561,7 @@ function renderDrillDown(gastos, rubro) {
           const pagadoOk = isTCTx ? t.tcPagado === true : (Number(t.saldo)||0) <= 0;
           return `<tr>
             <td style="color:var(--muted);font-size:12px;white-space:nowrap">${mesLabel}</td>
-            <td>${esc(t.detalle||'')}</td>
+            <td>${esc(t.detalle||'')}${(t._parte || t._dividida) ? ' <span class="dv-tag" title="Es una parte de una línea dividida">✂️ parte</span>' : ''}</td>
             <td><span style="font-size:11px;background:var(--bg);border-radius:4px;padding:2px 6px">${t.tipoGasto||''}</span></td>
             <td style="font-size:12px;color:var(--muted);white-space:nowrap">${banco}</td>
             <td style="text-align:right;font-weight:600;color:var(--danger);white-space:nowrap">${ars > 0 ? fmtP(ars) : '<span style="color:var(--muted)">—</span>'}</td>
@@ -15728,7 +16140,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.52.000';
+const APP_VERSION = 'v005.53.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -16771,6 +17183,7 @@ function setTipoForm(tipo) {
   // Fijo/Variable ya no es sólo de gastos: un sueldo es tan fijo como un
   // alquiler, y marcarlo es lo que después permite replicarlo al mes siguiente.
   pintarTipoGastoWrap(tipo);
+  try { dvPintarModal(); } catch (e) {}
   setTipoGasto(document.getElementById('txTipoGasto').value || 'Variable');
 }
 
@@ -16847,6 +17260,7 @@ function openModal(id) {
     document.getElementById('txFecha').value = fechaPorDefecto(curKey());
   }
   txPintarReintegro();
+  try { dvPintarModal(); } catch (e) {}
   document.getElementById('modalOverlay').classList.add('show');
 }
 
@@ -16914,6 +17328,8 @@ function saveTx(e) {
       // Un movimiento viejo con la cuota todavía en la descripción: no perderla.
       if (!prev.cuota) { const _c = txCuotaDe(prev); if (_c) nuevo.cuota = _c.a + '/' + _c.t; }
       if (!tx.cta) delete nuevo.cta;   // la cuenta vieja ya no explica el importe
+      // Dividir es sólo para gastos con importe positivo: si dejó de serlo, se quita.
+      if (nuevo.tipo !== 'Gasto' || impP < 0 || impU < 0) { delete nuevo.partes; delete nuevo.partesDe; }
       if (isTCOrigen(prev)) {
         nuevo.tipoGasto = 'Variable'; // TC nunca puede ser Fijo — se importa vía resumen cada mes
       }
@@ -17534,6 +17950,7 @@ function doCopiarMes(){
       delete c.origen; delete c.banco; delete c.tcPagado; delete c.cardTipo; delete c.mesResumen;
       // La copia todavía no pasó: hereda el importe, no el día.
       delete c.fecha;
+      delete c.partesDe;   // el reparto viaja; el vínculo con la cuota anterior, no
       c.id     = uid();
       c.mes    = k;
       c.venc   = venc;
@@ -18326,7 +18743,7 @@ function findDetalleCQ(q, allData) {
 
 function parseQuery(text) {
   const q = nq(text);
-  const allData = getData();
+  const allData = getDataAnalisis();
   const mesKey = findMes(q);
   const esActual = /mes actual|este mes|hoy/.test(q);
   const mesRef = esActual ? curKey() : mesKey;
@@ -18526,7 +18943,7 @@ const NORTIA_MESES_DETALLE = 4; // meses recientes que viajan movimiento por mov
 // sale más caro.
 
 function buildFinancialContext() {
-  const all = getData();
+  const all = getDataAnalisis();
   const year = curYear;
   const delAnio = all.filter(t => String(t.mes || '').startsWith(String(year)));
 
@@ -18601,7 +19018,7 @@ function nortiaLineaTx(t) {
 // mensajes, es lo que Gemini cobra más barato.
 function nortiaDetalleDePeriodo(pregunta) {
   const txt = String(pregunta || '').toLowerCase();
-  const all = getData();
+  const all = getDataAnalisis();
   const delAnio = all.filter(t => String(t.mes || '').startsWith(String(curYear)));
   const months = [...new Set(delAnio.map(t => t.mes))].sort();
   const yaEnviados = months.slice(-NORTIA_MESES_DETALLE);
@@ -18830,7 +19247,7 @@ function iaCifrasSinRespaldo(texto, respaldo) {
 }
 
 function buildResumenCalculado() {
-  const all = getData();
+  const all = getDataAnalisis();
   const key = curKey();
   const [y, m] = key.split('-').map(Number);
 
@@ -18887,7 +19304,7 @@ function buildResumenCalculado() {
 // Firma barata de los datos actuales, para saber si hay que regenerar el cach\u00e9
 function nortiaDataSignature() {
   const all = getData().filter(t => t.mes === curKey());
-  return `${all.length}:${all.reduce((s,t)=>s+(Number(t.impPesos)||0)+(Number(t.saldo)||0),0)}`;
+  return `${all.length}:${all.reduce((s,t)=>s+(Number(t.impPesos)||0)+(Number(t.saldo)||0),0)}:${dvFirma(all)}`;
 }
 
 async function nortiaCheckYRegistrarUso() {
