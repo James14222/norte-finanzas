@@ -981,6 +981,8 @@ tr:hover td { background: #fafbfc; }
 }
 .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: center; justify-content: center; }
 .overlay.show { display: flex; }
+.rub-filt { display: inline-flex; align-items: center; gap: 6px; flex-wrap: nowrap; min-width: 0; }
+.rub-filt .f-select { min-width: 0; }
 @media (max-width: 600px) { #extFilt { min-width: 0; max-width: 46%; } }
 @keyframes modalNudge { 0%,100% { transform: translateX(0) } 25% { transform: translateX(-6px) } 75% { transform: translateX(6px) } }
 .modal-nudge { animation: modalNudge .22s ease-in-out; }
@@ -2888,9 +2890,15 @@ tr:hover td { background: #fafbfc; }
               <button class="tgl-btn" onclick="setTipoFilter('Gasto',this)">Gastos</button>
             </div>
             <input class="f-search" type="text" placeholder="🔍 Buscar detalle..." oninput="setSearch(this.value)" style="width:190px">
+            <span class="rub-filt">
             <select class="f-select" id="rubroFilt" onchange="setRubroFilter(this.value)">
               <option value="">Todos los rubros</option>
             </select>
+            <span class="tgl-group" id="rubroOrdenGrp" title="Cómo ordenar la lista de rubros">
+              <button type="button" class="tgl-btn" data-o="uso" onclick="setRubroOrden('uso')">Más usados</button>
+              <button type="button" class="tgl-btn" data-o="az" onclick="setRubroOrden('az')">A-Z</button>
+            </span>
+            </span>
             <select class="f-select" id="extFilt" onchange="setExtFilter(this.value)" style="display:none"
                     title="Consumos de tarjeta según quién los hizo: el titular o cada extensión">
               <option value="">💳 Titular / extensión: todos</option>
@@ -5380,7 +5388,7 @@ const getEmpresas    = ()  => JSON.parse(localStorage.getItem('fin_empresas') ||
 const saveEmpresas   = e   => localStorage.setItem('fin_empresas', JSON.stringify(e));
 const getSession     = ()  => JSON.parse(localStorage.getItem('fin_session')  || 'null');
 const setSession     = s   => localStorage.setItem('fin_session',  JSON.stringify(s));
-const clearSession   = () => { const conservar = ['firebase:', 'fin_lecturas_', 'gpsUltimoCapVisto_', 'gpsCapLeido_', 'fin_onboarding_done_', 'norte_ia_captura_', 'norteInstallDismiss']; Object.keys(localStorage).forEach(k => { if (!conservar.some(p => k.startsWith(p))) localStorage.removeItem(k); }); };
+const clearSession   = () => { const conservar = ['firebase:', 'fin_lecturas_', 'gpsUltimoCapVisto_', 'gpsCapLeido_', 'fin_onboarding_done_', 'norte_ia_captura_', 'norteInstallDismiss', 'norte_rubro_orden']; Object.keys(localStorage).forEach(k => { if (!conservar.some(p => k.startsWith(p))) localStorage.removeItem(k); }); };
 
 // Current context helpers
 const curEmpresa     = ()  => getSession()?.empresaId || 'JLL';
@@ -11198,13 +11206,16 @@ function renderTx() {
   const all = getData().filter(t => t.mes === curKey());
 
   // Poblar filtro de rubros: «Todos», «Sin asignar» y después los rubros del
-  // mes de más movimientos a menos (empates, alfabético), con cuántos tiene
-  // cada uno (una línea dividida cuenta en cada rubro de sus partes).
+  // mes, de más movimientos a menos o de la A a la Z (lo elige la persona),
+  // con cuántos tiene cada uno (una línea dividida cuenta en cada rubro de sus partes).
   // «Sin asignar» junta los que no tienen rubro y los «Sin clasificar».
   const sinRub = t => { const r = String(t.rubro || '').trim(); return !r || r === RUBRO_SIN; };
   const cuentaRub = {};
   all.forEach(t => [...new Set(dvRubrosDe(t).filter(r => r && r !== RUBRO_SIN))].forEach(r => { cuentaRub[r] = (cuentaRub[r] || 0) + 1; }));
-  const rubros = Object.keys(cuentaRub).sort((a, b) => (cuentaRub[b] - cuentaRub[a]) || a.localeCompare(b, 'es', { sensitivity: 'base' }));
+  const ordenAZ = rubroOrden() === 'az';
+  const rubros = Object.keys(cuentaRub).sort((a, b) =>
+    (ordenAZ ? 0 : (cuentaRub[b] - cuentaRub[a])) || a.localeCompare(b, 'es', { sensitivity: 'base' }));
+  document.querySelectorAll('#rubroOrdenGrp .tgl-btn').forEach(bt => bt.classList.toggle('active', bt.dataset.o === (ordenAZ ? 'az' : 'uso')));
   const sinAsignar = all.filter(sinRub).length;
   const rf = document.getElementById('rubroFilt');
   if (fRubro && fRubro !== '__sin__' && !cuentaRub[fRubro]) fRubro = '';
@@ -11319,6 +11330,19 @@ function setTipoFilter(v, btn) {
   renderTx();
 }
 function setRubroFilter(v) { fRubro = v; renderTx(); }
+// Orden de la lista de rubros del filtro: 'uso' (más usados) o 'az'. Se
+// recuerda en el aparato; si no se puede guardar, igual cambia.
+let rubroOrdenMem = '';
+function rubroOrden() {
+  if (rubroOrdenMem) return rubroOrdenMem;
+  try { rubroOrdenMem = localStorage.getItem('norte_rubro_orden') === 'az' ? 'az' : 'uso'; } catch (e) { rubroOrdenMem = 'uso'; }
+  return rubroOrdenMem;
+}
+function setRubroOrden(o) {
+  rubroOrdenMem = o === 'az' ? 'az' : 'uso';
+  try { localStorage.setItem('norte_rubro_orden', rubroOrdenMem); } catch (e) {}
+  renderTx();
+}
 function setExtFilter(v) { fExt = v; renderTx(); }
 /* Quién hizo el consumo de tarjeta: el titular o la extensión que trae el
    resumen. Si se lo reconoció entre los integrantes, su nombre en Norte. */
@@ -16364,7 +16388,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.54.003';
+const APP_VERSION = 'v005.54.004';
 let novEntradas = [];
 
 function novLeida(e) {
