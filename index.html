@@ -4375,6 +4375,7 @@ tr:hover td { background: #fafbfc; }
             <p>Con <strong>+ Crear otro hogar</strong> armás un espacio nuevo, con sus propios movimientos, rubros y presupuestos. Para pasar de uno a otro, tocá <strong>Entrar</strong> en la misma pantalla — la app se recarga en el hogar seleccionado.</p>
             <p>Si tenés más de un hogar, arriba, al lado del mes, aparece <strong>🏠 y el nombre del hogar</strong> en el que estás. Tocándolo se abre esta misma lista.</p>
             <p>Quien administra un hogar le puede cambiar el nombre con <strong>✏️ Nombre</strong>. El cambio lo ven todos los integrantes.</p>
+            <p><strong>Un plan, todos tus hogares.</strong> Los hogares que creás usan el plan de tu hogar principal: con PRO o TOP pagás una sola suscripción. El cupo de IA del mes (cargas por foto o voz, consultas y análisis de NortIA) también es uno solo y se comparte entre tus hogares. Si das de baja el plan, ningún hogar se bloquea: todos siguen andando con FOCO.</p>
             <div class="ayuda-ejemplo">
               <strong>FOCO:</strong> <span data-cupo="FOCO.hogares">1</span> hogar, hasta <span data-cupo="FOCO.integrantes">2</span> integrantes<br>
               <strong>PRO:</strong> hasta <span data-cupo="PRO.hogares">3</span> hogares, <span data-cupo="PRO.integrantes">3</span> integrantes cada uno<br>
@@ -18471,6 +18472,40 @@ async function qpToggleVoz() {
   }
 }
 
+// ── CUPO DE IA POR PERSONA (v005.54) ─────────────────────────────
+// El cupo es del que paga, no de cada hogar: lo que se usa en un hogar
+// adicional sale del mismo cupo que el principal. Cada hogar anota lo suyo en
+// norteSync/usoIA/<principal>/<tipo>/<mes>/<hogar> y el total es la suma.
+// El contador anterior (empresas/<hogar>/nortia/<tipo>/<mes>) se toma como
+// punto de partida del hogar, así el cambio no regala el cupo del mes en curso.
+// Si las reglas nuevas todavía no están publicadas, sigue con el contador viejo.
+async function iaUsoViejo(tipo, ym) {
+  try { return Number((await firebase.database().ref('norteSync/empresas/' + curEmpresa() + '/nortia/' + tipo + '/' + ym).once('value')).val()) || 0; }
+  catch (e) { return 0; }
+}
+async function iaUsoLeer(tipo, ym) {
+  const yo = curEmpresa();
+  let v;
+  try { v = (await firebase.database().ref('norteSync/usoIA/' + iaPoolId() + '/' + tipo + '/' + ym).once('value')).val() || {}; }
+  catch (e) { const n = await iaUsoViejo(tipo, ym); return { total: n, mio: n, viejo: true }; }
+  let total = 0, mio = null;
+  Object.keys(v).forEach(function (k) { const n = Number(v[k]) || 0; total += n; if (k === yo) mio = n; });
+  if (mio === null) { mio = await iaUsoViejo(tipo, ym); total += mio; }
+  return { total: total, mio: mio, viejo: false };
+}
+async function iaUsoRegistrar(tipo, ym, cap) {
+  const u = await iaUsoLeer(tipo, ym);
+  if (u.total >= cap) return { ok: false, usados: u.total };
+  const db = firebase.database();
+  let escrito = false;
+  if (!u.viejo) {
+    try { await db.ref('norteSync/usoIA/' + iaPoolId() + '/' + tipo + '/' + ym + '/' + curEmpresa()).set(u.mio + 1); escrito = true; }
+    catch (e) {}
+  }
+  if (!escrito) await db.ref('norteSync/empresas/' + curEmpresa() + '/nortia/' + tipo + '/' + ym).set(u.mio + 1);
+  return { ok: true, usados: u.total + 1 };
+}
+
 function qpCapturaMesActual() {
   return new Date().toISOString().slice(0, 7); // yyyy-mm real, no el mes navegado en el dashboard
 }
@@ -18484,19 +18519,14 @@ function qpLimiteIaCapActual() {
 }
 
 async function qpCapturaLeerUso() {
-  try { const snap = await qpCapturaRef().once('value'); return snap.val() || 0; } catch (e) { return 0; }
+  try { return (await iaUsoLeer('usageCaptura', qpCapturaMesActual())).total; } catch (e) { return 0; }
 }
 
 // Reserva un uso ANTES de llamar a la IA. Si la base falla, dejamos pasar la carga.
 async function qpCapturaCheckYRegistrarUso() {
   const cap = qpLimiteIaCapActual();
   try {
-    const ref = qpCapturaRef();
-    const snap = await ref.once('value');
-    const usados = snap.val() || 0;
-    if (usados >= cap) return { ok: false, usados: usados };
-    await ref.set(usados + 1);
-    return { ok: true, usados: usados + 1 };
+    return await iaUsoRegistrar('usageCaptura', qpCapturaMesActual(), cap);
   } catch (e) {
     console.error('qpCapturaCheckYRegistrarUso error:', e);
     return { ok: true, usados: undefined };
@@ -19497,14 +19527,7 @@ function nortiaDataSignature() {
 }
 
 async function nortiaCheckYRegistrarUso() {
-  const db = firebase.database();
-  const ym = curKey();
-  const ref = db.ref(`norteSync/empresas/${curEmpresa()}/nortia/usage/${ym}`);
-  const snap = await ref.once('value');
-  const usados = snap.val() || 0;
-  if (usados >= cuposActuales().hallazgos) return false;
-  await ref.set(usados + 1);
-  return true;
+  return (await iaUsoRegistrar('usage', curKey(), cuposActuales().hallazgos)).ok;
 }
 
 // ── NortIA CHAT — tope de uso mensual (separado del de hallazgos) ──
@@ -19518,20 +19541,11 @@ function nortiaChatMesActual() {
 }
 
 async function nortiaChatLeerUso() {
-  const db = firebase.database();
-  const ref = db.ref(`norteSync/empresas/${curEmpresa()}/nortia/usageChat/${nortiaChatMesActual()}`);
-  const snap = await ref.once('value');
-  return snap.val() || 0;
+  return (await iaUsoLeer('usageChat', nortiaChatMesActual())).total;
 }
 
 async function nortiaChatCheckYRegistrarUso() {
-  const db = firebase.database();
-  const ref = db.ref(`norteSync/empresas/${curEmpresa()}/nortia/usageChat/${nortiaChatMesActual()}`);
-  const snap = await ref.once('value');
-  const usados = snap.val() || 0;
-  if (usados >= nortiaChatCapActual()) return { ok: false, usados };
-  await ref.set(usados + 1);
-  return { ok: true, usados: usados + 1 };
+  return await iaUsoRegistrar('usageChat', nortiaChatMesActual(), nortiaChatCapActual());
 }
 
 async function actualizarNortiaChatCounter(usadosConocido) {
@@ -19745,6 +19759,10 @@ function closePlanModal(e) {
   if (e && e.target !== document.getElementById('planOverlay')) return;
   document.getElementById('planOverlay').style.display = 'none';
 }
+// Un hogar adicional no tiene plan propio: usa el de su hogar principal
+// (billing.heredaDe). El cupo de IA también es el del principal.
+let miHeredaDe = '';
+function iaPoolId() { return miHeredaDe || curEmpresa(); }
 function iniciarListenerPlan() {
   const empresaId = curEmpresa();
   try { iniciarLecturas(); iniciarListenerFX(); cargarGPSPioneros(); iniciarListenerNovedades(); iniciarListenerChatsAdmin(); } catch(e){}
@@ -19753,7 +19771,9 @@ function iniciarListenerPlan() {
     miPlanActual = (v && v.tier) || 'FOCO';
     miPlanEstado = (v && v.status) || 'active';
     miOrigenCuenta = (v && v.origen) || '';
+    miHeredaDe = (v && v.heredaDe) || '';
     renderPlanUI();
+    try { if (document.getElementById('hogaresOverlay').style.display === 'flex') renderListaHogares(); } catch (e) {}
     try { renderAcctBox(); } catch(e){}
   });
 }
@@ -19807,7 +19827,7 @@ async function suscribirse(plan) {
     const res = await fetch('https://us-central1-norte-finanzas.cloudfunctions.net/createSubscription', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ empresaId: curEmpresa(), plan, email })
+      body: JSON.stringify({ empresaId: iaPoolId(), plan, email })
     });
     const data = await res.json();
     if (!res.ok || !data.init_point) {
@@ -19895,9 +19915,15 @@ function renderListaHogares() {
   const limTxt = document.getElementById('hogaresLimiteTexto');
   if (limTxt) {
     const q = cuposActuales();
+    let principal = '';
+    if (miHeredaDe) {
+      const p = (window.__misEmpresas || []).find(x => x.id === miHeredaDe);
+      principal = p ? hogNombre(p) : 'tu hogar principal';
+    }
     limTxt.textContent = 'Tu plan (' + miPlanActual + ') permite ' + q.hogares +
       (q.hogares === 1 ? ' hogar' : ' hogares') + ', con hasta ' + q.integrantes +
-      ' integrantes cada uno. Los integrantes de un hogar dependen del plan de ese hogar.';
+      ' integrantes cada uno. Una sola suscripción alcanza para todos tus hogares, y el cupo de IA del mes es uno, compartido entre ellos.' +
+      (principal ? ' Este hogar usa el plan de «' + principal + '».' : '');
   }
 }
 function hogEntrar(id) {
