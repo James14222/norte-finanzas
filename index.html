@@ -981,6 +981,28 @@ tr:hover td { background: #fafbfc; }
 }
 .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: center; justify-content: center; }
 .overlay.show { display: flex; }
+@media (max-width: 600px) { #extFilt { min-width: 0; max-width: 46%; } }
+@keyframes modalNudge { 0%,100% { transform: translateX(0) } 25% { transform: translateX(-6px) } 75% { transform: translateX(6px) } }
+.modal-nudge { animation: modalNudge .22s ease-in-out; }
+/* ── Hogares (v005.54) ── */
+.month-nav .hogar-chip { display: none; align-items: center; justify-content: flex-start; gap: 6px; width: auto; max-width: 190px; height: 32px; padding: 0 12px; border-radius: 16px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; margin-right: 4px; }
+.month-nav .hogar-chip.on { display: inline-flex; }
+.month-nav .hogar-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#rumboHeader .month-nav .hogar-chip { color: #fff !important; background: rgba(255,255,255,.12) !important; border-color: rgba(255,255,255,.3) !important; }
+@media (max-width: 880px) { .month-nav .hogar-chip { max-width: 128px; padding: 0 10px; font-size: 12px; } }
+.hog-fila { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 12px; }
+.hog-fila.actual { border-color: var(--primary); }
+.hog-txt { min-width: 0; flex: 1; }
+.hog-nom { font-size: 14px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hog-aca { font-size: 11px; font-weight: 700; color: var(--primary); margin-top: 2px; }
+@media (max-width: 480px) { .hog-btn .t { display: none; } .hog-fila { padding: 10px 12px; } }
+.hog-acc { display: flex; gap: 6px; flex-shrink: 0; }
+.hog-btn { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-weight: 600; font-size: 13px; cursor: pointer; }
+.hog-btn.pri { border: none; background: var(--primary); color: #fff; font-weight: 700; }
+.hog-edit { display: flex; gap: 6px; flex: 1; min-width: 0; }
+.hog-edit input { flex: 1; min-width: 0; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; font: inherit; font-size: 14px; background: var(--card); color: var(--text); }
+.hog-err { font-size: 12px; color: var(--danger); margin: -4px 4px 4px; }
 /* ── Dividir (v005.53) ── */
 .dv-linea { font-size: 11.5px; font-weight: 600; color: #7c3aed; margin-top: 3px; cursor: pointer; line-height: 1.35; }
 .dv-linea:hover { text-decoration: underline; }
@@ -2869,6 +2891,10 @@ tr:hover td { background: #fafbfc; }
             <select class="f-select" id="rubroFilt" onchange="setRubroFilter(this.value)">
               <option value="">Todos los rubros</option>
             </select>
+            <select class="f-select" id="extFilt" onchange="setExtFilter(this.value)" style="display:none"
+                    title="Consumos de tarjeta según quién los hizo: el titular o cada extensión">
+              <option value="">💳 Todas las tarjetas</option>
+            </select>
             <select class="f-select tx-orden-movil" id="txOrdenSel" onchange="txSetOrden(this.value)" aria-label="Ordenar">
               <option value="">Orden: por fecha</option>
               <option value="detalle|1">Orden: detalle A-Z</option>
@@ -2894,6 +2920,7 @@ tr:hover td { background: #fafbfc; }
           <div class="tx-acciones">
             <button class="btn btn-secondary" onclick="clonarMesAnterior()" title="Copia todos los registros del mes anterior a este mes, con sus importes">📋 Clonar anterior</button>
             <button class="btn btn-secondary" onclick="openMasivo()" title="Cargá muchos movimientos de una vez desde un Excel, mapeando tus columnas contra los datos de Norte">📊 Carga masiva</button>
+            <button class="btn btn-secondary" onclick="txExportarExcel(false)" title="Descarga en Excel lo que muestra la tabla, con los filtros que tengas puestos. Para bajar sólo algunos, marcalos y usá «Exportar» en la barra de selección.">📥 Excel</button>
             <div class="act-bloque">
               <span class="act-bloque-tit">Replicar fijos</span>
               <button class="btn btn-secondary" onclick="replicarGastosFijos()" title="Crea el esqueleto de tus gastos fijos del mes anterior, sin importe, para no olvidarte de ninguno">Gastos</button>
@@ -2920,6 +2947,8 @@ tr:hover td { background: #fafbfc; }
             <div class="bulk-bar" id="bulkBar">
               <span id="bulkCount">0 seleccionados</span>
               <button class="btn btn-secondary" onclick="clearSelectionTx()">Cancelar</button>
+              <button class="btn btn-secondary" onclick="openRubroMasivo()">🏷️ Cambiar rubro</button>
+              <button class="btn btn-secondary" onclick="txExportarExcel(true)">📥 Exportar</button>
               <button class="btn btn-secondary" onclick="openCopiarMes()">📅 Copiar a otro mes</button>
               <button class="btn btn-danger" onclick="askDeleteBulk()">🗑️ Eliminar</button>
             </div>
@@ -3822,6 +3851,13 @@ tr:hover td { background: #fafbfc; }
             </div>
           </div>
           <div class="ayuda-bloque">
+            <h4>🏷️ Cambiar varios a la vez y exportar</h4>
+            <p>Marcá los movimientos con la casilla de la izquierda (o todos con la de arriba). En la barra que aparece:</p>
+            <p><strong>🏷️ Cambiar rubro</strong> pasa todos los marcados al rubro que elijas. Los importes, fechas y dueños no cambian. Si marcaste gastos e ingresos juntos, el rubro nuevo se aplica a los del mismo tipo.</p>
+            <p><strong>📥 Exportar</strong> baja a Excel sólo los marcados. El botón <strong>📥 Excel</strong> de arriba baja todo lo que muestra la tabla, con los filtros que tengas puestos.</p>
+            <p>Si cargaste resúmenes de tarjeta con extensiones, el filtro <strong>💳 Todas las tarjetas</strong> te deja ver sólo los consumos del titular o de cada extensión.</p>
+          </div>
+          <div class="ayuda-bloque">
             <h4>✂️ Dividir una línea</h4>
             <p>A veces una sola línea del resumen son dos gastos distintos: en la misma compra llevaste algo para vos y un regalo, o pagaste el almuerzo de todos. Con <strong>Dividir</strong> repartís esa línea sin tocar lo que dice el banco.</p>
             <div class="ayuda-ejemplo">
@@ -4336,7 +4372,9 @@ tr:hover td { background: #fafbfc; }
           </div>
           <div class="ayuda-bloque">
             <h4>Varios hogares</h4>
-            <p>Con <strong>+ Crear otro hogar</strong> armás un espacio nuevo, con sus propios movimientos, rubros y presupuestos. Para pasar de uno a otro, elegilo desde la misma pantalla — la app se recarga en el hogar seleccionado.</p>
+            <p>Con <strong>+ Crear otro hogar</strong> armás un espacio nuevo, con sus propios movimientos, rubros y presupuestos. Para pasar de uno a otro, tocá <strong>Entrar</strong> en la misma pantalla — la app se recarga en el hogar seleccionado.</p>
+            <p>Si tenés más de un hogar, arriba, al lado del mes, aparece <strong>🏠 y el nombre del hogar</strong> en el que estás. Tocándolo se abre esta misma lista.</p>
+            <p>Quien administra un hogar le puede cambiar el nombre con <strong>✏️ Nombre</strong>. El cambio lo ven todos los integrantes.</p>
             <div class="ayuda-ejemplo">
               <strong>FOCO:</strong> <span data-cupo="FOCO.hogares">1</span> hogar, hasta <span data-cupo="FOCO.integrantes">2</span> integrantes<br>
               <strong>PRO:</strong> hasta <span data-cupo="PRO.hogares">3</span> hogares, <span data-cupo="PRO.integrantes">3</span> integrantes cada uno<br>
@@ -5330,6 +5368,7 @@ let fTipo    = 'Todos';
 let fRubro   = '';
 let fSearch  = '';
 let fAutor    = 'Todos';
+let fExt     = '';   // titular o extensión de la tarjeta ('' = todas)
 let delIds   = null;
 let selectedTx = new Set();
 let charts   = {};
@@ -5617,10 +5656,17 @@ async function bootApp(firebaseUser) {
 
   let empresaId, empresaRole, empresaNombre;
 
-  if (userData && userData.empresas?.length) {
-    // Usuario normal: toma su primera (y única) empresa
-    empresaId   = userData.empresas[0].id;
-    empresaRole = userData.empresas[0].role;
+  const listaEmp = (userData && userData.empresas)
+    ? (Array.isArray(userData.empresas) ? userData.empresas : Object.values(userData.empresas)).filter(e => e && e.id)
+    : [];
+  if (listaEmp.length) {
+    // El hogar elegido en «Mis hogares» viaja en la sesión (cambiarDeHogar) y
+    // tiene que sobrevivir a la recarga. Antes se tomaba SIEMPRE el primero,
+    // así que «Entrar» en otro hogar recargaba la app en el mismo de siempre.
+    const prevSes = getSession();
+    const elegida = (prevSes && prevSes.userId === uid && listaEmp.find(e => e.id === prevSes.empresaId)) || listaEmp[0];
+    empresaId   = elegida.id;
+    empresaRole = elegida.role;
     const empSnap = await db.ref(`norteSync/globalEmpresas/${empresaId}`).once('value');
     empresaNombre = empSnap.val()?.nombre || empresaId;
   } else {
@@ -5639,7 +5685,8 @@ async function bootApp(firebaseUser) {
     empresaNombre,
   });
   iniciarListenerPlan();
-  window.__misEmpresas = (userData && userData.empresas) || [];
+  window.__misEmpresas = listaEmp;
+  hogNombres[empresaId] = empresaNombre;
 
   // Ocultar login
   document.getElementById('loginScreen').style.display = 'none';
@@ -5653,6 +5700,7 @@ async function bootApp(firebaseUser) {
   unEl.textContent = firebaseUser.displayName || firebaseUser.email;
   emEl.textContent = empresaNombre;
   try { fxCargarModo(); renderAcctBox(); } catch(e){}
+  try { pintarChipHogar(); hogCargarNombres(); } catch(e){}
 
   // Mostrar Admin nav si corresponde
   if (isAdmin()) document.getElementById('navAdmin').style.display = 'flex';
@@ -10694,7 +10742,7 @@ function txGrupoDe(t) {
   var b = (typeof getBancoLabel === 'function' && getBancoLabel(t)) || getBanco(t) || 'Tarjeta';
   return t.mes + '|' + b + '|' + (t.mesResumen || '');
 }
-function txFiltroActivo() { return fTipo !== 'Todos' || !!fRubro || !!fSearch || fAutor === 'yo'; }
+function txFiltroActivo() { return fTipo !== 'Todos' || !!fRubro || !!fSearch || fAutor === 'yo' || !!fExt; }
 function txToggleGrupo(gi) {
   if (txFiltroActivo()) return;   // con filtro, los bloques muestran las coincidencias
   var k = (window._txGrupoKeys || [])[gi]; if (!k) return;
@@ -11154,17 +11202,31 @@ function renderTx() {
   const prev = rf.value;
   rf.innerHTML = '<option value="">Todos los rubros</option>' + rubros.map(r=>`<option value="${r}" ${r===prev?'selected':''}>${r}</option>`).join('');
 
+  // Titulares y extensiones de las tarjetas del mes. Sin consumos de tarjeta
+  // el filtro no aparece; si el elegido no existe en este mes, se suelta.
+  const exts = [...new Set(all.map(txExtDe).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
+  if (fExt && !exts.includes(fExt)) fExt = '';
+  const ef = document.getElementById('extFilt');
+  if (ef) {
+    ef.style.display = exts.length ? '' : 'none';
+    ef.innerHTML = '<option value="">💳 Todas las tarjetas</option>' +
+      exts.map(x => `<option value="${esc(x)}" ${x === fExt ? 'selected' : ''}>👤 ${esc(x)}</option>`).join('');
+  }
+
   let rows = all;
   if (fTipo !== 'Todos') rows = rows.filter(t => t.tipo === fTipo);
   if (fRubro) rows = rows.filter(t => dvRubrosDe(t).includes(fRubro));
   if (fSearch) rows = rows.filter(t => t.detalle.toLowerCase().includes(fSearch.toLowerCase()));
   renderAutorSummary(all);
   if (fAutor === 'yo') rows = rows.filter(t => t.creadoPor === curUserId());
+  if (fExt) rows = rows.filter(t => txExtDe(t) === fExt);
+  window._txVisibles = rows;   // lo que muestra la tabla: lo usa «📥 Excel»
 
   const tbody = document.getElementById('txTable');
   const empty = document.getElementById('txEmpty');
 
   if (!rows.length) {
+    window._txVisibles = [];
     tbody.innerHTML = ''; empty.style.display = 'block';
     const selectAllCb = document.getElementById('selectAllTx');
     if (selectAllCb) selectAllCb.checked = false;
@@ -11240,6 +11302,123 @@ function setTipoFilter(v, btn) {
   renderTx();
 }
 function setRubroFilter(v) { fRubro = v; renderTx(); }
+function setExtFilter(v) { fExt = v; renderTx(); }
+/* Quién hizo el consumo de tarjeta: el titular o la extensión que trae el
+   resumen. Si se lo reconoció entre los integrantes, su nombre en Norte. */
+function txExtDe(t) {
+  if (!t || !isTCOrigen(t)) return '';
+  return String(t.titular || t.creadoPorNombre || '').trim() || 'Sin identificar';
+}
+
+// ── CAMBIO MASIVO DE RUBRO ──────────────────────────────────────
+function rmSeleccion() { return getData().filter(t => selectedTx.has(t.id)); }
+function openRubroMasivo() {
+  const sel = rmSeleccion();
+  if (!sel.length) return;
+  let ov = document.getElementById('rmOverlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'rmOverlay'; ov.className = 'overlay';
+    ov.addEventListener('click', e => { if (e.target === ov) cerrarRubroMasivo(); });
+    document.body.appendChild(ov);
+  }
+  const tipos = ['Gasto', 'Ingreso'].filter(tp => sel.some(t => t.tipo === tp));
+  const grupo = tp => {
+    const n = sel.filter(t => t.tipo === tp).length;
+    const lista = getAllRubros(tp).filter(r => r && r !== 'Personalizado...');
+    return '<optgroup label="' + (tp === 'Gasto' ? 'Rubros de gasto' : 'Rubros de ingreso') + ' (' + n + ')">' +
+      lista.map(r => '<option value="' + esc(tp + '|' + r) + '">' + esc(r) + '</option>').join('') + '</optgroup>';
+  };
+  const mezcla = tipos.length > 1;
+  ov.innerHTML = '<div class="modal" style="max-width:440px;height:auto">' +
+    '<div class="modal-title">Cambiar rubro</div>' +
+    '<p style="font-size:13px;color:var(--muted);margin:0 0 14px">' + sel.length + ' movimiento' + (sel.length === 1 ? '' : 's') + ' seleccionado' + (sel.length === 1 ? '' : 's') + '. ' +
+      (mezcla ? 'Hay gastos e ingresos: el rubro nuevo se aplica sólo a los del mismo tipo.' : 'Los importes, fechas y dueños no cambian.') + '</p>' +
+    '<div class="form-group"><label>Rubro nuevo</label><select id="rmRubro" class="form-input">' +
+      '<option value="">Elegí un rubro</option>' + tipos.map(grupo).join('') + '</select></div>' +
+    '<div id="rmError" style="color:var(--danger);font-size:12px;min-height:16px;margin-bottom:6px"></div>' +
+    '<div style="display:flex;gap:10px"><button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="cerrarRubroMasivo()">Cancelar</button>' +
+    '<button class="btn btn-primary" style="flex:2;justify-content:center" id="rmAplicar" onclick="aplicarRubroMasivo()">Cambiar rubro</button></div></div>';
+  ov.classList.add('show');
+}
+function cerrarRubroMasivo() { const ov = document.getElementById('rmOverlay'); if (ov) ov.classList.remove('show'); }
+function aplicarRubroMasivo() {
+  const v = (document.getElementById('rmRubro') || {}).value || '';
+  if (!v) { document.getElementById('rmError').textContent = 'Elegí el rubro nuevo.'; return; }
+  const i = v.indexOf('|'), tipo = v.slice(0, i), rubro = v.slice(i + 1);
+  const data = getData();
+  let cambiados = 0, otros = 0;
+  data.forEach(t => {
+    if (!t || !selectedTx.has(t.id)) return;
+    if (t.tipo !== tipo) { otros++; return; }
+    t.rubro = rubro;
+    // Si la línea estaba dividida y una parte ya era de ese rubro, esa parte
+    // vuelve al rubro principal: una parte no puede ser del mismo rubro.
+    if (Array.isArray(t.partes)) {
+      t.partes = t.partes.filter(p => p && (p.devuelven || p.rubro !== rubro));
+      if (!t.partes.length) { delete t.partes; delete t.partesDe; }
+    }
+    cambiados++;
+  });
+  saveData(data);
+  try { pushNow(); } catch (e) {}
+  cerrarRubroMasivo();
+  clearSelectionTx();
+  render();
+  txAviso('✓ ' + cambiados + ' movimiento' + (cambiados === 1 ? '' : 's') + ' pasado' + (cambiados === 1 ? '' : 's') + ' a ' + rubro +
+          (otros ? ' · ' + otros + ' de otro tipo quedaron igual' : ''));
+}
+function txAviso(txt) {
+  const msg = document.createElement('div');
+  msg.textContent = txt;
+  Object.assign(msg.style, {position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:'var(--success)',color:'#fff',padding:'10px 20px',borderRadius:'999px',fontSize:'14px',fontWeight:'600',zIndex:'9999',boxShadow:'0 4px 16px rgba(0,0,0,.2)',pointerEvents:'none',maxWidth:'90vw',textAlign:'center'});
+  document.body.appendChild(msg);
+  setTimeout(() => msg.remove(), 3200);
+}
+
+// ── EXPORTAR A EXCEL ────────────────────────────────────────────
+// soloSeleccion: lo marcado. Si no, lo que muestra la tabla con sus filtros
+// (incluye lo que está adentro de los bloques de tarjeta cerrados).
+function txExportarExcel(soloSeleccion) {
+  if (typeof XLSX === 'undefined') { alert('No se pudo cargar el generador de Excel. Revisá la conexión y probá de nuevo.'); return; }
+  const filas = soloSeleccion ? rmSeleccion() : (window._txVisibles || []);
+  if (!filas.length) { alert(soloSeleccion ? 'No hay movimientos marcados.' : 'No hay movimientos para exportar en este mes.'); return; }
+  const ord = filas.slice().sort((a, b) => (a.mes || '').localeCompare(b.mes || '') || String(a.fecha || '').localeCompare(String(b.fecha || '')));
+  const fecha = d => { if (!d) return ''; const p = String(d).split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : String(d); };
+  const mesTxt = k => { const p = String(k || '').split('-'); return p.length === 2 ? p[1] + '/' + p[0] : (k || ''); };
+  const n = v => Number(v) || 0;
+  const cab = ['Mes', 'Fecha', 'Tipo', 'Detalle', 'Cuota', 'Rubro', 'Fijo/Variable', 'Tarjeta / Banco', 'Titular / Extensión',
+               'Cliente', 'Importe $', 'Importe USD', 'Pagado $', 'Saldo $', 'Vencimiento', 'Cargado por', 'Reparto (Dividir)'];
+  const datos = [cab].concat(ord.map(t => {
+    const c = (typeof txCuotaDe === 'function') ? txCuotaDe(t) : null;
+    const tc = isTCOrigen(t);
+    return [
+      mesTxt(t.mes), fecha(t.fecha), esReintegro(t) ? 'Reintegro' : t.tipo,
+      (typeof txDetalleLimpio === 'function' ? txDetalleLimpio(t) : t.detalle) || '',
+      c ? c.a + ' de ' + c.t : '', t.rubro || '', t.tipoGasto || '',
+      tc ? ((getBancoLabel(t) || 'Tarjeta') + ' (' + tcLabel(t) + ')') : '', txExtDe(t), t.cliente || '',
+      n(t.impPesos), n(t.impUSD), n(t.pagado), n(t.saldo), fecha(t.venc), t.creadoPorNombre || '',
+      dvEsDividida(t) ? dvTextoReparto(t) : ''
+    ];
+  }));
+  const tot = ['', '', '', 'TOTAL (' + ord.length + ')', '', '', '', '', '', '',
+               ord.reduce((s, t) => s + n(t.impPesos), 0), ord.reduce((s, t) => s + n(t.impUSD), 0),
+               ord.reduce((s, t) => s + n(t.pagado), 0), ord.reduce((s, t) => s + n(t.saldo), 0), '', '', ''];
+  datos.push([], tot);
+  const ws = XLSX.utils.aoa_to_sheet(datos);
+  ws['!cols'] = [8, 11, 10, 32, 8, 26, 12, 22, 22, 14, 14, 12, 14, 14, 12, 16, 40].map(w => ({ wch: w }));
+  ws['!autofilter'] = { ref: 'A1:Q' + (ord.length + 1) };
+  // Formato de número en las columnas de plata (K a N)
+  for (let r = 1; r < datos.length; r++) ['K', 'L', 'M', 'N'].forEach(col => {
+    const cel = ws[col + (r + 1)]; if (cel && cel.t === 'n') cel.z = '#,##0.00';
+  });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Movimientos');
+  const k = curKey(), MES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const nombre = 'Norte - ' + MES[Number(k.split('-')[1]) - 1] + ' ' + k.split('-')[0] + (soloSeleccion ? ' - seleccion' : '') + '.xlsx';
+  XLSX.writeFile(wb, nombre);
+  txAviso('📥 ' + ord.length + ' movimiento' + (ord.length === 1 ? '' : 's') + ' exportado' + (ord.length === 1 ? '' : 's') + ' a Excel');
+}
 function setSearch(v) { fSearch = v; renderTx(); }
 function setAutorFilter(v, btn) {
   fAutor = v;
@@ -16140,7 +16319,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.53.000';
+const APP_VERSION = 'v005.54.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -17389,6 +17568,8 @@ function clearSelectionTx() {
       '<span id="bulkCountFija">0 seleccionados</span>' +
       '<span class="bbf-acciones">' +
         '<button class="btn btn-secondary" onclick="clearSelectionTx()">Cancelar</button>' +
+        '<button class="btn btn-secondary" onclick="openRubroMasivo()">🏷️ Cambiar rubro</button>' +
+        '<button class="btn btn-secondary" onclick="txExportarExcel(true)">📥 Exportar</button>' +
         '<button class="btn btn-secondary" onclick="openCopiarMes()">📅 Copiar a otro mes</button>' +
         '<button class="btn btn-danger" onclick="askDeleteBulk()">🗑️ Eliminar</button>' +
       '</span>';
@@ -17997,11 +18178,19 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// Close overlays on backdrop click
-['modalOverlay','confirmOverlay'].forEach(id => {
-  document.getElementById(id).addEventListener('click', function(e) {
-    if (e.target === this) { closeModal(); closeConfirm(); }
-  });
+// Tocar afuera del formulario de carga NO lo cierra: un clic de más se
+// llevaba todo lo que se había escrito. Se cierra sólo con Guardar o
+// Cancelar; el modal se sacude un instante para avisar que sigue ahí.
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target !== this) return;
+  const m = this.querySelector('.modal');
+  if (!m) return;
+  m.classList.remove('modal-nudge'); void m.offsetWidth; m.classList.add('modal-nudge');
+});
+// La confirmación (borrar, etc.) sí se cierra tocando afuera, pero sólo ella:
+// antes cerraba también el formulario que estaba debajo.
+document.getElementById('confirmOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeConfirm();
 });
 
 // ── NORMALIZACIÓN DE RUBROS (corrige variantes históricas guardadas) ──
@@ -19635,41 +19824,115 @@ async function suscribirse(plan) {
 // ── AYUDA ───────────────────────────────────────────
 function openHogaresModal() {
   document.getElementById('hogaresOverlay').style.display = 'flex';
+  hogEditando = null; hogError = '';
   renderListaHogares();
+  hogCargarNombres();
   renderListaIntegrantes();
 }
 function closeHogaresModal(e) {
   if (e && e.target !== document.getElementById('hogaresOverlay')) return;
   document.getElementById('hogaresOverlay').style.display = 'none';
 }
+// Nombres de los hogares. `globalUsers/<uid>/empresas` guarda sólo id y rol;
+// el nombre vive en globalEmpresas/<id> (cada integrante puede leer el suyo).
+var hogNombres = {}, hogEditando = null, hogError = '';
+function hogNombre(e) { return hogNombres[e.id] || e.nombre || 'Hogar sin nombre'; }
+async function hogCargarNombres() {
+  const lista = window.__misEmpresas || [];
+  const faltan = lista.filter(e => !hogNombres[e.id]);
+  if (!faltan.length) return;
+  await Promise.all(faltan.map(e =>
+    firebase.database().ref('norteSync/globalEmpresas/' + e.id + '/nombre').once('value')
+      .then(sn => { if (sn.val()) hogNombres[e.id] = String(sn.val()); })
+      .catch(() => {})));
+  try { renderListaHogares(); pintarChipHogar(); } catch (e) {}
+}
+// La pastilla 🏠 junto al mes: sólo si hay más de un hogar. Vive adentro de
+// .month-nav, que viaja entre la barra de arriba y la cabecera de Mi Rumbo,
+// así que se ve en todas las pantallas.
+function pintarChipHogar() {
+  const nav = document.querySelector('.month-nav');
+  if (!nav) return;
+  let chip = document.getElementById('hogarChip');
+  if (!chip) {
+    chip = document.createElement('button');
+    chip.id = 'hogarChip'; chip.type = 'button'; chip.className = 'hogar-chip';
+    chip.onclick = openHogaresModal;
+    nav.insertBefore(chip, nav.firstChild);
+  }
+  const lista = window.__misEmpresas || [];
+  const actual = lista.find(e => e.id === curEmpresa());
+  const varios = lista.length > 1 && !!actual;
+  chip.classList.toggle('on', varios);
+  if (!varios) return;
+  const n = hogNombre(actual);
+  chip.innerHTML = '🏠 <span>' + esc(n) + '</span>';
+  chip.title = 'Estás en «' + n + '». Tocá para cambiar de hogar.';
+}
 function renderListaHogares() {
   const cont = document.getElementById('listaHogares');
   if (!cont) return;
-  cont.innerHTML = '';
   const misEmpresas = window.__misEmpresas || [];
   const actual = curEmpresa();
-  misEmpresas.forEach(function(e) {
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid var(--border);border-radius:12px';
-    const label = document.createElement('span');
-    label.style.cssText = 'font-size:14px;font-weight:600;color:var(--text)';
-    label.textContent = (e.nombre || e.id) + (e.id === actual ? ' (actual)' : '');
-    row.appendChild(label);
-    if (e.id !== actual) {
-      const btn = document.createElement('button');
-      btn.textContent = 'Entrar';
-      btn.style.cssText = 'padding:6px 14px;border-radius:8px;border:none;background:var(--primary);color:white;font-weight:700;font-size:13px;cursor:pointer';
-      btn.onclick = function() { cambiarDeHogar(e.id, e.nombre, e.role); };
-      row.appendChild(btn);
+  cont.innerHTML = misEmpresas.map(function (e) {
+    const n = hogNombre(e), esActual = e.id === actual, admin = e.role === 'admin';
+    if (hogEditando === e.id) {
+      return '<div class="hog-fila' + (esActual ? ' actual' : '') + '"><div class="hog-edit">' +
+        '<input id="hogNuevoNombre" type="text" maxlength="40" value="' + esc(n === 'Hogar sin nombre' ? '' : n) + '" placeholder="Ej: Casa, Casa de mis viejos" ' +
+        'onkeydown="if(event.key===\'Enter\'){hogGuardarNombre(\'' + e.id + '\')}else if(event.key===\'Escape\'){hogCancelarNombre()}">' +
+        '<button class="hog-btn pri" id="hogBtnGuardar" onclick="hogGuardarNombre(\'' + e.id + '\')">Guardar</button>' +
+        '<button class="hog-btn" onclick="hogCancelarNombre()">Cancelar</button></div></div>' +
+        (hogError ? '<div class="hog-err">' + esc(hogError) + '</div>' : '');
     }
-    cont.appendChild(row);
-  });
+    return '<div class="hog-fila' + (esActual ? ' actual' : '') + '">' +
+      '<div class="hog-txt"><div class="hog-nom" title="' + esc(n) + '">' + esc(n) + '</div>' + (esActual ? '<div class="hog-aca">● Estás acá</div>' : '') + '</div>' +
+      '<div class="hog-acc">' +
+        (admin ? '<button class="hog-btn" onclick="hogEditarNombre(\'' + e.id + '\')" title="Cambiar el nombre" aria-label="Cambiar el nombre">✏️<span class="t"> Nombre</span></button>' : '') +
+        (esActual ? '' : '<button class="hog-btn pri" onclick="hogEntrar(\'' + e.id + '\')">Entrar</button>') +
+      '</div></div>';
+  }).join('');
+  if (hogEditando) { const inp = document.getElementById('hogNuevoNombre'); if (inp && document.activeElement !== inp) { inp.focus(); inp.select(); } }
   const limTxt = document.getElementById('hogaresLimiteTexto');
   if (limTxt) {
     const q = cuposActuales();
     limTxt.textContent = 'Tu plan (' + miPlanActual + ') permite ' + q.hogares +
       (q.hogares === 1 ? ' hogar' : ' hogares') + ', con hasta ' + q.integrantes +
       ' integrantes cada uno. Los integrantes de un hogar dependen del plan de ese hogar.';
+  }
+}
+function hogEntrar(id) {
+  const e = (window.__misEmpresas || []).find(x => x.id === id);
+  if (e) cambiarDeHogar(e.id, hogNombre(e), e.role);
+}
+function hogEditarNombre(id) { hogEditando = id; hogError = ''; renderListaHogares(); }
+function hogCancelarNombre() { hogEditando = null; hogError = ''; renderListaHogares(); }
+async function hogGuardarNombre(id) {
+  const inp = document.getElementById('hogNuevoNombre');
+  const nombre = ((inp && inp.value) || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+  if (!nombre) { hogError = 'Poné un nombre para el hogar.'; renderListaHogares(); return; }
+  if (nombre === hogNombres[id]) { hogCancelarNombre(); return; }
+  const btn = document.getElementById('hogBtnGuardar');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando…'; }
+  try {
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const r = await fetch('https://us-central1-norte-finanzas.cloudfunctions.net/renombrarHogar', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken: idToken, empresaId: id, nombre: nombre })
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'No pudimos cambiar el nombre.');
+    hogNombres[id] = d.nombre || nombre;
+    if (id === curEmpresa()) {
+      const ses = getSession(); if (ses) { ses.empresaNombre = hogNombres[id]; setSession(ses); }
+      const emEl = document.getElementById('sidebarEmpresa'); if (emEl) emEl.textContent = hogNombres[id];
+      try { renderAcctBox(); } catch (e) {}
+    }
+    hogEditando = null; hogError = '';
+    renderListaHogares(); pintarChipHogar();
+  } catch (e) {
+    hogError = (e && e.message) || 'No se pudo conectar. Probá de nuevo.';
+    renderListaHogares();
+    const inp2 = document.getElementById('hogNuevoNombre'); if (inp2) inp2.value = nombre;
   }
 }
 function cambiarDeHogar(empresaId, nombre, role) {
@@ -19707,6 +19970,7 @@ async function confirmarCrearHogar() {
     const data = await res.json();
     if (!res.ok) { errEl.textContent = data.error || 'No pudimos crear el hogar.'; errEl.style.display = 'block'; return; }
     window.__misEmpresas = (window.__misEmpresas || []).concat([{ id: data.empresaId, role: 'admin', nombre: data.nombre }]);
+    hogNombres[data.empresaId] = data.nombre;
     cancelarCrearHogar();
     renderListaHogares();
     cambiarDeHogar(data.empresaId, data.nombre, 'admin');
