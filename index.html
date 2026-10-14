@@ -11198,13 +11198,13 @@ function renderTx() {
   const all = getData().filter(t => t.mes === curKey());
 
   // Poblar filtro de rubros: «Todos», «Sin asignar» y después los rubros del
-  // mes en orden alfabético, con cuántos movimientos tiene cada uno (una línea
-  // dividida cuenta en cada rubro de sus partes).
+  // mes de más movimientos a menos (empates, alfabético), con cuántos tiene
+  // cada uno (una línea dividida cuenta en cada rubro de sus partes).
   // «Sin asignar» junta los que no tienen rubro y los «Sin clasificar».
   const sinRub = t => { const r = String(t.rubro || '').trim(); return !r || r === RUBRO_SIN; };
   const cuentaRub = {};
   all.forEach(t => [...new Set(dvRubrosDe(t).filter(r => r && r !== RUBRO_SIN))].forEach(r => { cuentaRub[r] = (cuentaRub[r] || 0) + 1; }));
-  const rubros = Object.keys(cuentaRub).sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+  const rubros = Object.keys(cuentaRub).sort((a, b) => (cuentaRub[b] - cuentaRub[a]) || a.localeCompare(b, 'es', { sensitivity: 'base' }));
   const sinAsignar = all.filter(sinRub).length;
   const rf = document.getElementById('rubroFilt');
   if (fRubro && fRubro !== '__sin__' && !cuentaRub[fRubro]) fRubro = '';
@@ -16364,7 +16364,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.54.002';
+const APP_VERSION = 'v005.54.003';
 let novEntradas = [];
 
 function novLeida(e) {
