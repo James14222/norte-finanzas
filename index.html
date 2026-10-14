@@ -11197,11 +11197,20 @@ function renderTx() {
   pintarPendienteTx();
   const all = getData().filter(t => t.mes === curKey());
 
-  // Poblar filtro de rubros
-  const rubros = [...new Set([].concat(...all.map(dvRubrosDe)).filter(Boolean))];
+  // Poblar filtro de rubros: «Todos», «Sin asignar» y después los rubros del
+  // mes en orden alfabético, con cuántos movimientos tiene cada uno (una línea
+  // dividida cuenta en cada rubro de sus partes).
+  // «Sin asignar» junta los que no tienen rubro y los «Sin clasificar».
+  const sinRub = t => { const r = String(t.rubro || '').trim(); return !r || r === RUBRO_SIN; };
+  const cuentaRub = {};
+  all.forEach(t => [...new Set(dvRubrosDe(t).filter(r => r && r !== RUBRO_SIN))].forEach(r => { cuentaRub[r] = (cuentaRub[r] || 0) + 1; }));
+  const rubros = Object.keys(cuentaRub).sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+  const sinAsignar = all.filter(sinRub).length;
   const rf = document.getElementById('rubroFilt');
-  const prev = rf.value;
-  rf.innerHTML = '<option value="">Todos los rubros</option>' + rubros.map(r=>`<option value="${r}" ${r===prev?'selected':''}>${r}</option>`).join('');
+  if (fRubro && fRubro !== '__sin__' && !cuentaRub[fRubro]) fRubro = '';
+  rf.innerHTML = '<option value="">Todos los rubros</option>' +
+    `<option value="__sin__" ${fRubro === '__sin__' ? 'selected' : ''}>Sin asignar (${sinAsignar})</option>` +
+    rubros.map(r => `<option value="${esc(r)}" ${r === fRubro ? 'selected' : ''}>${esc(r)} (${cuentaRub[r]})</option>`).join('');
 
   // Titulares y extensiones de las tarjetas del mes. Sin consumos de tarjeta
   // el filtro no aparece; si el elegido no existe en este mes, se suelta.
@@ -11222,7 +11231,8 @@ function renderTx() {
 
   let rows = all;
   if (fTipo !== 'Todos') rows = rows.filter(t => t.tipo === fTipo);
-  if (fRubro) rows = rows.filter(t => dvRubrosDe(t).includes(fRubro));
+  if (fRubro === '__sin__') rows = rows.filter(t => { const r = String(t.rubro || '').trim(); return !r || r === RUBRO_SIN; });
+  else if (fRubro) rows = rows.filter(t => dvRubrosDe(t).includes(fRubro));
   if (fSearch) rows = rows.filter(t => t.detalle.toLowerCase().includes(fSearch.toLowerCase()));
   renderAutorSummary(all);
   if (fAutor === 'yo') rows = rows.filter(t => t.creadoPor === curUserId());
@@ -16212,7 +16222,7 @@ function rbIrASinClasificar() {
     }
     showPage('transacciones');
     const f = document.getElementById('rubroFilt');
-    if (f) { f.value = RUBRO_SIN; setRubroFilter(RUBRO_SIN); }
+    if (f) { f.value = '__sin__'; setRubroFilter('__sin__'); }
   } catch (e) {}
 }
 
@@ -16354,7 +16364,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.54.001';
+const APP_VERSION = 'v005.54.002';
 let novEntradas = [];
 
 function novLeida(e) {
