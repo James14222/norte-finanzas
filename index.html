@@ -2893,7 +2893,7 @@ tr:hover td { background: #fafbfc; }
             </select>
             <select class="f-select" id="extFilt" onchange="setExtFilter(this.value)" style="display:none"
                     title="Consumos de tarjeta según quién los hizo: el titular o cada extensión">
-              <option value="">💳 Todas las tarjetas</option>
+              <option value="">💳 Titular / extensión: todos</option>
             </select>
             <select class="f-select tx-orden-movil" id="txOrdenSel" onchange="txSetOrden(this.value)" aria-label="Ordenar">
               <option value="">Orden: por fecha</option>
@@ -2920,7 +2920,7 @@ tr:hover td { background: #fafbfc; }
           <div class="tx-acciones">
             <button class="btn btn-secondary" onclick="clonarMesAnterior()" title="Copia todos los registros del mes anterior a este mes, con sus importes">📋 Clonar anterior</button>
             <button class="btn btn-secondary" onclick="openMasivo()" title="Cargá muchos movimientos de una vez desde un Excel, mapeando tus columnas contra los datos de Norte">📊 Carga masiva</button>
-            <button class="btn btn-secondary" onclick="txExportarExcel(false)" title="Descarga en Excel lo que muestra la tabla, con los filtros que tengas puestos. Para bajar sólo algunos, marcalos y usá «Exportar» en la barra de selección.">📥 Excel</button>
+            <button class="btn btn-secondary" onclick="txPedirExportar()" title="Descarga un Excel. Si marcaste movimientos, sólo esos; si no, todos los que muestra la tabla.">📥 Exportar XLS</button>
             <div class="act-bloque">
               <span class="act-bloque-tit">Replicar fijos</span>
               <button class="btn btn-secondary" onclick="replicarGastosFijos()" title="Crea el esqueleto de tus gastos fijos del mes anterior, sin importe, para no olvidarte de ninguno">Gastos</button>
@@ -2948,7 +2948,7 @@ tr:hover td { background: #fafbfc; }
               <span id="bulkCount">0 seleccionados</span>
               <button class="btn btn-secondary" onclick="clearSelectionTx()">Cancelar</button>
               <button class="btn btn-secondary" onclick="openRubroMasivo()">🏷️ Cambiar rubro</button>
-              <button class="btn btn-secondary" onclick="txExportarExcel(true)">📥 Exportar</button>
+              <button class="btn btn-secondary" onclick="txPedirExportar()">📥 Exportar XLS</button>
               <button class="btn btn-secondary" onclick="openCopiarMes()">📅 Copiar a otro mes</button>
               <button class="btn btn-danger" onclick="askDeleteBulk()">🗑️ Eliminar</button>
             </div>
@@ -3854,8 +3854,8 @@ tr:hover td { background: #fafbfc; }
             <h4>🏷️ Cambiar varios a la vez y exportar</h4>
             <p>Marcá los movimientos con la casilla de la izquierda (o todos con la de arriba). En la barra que aparece:</p>
             <p><strong>🏷️ Cambiar rubro</strong> pasa todos los marcados al rubro que elijas. Los importes, fechas y dueños no cambian. Si marcaste gastos e ingresos juntos, el rubro nuevo se aplica a los del mismo tipo.</p>
-            <p><strong>📥 Exportar</strong> baja a Excel sólo los marcados. El botón <strong>📥 Excel</strong> de arriba baja todo lo que muestra la tabla, con los filtros que tengas puestos.</p>
-            <p>Si cargaste resúmenes de tarjeta con extensiones, el filtro <strong>💳 Todas las tarjetas</strong> te deja ver sólo los consumos del titular o de cada extensión.</p>
+            <p><strong>📥 Exportar XLS</strong> baja un Excel. Si marcaste movimientos, van sólo esos; si no marcaste nada, van todos los que muestra la tabla (con los filtros que tengas puestos). Antes de generarlo, Norte te dice cuántos registros van.</p>
+            <p>En los consumos de tarjeta, el filtro <strong>💳 Titular / extensión</strong> te deja ver sólo los del titular o los de cada extensión, según el nombre que trae el resumen.</p>
           </div>
           <div class="ayuda-bloque">
             <h4>✂️ Dividir una línea</h4>
@@ -11209,9 +11209,15 @@ function renderTx() {
   if (fExt && !exts.includes(fExt)) fExt = '';
   const ef = document.getElementById('extFilt');
   if (ef) {
-    ef.style.display = exts.length ? '' : 'none';
-    ef.innerHTML = '<option value="">💳 Todas las tarjetas</option>' +
-      exts.map(x => `<option value="${esc(x)}" ${x === fExt ? 'selected' : ''}>👤 ${esc(x)}</option>`).join('');
+    // Se ve siempre que el hogar tenga consumos de tarjeta, aunque este mes no
+    // haya: escondido en los meses sin tarjeta no se lo encontraba.
+    const hayTC = exts.length || getData().some(t => isTCOrigen(t));
+    ef.style.display = hayTC ? '' : 'none';
+    ef.disabled = !exts.length;
+    ef.innerHTML = exts.length
+      ? '<option value="">💳 Titular / extensión: todos</option>' +
+        exts.map(x => `<option value="${esc(x)}" ${x === fExt ? 'selected' : ''}>👤 ${esc(x)}</option>`).join('')
+      : '<option value="">💳 Sin consumos de tarjeta este mes</option>';
   }
 
   let rows = all;
@@ -11308,7 +11314,10 @@ function setExtFilter(v) { fExt = v; renderTx(); }
    resumen. Si se lo reconoció entre los integrantes, su nombre en Norte. */
 function txExtDe(t) {
   if (!t || !isTCOrigen(t)) return '';
-  return String(t.titular || t.creadoPorNombre || '').trim() || 'Sin identificar';
+  // Si el resumen no traía titular, creadoPorNombre es quien lo importó (a
+  // veces su mail): eso no es un titular, así que va como «Sin identificar».
+  const n = String(t.titular || '').trim() || String(t.creadoPorNombre || '').trim();
+  return (n && n.indexOf('@') < 0) ? n : 'Sin identificar';
 }
 
 // ── CAMBIO MASIVO DE RUBRO ──────────────────────────────────────
@@ -11380,6 +11389,31 @@ function txAviso(txt) {
 // ── EXPORTAR A EXCEL ────────────────────────────────────────────
 // soloSeleccion: lo marcado. Si no, lo que muestra la tabla con sus filtros
 // (incluye lo que está adentro de los bloques de tarjeta cerrados).
+// Antes de generar el archivo: cuántos van y cuáles. Con algo marcado, sólo
+// lo marcado; sin nada marcado, todo lo que muestra la tabla.
+function txPedirExportar() {
+  const conSel = selectedTx.size > 0;
+  const n = conSel ? rmSeleccion().length : (window._txVisibles || []).length;
+  if (!n) { alert('No hay movimientos para exportar en este mes.'); return; }
+  let ov = document.getElementById('xlsOverlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'xlsOverlay'; ov.className = 'overlay';
+    ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('show'); });
+    document.body.appendChild(ov);
+  }
+  const queVa = conSel
+    ? 'Sólo los movimientos que marcaste.'
+    : (txFiltroActivo() ? 'Todos los que muestra la tabla, con los filtros que tenés puestos.' : 'Todos los movimientos del mes.');
+  ov.innerHTML = '<div class="modal" style="max-width:420px;height:auto">' +
+    '<div class="modal-title">Confirmar exportación</div>' +
+    '<div style="display:flex;align-items:baseline;gap:10px;margin:4px 0 6px"><span style="font-size:14px;color:var(--muted)">Cantidad de registros a exportar:</span>' +
+      '<b id="xlsCant" style="font-size:22px;color:var(--text)">' + n.toLocaleString('es-AR') + '</b></div>' +
+    '<p style="font-size:13px;color:var(--muted);margin:0 0 16px">' + queVa + '</p>' +
+    '<div style="display:flex;gap:10px"><button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="document.getElementById(\'xlsOverlay\').classList.remove(\'show\')">Cancelar</button>' +
+    '<button class="btn btn-primary" style="flex:2;justify-content:center" id="xlsConfirmar" onclick="document.getElementById(\'xlsOverlay\').classList.remove(\'show\');txExportarExcel(' + conSel + ')">📥 Exportar ' + n.toLocaleString('es-AR') + '</button></div></div>';
+  ov.classList.add('show');
+}
 function txExportarExcel(soloSeleccion) {
   if (typeof XLSX === 'undefined') { alert('No se pudo cargar el generador de Excel. Revisá la conexión y probá de nuevo.'); return; }
   const filas = soloSeleccion ? rmSeleccion() : (window._txVisibles || []);
@@ -16320,7 +16354,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.54.000';
+const APP_VERSION = 'v005.54.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -17570,7 +17604,7 @@ function clearSelectionTx() {
       '<span class="bbf-acciones">' +
         '<button class="btn btn-secondary" onclick="clearSelectionTx()">Cancelar</button>' +
         '<button class="btn btn-secondary" onclick="openRubroMasivo()">🏷️ Cambiar rubro</button>' +
-        '<button class="btn btn-secondary" onclick="txExportarExcel(true)">📥 Exportar</button>' +
+        '<button class="btn btn-secondary" onclick="txPedirExportar()">📥 Exportar XLS</button>' +
         '<button class="btn btn-secondary" onclick="openCopiarMes()">📅 Copiar a otro mes</button>' +
         '<button class="btn btn-danger" onclick="askDeleteBulk()">🗑️ Eliminar</button>' +
       '</span>';
