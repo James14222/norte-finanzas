@@ -3084,6 +3084,7 @@ tr:hover td { background: #fafbfc; }
           <button class="rep-tab" onclick="setRepTab('promedios',this)">📈 Promedios</button>
           <button class="rep-tab" onclick="setRepTab('ingresos',this)">💚 Ingresos</button>
           <button class="rep-tab" onclick="setRepTab('tarjetas',this)">💳 Tarjetas</button>
+          <button class="rep-tab" id="repTabHogares" style="display:none" onclick="setRepTab('hogares',this)">🏠 Por hogar</button>
         </div>
         <div id="repMonedaWrap" style="display:flex;align-items:center;gap:6px">
           <span style="font-size:12px;color:var(--muted);font-weight:600">Moneda:</span>
@@ -3190,6 +3191,21 @@ tr:hover td { background: #fafbfc; }
           <div class="report-card full">
             <div class="report-title">📋 Detalle de ingresos</div>
             <div style="overflow-x:auto"><table class="data-table" id="ingDetalleTable"></table></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Por hogar (sólo en «Todos mis hogares») -->
+      <div id="rep-hogares" class="rep-panel">
+        <div class="reports-grid">
+          <div class="report-card full">
+            <div class="report-title">🏠 Tus hogares, uno al lado del otro — <span id="repHogYear"></span></div>
+            <div style="overflow-x:auto"><table class="data-table" id="repHogTabla"></table></div>
+            <div id="repHogNota" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+          </div>
+          <div class="report-card full">
+            <div class="report-title">📊 Gastos de cada mes, por hogar</div>
+            <div class="graf-scroll"><div class="graf-ancho"><canvas id="repHogChart" height="90"></canvas></div></div>
           </div>
         </div>
       </div>
@@ -4198,7 +4214,7 @@ tr:hover td { background: #fafbfc; }
           <div class="ayuda-bloque">
             <h4>Filtros generales</h4>
             <div class="ayuda-ejemplo">
-              <strong>Hogar:</strong> si tenés más de un hogar, elegís cuál estás mirando<br>
+              <strong>Hogar:</strong> si tenés más de un hogar, elegís cuál estás mirando. Si sos quien creó los otros hogares, también aparece <em>🏠 Todos mis hogares</em>: suma todos en cada pestaña y agrega la pestaña <em>Por hogar</em>, con cada hogar al lado del otro<br>
               <strong>Ver:</strong> <em>Agregado</em> (todo el hogar junto), <em>Detalle por integrante</em> o <em>Comparativo entre integrantes</em><br>
               <strong>Moneda:</strong> $ ARS, USD o Ambas — el modo Ambas muestra doble eje en los gráficos
             </div>
@@ -14200,7 +14216,7 @@ let repHogarDataCache = {};    // empresaId -> array de transacciones (cache de 
 let repMiembrosCache = {};     // empresaId -> {uid:{nombre,email}}
 
 // Ocultar/mostrar el selector de moneda según tab
-const TABS_CON_MONEDA = new Set(['evol','rubros','promedios','tarjetas']);
+const TABS_CON_MONEDA = new Set(['evol','rubros','promedios','tarjetas','hogares']);
 
 function setRepMoneda(m, btn) {
   repMoneda = m;
@@ -14226,6 +14242,7 @@ function renderReportes() {
   else if (curRepTab === 'promedios') renderRepPromedios();
   else if (curRepTab === 'ingresos')  renderRepIngresos();
   else if (curRepTab === 'tarjetas')  renderRepTarjetas();
+  else if (curRepTab === 'hogares')   renderRepHogares();
 }
 
 // ── REPORTES: filtros de hogar e integrante ─────────────────
@@ -14237,11 +14254,9 @@ function initReportesFiltros() {
 
   if (misEmpresas.length > 1) {
     hogarWrap.style.display = 'flex';
-    const sel = document.getElementById('repHogarSelect');
-    const activo = curEmpresa();
-    sel.innerHTML = misEmpresas.map(e =>
-      `<option value="${e.id}" ${((curRepHogarId || activo) === e.id) ? 'selected' : ''}>${(e.nombre || e.id)}${e.id === activo ? ' (actual)' : ''}</option>`
-    ).join('');
+    repPintarSelectorHogar();
+    // Los nombres y quién creó cada hogar llegan de la base: al volver, se repinta.
+    repCargarConsolidables().then(repPintarSelectorHogar).catch(() => {});
   } else {
     hogarWrap.style.display = 'none';
   }
@@ -14251,10 +14266,81 @@ function initReportesFiltros() {
 }
 
 function empresaIdVistaEnReportes() {
-  return curRepHogarId || curEmpresa();
+  return (curRepHogarId && curRepHogarId !== REP_TODOS) ? curRepHogarId : curEmpresa();
+}
+
+// ── «TODOS MIS HOGARES» (v005.55) ───────────────────────────────
+// Sólo para el usuario principal: suma su hogar principal y los hogares que
+// él mismo creó. Un integrante de un hogar ajeno no lo ve (y la base tampoco
+// le dejaría leer los otros). Nada se guarda: es una vista de Reportes.
+const REP_TODOS = '__todos__';
+let repConsolidablesIds = null;   // null = todavía no se sabe
+async function repCargarConsolidables() {
+  const uid = curUserId();
+  const propios = (window.__misEmpresas || []).filter(e => e && e.role === 'admin');
+  if (propios.length < 2) { repConsolidablesIds = []; return; }
+  const principal = propios[0].id;
+  const db = firebase.database();
+  const infos = await Promise.all(propios.map(e =>
+    db.ref('norteSync/globalEmpresas/' + e.id).once('value').then(sn => sn.val() || {}).catch(() => ({}))));
+  const ids = [principal];
+  propios.forEach((e, i) => {
+    const inf = infos[i];
+    if (inf.nombre) hogNombres[e.id] = String(inf.nombre);
+    if (e.id === principal) return;
+    if (inf.creadoPor === uid || inf.hogarPrincipal === principal) ids.push(e.id);
+  });
+  // El principal tiene que ser suyo de verdad: si figura como creado por otra
+  // persona, este usuario no es el dueño de la familia de hogares.
+  const infP = infos[0] || {};
+  const esDueno = !infP.creadoPor || infP.creadoPor === uid;
+  repConsolidablesIds = (esDueno && ids.length >= 2) ? ids : [];
+}
+function repPintarSelectorHogar() {
+  const sel = document.getElementById('repHogarSelect');
+  if (!sel) return;
+  const misEmpresas = window.__misEmpresas || [];
+  const activo = curEmpresa();
+  const vista = curRepHogarId || activo;
+  const cons = repConsolidablesIds || [];
+  if (curRepHogarId === REP_TODOS && cons.length < 2) curRepHogarId = null;
+  sel.innerHTML =
+    (cons.length >= 2 ? `<option value="${REP_TODOS}" ${vista === REP_TODOS ? 'selected' : ''}>🏠 Todos mis hogares (${cons.length})</option>` : '') +
+    misEmpresas.map(e =>
+      `<option value="${esc(e.id)}" ${vista === e.id ? 'selected' : ''}>${esc(hogNombre(e))}${e.id === activo ? ' (actual)' : ''}</option>`
+    ).join('');
+}
+async function repCargarHogar(eid) {
+  if (eid === curEmpresa() || repHogarDataCache[eid]) return;
+  try {
+    const snap = await firebase.database().ref('norteSync/empresas/' + eid).once('value');
+    const raw = (snap.val() || {})['fin_data_' + eid];
+    repHogarDataCache[eid] = raw ? JSON.parse(raw) : [];
+  } catch (e) { repHogarDataCache[eid] = []; throw e; }
+}
+// Los movimientos de todos los hogares sumados, cada uno marcado con su hogar.
+function repDatosConsolidados() {
+  const out = [];
+  (repConsolidablesIds || []).forEach(eid => {
+    const rows = eid === curEmpresa() ? getData() : (repHogarDataCache[eid] || []);
+    rows.forEach(t => { if (t) out.push(Object.assign({}, t, { _hogar: eid })); });
+  });
+  return out;
+}
+function repNombreHogar(eid) {
+  const e = (window.__misEmpresas || []).find(x => x.id === eid) || { id: eid };
+  return hogNombre(e);
 }
 
 async function cargarMiembrosParaFiltro() {
+  if (curRepHogarId === REP_TODOS) {
+    // Cada hogar tiene integrantes distintos: en la suma no se filtra por persona.
+    const w = document.getElementById('repIntegranteWrap'); if (w) w.style.display = 'none';
+    curRepIntegrante = '';
+    toggleComparativoUI();
+    renderReportes();
+    return;
+  }
   const eid = empresaIdVistaEnReportes();
   const integranteWrap = document.getElementById('repIntegranteWrap');
   if (!repMiembrosCache[eid]) {
@@ -14288,6 +14374,23 @@ async function onChangeRepHogar(empresaId) {
   const activo = curEmpresa();
   curRepHogarId = (empresaId === activo) ? null : empresaId;
   const statusEl = document.getElementById('repHogarStatus');
+  const tabHog = document.getElementById('repTabHogares');
+  if (tabHog) tabHog.style.display = curRepHogarId === REP_TODOS ? '' : 'none';
+  if (curRepHogarId !== REP_TODOS && curRepTab === 'hogares') {
+    const b = document.querySelector('.rep-tab'); if (b) setRepTab('evol', b);
+  }
+  if (curRepHogarId === REP_TODOS) {
+    if (statusEl) statusEl.textContent = 'Cargando tus hogares…';
+    let fallo = false;
+    for (const eid of (repConsolidablesIds || [])) {
+      try { await repCargarHogar(eid); } catch (e) { fallo = true; }
+    }
+    if (statusEl) statusEl.textContent = (fallo ? 'No pudimos cargar alguno de tus hogares. ' : '') +
+      'Sumando ' + (repConsolidablesIds || []).map(repNombreHogar).join(' + ') + '.';
+    await cargarMiembrosParaFiltro();
+    return;
+  }
+  if (statusEl) statusEl.textContent = '';
   const eid = empresaIdVistaEnReportes();
   if (curRepHogarId && !repHogarDataCache[eid]) {
     if (statusEl) statusEl.textContent = 'Cargando datos del hogar...';
@@ -14325,6 +14428,7 @@ function toggleComparativoUI() {
 function getDataReportes() { return expandirPartes(getDataReportesBanco()); }
 function getDataReportesBanco() {
   const eid = empresaIdVistaEnReportes();
+  if (curRepHogarId === REP_TODOS) return repDatosConsolidados();
   let all = curRepHogarId ? (repHogarDataCache[eid] || []) : getData();
   if (curRepIntegrante && curRepIntegrante !== '__cmp__') {
     all = all.filter(t => (t.creadoPor || 'legacy') === curRepIntegrante);
@@ -14882,6 +14986,66 @@ function fmtMShort(v) {
 const fmtShort = v => '$' + (v >= 1000000 ? (v/1000000).toFixed(1)+'M' : v >= 1000 ? (v/1000).toFixed(0)+'k' : v);
 
 // TAB 1 — EVOLUCIÓN
+function renderRepHogares() {
+  const yEl = document.getElementById('repHogYear'); if (yEl) yEl.textContent = curYear;
+  const tabla = document.getElementById('repHogTabla');
+  if (!tabla) return;
+  const all = getDataReportes();   // ya sumado, con las partes de «Dividir»
+  const ids = repConsolidablesIds || [];
+  const anio = String(curYear), mes = curKey();
+  const usd = repMoneda === 'USD', ambas = repMoneda === 'AMBAS';
+  const v = t => usd ? (Number(t.impUSD) || 0) : (Number(t.impPesos) || 0);
+  const vu = t => Number(t.impUSD) || 0;
+  const f = n => usd ? fmtM(n) : fmtP(n);
+  const fu = n => 'U$S ' + Math.round(n).toLocaleString('es-AR');
+  const calc = (rows) => {
+    const ing = rows.filter(t => t.tipo === 'Ingreso'), gas = rows.filter(t => t.tipo === 'Gasto');
+    const i = ing.reduce((s, t) => s + v(t), 0), g = gas.reduce((s, t) => s + v(t), 0);
+    return { i, g, b: i - g, iu: ing.reduce((s, t) => s + vu(t), 0), gu: gas.reduce((s, t) => s + vu(t), 0) };
+  };
+  const pct = r => r.i > 0 ? Math.round((r.b / r.i) * 100) + '%' : '—';
+  const celda = (n, nu, cls) => `<td class="amt ${cls || ''}">${f(n)}${ambas && nu ? `<div style="font-size:11px;color:var(--muted)">${fu(nu)}</div>` : ''}</td>`;
+  const filas = ids.map(eid => {
+    const rows = all.filter(t => t._hogar === eid);
+    return { eid, y: calc(rows.filter(t => (t.mes || '').startsWith(anio))), m: calc(rows.filter(t => t.mes === mes)) };
+  });
+  const tot = { y: calc(all.filter(t => (t.mes || '').startsWith(anio))), m: calc(all.filter(t => t.mes === mes)) };
+  const nomMes = MESES[Number(mes.split('-')[1]) - 1];
+  const fila = (nombre, r, fuerte) => `<tr${fuerte ? ' style="font-weight:700;border-top:2px solid var(--border)"' : ''}>
+      <td>${nombre}</td>
+      ${celda(r.m.i, r.m.iu, 'positive')}${celda(r.m.g, r.m.gu, 'negative')}${celda(r.m.b, 0, r.m.b >= 0 ? 'positive' : 'negative')}
+      ${celda(r.y.i, r.y.iu, 'positive')}${celda(r.y.g, r.y.gu, 'negative')}${celda(r.y.b, 0, r.y.b >= 0 ? 'positive' : 'negative')}
+      <td>${pct(r.y)}</td></tr>`;
+  tabla.innerHTML = `<thead><tr><th>Hogar</th>
+      <th>Ingresos ${nomMes}</th><th>Gastos ${nomMes}</th><th>Balance ${nomMes}</th>
+      <th>Ingresos ${anio}</th><th>Gastos ${anio}</th><th>Balance ${anio}</th><th>% ahorro ${anio}</th></tr></thead><tbody>` +
+    filas.map(r => fila(esc(repNombreHogar(r.eid)), r)).join('') +
+    fila('Total', tot, true) + '</tbody>';
+  const nota = document.getElementById('repHogNota');
+  if (nota) nota.textContent = 'Cada número es la suma de lo cargado en ese hogar. Las otras pestañas de Reportes también muestran la suma de todos.';
+  // Gráfico: gastos de cada mes, apilados por hogar
+  const PAL = ['#1F6F8B', '#FF8A5C', '#7c3aed', '#10b981', '#E3A67E', '#3b82f6', '#ef4444', '#64748b', '#f59e0b', '#0ea5e9'];
+  const datasets = ids.map((eid, k) => ({
+    label: repNombreHogar(eid),
+    data: Array.from({ length: 12 }, (_, m) => {
+      const key = monthKey(curYear, m);
+      const n = all.filter(t => t._hogar === eid && t.mes === key && t.tipo === 'Gasto').reduce((s, t) => s + v(t), 0);
+      return n || null;
+    }),
+    backgroundColor: PAL[k % PAL.length] + 'cc', borderColor: PAL[k % PAL.length], borderWidth: 1, borderRadius: 3, stack: 'g'
+  }));
+  if (charts.repHog) charts.repHog.destroy();
+  const cv = document.getElementById('repHogChart');
+  if (!cv || typeof Chart === 'undefined') return;
+  charts.repHog = new Chart(cv.getContext('2d'), {
+    type: 'bar',
+    data: { labels: MESES, datasets },
+    options: { responsive: true, maintainAspectRatio: !evolEsAngosto(), interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${f(c.raw || 0)}` } } },
+      scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: n => usd ? 'U$S ' + n : fmtMShort(n) } } } }
+  });
+}
+
 function renderRepEvol() {
   const all = getDataReportes();
   document.getElementById('evolYear').textContent = curYear;
@@ -16388,7 +16552,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.54.004';
+const APP_VERSION = 'v005.55.000';
 let novEntradas = [];
 
 function novLeida(e) {
