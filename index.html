@@ -5225,6 +5225,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
         <div class="form-group">
           <label>Monto Pagado</label>
           <input class="money" id="txPagado" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+          <div id="txPagErr" role="alert" style="display:none;font-size:12px;font-weight:600;color:var(--danger);margin-top:5px;line-height:1.35"></div>
         </div>
         <div class="form-group" style="display:flex;align-items:flex-end">
           <label style="display:none"></label>
@@ -11478,13 +11479,15 @@ function renderTx() {
   const filaTx = t => {
     const saldo = (Number(t.impPesos)||0) - (Number(t.pagado)||0);
     const pendiente = t.tipoGasto === 'Fijo' && (Number(t.impPesos)||0) === 0;
+    // Quedó con monto pagado pero sin importe (se podía hasta v005.56.001).
+    const faltaImp = !pendiente && !isTCOrigen(t) && (Number(t.impPesos)||0) === 0 && (Number(t.pagado)||0) > 0;
     // Para TC: usar tcPagado como flag explícito (cubre ARS y USD)
     const isTCTx  = isTCOrigen(t);
     const tcPendiente = isTCTx && t.tcPagado === false;
     const reint = esReintegro(t);
     return `<tr${pendiente ? ' style="background:#fffbeb"' : ''}>
       <td><input type="checkbox" class="tx-check" data-id="${t.id}" ${selectedTx.has(t.id)?'checked':''} onchange="toggleSelectTx('${t.id}', this.checked)"></td>
-      <td><strong>${esc(txDetalleLimpio(t))}</strong>${txCuotaMovil(t)}${pendiente ? ' <span title="Esqueleto de movimiento fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de ${tcLabel(t)==='TD'?'Débito':'Crédito'}" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>${(t.origen === 'TARJETA' && t.creadoPorNombre) ? '<span style="font-size:10.5px;font-weight:600;color:#5B6B7C;background:rgba(91,107,124,0.10);border:1px solid rgba(91,107,124,0.22);border-radius:6px;padding:1px 6px;margin-left:6px;white-space:nowrap">\uD83D\uDC64 ' + t.creadoPorNombre + '</span>' : ''}` : ''}${dvEsDividida(t) ? `<div class="dv-linea" onclick="dvAbrir('${t.id}')" title="Ver o cambiar el reparto">✂️ ${esc(dvTextoReparto(t))}${t.partesDe ? ' <span class="dv-hered">· igual que la cuota anterior</span>' : ''}</div>` : ''}</td>
+      <td><strong>${esc(txDetalleLimpio(t))}</strong>${txCuotaMovil(t)}${pendiente ? ' <span title="Esqueleto de movimiento fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${faltaImp ? ' <span onclick="openModal(\'' + t.id + '\')" title="Tiene monto pagado pero no importe: tocá para completar el importe" style="cursor:pointer;font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Falta el importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de ${tcLabel(t)==='TD'?'Débito':'Crédito'}" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>${(t.origen === 'TARJETA' && t.creadoPorNombre) ? '<span style="font-size:10.5px;font-weight:600;color:#5B6B7C;background:rgba(91,107,124,0.10);border:1px solid rgba(91,107,124,0.22);border-radius:6px;padding:1px 6px;margin-left:6px;white-space:nowrap">\uD83D\uDC64 ' + t.creadoPorNombre + '</span>' : ''}` : ''}${dvEsDividida(t) ? `<div class="dv-linea" onclick="dvAbrir('${t.id}')" title="Ver o cambiar el reparto">✂️ ${esc(dvTextoReparto(t))}${t.partesDe ? ' <span class="dv-hered">· igual que la cuota anterior</span>' : ''}</div>` : ''}</td>
       <td class="tx-cuota-td">${txCuotaCelda(t)}</td>
       <td>${reint ? BADGE_REINTEGRO : `<span class="badge badge-${t.tipo.toLowerCase()}">${t.tipo}</span>`}</td>
       <td><span class="rubro-tag">${esc(t.rubro||'-')}</span>${t.tipoGasto ? `<span style="display:inline-block;margin-left:5px;font-size:10.5px;font-weight:600;color:var(--muted)">· <span class="tg-full">${t.tipoGasto}</span><span class="tg-abbr">${t.tipoGasto.charAt(0)}</span></span>` : ''}</td>
@@ -16749,7 +16752,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.56.000';
+const APP_VERSION = 'v005.56.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -17824,6 +17827,7 @@ function handleRubroChange(v) {
 }
 
 function openModal(id) {
+  { const _pe = document.getElementById('txPagErr'); if (_pe) _pe.style.display = 'none'; }
   document.getElementById('modalTitle').textContent = id ? 'Editar transacción' : 'Nueva transacción';
   document.getElementById('txId').value = id || '';
   // Los tres campos de importe pasan a tener el interruptor 123/Cuenta.
@@ -17900,6 +17904,26 @@ function saveTx(e) {
   const impU   = numVal('txImpUSD');
   const pagado = numVal('txPagado');
   const tipoGasto = document.getElementById('txTipoGasto').value || 'Variable';
+
+  // El monto pagado es una parte del importe: sin importe no hay qué pagar, y
+  // pagar más que el importe deja un saldo negativo que le resta al saldo
+  // pendiente de los demás. Los reintegros (importe negativo) quedan aparte.
+  const _pagErr = document.getElementById('txPagErr');
+  if (_pagErr) _pagErr.style.display = 'none';
+  const _avisoPag = function (msg, foco) {
+    if (_pagErr) { _pagErr.textContent = msg; _pagErr.style.display = 'block'; }
+    const f = document.getElementById(foco); if (f) f.focus();
+  };
+  if (impP >= 0 && pagado !== 0) {
+    if (!impP) {
+      _avisoPag(impU
+        ? 'El Monto pagado es en pesos y este movimiento no tiene Importe pesos. Dejalo vacío o completá también el importe en pesos.'
+        : 'Para cargar un Monto pagado, primero completá el Importe pesos.', 'txImpPesos');
+      return;
+    }
+    if (pagado < 0) { _avisoPag('El Monto pagado no puede ser negativo.', 'txPagado'); return; }
+    if (pagado > impP + 0.005) { _avisoPag('El Monto pagado no puede ser mayor que el importe (' + fmtP(impP) + ').', 'txPagado'); return; }
+  }
 
   const mes = document.getElementById('txMes').value || curKey();
   const tx = {
@@ -18331,6 +18355,11 @@ function masParsear(){
     const pagRaw = masVal(f,'pagado');
     let pagado = (pagRaw === '' || pagRaw == null) ? (isNaN(p) ? 0 : p) : masNum(pagRaw);
     if (isNaN(pagado)) { pagado = 0; errs.push('Pagado $ no es un número'); }
+    else if (!isNaN(p) && p >= 0 && pagado) {
+      if (!p) errs.push('Tiene Pagado $ pero no Importe $');
+      else if (pagado < 0) errs.push('Pagado $ negativo');
+      else if (pagado > p + 0.005) errs.push('Pagado $ mayor que el Importe $');
+    }
 
     return { n:n, errs:errs, tipo:tipo, fecha:d, detalle:detalle, rubro:rubro, rubroRaw:rubroRaw,
              impPesos: isNaN(p)?0:p, impUSD: isNaN(u)?0:u, tipoGasto:tipoGasto, pagado:pagado,
