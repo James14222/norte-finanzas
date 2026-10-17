@@ -2427,6 +2427,200 @@ tr:hover td { background: #fafbfc; }
 .rb-c-fila.error .rb-c-mot { color:#B91C1C; font-style:normal; }
 .rb-c-ok { color:#16a34a; font-weight:800; } .rb-c-eq { color:var(--muted); font-weight:800; } .rb-c-err { color:#DC2626; font-weight:800; }
 </style>
+<script>
+/* Modo de color (v005.56). 'dia' | 'noche' | 'auto'. Va lo antes posible para
+   que la app abra directo en el modo elegido, sin un segundo de blanco. */
+(function () {
+  var pref = 'dia';
+  try { pref = localStorage.getItem('norte_tema') || 'dia'; } catch (e) {}
+  var oscuro = pref === 'noche' || (pref === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+  if (oscuro) document.documentElement.setAttribute('data-tema', 'noche');
+})();
+</script>
+<style id="temaNoche">
+html[data-tema="noche"] {
+  color-scheme: dark;
+  --bg: #0e1620; --card: #16212d; --text: #e3eaf1; --muted: #9aabbd; --border: #283647;
+  --success: #10b981; --danger: #f05252; --warning: #f59e0b;
+  --brand-navy: #0f1d29; --brand-navy-light: #1c3446;
+  --n-titulo: #cfe0ec;
+}
+html[data-tema="noche"] body { background: var(--bg); color: var(--text); }
+html[data-tema="noche"] img.n-invertir { filter: invert(1) hue-rotate(180deg); }
+html[data-tema="noche"] input, html[data-tema="noche"] select, html[data-tema="noche"] textarea { background-color: var(--card); color: var(--text); border-color: var(--border); }
+html[data-tema="noche"] input::placeholder, html[data-tema="noche"] textarea::placeholder { color: #6f8195; }
+html[data-tema="noche"] option { background: #16212d; color: #e3eaf1; }
+.n-tema-op { display: flex; gap: 6px; }
+.n-tema-op button { flex: 1; padding: 8px 6px; border: 1px solid var(--border); border-radius: 9px; background: var(--card); color: var(--text); font: inherit; font-size: 13px; cursor: pointer; }
+.n-tema-op button.on { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(255,138,92,.25); font-weight: 700; }
+
+/* reglas generadas: colores escritos a mano, traducidos */
+html[data-tema="noche"] .sync-badge.sync-ok{color:#8ae6c4}
+html[data-tema="noche"] .sync-badge.sync-error{color:#f47b7b}
+html[data-tema="noche"] .bulk-bar{background:#36261e}
+html[data-tema="noche"] .bulk-tot .ing{color:#a5f3c2}
+html[data-tema="noche"] #bulkBarFija{background:#36261e}
+html[data-tema="noche"] .nv-ver{background:#36261e}
+html[data-tema="noche"] .nv-tipo.hecho{color:#c7f3d8}
+html[data-tema="noche"] .nv-tipo.propuesta{color:#f7caaf}
+html[data-tema="noche"] .nv-votado{color:#a5f3c2}
+html[data-tema="noche"] .hb-msg.suyo{background:#36261e}
+html[data-tema="noche"] .rf-card{background:#34241c}
+html[data-tema="noche"] .rf-frase{color:var(--n-titulo)}
+html[data-tema="noche"] .hbA-fila.pendiente{background:#362b1d}
+html[data-tema="noche"] .tv-hecho{background:linear-gradient(90deg, var(--primary), #4c352a)}
+html[data-tema="noche"] .tv-fin{color:#eed281}
+html[data-tema="noche"] .dst-pct.ok{color:#a5f3c2}
+html[data-tema="noche"] .dst-atraso{color:#f7c59f}
+html[data-tema="noche"] .rs-chip.cumplido{color:#c7f3d8}
+html[data-tema="noche"] .rs-chip.pausa{color:#f7caaf}
+html[data-tema="noche"] .obj-chip{color:#ccf7f1}
+html[data-tema="noche"] .nva-fila .borrador{color:#f7c59f;background:#362b1d}
+html[data-tema="noche"] .rb-fila.especial{background:#362b1d}
+html[data-tema="noche"] .rb-fila.especial .rb-nom{color:#f7c59f}
+html[data-tema="noche"] .f-select:focus,html[data-tema="noche"] .f-search:focus{background:#151d26}
+html[data-tema="noche"] th{background:#21282f}
+html[data-tema="noche"] tr:hover td{background:#23282c}
+@media (min-width: 881px){html[data-tema="noche"] #page-transacciones thead th{background:#21282f}}
+html[data-tema="noche"] .badge-ingreso{background:#213d2f;color:#ccfbee}
+html[data-tema="noche"] .badge-gasto{background:#381f1f;color:#f0abab}
+html[data-tema="noche"] .rubro-tag{background:#262e32;color:var(--n-titulo)}
+html[data-tema="noche"] .btn-danger{background:#381f1f}
+html[data-tema="noche"] .btn-danger:hover{background:#3e2222}
+html[data-tema="noche"] .cu-hero{background:#332e25;border:1px solid #444038}
+html[data-tema="noche"] .cu-comofunciona{color:var(--primary-dark, #ef9c80)}
+html[data-tema="noche"] .cu-aviso .cu-r{color:var(--primary-dark, #ef9c80)}
+html[data-tema="noche"] .cu-hoja{background:#332e25;border:1px solid #444038}
+html[data-tema="noche"] .cu-fila{border-bottom:1px solid #444038}
+html[data-tema="noche"] .cu-sube{color:#f7b296}
+html[data-tema="noche"] .cu-baja{color:#bcf9e8}
+html[data-tema="noche"] .cu-comprado{color:#bcf9e8}
+html[data-tema="noche"] .cu-relevado{color:#f6e6b3}
+html[data-tema="noche"] .cu-hito::after{background:#36332d}
+html[data-tema="noche"] .cu-hito-rel .cu-punto{background:#332e25}
+html[data-tema="noche"] .cu-mini-x:hover{color:#f47b7b}
+html[data-tema="noche"] .dv-linea{color:#a87cf3}
+html[data-tema="noche"] .dv-tag{color:#a87cf3}
+html[data-tema="noche"] .form-group input:focus,html[data-tema="noche"] .form-group select:focus{background:#151d26}
+html[data-tema="noche"] .alerta-warn{background:#36311d;border:1px solid #5a5336}
+html[data-tema="noche"] .alerta-danger{background:#351d1d;border:1px solid #4c2d2d}
+html[data-tema="noche"] .alerta-info{background:#1d2835;border:1px solid #2f3d4e}
+html[data-tema="noche"] .hallazgo-badge{background:#241e37;color:#9a86ea}
+html[data-tema="noche"] .hallazgo-pregunta{color:#9a86ea;background:#201c33}
+html[data-tema="noche"] .chat-avatar{background:#151d26}
+html[data-tema="noche"] .data-table th{background:#21282f}
+html[data-tema="noche"] .data-table tr:hover td{background:#23282c}
+html[data-tema="noche"] .ing-total-row td{background:#1d3525 !important}
+html[data-tema="noche"] .qp-input:focus{background:#151d26}
+html[data-tema="noche"] .ac-drop{background:#151d26}
+html[data-tema="noche"] .ac-item{border-bottom:1px solid #2c3741}
+html[data-tema="noche"] .ac-item:hover{background:#21282f}
+html[data-tema="noche"] .scenario-card.sc-base{background:#201c34}
+html[data-tema="noche"] .scenario-card.sc-opt{background:#1d3525}
+html[data-tema="noche"] .scenario-card.sc-cons{background:#36311d}
+html[data-tema="noche"] .chat-sug:hover{background:#1d2835}
+html[data-tema="noche"] .chat-input:focus{background:#151d26}
+html[data-tema="noche"] .budget-input:focus{background:#151d26}
+html[data-tema="noche"] .progress-bar-track{background:#272b2f}
+html[data-tema="noche"] .pbf-none{background:#2f343b}
+html[data-tema="noche"] .budget-msg.warn{color:#f7c59f}
+html[data-tema="noche"] .budget-msg.over{color:#f09999}
+html[data-tema="noche"] .budget-msg.ok{color:#c0fae9}
+html[data-tema="noche"] .insight-tip.tip-good{background:#213d2f;color:#ccfbee}
+html[data-tema="noche"] .insight-tip.tip-warn{background:#3e3922;color:#f7caaf}
+html[data-tema="noche"] .insight-tip.tip-bad{background:#381f1f;color:#f0abab}
+html[data-tema="noche"] .insight-tip.tip-info{background:#1f2539;color:#a9a5e5}
+html[data-tema="noche"] .pg-hbar-fill{background:linear-gradient(90deg, #FF8A5C, #4b3929 70%, #3f3122)}
+html[data-tema="noche"] .pg-motor.eje .pg-mk{color:#f7b296}
+html[data-tema="noche"] .pg-md{color:#c2cbd5}
+html[data-tema="noche"] .pg-motor.eje .pg-tarifa b{color:#f7b296}
+html[data-tema="noche"] .pg-hito.ok{border-color:#313941}
+html[data-tema="noche"] .pg-spt p{color:#c2cbd5}
+html[data-tema="noche"] .txg-flecha{color:#a87cf3}
+html[data-tema="noche"] .txg-nom{color:#a87cf3}
+html[data-tema="noche"] .txg-pend{color:#f7caaf;background:#3e3922}
+html[data-tema="noche"] .txg-ok{color:#ccfbee;background:#213d2f}
+html[data-tema="noche"] .txg-alerta{color:#f5bdaa;background:#453626}
+html[data-tema="noche"] .cuota-badge{color:#7c7ef3}
+html[data-tema="noche"] .ayuda-bloque h4{color:var(--n-titulo)}
+html[data-tema="noche"] .ayuda-tip{background:#362f1d}
+html[data-tema="noche"] .lsc-brand-name{color:#f49d7b}
+html[data-tema="noche"] .lsc-brand-sub{color:#eed281}
+html[data-tema="noche"] .lsc-form-card{background:rgba(21,29,38,0.97)}
+html[data-tema="noche"] .lsc-form-name{color:var(--n-titulo)}
+html[data-tema="noche"] .login-field input,html[data-tema="noche"] .login-field select{background:#151d26}
+html[data-tema="noche"] #loginError{color:#f47b7b}
+html[data-tema="noche"] .login-msg-err{color:#f47b7b}
+html[data-tema="noche"] .login-msg-ok{color:#a5f3c2}
+html[data-tema="noche"] .admin-table tr:hover td{background:#23282c}
+html[data-tema="noche"] .badge-admin{background:#3e3922;color:#f7caaf}
+html[data-tema="noche"] .badge-viewer{background:#1f2e39;color:#b8e2f9}
+html[data-tema="noche"] .bank-step-box.secondary .bank-step-label{color:var(--n-titulo)}
+html[data-tema="noche"] #guiaCaja{background:var(--card, #151d26)}
+html[data-tema="noche"] .guia-paso{color:var(--primary, #f49d7b)}
+html[data-tema="noche"] .guia-detalle{color:var(--text, #e5edf4)}
+html[data-tema="noche"] .guia-sirve{color:var(--text, #e5edf4)}
+html[data-tema="noche"] .guia-cortar{color:var(--muted, #acb7c5)}
+html[data-tema="noche"] .guia-cortar:hover{color:var(--text, #e5edf4);border-color:var(--line, #343d45);background:var(--bg, #252b30)}
+html[data-tema="noche"] .guia-atras{color:var(--muted, #acb7c5)}
+html[data-tema="noche"] .guia-atras:hover{background:var(--bg, #252b30)}
+html[data-tema="noche"] .ob-tipo-btn.sel-ingreso{color:#99f6d7}
+html[data-tema="noche"] .ob-tipo-btn.sel-gasto{color:#f47b7b}
+html[data-tema="noche"] .ob-success-checks li .ck{color:#99f6d7}
+html[data-tema="noche"] .gps-header-sub{color:#7ca1f3}
+@media (max-width: 880px){html[data-tema="noche"] .gps-volver{color:#7ca1f3 !important}}
+html[data-tema="noche"] .mas-drop:hover,html[data-tema="noche"] .mas-drop.over{background:#34241d}
+html[data-tema="noche"] .mas-map select.falta{background:#351d1d}
+html[data-tema="noche"] .mas-tabla th{background:#21282f}
+html[data-tema="noche"] .mas-tabla tr.mal td{background:#351d1d}
+html[data-tema="noche"] .mas-chip.ok{background:#1e362b;color:#c0fae9}
+html[data-tema="noche"] .mas-chip.mal{background:#351d1d;color:#f09999}
+html[data-tema="noche"] .cm-mes.on{background:#36261e}
+html[data-tema="noche"] .fx-strip{background:#25272c}
+html[data-tema="noche"] .fx-seg{background:#1c2531}
+html[data-tema="noche"] .fx-seg button.on{background:#151d26}
+html[data-tema="noche"] .cards-grid .card{background:#34241c}
+html[data-tema="noche"] .fx-tag{background:#282b30;border:1px solid #3b4046}
+html[data-tema="noche"] .acct-chip.pio{color:#fceee8}
+html[data-tema="noche"] .calc-eco.ok{color:#bcf9e8}
+html[data-tema="noche"] .calc-eco.mal{color:#f7b296}
+html[data-tema="noche"] .calc-expr button:hover{color:#f47b7b}
+html[data-tema="noche"] .tx-cuota{background:#252b30;color:#c5dbe9}
+html[data-tema="noche"] .tx-cuota.ultima{background:#203a29;color:#c0fae9}
+html[data-tema="noche"] .tx-cuota-movil{color:#c5dbe9;background:#252b30}
+html[data-tema="noche"] .tx-cuota-movil.ultima{background:#203a29;color:#c0fae9}
+html[data-tema="noche"] .tc-bloque .btn-deuda{border-color:#4e382f;color:#f7b296;background:#34251c}
+html[data-tema="noche"] .dc-fop{background:#151d26}
+html[data-tema="noche"] .dc-kpi.a{border-color:#4e382f;background:#34251c}
+html[data-tema="noche"] .dc-kpi.b{border-color:#39434b;background:#212930}
+html[data-tema="noche"] .dc-kpi.a .dc-kval{color:#f7b296}
+html[data-tema="noche"] .dc-kpi.b .dc-kval{color:var(--n-titulo)}
+html[data-tema="noche"] .dc-kusd{color:var(--n-titulo)}
+html[data-tema="noche"] .dc-aviso{background:#36311d;border:1px solid #5a5336;color:#f7caaf}
+html[data-tema="noche"] .dc-sec{color:var(--n-titulo)}
+html[data-tema="noche"] .dc-tabla td{border-bottom:1px solid #2c3741}
+html[data-tema="noche"] .dc-peso{background:#252b30}
+html[data-tema="noche"] .dc-tag.pesada{background:#381f1f;color:#f09999}
+html[data-tema="noche"] .dc-tag.media,html[data-tema="noche"] .dc-tag.vieja{background:#3e3922;color:#f7caaf}
+html[data-tema="noche"] .dc-tag.liviana{background:#203a29;color:#c0fae9}
+html[data-tema="noche"] .dc-poco-barra{background:#252b30}
+html[data-tema="noche"] .dc-poco b{color:var(--n-titulo)}
+html[data-tema="noche"] .dc-det{background:#151d26}
+html[data-tema="noche"] .dc-det summary{color:var(--n-titulo)}
+html[data-tema="noche"] .tc-orden-info a{color:var(--n-titulo)}
+html[data-tema="noche"] .tc-masivo{background:#34251c;border:1px solid #4e382f;color:#f5bdaa}
+html[data-tema="noche"] .tc-th-ord:hover{color:var(--n-titulo)}
+html[data-tema="noche"] .rubro-auto.igual{color:#7ca1f3}
+html[data-tema="noche"] #page-transacciones thead th.tx-th-ord,html[data-tema="noche"] .tc-th-ord{color:var(--n-titulo)}
+html[data-tema="noche"] #page-transacciones thead th.tx-th-ord:hover,html[data-tema="noche"] .tc-th-ord:hover{color:var(--n-titulo)}
+html[data-tema="noche"] .rb-sel-barra{background:#351d1d;border:1px solid #4c2d2d}
+html[data-tema="noche"] .rb-sel-n{color:#f0abab}
+html[data-tema="noche"] .rb-fila.selec.on{background:#351d1d}
+html[data-tema="noche"] .rb-carga-ayuda a{color:var(--n-titulo)}
+html[data-tema="noche"] .rb-c-fila.error .rb-c-mot{color:#f09999}
+html[data-tema="noche"] .rb-c-ok{color:#a5f3c2}
+html[data-tema="noche"] .rb-c-err{color:#eb8585}
+</style>
 </head>
 <body>
 
@@ -2726,6 +2920,7 @@ tr:hover td { background: #fafbfc; }
     <button id="navMiPerfil" onclick="openMiPerfil()" title="Mi perfil" aria-label="Mi perfil">👤</button>
     <button onclick="openPlanModal()" title="Mi plan" aria-label="Mi plan">💎</button>
     <button onclick="openHogaresModal()" title="Mis hogares" aria-label="Mis hogares">🏠</button>
+    <button id="temaBtn" onclick="norteTemaAlternar()" title="Pasar a modo noche" aria-label="Pasar a modo noche">🌙</button>
   </div>
   <div class="sidebar-footer">
     <span class="sync-badge sync-offline" id="syncStatus"><span>☁️</span> Conectando…</span>
@@ -4463,6 +4658,7 @@ tr:hover td { background: #fafbfc; }
           <p class="subtitulo">Perfil, contraseña, sincronización, backups e instalación en el celular</p>
           <div class="ayuda-bloque">
             <h4>Mi perfil</h4>
+            <p><strong>Apariencia:</strong> en Mi perfil elegís <strong>Día</strong>, <strong>Noche</strong> (fondo oscuro y letras claras, para descansar la vista) o <strong>Automático</strong>, que sigue el modo de tu celular o computadora. También podés alternar con el botón 🌙 / ☀️ del menú. Tu elección vale en todos tus aparatos; tus datos no cambian.</p>
             <p>Desde el menú podés completar y actualizar tus datos personales. Sirve para que Norte se dirija a vos por tu nombre y para que las notificaciones lleguen a la dirección correcta.</p>
           </div>
           <div class="ayuda-bloque">
@@ -5726,6 +5922,7 @@ async function bootApp(firebaseUser) {
   emEl.textContent = empresaNombre;
   try { fxCargarModo(); renderAcctBox(); } catch(e){}
   try { pintarChipHogar(); hogCargarNombres(); } catch(e){}
+  try { if (window.norteTemaDesdeNube) norteTemaDesdeNube(); } catch(e){}
 
   // Mostrar Admin nav si corresponde
   if (isAdmin()) document.getElementById('navAdmin').style.display = 'flex';
@@ -16552,7 +16749,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.55.000';
+const APP_VERSION = 'v005.56.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -20939,6 +21136,15 @@ function subtituloRumbo() {
         campo('pfCiudad', 'Ciudad', p.ciudad, 'La Plata') +
         campo('pfBarrio', 'Barrio', p.barrio, 'Centro') +
       '</div>' +
+      '<div class="form-group"><label>Apariencia</label>' +
+        '<div class="n-tema-op">' +
+          ['dia', 'noche', 'auto'].map(function (t) {
+            var et = { dia: '☀️ Día', noche: '🌙 Noche', auto: '🌓 Automático' }[t];
+            return '<button type="button" data-t="' + t + '" class="' + (norteTemaPref() === t ? 'on' : '') + '" onclick="norteTemaElegir(\'' + t + '\')">' + et + '</button>';
+          }).join('') +
+        '</div>' +
+        '<div style="font-size:11px;color:var(--muted);margin-top:4px">Automático sigue el modo de tu celular o computadora. Se cambia al instante y vale en todos tus aparatos.</div>' +
+      '</div>' +
       '<div id="pfError" style="color:#ef4444;font-size:12px;margin-bottom:8px;display:none"></div>' +
       '<div style="display:flex;gap:10px;margin-top:8px">' +
         '<button class="btn btn-secondary" style="flex:1" onclick="document.getElementById(\'perfilOverlay\').style.display=\'none\'">Cancelar</button>' +
@@ -23741,6 +23947,155 @@ if ('serviceWorker' in navigator) {
   }
   document.addEventListener("click", function () { setTimeout(pintar, 300); }, true);
   setInterval(pintar, 1200);
+})();
+</script>
+<script>
+// ── MODO NOCHE (v005.56) ─────────────────────────────────────────────────
+// Los estilos que arma el código con colores escritos a mano se traducen con
+// la MISMA lógica que las reglas CSS (ver p_noche.py). Se guarda el original
+// para volver al modo día sin recargar.
+(function () {
+  var BASE_H = 213 / 360;
+  function parse(c) {
+    c = String(c || '').trim().toLowerCase();
+    if (c === 'white') return [255, 255, 255, 1];
+    var m = c.match(/^#([0-9a-f]{3,8})$/);
+    if (m) { var h = m[1]; if (h.length < 6) h = h.split('').map(function (x) { return x + x; }).join('');
+      return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16), h.length === 8 ? parseInt(h.slice(6, 8), 16) / 255 : 1]; }
+    m = c.match(/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)$/);
+    if (m) return [+m[1], +m[2], +m[3], m[4] === undefined ? 1 : +m[4]];
+    return null;
+  }
+  function toHls(c) {
+    var r = c[0] / 255, g = c[1] / 255, b = c[2] / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, h = 0, s = 0;
+    if (mx !== mn) { var d = mx - mn; s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+      h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h /= 6; }
+    return [h, l, s, c[3]];
+  }
+  function fromHls(h, l, s, a) {
+    l = Math.max(0, Math.min(1, l)); s = Math.max(0, Math.min(1, s));
+    function f(p, q, t) { if (t < 0) t += 1; if (t > 1) t -= 1; if (t < 1 / 6) return p + (q - p) * 6 * t; if (t < 1 / 2) return q; if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6; return p; }
+    var r, g, b; if (s === 0) { r = g = b = l; } else { var q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q; r = f(p, q, h + 1 / 3); g = f(p, q, h); b = f(p, q, h - 1 / 3); }
+    var R = Math.round(r * 255), G = Math.round(g * 255), B = Math.round(b * 255);
+    return a >= 0.999 ? 'rgb(' + R + ', ' + G + ', ' + B + ')' : 'rgba(' + R + ', ' + G + ', ' + B + ', ' + (Math.round(a * 1000) / 1000) + ')';
+  }
+  function fondo(c) { var x = toHls(c); if (x[3] < 0.6 || x[1] < 0.72) return null;
+    return x[2] < 0.18 ? fromHls(BASE_H, 0.115 + (1 - x[1]) * 0.45, 0.28, x[3]) : fromHls(x[0], 0.15 + (1 - x[1]) * 0.35, Math.min(x[2], 0.7) * 0.42, x[3]); }
+  function texto(c) { var x = toHls(c); if (x[1] >= 0.72 || (x[2] < 0.3 && x[1] >= 0.6)) return null;
+    return x[2] < 0.3 ? fromHls(BASE_H, 0.9 - x[1] * 0.35, 0.18, x[3]) : fromHls(x[0], Math.max(0.72, 1 - x[1] * 0.55), Math.min(x[2], 0.85), x[3]); }
+  function borde(c) { var x = toHls(c); if (x[3] < 0.6 || x[1] < 0.75) return null;
+    return fromHls(x[2] >= 0.18 ? x[0] : BASE_H, 0.2 + (1 - x[1]) * 0.35, Math.min(x[2], 0.5) * 0.5, x[3]); }
+  var RE = /#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)|\bwhite\b/g;
+  function trad(val, f) {
+    var cambio = false;
+    var nv = String(val).replace(RE, function (m) { var c = parse(m); if (!c) return m; var n = f(c); if (n == null) return m; cambio = true; return n; });
+    return cambio ? nv : null;
+  }
+  var PROPS = [['color', texto], ['background-color', fondo], ['background-image', fondo], ['background', fondo],
+               ['border-color', borde], ['border-top-color', borde], ['border-bottom-color', borde],
+               ['border-left-color', borde], ['border-right-color', borde], ['outline-color', borde]];
+  var hechos = new WeakMap();   // elemento -> cssText que dejamos nosotros
+  function soloImagen(el) {
+    // La pastilla blanca detrás de un logo (bancos) se respeta: sin ella el logo se pierde.
+    return el.children.length === 1 && el.children[0].tagName === 'IMG' && !el.textContent.trim();
+  }
+  function adaptar(el) {
+    if (!el || el.nodeType !== 1 || !el.hasAttribute('style')) return;
+    if (hechos.get(el) === el.getAttribute('style')) return;
+    if (el.closest && el.closest('[data-tema-fijo]')) return;
+    var st = el.style, orig = el.getAttribute('style'), toco = false;
+    if (!el.hasAttribute('data-n-dia')) el.setAttribute('data-n-dia', orig);
+    PROPS.forEach(function (pf) {
+      var v = st.getPropertyValue(pf[0]); if (!v) return;
+      if (pf[0] === 'color' && /var\(--brand-navy/.test(v)) { st.setProperty('color', 'var(--n-titulo)', st.getPropertyPriority('color')); toco = true; return; }
+      if (pf[1] === fondo && soloImagen(el)) return;
+      var nv = trad(v, pf[1]); if (nv) { st.setProperty(pf[0], nv, st.getPropertyPriority(pf[0])); toco = true; }
+    });
+    // Un texto con var(--brand-navy) en el atributo pero sin que el navegador lo exponga por propiedad
+    if (!toco && /(^|;)\s*color\s*:\s*var\(--brand-navy/.test(orig)) { st.setProperty('color', 'var(--n-titulo)'); toco = true; }
+    if (!toco) el.removeAttribute('data-n-dia');
+    hechos.set(el, el.getAttribute('style'));
+  }
+  function adaptarArbol(raiz) {
+    if (!raiz || raiz.nodeType !== 1) return;
+    adaptar(raiz);
+    var l = raiz.querySelectorAll('[style]');
+    for (var i = 0; i < l.length; i++) adaptar(l[i]);
+  }
+  function restaurar() {
+    document.querySelectorAll('[data-n-dia]').forEach(function (el) {
+      el.setAttribute('style', el.getAttribute('data-n-dia')); el.removeAttribute('data-n-dia');
+    });
+    hechos = new WeakMap();
+  }
+  var obs = null, pend = [], raf = 0;
+  function encender() {
+    adaptarArbol(document.body);
+    if (obs) return;
+    obs = new MutationObserver(function (muts) {
+      muts.forEach(function (m) {
+        if (m.type === 'attributes') pend.push(m.target);
+        else m.addedNodes.forEach(function (n) { if (n.nodeType === 1) pend.push(n); });
+      });
+      if (!raf) raf = requestAnimationFrame(function () { raf = 0; var l = pend; pend = []; l.forEach(adaptarArbol); });
+    });
+    obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+  }
+  function apagar() { if (obs) { obs.disconnect(); obs = null; } restaurar(); }
+
+  // Gráficos: ejes, grilla y leyendas.
+  var chartDia = null;   // los valores de fábrica, para volver al día tal cual estaba
+  function graficos(oscuro) {
+    try {
+      if (typeof Chart === 'undefined') return;
+      if (!chartDia) chartDia = { color: Chart.defaults.color, borderColor: Chart.defaults.borderColor };
+      Chart.defaults.color = oscuro ? '#b6c4d2' : chartDia.color;
+      Chart.defaults.borderColor = oscuro ? 'rgba(255,255,255,0.08)' : chartDia.borderColor;
+    } catch (e) {}
+  }
+
+  window.norteTemaPref = function () { try { return localStorage.getItem('norte_tema') || 'dia'; } catch (e) { return 'dia'; } };
+  function oscuroPara(pref) { return pref === 'noche' || (pref === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches); }
+  window.norteTemaAplicar = function (redibujar) {
+    var osc = oscuroPara(window.norteTemaPref());
+    var antes = document.documentElement.getAttribute('data-tema') === 'noche';
+    if (osc) document.documentElement.setAttribute('data-tema', 'noche'); else document.documentElement.removeAttribute('data-tema');
+    if (osc) encender(); else apagar();
+    graficos(osc);
+    var b = document.getElementById('temaBtn');
+    if (b) { b.textContent = osc ? '☀️' : '🌙'; b.title = osc ? 'Pasar a modo día' : 'Pasar a modo noche'; b.setAttribute('aria-label', b.title); }
+    if (redibujar !== false && antes !== osc) { try { if (typeof render === 'function') render(); } catch (e) {} }
+  };
+  window.norteTemaElegir = function (pref, guardarEnNube) {
+    if (['dia', 'noche', 'auto'].indexOf(pref) < 0) pref = 'dia';
+    try { localStorage.setItem('norte_tema', pref); } catch (e) {}
+    window.norteTemaAplicar();
+    document.querySelectorAll('.n-tema-op button').forEach(function (bt) { bt.classList.toggle('on', bt.dataset.t === pref); });
+    if (guardarEnNube !== false) {
+      try { var u = firebase.auth().currentUser; if (u) firebase.database().ref('norteSync/prefs/' + u.uid + '/tema').set(pref).catch(function () {}); } catch (e) {}
+    }
+    try { if (window.norteEv) window.norteEv('tema_elegido', pref); } catch (e) {}
+  };
+  // El botón del menú alterna día ↔ noche (deja la elección fija).
+  window.norteTemaAlternar = function () {
+    var osc = document.documentElement.getAttribute('data-tema') === 'noche';
+    window.norteTemaElegir(osc ? 'dia' : 'noche');
+  };
+  // Lo que eligió en otro aparato manda: se lee al entrar.
+  window.norteTemaDesdeNube = function () {
+    try {
+      var u = firebase.auth().currentUser; if (!u) return;
+      firebase.database().ref('norteSync/prefs/' + u.uid + '/tema').once('value').then(function (sn) {
+        var v = sn.val();
+        if (v && ['dia', 'noche', 'auto'].indexOf(v) >= 0 && v !== window.norteTemaPref()) window.norteTemaElegir(v, false);
+      }).catch(function () {});
+    } catch (e) {}
+  };
+  try {
+    if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { if (window.norteTemaPref() === 'auto') window.norteTemaAplicar(); });
+  } catch (e) {}
+  window.norteTemaAplicar(false);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { window.norteTemaAplicar(false); });
 })();
 </script>
 </body>
