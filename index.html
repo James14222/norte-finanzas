@@ -2154,6 +2154,19 @@ tr:hover td { background: #fafbfc; }
     .tc-pop-paso{font-size:12.5px;color:var(--text);line-height:1.55;margin-bottom:9px}
     .tc-pop-nota{font-size:11.5px;color:var(--muted);line-height:1.5;padding-top:9px;
       border-top:1px solid var(--border)}
+    /* Tarjetas va aparte de los demás botones: tono azulado propio, borde
+       marcado y rótulo con ícono, para que se lea como un circuito distinto
+       (cargar el resumen → pagar la tarjeta → ver la deuda). */
+    .tx-acciones .tc-bloque{border:2px solid #7FA8C9;background:#EEF4F9;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.6)}
+    .tx-acciones .tc-bloque .tc-bloque-tit{color:#2F5F86;font-size:10.5px}
+    .tx-acciones .tc-bloque .btn{font-size:11.5px;padding:7px 10px;white-space:nowrap}
+    .tx-acciones .tc-bloque .btn-secondary:not(.btn-deuda){background:#fff;border-color:#B9D0E3}
+    .tx-acciones .tc-bloque .btn-secondary:not(.btn-deuda):hover{border-color:#4A7296}
+    html[data-tema="noche"] .tx-acciones .tc-bloque{border-color:#4A7296;background:#14273a;box-shadow:none}
+    html[data-tema="noche"] .tx-acciones .tc-bloque .tc-bloque-tit{color:#9cc3e0}
+    html[data-tema="noche"] .tx-acciones .tc-bloque .btn-secondary:not(.btn-deuda){background:#1b3045;border-color:#35587a;color:#e3eaf1}
+    html[data-tema="noche"] .tx-acciones .tc-bloque .btn-secondary:not(.btn-deuda):hover{border-color:#7FA8C9}
     @media (max-width:880px){
       .tc-bloque,.act-bloque{flex-wrap:wrap;max-width:100%}
       .tc-pop{width:auto;left:0;right:0}
@@ -3167,12 +3180,12 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
               <button class="btn btn-secondary" onclick="replicarIngresosFijos()" title="Toma los ingresos que marcaste como Fijos el mes anterior y los copia a este mes sin importe, para completar cuando los cobres">Ingresos</button>
             </div>
             <div class="tc-bloque">
-            <span class="tc-bloque-tit">Tarjetas</span>
+            <span class="tc-bloque-tit">💳 Tarjetas</span>
             <button class="btn btn-secondary" onclick="document.getElementById('tcFileInput').click()"
-                    title="Subí el resumen en PDF de tu tarjeta de crédito — sirve para casi cualquier banco, Visa o Mastercard. Norte lee los consumos, las cuotas y los impuestos, y valida los totales contra el propio resumen.">Resumen</button>
+                    title="Subí el resumen en PDF de tu tarjeta de crédito — sirve para casi cualquier banco, Visa o Mastercard. Norte lee los consumos, las cuotas y los impuestos, y valida los totales contra el propio resumen.">Cargar resumen</button>
             <input type="file" id="tcFileInput" accept=".pdf,.xlsx,.xls" style="display:none" onchange="handleTCImport(this)">
             <button class="btn btn-secondary" onclick="openPagarTC()"
-                    title="Cuando te debitan el resumen, marcá como pagados todos los consumos de esa tarjeta de una sola vez.">Pagar</button>
+                    title="Cuando te debitan el resumen, marcá como pagados todos los consumos de esa tarjeta de una sola vez.">Pagar tarjeta</button>
             <button class="btn btn-secondary btn-deuda" onclick="openDeudaCuotas()"
                     title="Cuánto te falta pagar de todo lo que compraste en cuotas: el próximo resumen y la deuda total, por tarjeta, por rubro y por titular.">Deuda en cuotas</button>
             <button type="button" class="tc-ayuda-btn" onclick="tcMiniAyuda(event)" aria-label="Cómo funciona" title="Cómo funciona">?</button>
@@ -4009,7 +4022,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
               <strong>📋 Clonar anterior</strong> — copia <em>todos</em> los movimientos del mes pasado a este mes, con sus importes. Sirve cuando tu mes se repite casi igual.<br>
               <strong>Replicar fijos → Gastos</strong> — trae sólo los gastos que marcaste como <em>Fijos</em> el mes pasado y los deja acá con importe $0, para completarlos cuando lleguen los vencimientos. A diferencia de Clonar, no trae los montos ni los movimientos variables.<br>
               <strong>Replicar fijos → Ingresos</strong> — lo mismo con los ingresos: el sueldo, un alquiler que cobrás, una cuota que te pagan. Marcalos con <em>Tipo de ingreso = Fijo</em> una vez y después los traés mes a mes de un toque.<br>
-              <strong>Tarjetas → Resumen</strong> — sube el resumen de tarjeta y carga todos los consumos de una (ver la sección Tarjetas).<br>
+              <strong>Tarjetas → Cargar resumen</strong> — sube el resumen de tarjeta y carga todos los consumos de una (ver la sección Tarjetas).<br>
               <strong>Tarjetas → Pagar</strong> — marca como pagado un resumen completo de tarjeta en un solo click.
             </div>
             <div class="ayuda-tip">Los gastos de tarjeta de crédito no se clonan: se importan de nuevo cada mes desde el archivo del banco, porque cambian todos los meses.</div>
@@ -4185,7 +4198,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
           </div>
           <div class="ayuda-bloque">
             <h4>El camino corto: el PDF del resumen</h4>
-            <p>Descargá de tu homebanking el <strong>resumen de la tarjeta en PDF</strong> — el mismo que te manda el banco todos los meses — y arrastralo a <strong>Transacciones → Tarjetas → Resumen</strong>. Listo, no hay que configurar nada.</p>
+            <p>Descargá de tu homebanking el <strong>resumen de la tarjeta en PDF</strong> — el mismo que te manda el banco todos los meses — y arrastralo a <strong>Transacciones → Tarjetas → Cargar resumen</strong>. Listo, no hay que configurar nada.</p>
             <div class="ayuda-ejemplo">
               Norte lo lee en menos de un segundo y reconoce solo:<br>
               • <strong>De qué banco es</strong> — no se lo tenés que decir<br>
@@ -4265,7 +4278,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
           </div>
           <div class="ayuda-bloque">
             <h4>Pagar el resumen</h4>
-            <p>Cuando te debitan la tarjeta, usá <strong>Tarjetas → Pagar</strong>. Norte agrupa lo pendiente por <strong>tarjeta + moneda</strong> — con el nombre que vos le pusiste al darla de alta — y te muestra el total de cada combinación:</p>
+            <p>Cuando te debitan la tarjeta, usá <strong>Tarjetas → Pagar tarjeta</strong>. Norte agrupa lo pendiente por <strong>tarjeta + moneda</strong> — con el nombre que vos le pusiste al darla de alta — y te muestra el total de cada combinación:</p>
             <div class="ayuda-ejemplo">
               🏦 Galicia · Visa — ARS · 48 ítems · $1.459.786,61 → Marcar pagado<br>
               🏦 Galicia · Visa — USD · 12 ítems · U$S 439,06 → Marcar pagado<br>
@@ -5010,7 +5023,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
           <div style="flex:1">
             <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">Para tarjetas de crédito ya no hace falta configurar nada</div>
             <p style="font-size:13px;color:var(--muted);margin:0 0 12px;line-height:1.6">
-              El camino recomendado es subir el <strong>PDF del resumen</strong> desde Transacciones → Tarjetas → Resumen. Norte reconoce el banco, el titular y los adicionales, las cuotas y los impuestos, y valida los totales contra el propio resumen. Sin mapeo de columnas y sin configuración previa.
+              El camino recomendado es subir el <strong>PDF del resumen</strong> desde Transacciones → Tarjetas → Cargar resumen. Norte reconoce el banco, el titular y los adicionales, las cuotas y los impuestos, y valida los totales contra el propio resumen. Sin mapeo de columnas y sin configuración previa.
             </p>
             <div style="font-size:12.5px;color:var(--text);line-height:1.6;padding-top:10px;border-top:1px solid rgba(255,138,92,0.15)">
               Esta sección sigue disponible para los dos casos que el PDF no cubre:<br>
@@ -11270,7 +11283,7 @@ function renderDeudaCuotas() {
   if (!r.tarjetas.length) {
     h += '<div class="dc-vacio"><div style="font-size:30px">🎉</div><b>No hay cuotas pendientes' + (dcTitular ? ' de ' + esc(dcTitular) : '') + '</b>' +
       '<p>En los resúmenes de tarjeta cargados hasta este mes no quedan planes en cuotas por pagar a partir de ' + dcMesCorto(sig) + '.</p>' +
-      '<p class="dc-nota">El cálculo sale de los resúmenes de tarjeta de crédito que subiste con «Resumen». Si compraste en cuotas y todavía no cargaste ese resumen, no aparece.</p></div>';
+      '<p class="dc-nota">El cálculo sale de los resúmenes de tarjeta de crédito que subiste con «Cargar resumen». Si compraste en cuotas y todavía no cargaste ese resumen, no aparece.</p></div>';
     el.innerHTML = h; return;
   }
   var colores = {};
@@ -17354,7 +17367,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.57.002';
+const APP_VERSION = 'v005.57.003';
 let novEntradas = [];
 
 function novLeida(e) {
