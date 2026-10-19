@@ -13856,7 +13856,12 @@ function pnEscuchar(path, previo, alLlegar) {
     if (typeof firebase === 'undefined' || !firebase.database) return previo;
     if (path === previo) return previo;
     if (previo) { try { firebase.database().ref(previo).off(); } catch (e) {} }
-    firebase.database().ref(path).on('value', function (snap) { alLlegar(snap.val()); }, function () {});
+    // El aviso se entrega en el turno siguiente: si llegara en el mismo turno
+    // (dato en caché), repintar desde acá volvería a pedir la escucha antes de
+    // que quede anotada la ruta, y se pediría de nuevo sin fin.
+    firebase.database().ref(path).on('value', function (snap) {
+      const v = snap.val(); setTimeout(function () { alLlegar(v); }, 0);
+    }, function () {});
     return path;
   } catch (e) { return previo; }
 }
@@ -13865,8 +13870,10 @@ function pnRepintarCanjes() {
   try { pnPintarDash(); } catch (e) {}
 }
 function pnEscucharCanjes() {
+  // Sin la guarda de 'JLL': los canjes de ese hogar son tan reales como los de
+  // cualquier otro. Esa guarda es sólo para no subir analítica (pnSubirResumen).
   const eid = curEmpresa();
-  if (!eid || eid === 'JLL') return;
+  if (!eid) return;
   _pnCanjesPath = pnEscuchar('norteSync/canjes/' + eid, _pnCanjesPath, function (v) {
     const out = {};
     Object.keys(v || {}).forEach(function (u) {
@@ -13881,7 +13888,7 @@ function pnEscucharCanjes() {
 }
 function iaEscucharExtra() {
   const eid = curEmpresa();
-  if (!eid || eid === 'JLL') return;
+  if (!eid) return;
   _iaExtraPath = pnEscuchar('norteSync/iaExtra/' + iaPoolId() + '/' + pnYmISO(), _iaExtraPath, function (v) {
     _iaExtra = v || {};
   });
@@ -14223,6 +14230,9 @@ const PN_ESTILOS = `<style>
 function renderPuntos() {
   const cont = document.getElementById('puntosBody');
   if (!cont) return;
+  // Si la escucha de canjes no arrancó (o se cambió de hogar), arranca acá.
+  // Es idempotente: con la misma ruta no hace nada.
+  try { pnEscucharCanjes(); iaEscucharExtra(); pnEscucharVoto(); } catch (e) {}
   try { pnConciliar(); } catch (e) {}
 
   const ym = pnMesVisto || new Date().toISOString().slice(0, 7);
@@ -17344,7 +17354,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.57.001';
+const APP_VERSION = 'v005.57.002';
 let novEntradas = [];
 
 function novLeida(e) {
