@@ -805,6 +805,36 @@ tr:hover td { background: #fafbfc; }
 @media (max-width: 620px) {
   .pn-premios-grilla { grid-template-columns: 1fr; }
 }
+/* Los canjes (v005.57). Van sobre el mismo fondo oscuro de marca, en los dos
+   modos de la app: los colores son propios y no dependen del tema. */
+.pn-canjes-grilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+.pn-canje { display: flex; flex-direction: column; gap: 4px; }
+.pn-canje-cab { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.pn-canje-ico { font-size: 20px; line-height: 1; }
+.pn-canje-precio { font-size: 12px; font-weight: 800; color: #FFB497; background: rgba(255,138,92,.14);
+                   border-radius: 99px; padding: 3px 9px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pn-canje .pn-premio-txt { flex: 1; }
+.pn-canje-btn { margin-top: 9px; width: 100%; border: 0; border-radius: 9px; padding: 9px 10px;
+                background: #FF8A5C; color: #2A1206; font-size: 13.5px; font-weight: 800; cursor: pointer; }
+.pn-canje-btn:hover { background: #ff9d76; }
+.pn-canje-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.pn-canje-barra { margin-top: 9px; height: 6px; border-radius: 99px; background: rgba(255,255,255,.12); overflow: hidden; }
+.pn-canje-barra span { display: block; height: 100%; background: #FF8A5C; border-radius: 99px; }
+.pn-canje-motivo { margin-top: 6px; font-size: 11.5px; color: rgba(255,255,255,.72); line-height: 1.4; }
+.pn-canje-activo { margin: -4px 0 12px; padding: 10px 12px; border-radius: 10px; background: rgba(111,191,168,.16);
+                   border: 1px solid rgba(111,191,168,.35); font-size: 13px; color: #d7f3ea; line-height: 1.45; }
+.pn-canje-hist { margin-top: 14px; }
+.pn-canje-hist-tit { font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: rgba(255,255,255,.55); margin-bottom: 4px; }
+.pn-canje-hist-fila { display: flex; gap: 10px; padding: 6px 0; border-top: 1px solid rgba(255,255,255,.1); font-size: 12.5px; color: rgba(255,255,255,.8); }
+.pn-canje-hist-fila span:first-child { width: 78px; flex: none; color: rgba(255,255,255,.55); }
+.pn-canje-hist-fila span:nth-child(2) { flex: 1; min-width: 0; }
+.pn-canje-hist-fila b { white-space: nowrap; color: #fff; }
+.pn-voto-op { padding: 12px 0; border-top: 1px solid var(--border); }
+.pn-voto-chip { padding: 4px 10px; font-size: 12.5px; font-weight: 700; }
+.pn-voto-chip:disabled { opacity: .4; cursor: default; }
+.pn-cierre { margin: 0 0 12px; padding: 11px 14px; border-radius: 11px; font-size: 13.5px; line-height: 1.45;
+             background: var(--card); border: 1px solid var(--primary); color: var(--text); }
+.pn-cierre b { color: var(--primary); }
 
 /* La ventana de lanzamiento reusa la caja del asistente de bienvenida (.ob-*),
    igual que el tutorial del Cuaderno: misma cabecera, mismos botones. La
@@ -3001,7 +3031,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
         <div class="pn-aviso-ico" id="pnAvisoIco"></div>
         <div class="pn-aviso-txt">
           <div class="pn-aviso-tit">Puntos Norte ya está andando</div>
-          <div class="pn-aviso-sub">Cada vez que usás Norte <strong style="color:#C2410C;font-weight:800">sumás puntos</strong>, y los vas a poder canjear por beneficios.</div>
+          <div class="pn-aviso-sub">Cada vez que usás Norte <strong style="color:#C2410C;font-weight:800">sumás puntos</strong>, y ya los podés canjear por beneficios.</div>
         </div>
         <button class="pn-aviso-btn" onclick="pnAbrirLanzamiento()">Cómo funciona</button>
       </div>
@@ -12744,7 +12774,18 @@ const PN_REGLAS_DEF = {
   // convierte «mes completo» en algo difícil de verdad. Se edita desde Admin:
   // si resulta que no lo alcanza nadie, se saca un requisito y listo.
   mesExige: ['presu', 'rs', 'cua', 'ia', 'tc'],
-  multiplicadores: { FOCO: 1, PRO: 1.25, TOP: 1.5 }
+  multiplicadores: { FOCO: 1, PRO: 1.25, TOP: 1.5 },
+  // La semana de cierre: los últimos `dias` días de cada mes, estas acciones
+  // valen `factor` veces. Arranca en `desde`: la historia no se dobla.
+  cierre: { activo: true, factor: 2, dias: 7, acciones: ['mov', 'ia', 'tc'], desde: '2026-10-19' },
+  // Lo que se puede canjear y cuánto cuesta. El servidor tiene la misma tabla
+  // (canjearPuntos) y lee estos mismos valores de norteSync/puntosReglas.
+  canjes: {
+    nortia30:  { pts: 200,  activo: true },
+    captura20: { pts: 200,  activo: true },
+    pro1:      { pts: 1200, activo: true },
+    top1:      { pts: 2400, activo: true }
+  }
 };
 
 // Los cinco subíndices, con el nombre y la explicación que ve la persona.
@@ -12795,6 +12836,20 @@ function pnReglas() {
     if (!a) return;
     if (a.pts  !== undefined && Number(a.pts)  >= 0) base.acciones[k].pts  = Number(a.pts);
     if (a.tope !== undefined && Number(a.tope) >= 0) base.acciones[k].tope = Number(a.tope);
+  });
+  if (r.cierre && typeof r.cierre === 'object') {
+    const c = r.cierre;
+    if (c.activo === false) base.cierre.activo = false; else if (c.activo === true) base.cierre.activo = true;
+    if (Number(c.factor) >= 1 && Number(c.factor) <= 3) base.cierre.factor = Number(c.factor);
+    if (Number(c.dias) >= 1 && Number(c.dias) <= 10) base.cierre.dias = Math.round(Number(c.dias));
+    if (Array.isArray(c.acciones)) base.cierre.acciones = c.acciones.filter(function (k) { return !!base.acciones[k]; });
+    if (/^\d{4}-\d{2}-\d{2}$/.test(String(c.desde || ''))) base.cierre.desde = c.desde;
+  }
+  if (r.canjes && typeof r.canjes === 'object') Object.keys(base.canjes).forEach(function (k) {
+    const x = r.canjes[k];
+    if (!x) return;
+    if (Number(x.pts) > 0) base.canjes[k].pts = Math.round(Number(x.pts));
+    if (x.activo === false) base.canjes[k].activo = false;
   });
   if (r.pesos) {
     const p = {};
@@ -13106,7 +13161,9 @@ function pnConciliar() {
     const per = (a && a.por === 'semana') ? pnLunesTs(ts) : pnYM(ts);
     return k + '|' + i + '|' + per;
   };
-  l.r.forEach(f => { const c = cubo(f.k, f.i, f.t); usado[c] = (usado[c] || 0) + (Number(f.p) || 0); });
+  // Los topes se cuentan en puntos «de base»: un asiento doble de la semana
+  // de cierre (m: 2) ocupa del tope lo mismo que uno simple.
+  l.r.forEach(f => { const c = cubo(f.k, f.i, f.t); usado[c] = (usado[c] || 0) + (Number(f.p) || 0) / (Number(f.m) || 1); });
 
   const ahora = Date.now();
   let nuevas = 0;
@@ -13125,7 +13182,10 @@ function pnConciliar() {
     const ya = usado[c] || 0;
     const pts = Math.max(0, Math.min(Number(a.pts) || 0, (Number(a.tope) || 0) - ya));
     usado[c] = ya + pts;
-    l.r.push({ e: x.e, k: x.k, t: t, i: i, p: pts });
+    const fac = pts > 0 ? pnFactorCierre(R, x.k, t) : 1;
+    const asiento = { e: x.e, k: x.k, t: t, i: i, p: Math.round(pts * fac) };
+    if (fac > 1) asiento.m = fac;
+    l.r.push(asiento);
     vistos[eid] = 1;
     nuevas++;
   });
@@ -13144,25 +13204,20 @@ function pnSaldoDe(uid) {
   const R = pnReglas();
   const l = pnGetLedger();
   const i = l.u.indexOf(uid);
-  if (i < 0) return { saldo: 0, vencidos: 0, porVencer: 0, ganados: 0, proximo: 0 };
-  const ahora = Date.now();
-  const ms = R.vence * 86400000;
-  const gracia = R.graciaVence * 86400000;
-  let saldo = 0, vencidos = 0, porVencer = 0, ganados = 0, proximo = 0;
+  if (i < 0) return { saldo: 0, vencidos: 0, porVencer: 0, ganados: 0, proximo: 0, canjeados: 0 };
+  const cred = [];
+  let ganados = 0;
   l.r.forEach(f => {
     if (f.i !== i) return;
     const p = Number(f.p) || 0;
     if (p <= 0) return;
     ganados += p;
-    const vence = f.t + ms;
-    if (vence <= ahora) { vencidos += p; return; }
-    saldo += p;
-    if (vence - ahora <= gracia) {
-      porVencer += p;
-      if (!proximo || vence < proximo) proximo = vence;
-    }
+    cred.push({ t: Number(f.t) || 0, p: p });
   });
-  return { saldo, vencidos, porVencer, ganados, proximo };
+  const deb = pnCanjesDe(uid).map(c => ({ t: Number(c.ts) || 0, p: Number(c.pts) || 0 }));
+  const F = pnFIFO(cred, deb, Date.now(), R.vence * 86400000, R.graciaVence * 86400000);
+  return { saldo: F.saldo, vencidos: F.vencidos, porVencer: F.porVencer, ganados: ganados,
+           proximo: F.proximo, canjeados: F.gastados };
 }
 
 // Lo ganado DENTRO de un mes, sin mirar vencimientos. Es otra pregunta que
@@ -13547,8 +13602,8 @@ function pnAbrirLanzamiento() {
   document.getElementById('pnLanzaCuerpo').innerHTML =
     paso('Ahora Norte te premia por usarlo',
          'Queremos que armes el hábito de tener tu plata bajo control — y que te lleves algo ' +
-         'por hacerlo. Para eso creamos Puntos Norte: usás Norte, sumás puntos, que muy pronto ' +
-         'se podrán canjear por beneficios. No sólo te ayudamos a ordenar tus finanzas. ' +
+         'por hacerlo. Para eso creamos Puntos Norte: usás Norte, sumás puntos, y los ' +
+         'canjeás por beneficios. No sólo te ayudamos a ordenar tus finanzas. ' +
          'Además tenés un incentivo extra.') +
     paso('Dos minutos por semana alcanzan',
          'No hace falta un mes heroico. Hace falta volver. ' +
@@ -13562,8 +13617,8 @@ function pnAbrirLanzamiento() {
     '<b>Y todo lo que hacés suma puntos.</b>' +
     'El mes completo es el premio grande: ' + R.acciones.mes.pts + ' puntos de una. ' +
     'Te duran ' + R.vence + ' días.' +
-    '<div class="pn-remate-chica">El canje todavía no está abierto: lo vamos a abrir ' +
-    'cuando haya algo que valga la pena.</div>' +
+    '<div class="pn-remate-chica">Se canjean en la pantalla Puntos Norte: meses de PRO o TOP ' +
+    'y cupo extra de NortIA.</div>' +
     '</div>';
   ov.classList.remove('hidden');
 }
@@ -13712,9 +13767,362 @@ function pnCuenta(uid) {
     return Object.assign({ nom: a.nom || k }, g[k]);
   }).sort(function (a, b) { return b.pts - a.pts; });
   const ganados  = lineas.reduce(function (t, x) { return t + x.pts; }, 0);
-  const vencidos = lineas.reduce(function (t, x) { return t + x.vencidos; }, 0);
-  return { lineas: lineas, ganados: ganados, vencidos: vencidos,
-           saldo: ganados - vencidos, sinPuntos: sinPuntos };
+  // Vencidos y saldo salen de la misma cuenta que el saldo de arriba: con
+  // canjes, lo que vence es sólo lo que no se usó.
+  const S = pnSaldoDe(uid);
+  return { lineas: lineas, ganados: ganados, vencidos: S.vencidos, canjeados: S.canjeados,
+           saldo: S.saldo, sinPuntos: sinPuntos };
+}
+
+// ── CANJES, VOTACIÓN Y SEMANA DE CIERRE (v005.57) ────────────────────────
+// El saldo se sigue calculando acá, con el ledger del hogar. Lo nuevo son los
+// débitos: los canjes, que escribe SÓLO el servidor (canjearPuntos) en
+// norteSync/canjes/<hogar>/<persona>, después de verificar el saldo con el
+// mismo ledger. Un canje consume primero los puntos que vencen antes: si
+// consumiera los nuevos, harían vencer puntos que la persona ya usó.
+let _pnCanjes = {};
+let _pnCanjesPath = '';
+let _iaExtra = {};
+let _iaExtraPath = '';
+let _pnVoto = null;
+let _pnVotoPath = '';
+let _pnPendiente = null;
+const PN_FN_CANJE = 'https://us-central1-norte-finanzas.cloudfunctions.net/canjearPuntos';
+const PN_PLAN_CADA_DIAS = 90;
+
+const PN_CATALOGO = [
+  { k: 'nortia30',  ico: '💬', tit: '+30 consultas a NortIA',    txt: 'Se suman a tu cupo de este mes. Una vez por mes.' },
+  { k: 'captura20', ico: '📸', tit: '+20 cargas por foto o voz', txt: 'Se suman a tu cupo de este mes. Una vez por mes.' },
+  { k: 'pro1',      ico: '🧭', tit: '1 mes de Norte PRO',        txt: '30 días de PRO para tu hogar, sin pagar nada. Después vuelve solo a FOCO.' },
+  { k: 'top1',      ico: '⭐', tit: '1 mes de Norte TOP',        txt: '30 días de TOP para tu hogar, sin pagar nada. Después vuelve solo a FOCO.' }
+];
+function pnNomCanje(c) {
+  if (c.tipo === 'voto') {
+    const cand = pnVotoCandidatas().filter(function (x) { return x.cod === c.cod; })[0];
+    return 'Voto: ' + (cand ? cand.titulo : (c.cod || 'roadmap'));
+  }
+  const x = PN_CATALOGO.filter(function (y) { return y.k === c.tipo; })[0];
+  return x ? x.tit : c.tipo;
+}
+
+// Créditos y débitos, primero lo que vence antes. El servidor hace la misma
+// cuenta (pnSrvFIFO): si no dieran igual, la pantalla mostraría un saldo que
+// el canje después rechaza.
+function pnFIFO(cred, deb, ahora, venceMs, graciaMs) {
+  const lotes = cred.filter(function (c) { return c.p > 0; })
+    .map(function (c) { return { v: c.t + venceMs, r: c.p }; })
+    .sort(function (a, b) { return a.v - b.v; });
+  let gastados = 0, falta = 0;
+  deb.filter(function (d) { return d.p > 0; }).sort(function (a, b) { return a.t - b.t; }).forEach(function (d) {
+    let x = d.p;
+    for (let j = 0; j < lotes.length && x > 0; j++) {
+      const L = lotes[j];
+      if (L.r <= 0 || L.v <= d.t) continue;
+      const q = Math.min(L.r, x); L.r -= q; x -= q; gastados += q;
+    }
+    falta += x;
+  });
+  for (let j = 0; j < lotes.length && falta > 0; j++) {
+    const L = lotes[j];
+    if (L.r <= 0) continue;
+    const q = Math.min(L.r, falta); L.r -= q; falta -= q; gastados += q;
+  }
+  let saldo = 0, vencidos = 0, porVencer = 0, proximo = 0;
+  lotes.forEach(function (L) {
+    if (L.r <= 0) return;
+    if (L.v <= ahora) { vencidos += L.r; return; }
+    saldo += L.r;
+    if (L.v - ahora <= graciaMs) { porVencer += L.r; if (!proximo || L.v < proximo) proximo = L.v; }
+  });
+  return { saldo: saldo, vencidos: vencidos, porVencer: porVencer, proximo: proximo, gastados: gastados };
+}
+
+function pnCanjesDe(uid) { return _pnCanjes[uid] || []; }
+function pnYmISO(ts) { return new Date(Number(ts) || Date.now()).toISOString().slice(0, 7); }
+
+function pnEscuchar(path, previo, alLlegar) {
+  try {
+    if (typeof firebase === 'undefined' || !firebase.database) return previo;
+    if (path === previo) return previo;
+    if (previo) { try { firebase.database().ref(previo).off(); } catch (e) {} }
+    firebase.database().ref(path).on('value', function (snap) { alLlegar(snap.val()); }, function () {});
+    return path;
+  } catch (e) { return previo; }
+}
+function pnRepintarCanjes() {
+  try { if (curPage === 'puntos') renderPuntos(); } catch (e) {}
+  try { pnPintarDash(); } catch (e) {}
+}
+function pnEscucharCanjes() {
+  const eid = curEmpresa();
+  if (!eid || eid === 'JLL') return;
+  _pnCanjesPath = pnEscuchar('norteSync/canjes/' + eid, _pnCanjesPath, function (v) {
+    const out = {};
+    Object.keys(v || {}).forEach(function (u) {
+      const m = v[u] || {};
+      out[u] = Object.keys(m).map(function (id) { return Object.assign({ id: id }, m[id]); })
+        .filter(function (c) { return c && Number(c.pts) > 0; })
+        .sort(function (a, b) { return (Number(a.ts) || 0) - (Number(b.ts) || 0); });
+    });
+    _pnCanjes = out;
+    pnRepintarCanjes();
+  });
+}
+function iaEscucharExtra() {
+  const eid = curEmpresa();
+  if (!eid || eid === 'JLL') return;
+  _iaExtraPath = pnEscuchar('norteSync/iaExtra/' + iaPoolId() + '/' + pnYmISO(), _iaExtraPath, function (v) {
+    _iaExtra = v || {};
+  });
+}
+function pnEscucharVoto() {
+  _pnVotoPath = pnEscuchar('norteSync/roadmapVoto/' + pnYmISO(), _pnVotoPath, function (v) {
+    _pnVoto = v || null;
+    pnRepintarCanjes();
+  });
+}
+function pnVotoCandidatas() {
+  const c = _pnVoto && _pnVoto.candidatas;
+  if (!c) return [];
+  return (Array.isArray(c) ? c : Object.values(c)).filter(function (x) { return x && x.cod; }).slice(0, 3);
+}
+
+// La semana de cierre. Mismo cálculo que el servidor (pnSrvFactorCierre).
+function pnFactorCierre(R, k, ts) {
+  const c = R && R.cierre;
+  if (!c || !c.activo || !(Number(c.factor) > 1) || (c.acciones || []).indexOf(k) < 0) return 1;
+  const desde = new Date(String(c.desde || '2026-10-19') + 'T00:00:00').getTime();
+  if (!(Number(ts) >= desde)) return 1;
+  const d = new Date(Number(ts));
+  const ultimo = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  return d.getDate() > ultimo - Number(c.dias || 7) ? Number(c.factor) : 1;
+}
+function pnCierreInfo() {
+  const R = pnReglas();
+  const c = R.cierre;
+  if (!c || !c.activo || !(Number(c.factor) > 1) || !(c.acciones || []).length) return null;
+  const hoy = new Date();
+  const ultimo = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0, 12);
+  const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), ultimo.getDate() - Number(c.dias) + 1, 12);
+  const desde = new Date(String(c.desde) + 'T00:00:00').getTime();
+  const nombres = c.acciones.map(function (k) { return R.acciones[k] && R.acciones[k].nom; }).filter(Boolean);
+  return {
+    enCurso: hoy.getDate() >= inicio.getDate() && hoy.getTime() >= desde,
+    inicio: inicio, fin: ultimo, factor: Number(c.factor),
+    vale: Number(c.factor) === 2 ? 'el doble' : '×' + String(c.factor).replace('.', ','),
+    nombres: nombres
+  };
+}
+function pnListaY(arr) {
+  const a = arr.map(function (x) { return x.charAt(0).toLowerCase() + x.slice(1); });
+  return a.length > 1 ? a.slice(0, -1).join(', ') + ' e ' + a[a.length - 1] : (a[0] || '');
+}
+function pnDiaMes(d) { return d.getDate() + '/' + String(d.getMonth() + 1).padStart(2, '0'); }
+
+// ¿Se puede canjear? La misma lista de condiciones que verifica el servidor,
+// para que el botón diga por qué no antes de que alguien lo toque.
+function pnCanjeEstado(k, saldo) {
+  const R = pnReglas();
+  const c = R.canjes[k];
+  if (!c || c.activo === false) return { ok: false, motivo: 'No está disponible por ahora.' };
+  const mios = pnCanjesDe(curUserId());
+  if (k === 'nortia30' || k === 'captura20') {
+    if (mios.some(function (x) { return x.tipo === k && pnYmISO(x.ts) === pnYmISO(); })) {
+      return { ok: false, motivo: 'Ya lo canjeaste este mes. Vuelve el 1°.' };
+    }
+  }
+  if (k === 'pro1' || k === 'top1') {
+    if (miCanjePlan && Number(miCanjePlan.hasta) > Date.now()) return { ok: false, motivo: 'Ya tenés un mes canjeado en curso.' };
+    if (miPlanActual !== 'FOCO') return { ok: false, motivo: 'Tu plan ya es ' + miPlanActual + '. Es para quien está en FOCO.' };
+    if (miHeredaDe) return { ok: false, motivo: 'Se canjea desde tu hogar principal.' };
+    let admin = false; try { admin = isAdmin(); } catch (e) {}
+    if (!admin) return { ok: false, motivo: 'Lo canjea quien administra el hogar.' };
+    const ult = mios.filter(function (x) { return x.tipo === 'pro1' || x.tipo === 'top1'; }).pop();
+    if (ult && Date.now() - Number(ult.ts) < PN_PLAN_CADA_DIAS * 86400000) {
+      return { ok: false, motivo: 'Un mes de plan cada ' + PN_PLAN_CADA_DIAS + ' días. El próximo, desde el ' + pnFecha(Number(ult.ts) + PN_PLAN_CADA_DIAS * 86400000) + '.' };
+    }
+  }
+  if (saldo < c.pts) return { ok: false, falta: c.pts - saldo, motivo: 'Te faltan ' + pnFmt(c.pts - saldo) + ' puntos.' };
+  return { ok: true };
+}
+
+function pnCanjeVentana(html) {
+  let ov = document.getElementById('pnCanjeOv');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'pnCanjeOv'; ov.className = 'overlay';
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML = '<div class="modal" style="max-width:430px;height:auto">' + html + '</div>';
+  ov.classList.add('show');
+}
+function pnCanjeCerrar() {
+  const ov = document.getElementById('pnCanjeOv');
+  if (ov) ov.classList.remove('show');
+  _pnPendiente = null;
+}
+function pnCanjeBotones(txtOk) {
+  return '<div style="display:flex;gap:10px;margin-top:16px">' +
+    '<button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="pnCanjeCerrar()">Cancelar</button>' +
+    '<button class="btn btn-primary" style="flex:2;justify-content:center" id="pnCanjeOk" onclick="pnConfirmarCanje()">' + txtOk + '</button></div>' +
+    '<div id="pnCanjeErr" role="alert" style="display:none;margin-top:12px;font-size:13px;font-weight:600;color:var(--danger);line-height:1.45"></div>';
+}
+function pnPedirCanje(k) {
+  const R = pnReglas();
+  const S = pnSaldoDe(curUserId());
+  const est = pnCanjeEstado(k, S.saldo);
+  if (!est.ok) return;
+  const info = PN_CATALOGO.filter(function (x) { return x.k === k; })[0];
+  const precio = R.canjes[k].pts;
+  _pnPendiente = { tipo: k, pts: precio, nom: info.tit };
+  const plan = (k === 'pro1' || k === 'top1');
+  pnCanjeVentana(
+    '<div class="modal-title">Confirmar canje</div>' +
+    '<div style="font-size:14.5px;color:var(--text);line-height:1.55">Vas a usar <b>' + pnFmt(precio) + ' puntos</b> en <b>' + info.tit + '</b>.</div>' +
+    (plan ? '<div style="font-size:13px;color:var(--muted);line-height:1.5;margin-top:8px">Tu hogar pasa a ' + (k === 'pro1' ? 'PRO' : 'TOP') +
+      ' durante 30 días, con sus cupos de IA y de hogares. Al terminar vuelve solo a FOCO, sin cobrarte nada y sin borrar nada de lo que cargaste.</div>' : '') +
+    '<div style="display:flex;justify-content:space-between;margin-top:14px;padding:10px 12px;background:var(--bg);border-radius:9px;font-size:13.5px">' +
+      '<span style="color:var(--muted)">Te quedan</span><b>' + pnFmt(S.saldo - precio) + ' puntos</b></div>' +
+    pnCanjeBotones('Canjear ' + pnFmt(precio)));
+}
+function pnPedirVoto(cod, pts) {
+  const S = pnSaldoDe(curUserId());
+  if (S.saldo < pts) return;
+  const cand = pnVotoCandidatas().filter(function (x) { return x.cod === cod; })[0];
+  if (!cand) return;
+  _pnPendiente = { tipo: 'voto', cod: cod, pts: pts, nom: cand.titulo };
+  pnCanjeVentana(
+    '<div class="modal-title">Confirmar voto</div>' +
+    '<div style="font-size:14.5px;color:var(--text);line-height:1.55">Vas a poner <b>' + pnFmt(pts) + ' puntos</b> en <b>' + esc(cand.titulo) + '</b>.</div>' +
+    '<div style="font-size:13px;color:var(--muted);line-height:1.5;margin-top:8px">Los puntos que ponés en la votación se gastan: no vuelven, gane o no gane.</div>' +
+    '<div style="display:flex;justify-content:space-between;margin-top:14px;padding:10px 12px;background:var(--bg);border-radius:9px;font-size:13.5px">' +
+      '<span style="color:var(--muted)">Te quedan</span><b>' + pnFmt(S.saldo - pts) + ' puntos</b></div>' +
+    pnCanjeBotones('Votar con ' + pnFmt(pts)));
+}
+async function pnConfirmarCanje() {
+  const P = _pnPendiente;
+  if (!P) return;
+  const btn = document.getElementById('pnCanjeOk');
+  const err = document.getElementById('pnCanjeErr');
+  if (btn) { btn.disabled = true; btn.textContent = 'Canjeando…'; }
+  if (err) err.style.display = 'none';
+  try {
+    // El servidor lee el ledger de la nube: primero que llegue lo último.
+    try { pnConciliar(); pushNow(); } catch (e) {}
+    await new Promise(function (r) { setTimeout(r, 1200); });
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const cuerpo = { idToken: idToken, empresaId: curEmpresa(), tipo: P.tipo };
+    if (P.tipo === 'voto') { cuerpo.cod = P.cod; cuerpo.pts = P.pts; }
+    const r = await fetch(PN_FN_CANJE, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo) });
+    const d = await r.json().catch(function () { return {}; });
+    if (!r.ok) throw new Error(d.error || 'No pudimos hacer el canje. No se descontó ningún punto.');
+    // Se anota ya, sin esperar a que vuelva de la nube.
+    const u = curUserId();
+    const lista = (_pnCanjes[u] || []).slice();
+    if (d.id && !lista.some(function (x) { return x.id === d.id; })) {
+      const nuevo = { id: d.id, tipo: P.tipo, pts: P.pts, ts: Date.now() };
+      if (P.tipo === 'voto') { nuevo.cod = P.cod; nuevo.ym = pnYmISO(); }
+      lista.push(nuevo); _pnCanjes[u] = lista;
+    }
+    if (P.tipo === 'nortia30') _iaExtra = Object.assign({}, _iaExtra, { chat: (Number(_iaExtra.chat) || 0) + 30 });
+    if (P.tipo === 'captura20') _iaExtra = Object.assign({}, _iaExtra, { capturas: (Number(_iaExtra.capturas) || 0) + 20 });
+    if (P.tipo === 'voto' && _pnVoto) {
+      const tot = Object.assign({}, _pnVoto.totales || {});
+      const t = tot[P.cod] || { pts: 0, n: 0 };
+      tot[P.cod] = { pts: (Number(t.pts) || 0) + P.pts, n: (Number(t.n) || 0) + 1 };
+      _pnVoto = Object.assign({}, _pnVoto, { totales: tot });
+    }
+    const listo = P.tipo === 'nortia30' ? 'Ya tenés 30 consultas más a NortIA este mes.'
+      : P.tipo === 'captura20' ? 'Ya tenés 20 cargas más por foto o voz este mes.'
+      : P.tipo === 'voto' ? 'Pusiste ' + pnFmt(P.pts) + ' puntos en «' + esc(P.nom) + '».'
+      : 'Tu hogar ya es ' + (P.tipo === 'pro1' ? 'PRO' : 'TOP') + (d.hasta ? ' hasta el ' + pnFecha(d.hasta) : '') + '. Después vuelve solo a FOCO.';
+    _pnPendiente = null;
+    pnCanjeVentana('<div class="modal-title">Listo</div>' +
+      '<div style="font-size:14.5px;color:var(--text);line-height:1.55">' + listo + '</div>' +
+      '<div style="font-size:13px;color:var(--muted);margin-top:8px">Te quedan ' + pnFmt(d.saldo) + ' puntos.</div>' +
+      '<div style="display:flex;margin-top:16px"><button class="btn btn-primary" style="flex:1;justify-content:center" onclick="pnCanjeCerrar()">Cerrar</button></div>');
+    pnRepintarCanjes();
+    try { renderPlanUI(); } catch (e) {}
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Probar de nuevo'; }
+    if (err) { err.textContent = (e && e.message) || 'No se pudo conectar. No se descontó ningún punto.'; err.style.display = 'block'; }
+  }
+}
+
+function pnBloqueCanjes(saldo) {
+  const R = pnReglas();
+  const tarjetas = PN_CATALOGO.map(function (x) {
+    const c = R.canjes[x.k];
+    if (!c || c.activo === false) return '';
+    const est = pnCanjeEstado(x.k, saldo);
+    const pct = Math.max(0, Math.min(100, Math.round((saldo / c.pts) * 100)));
+    const pie = est.ok
+      ? '<button class="pn-canje-btn" onclick="pnPedirCanje(\'' + x.k + '\')">Canjear</button>'
+      : (est.falta ? '<div class="pn-canje-barra" aria-hidden="true"><span style="width:' + pct + '%"></span></div>' : '') +
+        '<div class="pn-canje-motivo">' + est.motivo + '</div>';
+    return '<div class="pn-premio pn-canje" data-canje="' + x.k + '">' +
+      '<div class="pn-canje-cab"><span class="pn-canje-ico" aria-hidden="true">' + x.ico + '</span>' +
+      '<span class="pn-canje-precio">' + pnFmt(c.pts) + ' pts</span></div>' +
+      '<div class="pn-premio-tit">' + x.tit + '</div>' +
+      '<div class="pn-premio-txt">' + x.txt + '</div>' + pie + '</div>';
+  }).join('');
+  const activo = (miCanjePlan && Number(miCanjePlan.hasta) > Date.now())
+    ? '<div class="pn-canje-activo">🧭 Tu hogar tiene Norte ' + esc(miCanjePlan.tier || '') + ' por canje hasta el ' + pnFecha(miCanjePlan.hasta) + '. Después vuelve solo a FOCO.</div>'
+    : '';
+  const mios = pnCanjesDe(curUserId()).slice(-5).reverse();
+  const hist = mios.length
+    ? '<div class="pn-canje-hist"><div class="pn-canje-hist-tit">Tus últimos canjes</div>' +
+      mios.map(function (c) {
+        return '<div class="pn-canje-hist-fila"><span>' + pnFecha(c.ts) + '</span><span>' + esc(pnNomCanje(c)) + '</span><b>− ' + pnFmt(c.pts) + '</b></div>';
+      }).join('') + '</div>'
+    : '';
+  return '<div class="pn-premios" id="pnCanjes" style="margin-bottom:14px">' +
+    '<div class="pn-premios-cab"><div class="pn-premios-ico">' + pnBrujula(40, true) + '</div><div>' +
+      '<div class="pn-premios-tit">Canjeá tus puntos</div>' +
+      '<div class="pn-premios-sub">Tenés ' + pnFmt(saldo) + ' disponibles. Se usan primero los que vencen antes.</div></div></div>' +
+    activo +
+    '<div class="pn-canjes-grilla">' + tarjetas + '</div>' + hist +
+    '<div class="pn-premios-pie">Los meses de PRO y TOP son para quien está en FOCO: uno cada ' + PN_PLAN_CADA_DIAS +
+      ' días, desde el hogar principal. Al terminar, el hogar vuelve solo a FOCO y no se borra nada.</div></div>';
+}
+
+function pnBloqueVoto(saldo) {
+  const cand = pnVotoCandidatas();
+  if (!cand.length) return '';
+  const tot = (_pnVoto && _pnVoto.totales) || {};
+  const suma = cand.reduce(function (a, c) { return a + (Number((tot[c.cod] || {}).pts) || 0); }, 0);
+  const ym = pnYmISO();
+  const mios = pnCanjesDe(curUserId()).filter(function (x) { return x.tipo === 'voto' && (x.ym || pnYmISO(x.ts)) === ym; });
+  const filas = cand.map(function (c) {
+    const t = Number((tot[c.cod] || {}).pts) || 0;
+    const pct = suma ? Math.round((t / suma) * 100) : 0;
+    const mio = mios.filter(function (x) { return x.cod === c.cod; }).reduce(function (a, x) { return a + (Number(x.pts) || 0); }, 0);
+    const chips = [10, 50, 100].map(function (n) {
+      return '<button class="btn btn-secondary pn-voto-chip" ' + (saldo < n ? 'disabled' : '') +
+        ' onclick="pnPedirVoto(\'' + esc(c.cod) + '\',' + n + ')">+' + n + '</button>';
+    }).join('');
+    return '<div class="pn-voto-op">' +
+      '<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">' +
+        '<div style="font-size:14.5px;font-weight:800;color:var(--text)">' + esc(c.titulo || c.cod) + '</div>' +
+        '<div style="font-size:13px;font-weight:800;color:var(--primary);white-space:nowrap">' + pct + '%</div></div>' +
+      (c.desc ? '<div style="font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:3px">' + esc(c.desc) + '</div>' : '') +
+      '<div style="margin:8px 0 6px">' + pnBarra(pct, 'var(--primary)') + '</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">' +
+        '<span style="font-size:12px;color:var(--muted)">' + pnFmt(t) + ' puntos en total' + (mio ? ' · vos pusiste <b style="color:var(--text)">' + pnFmt(mio) + '</b>' : '') + '</span>' +
+        '<span style="display:flex;gap:6px">' + chips + '</span></div></div>';
+  }).join('');
+  return '<div class="card" id="pnVoto" style="margin-bottom:14px">' +
+    '<div class="report-title" style="margin-bottom:4px">Votá lo próximo que construimos</div>' +
+    '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:6px">Repartí puntos entre estas opciones. ' +
+    'La que junte más al terminar ' + pnRenderMesLabel(ym).toLowerCase() + ' pasa al frente de la lista de trabajo. Los puntos que ponés se gastan.</div>' +
+    filas + '</div>';
+}
+
+function pnBannerCierre() {
+  const C = pnCierreInfo();
+  if (!C || !C.enCurso) return '';
+  return '<div class="pn-cierre" id="pnCierre"><b>Semana de cierre.</b> Hasta el ' + pnDiaMes(C.fin) + ', ' +
+    pnListaY(C.nombres) + ' valen ' + C.vale + '.</div>';
 }
 
 // ── La pantalla ──────────────────────────────────────────────────────────
@@ -13938,6 +14346,8 @@ function renderPuntos() {
       <div class="pn-cta"><span>Ganados desde que empezaste</span><b>${pnFmt(C.ganados)}</b></div>
       ${C.vencidos ? `<div class="pn-cta"><span style="color:var(--muted)">Vencieron (pasaron ${Rg.vence} días)</span>
         <b style="color:var(--muted)">− ${pnFmt(C.vencidos)}</b></div>` : ''}
+      ${C.canjeados ? `<div class="pn-cta"><span style="color:var(--muted)">Canjeaste</span>
+        <b style="color:var(--muted)">− ${pnFmt(C.canjeados)}</b></div>` : ''}
       <div class="pn-cta" style="border-bottom:none;padding-top:10px">
         <span style="font-weight:800">Disponibles hoy</span>
         <b style="font-weight:800;color:var(--primary);font-size:16px">${pnFmt(C.saldo)}</b></div>
@@ -13997,6 +14407,13 @@ function renderPuntos() {
         el volumen: cargar cincuenta movimientos un domingo vale menos que cargar tres por semana durante un mes.
       </div>
       <table style="width:100%;border-collapse:collapse">${tabla}</table>
+      ${(function () {
+        const Ci = pnCierreInfo();
+        if (!Ci) return '';
+        return `<div style="margin-top:10px;padding:10px 12px;background:var(--bg);border-radius:9px;font-size:12.5px;color:var(--muted);line-height:1.5">
+          <b style="color:var(--text)">Semana de cierre:</b> los últimos ${Rg.cierre.dias} días de cada mes, ${pnListaY(Ci.nombres)} valen ${Ci.vale}.
+          ${Ci.enCurso ? 'Es ahora, hasta el ' + pnDiaMes(Ci.fin) + '.' : 'La próxima: del ' + pnDiaMes(Ci.inicio) + ' al ' + pnDiaMes(Ci.fin) + '.'}</div>`;
+      })()}
     </div>`;
 
   // ── Lo que viene, con candado ──
@@ -14006,34 +14423,9 @@ function renderPuntos() {
   // único que sostiene la espera, y una lista gris al pie de la pantalla no
   // sostiene nada. Lo que NO se hace es poner una fecha: no la hay, y una
   // fecha inventada se paga mucho más cara que una espera sin fecha.
-  const PN_PREMIOS = [
-    ['Un mes de Norte PRO', 'Sin tocar tu plan: se te extiende un mes.'],
-    ['Cupo extra de foto y voz', 'Más cargas con IA durante un mes.'],
-    ['Acceso anticipado', 'Lo que se esté por lanzar, antes que el resto.']
-  ];
-  const recompensas = `
-    <div class="pn-premios">
-      <div class="pn-premios-cab">
-        <div class="pn-premios-ico">${pnBrujula(40, true)}</div>
-        <div>
-          <div class="pn-premios-tit">En qué se van a poder canjear</div>
-          <div class="pn-premios-sub">Seguí juntando. Todavía no está abierto el canje.</div>
-        </div>
-      </div>
-      <div class="pn-premios-grilla">
-        ${PN_PREMIOS.map(function (x) {
-          return `<div class="pn-premio">
-            <div class="pn-premio-candado">🔒</div>
-            <div class="pn-premio-tit">${x[0]}</div>
-            <div class="pn-premio-txt">${x[1]}</div>
-          </div>`;
-        }).join('')}
-      </div>
-      <div class="pn-premios-pie">
-        No hay fecha prometida. Preferimos que juntes unos meses y abrirlo cuando haya algo que
-        valga la pena, antes que abrirlo vacío. Cuando se abra, te vamos a avisar acá.
-      </div>
-    </div>`;
+  // El canje está abierto (v005.57): lo que antes era una lista con candado
+  // ahora son canjes de verdad, y abajo la votación del mes si la hay.
+  const recompensas = pnBloqueCanjes(R.saldo.saldo) + pnBloqueVoto(R.saldo.saldo);
 
   // El historial plano ya no se arma: la vista mes a mes, con su detalle
   // desplegable, dice exactamente lo mismo y sin la lista de sesenta filas.
@@ -14041,8 +14433,8 @@ function renderPuntos() {
                 : ab === 'mes'    ? detalleMes
                 : ab === 'indice' ? detalleIndice : '';
 
-  cont.innerHTML = PN_ESTILOS + avisoTitular + encabezado + bloques + detalle
-                 + comoSeGanan + recompensas;
+  cont.innerHTML = PN_ESTILOS + avisoTitular + encabezado + pnBannerCierre() + bloques + detalle
+                 + recompensas + comoSeGanan;
 }
 
 // ── EL ENCUADRE DE ESTE TELÉFONO ─────────────────────────────────────────
@@ -14168,6 +14560,16 @@ function pnContextoIA() {
     L.push('Puntos disponibles: ' + R.saldo.saldo + '. Ganados en total: ' + R.saldo.ganados +
            '. Vencidos: ' + R.saldo.vencidos + '. Racha: ' + R.racha + ' semanas seguidas.');
     if (R.saldo.porVencer > 0) L.push('Atención: ' + R.saldo.porVencer + ' puntos vencen pronto.');
+    try {
+      const Rg = pnReglas();
+      L.push('Los puntos se canjean en la pantalla Puntos Norte: +30 consultas a NortIA (' + Rg.canjes.nortia30.pts +
+             ' puntos) y +20 cargas por foto o voz (' + Rg.canjes.captura20.pts + '), una vez por mes cada una; 1 mes de PRO (' +
+             Rg.canjes.pro1.pts + ') o de TOP (' + Rg.canjes.top1.pts + '), sólo para quien está en FOCO y uno cada 90 días. ' +
+             'También se usan para votar lo próximo que construye Norte. No se cambian por plata.');
+      const Ci = pnCierreInfo();
+      if (Ci) L.push('Semana de cierre: los últimos ' + Rg.cierre.dias + ' días de cada mes, ' + pnListaY(Ci.nombres) + ' valen ' + Ci.vale + '.' +
+                     (Ci.enCurso ? ' Está en curso, hasta el ' + pnDiaMes(Ci.fin) + '.' : ''));
+    } catch (e) {}
     L.push('CÓMO HABLAR DE ESTO: si te preguntan por el índice, contá en castellano DOS O TRES ' +
            'factores que lo movieron y qué conviene hacer ahora, mirando los componentes de arriba. ' +
            'Nunca expliques la fórmula ni los ponderadores, nunca inventes un número que no esté acá, ' +
@@ -14183,7 +14585,7 @@ function pnContextoIA() {
 // nadie entendería por qué.
 (function () {
   function pnEsSuper() {
-    try { return (getSession() || {}).userId === SUPER_ADMIN_UID; } catch (e) { return false; }
+    try { return (getSession() || {}).userId === 'RUO9uxaH26QZDC1eMVuA0kjMYkw2'; } catch (e) { return false; }
   }
 
   function pnAdminContenedor() {
@@ -14225,6 +14627,32 @@ function pnContextoIA() {
       var el = document.getElementById('pnAdm_g_' + k);
       if (el) out[k] = Number(el.value);
     });
+    // Semana de cierre y precios de canje (v005.57).
+    var remotas = (typeof _pnReglasRemotas !== 'undefined' && _pnReglasRemotas) || {};
+    var ci = {
+      activo: !!(document.getElementById('pnAdm_c_activo') || {}).checked,
+      factor: Number((document.getElementById('pnAdm_c_factor') || {}).value),
+      dias: Number((document.getElementById('pnAdm_c_dias') || {}).value),
+      acciones: [],
+      desde: (remotas.cierre && remotas.cierre.desde) || R.cierre.desde
+    };
+    Object.keys(R.acciones).forEach(function (k) {
+      var el = document.getElementById('pnAdm_ca_' + k);
+      if (el && el.checked) ci.acciones.push(k);
+    });
+    if (!(ci.factor >= 1 && ci.factor <= 3)) err = 'El multiplicador de la semana de cierre va de 1 a 3.';
+    if (!(ci.dias >= 1 && ci.dias <= 10)) err = 'La semana de cierre dura entre 1 y 10 días.';
+    out.cierre = ci;
+    out.canjes = {};
+    Object.keys(R.canjes).forEach(function (k) {
+      var p = document.getElementById('pnAdm_x_' + k), a = document.getElementById('pnAdm_xa_' + k);
+      if (!p) return;
+      out.canjes[k] = { pts: Math.round(Number(p.value)), activo: !!(a && a.checked) };
+      if (!(Number(p.value) > 0)) err = 'El precio de un canje tiene que ser mayor que cero.';
+    });
+    // El interruptor del aviso de Mi Rumbo no está en este formulario: si
+    // estaba apagado, guardar las reglas no lo puede volver a prender.
+    if (remotas.aviso === false) out.aviso = false;
     if (Math.abs(sumaPesos - 100) > 0.01) err = 'Los pesos del índice suman ' + sumaPesos + ' y tienen que sumar 100.';
     var st = document.getElementById('pnAdmEstado');
     if (err) { st.textContent = '⚠️ ' + err + ' No se guardó nada.'; st.style.color = 'var(--danger)'; return; }
@@ -14291,15 +14719,150 @@ function pnContextoIA() {
           '<table style="width:100%;border-collapse:collapse">' + gen + '</table>' +
         '</div>' +
       '</div>' +
+      pnAdmExtraHtml(R) +
       '<div style="display:flex;gap:10px;align-items:center;margin-top:18px;flex-wrap:wrap">' +
         '<button class="btn btn-primary" onclick="pnAdmGuardar()">Guardar reglas</button>' +
         '<button class="btn btn-secondary" onclick="pnAdmRestaurar()">Volver a los valores de fábrica</button>' +
         '<span id="pnAdmEstado" style="font-size:12.5px;color:var(--muted)"></span>' +
       '</div>' +
-      '<div id="pnAdmAnalitica" style="margin-top:22px;border-top:1px solid var(--border);padding-top:16px">Cargando la analítica…</div>';
+      '<div id="pnAdmAnalitica" style="margin-top:22px;border-top:1px solid var(--border);padding-top:16px">Cargando la analítica…</div>' +
+      '<div id="pnAdmCanjes" style="margin-top:22px;border-top:1px solid var(--border);padding-top:16px"></div>' +
+      '<div id="pnAdmVoto" style="margin-top:22px;border-top:1px solid var(--border);padding-top:16px"></div>';
 
     pnAdmAnalitica();
+    pnAdmCanjesPintar();
+    pnAdmVotoPintar();
   }
+
+  // ── Semana de cierre y precios de canje (v005.57) ──────────────────────
+  function pnAdmExtraHtml(R) {
+    var c = R.cierre;
+    var acc = Object.keys(R.acciones).map(function (k) {
+      return '<label style="display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text);margin:0 12px 6px 0">' +
+        '<input type="checkbox" id="pnAdm_ca_' + k + '"' + ((c.acciones || []).indexOf(k) >= 0 ? ' checked' : '') + '> ' + R.acciones[k].nom + '</label>';
+    }).join('');
+    var nombres = { nortia30: '+30 consultas a NortIA', captura20: '+20 cargas por foto o voz', pro1: '1 mes de PRO', top1: '1 mes de TOP' };
+    var precios = Object.keys(R.canjes).map(function (k) {
+      var x = R.canjes[k];
+      return '<tr><td style="padding:6px 0;font-size:13px;color:var(--text)">' + (nombres[k] || k) + '</td>' +
+        '<td style="padding:6px 8px;text-align:right">' + num('pnAdm_x_' + k, x.pts, 74) + '</td>' +
+        '<td style="padding:6px 0;text-align:right"><input type="checkbox" id="pnAdm_xa_' + k + '"' + (x.activo !== false ? ' checked' : '') + ' aria-label="Activo"></td></tr>';
+    }).join('');
+    return '<div style="display:flex;gap:26px;flex-wrap:wrap;margin-top:18px">' +
+      '<div style="flex:1;min-width:290px"><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px">SEMANA DE CIERRE</div>' +
+        '<label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);margin-bottom:8px">' +
+          '<input type="checkbox" id="pnAdm_c_activo"' + (c.activo ? ' checked' : '') + '> Activa</label>' +
+        '<div style="display:flex;gap:16px;align-items:center;font-size:13px;color:var(--text);margin-bottom:8px;flex-wrap:wrap">' +
+          '<span>Multiplicador ' + num('pnAdm_c_factor', c.factor) + '</span><span>Últimos días del mes ' + num('pnAdm_c_dias', c.dias) + '</span></div>' +
+        '<div style="font-size:11.5px;color:var(--muted);margin-bottom:4px">Acciones que se multiplican:</div>' + acc +
+        '<div style="font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:4px">Rige desde el ' + String(c.desde).split('-').reverse().join('/') +
+          '. Los topes se cuentan sin multiplicar: el doble no permite pasarse del tope.</div></div>' +
+      '<div style="flex:1;min-width:230px"><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px">CANJES (PRECIO EN PUNTOS · ACTIVO)</div>' +
+        '<table style="width:100%;border-collapse:collapse">' + precios + '</table>' +
+        '<div style="font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:6px">El servidor lee estos mismos precios. ' +
+          'Meses de plan: sólo desde FOCO y uno cada 90 días por persona.</div></div>' +
+      '</div>';
+  }
+
+  // ── Qué se canjeó ──────────────────────────────────────────────────────
+  function pnAdmCanjesPintar() {
+    var el = document.getElementById('pnAdmCanjes');
+    if (!el) return;
+    firebase.database().ref('norteSync/canjes').once('value').then(function (snap) {
+      var v = snap.val() || {};
+      var todos = [];
+      Object.keys(v).forEach(function (h) { Object.keys(v[h] || {}).forEach(function (u) {
+        Object.keys(v[h][u] || {}).forEach(function (id) { var c = v[h][u][id]; if (c && Number(c.pts) > 0) todos.push(Object.assign({ h: h }, c)); });
+      }); });
+      var nom = { nortia30: '+30 NortIA', captura20: '+20 foto o voz', pro1: 'Mes de PRO', top1: 'Mes de TOP', voto: 'Votos' };
+      var por = {};
+      todos.forEach(function (c) { var k = c.tipo; if (!por[k]) por[k] = { n: 0, pts: 0 }; por[k].n++; por[k].pts += Number(c.pts) || 0; });
+      var total = todos.reduce(function (a, c) { return a + (Number(c.pts) || 0); }, 0);
+      el.innerHTML = '<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:8px">Canjes</div>' +
+        (todos.length ? '<div style="display:flex;gap:22px;flex-wrap:wrap;margin-bottom:10px">' +
+          '<div><div style="font-size:24px;font-weight:800;color:var(--primary);line-height:1">' + total.toLocaleString('es-AR') + '</div>' +
+          '<div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-top:3px">PUNTOS CANJEADOS</div></div>' +
+          Object.keys(por).map(function (k) {
+            return '<div><div style="font-size:24px;font-weight:800;color:var(--text);line-height:1">' + por[k].n + '</div>' +
+              '<div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-top:3px">' + String(nom[k] || k).toUpperCase() + '</div></div>';
+          }).join('') + '</div>'
+        : '<div style="font-size:13px;color:var(--muted)">Todavía nadie canjeó.</div>');
+    }).catch(function (e) {
+      el.innerHTML = '<div style="font-size:13px;color:var(--danger)">No se pudieron leer los canjes: ' + (e && e.message || e) + '</div>';
+    });
+  }
+
+  // ── La votación del roadmap ────────────────────────────────────────────
+  // Tres opciones por mes. El título y la descripción son los que ve la
+  // gente, así que se escriben acá y no se copian tal cual del backlog, que
+  // está escrito para nosotros.
+  var _pnAdmBk = [];
+  function pnAdmVotoPintar() {
+    var el = document.getElementById('pnAdmVoto');
+    if (!el) return;
+    var ym = new Date().toISOString().slice(0, 7);
+    Promise.all([
+      firebase.database().ref('norteSync/backlog').once('value'),
+      firebase.database().ref('norteSync/roadmapVoto/' + ym).once('value')
+    ]).then(function (rs) {
+      var bk = rs[0].val() || {};
+      _pnAdmBk = (Array.isArray(bk) ? bk : Object.values(bk)).filter(function (x) { return x && x.cod && x.est !== 'Listo'; })
+        .sort(function (a, b) { return String(a.cod).localeCompare(String(b.cod)); });
+      var V = rs[1].val() || {};
+      var cand = V.candidatas ? (Array.isArray(V.candidatas) ? V.candidatas : Object.values(V.candidatas)) : [];
+      var tot = V.totales || {};
+      var filas = [0, 1, 2].map(function (i) {
+        var c = cand[i] || {};
+        var t = tot[c.cod] || {};
+        var opts = '<option value="">— ninguna —</option>' + _pnAdmBk.map(function (x) {
+          return '<option value="' + esc(x.cod) + '"' + (x.cod === c.cod ? ' selected' : '') + '>' + esc(x.cod + ' · ' + x.tit) + '</option>';
+        }).join('');
+        return '<div style="padding:10px 0;border-top:1px solid var(--border)">' +
+          '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px">' +
+            '<select id="pnAdmVc_' + i + '" onchange="pnAdmVotoElegir(' + i + ')" style="flex:1;min-width:220px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--card);color:var(--text)">' + opts + '</select>' +
+            (c.cod ? '<span style="font-size:12.5px;color:var(--muted)">' + (Number(t.pts) || 0).toLocaleString('es-AR') + ' pts · ' + (Number(t.n) || 0) + ' votos</span>' : '') + '</div>' +
+          '<input id="pnAdmVt_' + i + '" maxlength="70" placeholder="Título que ve la gente" value="' + esc(c.titulo || '') + '" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;margin-bottom:6px;background:var(--card);color:var(--text)">' +
+          '<textarea id="pnAdmVd_' + i + '" maxlength="220" rows="2" placeholder="Una o dos líneas: qué es y para qué sirve" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;resize:vertical;background:var(--card);color:var(--text)">' + esc(c.desc || '') + '</textarea></div>';
+      }).join('');
+      el.innerHTML = '<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px">Votación del roadmap · ' + pnRenderMesLabel(ym) + '</div>' +
+        '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:6px">Hasta tres opciones. La gente reparte puntos y los puntos se gastan. ' +
+        'Cambiar una opción a mitad de mes no devuelve lo que ya se votó.</div>' + filas +
+        '<div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap">' +
+          '<button class="btn btn-primary" onclick="pnAdmVotoGuardar()">Publicar opciones</button>' +
+          '<span id="pnAdmVotoEstado" style="font-size:12.5px;color:var(--muted)"></span></div>';
+    }).catch(function (e) {
+      el.innerHTML = '<div style="font-size:13px;color:var(--danger)">No se pudo leer la votación: ' + (e && e.message || e) + '</div>';
+    });
+  }
+  window.pnAdmVotoElegir = function (i) {
+    var cod = (document.getElementById('pnAdmVc_' + i) || {}).value;
+    var it = _pnAdmBk.filter(function (x) { return x.cod === cod; })[0];
+    var t = document.getElementById('pnAdmVt_' + i), d = document.getElementById('pnAdmVd_' + i);
+    if (!it) { if (t) t.value = ''; if (d) d.value = ''; return; }
+    if (t && !t.value) t.value = String(it.tit || '').slice(0, 70);
+  };
+  window.pnAdmVotoGuardar = function () {
+    var st = document.getElementById('pnAdmVotoEstado');
+    var out = [];
+    var err = '';
+    [0, 1, 2].forEach(function (i) {
+      var cod = (document.getElementById('pnAdmVc_' + i) || {}).value;
+      if (!cod) return;
+      var titulo = String((document.getElementById('pnAdmVt_' + i) || {}).value || '').trim().slice(0, 70);
+      var desc = String((document.getElementById('pnAdmVd_' + i) || {}).value || '').trim().slice(0, 220);
+      if (!titulo) err = 'Cada opción necesita un título para la gente.';
+      if (out.some(function (x) { return x.cod === cod; })) err = 'Hay una opción repetida.';
+      out.push({ cod: cod, titulo: titulo, desc: desc });
+    });
+    if (err) { st.textContent = '⚠️ ' + err; st.style.color = 'var(--danger)'; return; }
+    var ym = new Date().toISOString().slice(0, 7);
+    st.textContent = 'Publicando…'; st.style.color = 'var(--muted)';
+    var ref = firebase.database().ref('norteSync/roadmapVoto/' + ym + '/candidatas');
+    (out.length ? ref.set(out) : ref.remove()).then(function () {
+      st.textContent = out.length ? '✅ Publicado: ya se ve en Puntos Norte.' : '✅ Sin votación este mes.';
+      st.style.color = 'var(--success)';
+    }).catch(function (e) { st.textContent = '⚠️ No se pudo publicar: ' + (e && e.message || e); st.style.color = 'var(--danger)'; });
+  };
 
   // ── (el medidor se mudó a su propia sección, más abajo) ────────────────
   // ── Cuánto mide el área segura de ESTE aparato ─────────────────────────
@@ -16752,7 +17315,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.56.001';
+const APP_VERSION = 'v005.57.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -19801,6 +20364,11 @@ function cuposActuales() {
       integrantes: Math.max(q.integrantes, e.integrantes)
     };
   });
+  // Lo canjeado con Puntos Norte este mes (norteSync/iaExtra/<pool>/<mes>).
+  const ex = _iaExtra || {};
+  if (Number(ex.chat) > 0 || Number(ex.capturas) > 0) {
+    q = Object.assign({}, q, { chat: q.chat + (Number(ex.chat) || 0), capturas: q.capturas + (Number(ex.capturas) || 0) });
+  }
   return q;
 }
 
@@ -20220,6 +20788,7 @@ function closePlanModal(e) {
 // Un hogar adicional no tiene plan propio: usa el de su hogar principal
 // (billing.heredaDe). El cupo de IA también es el del principal.
 let miHeredaDe = '';
+let miCanjePlan = null;   // billing.canje: el mes de PRO o TOP canjeado con puntos
 function iaPoolId() { return miHeredaDe || curEmpresa(); }
 function iniciarListenerPlan() {
   const empresaId = curEmpresa();
@@ -20230,6 +20799,8 @@ function iniciarListenerPlan() {
     miPlanEstado = (v && v.status) || 'active';
     miOrigenCuenta = (v && v.origen) || '';
     miHeredaDe = (v && v.heredaDe) || '';
+    miCanjePlan = (v && v.canje) || null;
+    try { iaEscucharExtra(); pnEscucharCanjes(); pnEscucharVoto(); pnRepintarCanjes(); } catch (e) {}
     renderPlanUI();
     try { if (document.getElementById('hogaresOverlay').style.display === 'flex') renderListaHogares(); } catch (e) {}
     try { renderAcctBox(); } catch(e){}
@@ -20630,7 +21201,7 @@ const GUIA_PASOS = [
   { nav: 'puntos', pagina: 'puntos', ico: '⭐', titulo: 'Puntos Norte',
     que: 'Norte te premia por volver.',
     detalle: 'Cada vez que usás la app sumás puntos, y un índice del 0 al 100 te dice '
-           + 'cómo venís con el hábito. El canje todavía no está abierto.',
+           + 'cómo venís con el hábito. Los puntos se canjean por meses de plan y cupo extra de IA.',
     sirve: 'Dos minutos por semana alcanzan. Un mes flojo no te borra nada.' },
 
   { nav: 'cuaderno', pagina: 'cuaderno', ico: '📒', titulo: 'El Cuaderno',
