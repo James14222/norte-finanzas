@@ -829,6 +829,13 @@ tr:hover td { background: #fafbfc; }
 .pn-canje-hist-fila span:first-child { width: 78px; flex: none; color: rgba(255,255,255,.55); }
 .pn-canje-hist-fila span:nth-child(2) { flex: 1; min-width: 0; }
 .pn-canje-hist-fila b { white-space: nowrap; color: #fff; }
+.pn-proximos { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.12); }
+.pn-proximos-grilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin-top: 6px; }
+.pn-proximo { display: flex; gap: 9px; align-items: flex-start; padding: 10px 11px; border-radius: 10px;
+              border: 1px dashed rgba(255,255,255,.22); font-size: 16px; line-height: 1.2; }
+.pn-proximo b { display: block; font-size: 12.5px; color: #fff; font-weight: 700; }
+.pn-proximo small { display: block; font-size: 11px; color: rgba(255,255,255,.6); margin-top: 2px; line-height: 1.35; }
+.pn-proximos-pie { font-size: 11.5px; color: rgba(255,255,255,.5); margin-top: 8px; line-height: 1.45; }
 .pn-voto-op { padding: 12px 0; border-top: 1px solid var(--border); }
 .pn-voto-chip { padding: 4px 10px; font-size: 12.5px; font-weight: 700; }
 .pn-voto-chip:disabled { opacity: .4; cursor: default; }
@@ -12781,10 +12788,14 @@ const PN_REGLAS_DEF = {
   // Lo que se puede canjear y cuánto cuesta. El servidor tiene la misma tabla
   // (canjearPuntos) y lee estos mismos valores de norteSync/puntosReglas.
   canjes: {
-    nortia30:  { pts: 200,  activo: true },
-    captura20: { pts: 200,  activo: true },
-    pro1:      { pts: 1200, activo: true },
-    top1:      { pts: 2400, activo: true }
+    // Precios revisados con Jaime el 19/10: un usuario constante junta unos
+    // 250 por mes y uno muy activo, unos 450. Los puntos duran 180 días, así
+    // que un precio por encima de lo que se junta en seis meses no se alcanza
+    // nunca. El plan queda para quien usa Norte de verdad, no sólo seguido.
+    nortia30:  { pts: 400,  activo: true },   // ~1,5 meses de uso constante
+    captura20: { pts: 300,  activo: true },   // ~1 mes; cada carga cuesta la mitad que una consulta
+    pro1:      { pts: 2400, activo: true },   // ~5 meses de uso muy activo
+    top1:      { pts: 4000, activo: true }    // casi el techo de seis meses: el premio más difícil
   }
 };
 
@@ -14081,9 +14092,27 @@ function pnBloqueCanjes(saldo) {
       '<div class="pn-premios-tit">Canjeá tus puntos</div>' +
       '<div class="pn-premios-sub">Tenés ' + pnFmt(saldo) + ' disponibles. Se usan primero los que vencen antes.</div></div></div>' +
     activo +
-    '<div class="pn-canjes-grilla">' + tarjetas + '</div>' + hist +
+    '<div class="pn-canjes-grilla">' + tarjetas + '</div>' + hist + pnBloqueProximos() +
     '<div class="pn-premios-pie">Los meses de PRO y TOP son para quien está en FOCO: uno cada ' + PN_PLAN_CADA_DIAS +
       ' días, desde el hogar principal. Al terminar, el hogar vuelve solo a FOCO y no se borra nada.</div></div>';
+}
+
+// Lo que viene. Son ideas en evaluación (backlog PTS-021 a PTS-027), sin
+// fecha: se muestran para que se entienda que juntar puntos tiene recorrido,
+// no como una promesa con plazo.
+const PN_PROXIMOS = [
+  ['🚀', 'Acceso anticipado', 'Probar lo nuevo antes que el resto.'],
+  ['🎁', 'Regalar un mes de PRO', 'A alguien que también quiera ordenar sus gastos.'],
+  ['🏠', 'Un hogar o integrante extra', 'Por unos meses, sin cambiar de plan.'],
+  ['🏷️', 'Descuento en tu suscripción', 'Una parte de PRO o TOP pagada con puntos.'],
+  ['🛒', 'Beneficios en comercios', 'Cuando sumemos comercios de tu zona.']
+];
+function pnBloqueProximos() {
+  return '<div class="pn-proximos"><div class="pn-canje-hist-tit">Más adelante vas a poder canjear por cosas como</div>' +
+    '<div class="pn-proximos-grilla">' + PN_PROXIMOS.map(function (x) {
+      return '<div class="pn-proximo"><span aria-hidden="true">' + x[0] + '</span><div><b>' + x[1] + '</b><small>' + x[2] + '</small></div></div>';
+    }).join('') + '</div>' +
+    '<div class="pn-proximos-pie">Sin fecha todavía: los vamos sumando a medida que estén listos. Los puntos que juntes ahora sirven para todos.</div></div>';
 }
 
 function pnBloqueVoto(saldo) {
@@ -17315,7 +17344,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.57.000';
+const APP_VERSION = 'v005.57.001';
 let novEntradas = [];
 
 function novLeida(e) {
