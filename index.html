@@ -2211,6 +2211,32 @@ tr:hover td { background: #fafbfc; }
     @media (min-width:881px) and (max-width:1599px){
       .tx-acciones .tx-l{display:none}
     }
+    /* Los filtros en la computadora (v005.58.003): «Todos / Solo yo» al final de
+       la primera línea, a la derecha. El ::after corta la línea ahí, y abajo van
+       el gasto por integrante y el saldo pendiente, juntos en un renglón. Si en
+       una pantalla angosta no entra, «Todos / Solo yo» baja, pero sigue a la
+       derecha. */
+    @media (min-width:881px){
+      #page-transacciones .filters{gap:6px}
+      #page-transacciones .filters::after{content:"";flex-basis:100%;height:0;order:2}
+      #page-transacciones #autorFilterGroup{order:1;margin-left:auto}
+      #page-transacciones #autorSummary{order:3;flex:1 1 300px;width:auto!important;margin-top:0!important;min-width:0}
+      #page-transacciones .filters .tx-pend{order:4;margin-left:auto}
+      #page-transacciones .filters .f-search{width:140px!important}
+      #page-transacciones .filters .f-select,#page-transacciones .filters .f-search{font-size:12.5px;padding:6px 9px}
+      #page-transacciones #rubroFilt{max-width:170px}
+      #page-transacciones #extFilt{max-width:185px}
+      #page-transacciones .filters .tgl-btn{padding:5px 10px;font-size:12px}
+    }
+    /* Con más ancho, los selectores vuelven a mostrarse enteros. */
+    @media (min-width:1366px){
+      #page-transacciones .filters .f-search{width:165px!important}
+      #page-transacciones #extFilt{max-width:240px}
+    }
+    @media (min-width:1600px){
+      #page-transacciones .filters .f-search{width:190px!important}
+      #page-transacciones #rubroFilt,#page-transacciones #extFilt{max-width:none}
+    }
     @media (min-width:881px) and (max-width:1365px){
       .tx-acciones .tx-l2{display:none}
     }
@@ -17649,7 +17675,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.58.002';
+const APP_VERSION = 'v005.58.003';
 let novEntradas = [];
 
 function novLeida(e) {
