@@ -1021,6 +1021,15 @@ tr:hover td { background: #fafbfc; }
 .rub-filt { display: inline-flex; align-items: center; gap: 6px; flex-wrap: nowrap; min-width: 0; }
 .rub-filt .f-select { min-width: 0; }
 @media (max-width: 600px) { #extFilt { min-width: 0; max-width: 46%; } }
+/* Celular (v005.58.005): la fila de filtros no puede ser más ancha que la tarjeta.
+   El selector de rubro toma su ancho del nombre más largo de la lista y empujaba
+   todo hacia afuera; ahora se achica y «Más usados | A-Z» queda entero al lado. */
+@media (max-width: 880px) {
+  #page-transacciones .table-head .filters { min-width: 0; max-width: 100%; }
+  #page-transacciones .rub-filt { max-width: 100%; width: 100%; }
+  #page-transacciones .rub-filt #rubroFilt { flex: 1 1 0; min-width: 0; width: auto !important; }
+  #page-transacciones .rub-filt #rubroOrdenGrp { flex: 0 0 auto; }
+}
 @keyframes modalNudge { 0%,100% { transform: translateX(0) } 25% { transform: translateX(-6px) } 75% { transform: translateX(6px) } }
 .modal-nudge { animation: modalNudge .22s ease-in-out; }
 /* ── Hogares (v005.54) ── */
@@ -1596,6 +1605,31 @@ tr:hover td { background: #fafbfc; }
   #page-transacciones tbody tr td[data-col="banco"]::before { content: "Tarjeta "; font-weight: 700; }
   #page-transacciones tbody tr td[data-col="titular"]::before { content: "Titular "; font-weight: 700; }
   #page-transacciones tbody tr td[data-col="autor"]::before { content: "Cargó "; font-weight: 700; }
+}
+/* Letra chica en el celular, 1 px más (v005.58.004). Solo textos de contenido:
+   montos, títulos, botones y filtros quedan igual para no desarmar las filas. */
+@media (max-width: 880px) {
+  #page-transacciones tbody tr td[data-col="tipo"] .badge { font-size: 11.5px !important; }
+  #page-transacciones tbody tr td[data-col="rubro"] .rubro-tag { font-size: 12px !important; }
+  #page-transacciones tbody tr .tg-abbr,
+  #page-transacciones tbody tr td[data-col="rubro"] span[style*="font-size:10.5px"] { font-size: 11.5px !important; }
+  #page-transacciones tbody tr td[data-col="saldo"] { font-size: 13px !important; }
+  #page-transacciones tbody tr td[data-col="fecha"], #page-transacciones tbody tr td[data-col="fijo"],
+  #page-transacciones tbody tr td[data-col="banco"], #page-transacciones tbody tr td[data-col="titular"],
+  #page-transacciones tbody tr td[data-col="autor"] { font-size: 12.5px !important; }
+  #page-transacciones .txg-res, #page-transacciones .txg-n { font-size: 13px; }
+  #page-transacciones .txg-pend, #page-transacciones .txg-ok, #page-transacciones .txg-alerta { font-size: 12px; }
+  #page-transacciones #tx-pend-lbl { font-size: 12px; }
+  #page-transacciones #autorSummary { font-size: 13px; }
+  #page-dashboard .cards-grid .card-label { font-size: 11.5px; }
+  #page-dashboard .cards-grid .card-sub { font-size: 12px; }
+  #healthV3 div[style*="font-size:9.5px"] { font-size: 10.5px !important; }
+  #healthV3 div[style*="font-size:10.5px"] { font-size: 11.5px !important; }
+  #healthV3 div[style*="font-size:12px"] { font-size: 13px !important; }
+  #page-dashboard .yr-foot { font-size: 12.5px; }
+  #page-dashboard .yr-sum { font-size: 13px; }
+  #page-dashboard .budget-empty-hint { font-size: 13px; }
+  #page-dashboard .report-title span[style*="font-size:12px"] { font-size: 13px !important; }
 }
 .txc-fila { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--border);
   border-radius: 10px; margin-bottom: 6px; background: var(--card); }
@@ -17675,7 +17709,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.58.003';
+const APP_VERSION = 'v005.58.005';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -21109,7 +21143,7 @@ async function submitQuery() {
   const loadingDiv = addChatMsg('<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>', 'bot', true);
   try {
     const reply = await callNortiaChat(text);
-    loadingDiv.querySelector('.chat-bubble').innerHTML = reply.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+    loadingDiv.querySelector('.chat-bubble').innerHTML = nortiaMdLigero(reply);
   } catch (e) {
     loadingDiv.querySelector('.chat-bubble').innerHTML = `❌ No pudimos responder en este momento. Probá de nuevo en unos minutos.`;
   }
@@ -21122,6 +21156,19 @@ async function submitQuery() {
   inp.focus();
 }
 
+/* Formato liviano de las respuestas de NortIA (v005.58.005). Primero se escapa:
+   lo que devuelve el modelo es texto, no HTML. Después: viñetas «* » o «- » al
+   comienzo del renglón pasan a «•» (antes se leían como el comienzo de una
+   itálica y la lista salía con un renglón en cursiva y otro no), **negrita** y
+   *itálica* sólo dentro de un mismo renglón. */
+function nortiaMdLigero(t) {
+  return String(esc(t || '')).split('\n').map(function (l) {
+    return l.replace(/^(\s*)[*-]\s+/, function (m, sp) { return sp.replace(/ /g, '&nbsp;') + '• '; });
+  }).join('\n')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[\s(>;])\*([^\s*][^*\n]*?)\*(?=[\s.,;:!?)<&]|$)/g, '$1<em>$2</em>')
+    .replace(/\n/g, '<br>');
+}
 function sendSug(text) { document.getElementById('chatInput').value = text; submitQuery(); }
 
 const NORTIA_AVATAR_URL = "assets/nortia/nortia-bust.png";
