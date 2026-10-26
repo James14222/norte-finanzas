@@ -1605,6 +1605,9 @@ tr:hover td { background: #fafbfc; }
   #page-transacciones tbody tr td[data-col="banco"]::before { content: "Tarjeta "; font-weight: 700; }
   #page-transacciones tbody tr td[data-col="titular"]::before { content: "Titular "; font-weight: 700; }
   #page-transacciones tbody tr td[data-col="autor"]::before { content: "Cargó "; font-weight: 700; }
+  #page-transacciones tbody tr td[data-col="pagusd"] { grid-column: 2 / -1 !important; font-size: 11.5px !important;
+    color: var(--muted) !important; white-space: normal !important; line-height: 1.3 !important; }
+  #page-transacciones tbody tr td[data-col="pagusd"]::before { content: "Pagado USD "; font-weight: 700; }
 }
 /* Letra chica en el celular, 1 px más (v005.58.004). Solo textos de contenido:
    montos, títulos, botones y filtros quedan igual para no desarmar las filas. */
@@ -4173,6 +4176,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
             <p>La barra superior te permite buscar por texto y filtrar por tipo (Ingresos / Gastos), por rubro y por integrante (<strong>Todos</strong> o <strong>Solo yo</strong>). Los filtros se combinan entre sí.</p>
             <p>Buscan en <strong>todos</strong> los movimientos del mes por igual, también en los que están adentro de un resumen de tarjeta cerrado. No hace falta abrir nada para encontrar algo.</p>
             <p><strong>Ordenar.</strong> Tocá la cabecera de <strong>cualquier columna</strong> —Detalle, Cuota, Tipo, Rubro, Cliente, Importe $, Importe USD, Vencimiento, Pagado, Saldo, Fecha, Fijo/Variable, Tarjeta / Banco, Titular / Extensión o Cargado por—: el primer toque ordena, el segundo invierte y el tercero vuelve al orden de siempre. Los textos arrancan de la A a la Z; los importes, las fechas y las cuotas, de mayor o más nueva. Lo que no tiene ese dato (por ejemplo, sin fecha o sin cliente) queda siempre al final. Cuota ordena por cuántas cuotas faltan. Se ordena adentro de cada resumen de tarjeta y, aparte, entre los movimientos sueltos; los resúmenes no se mezclan. Ordenar por detalle junta todo lo de un mismo comercio (por ejemplo, las dos de Netflix), y combinado con el filtro de rubro sirve para revisar rubros de una pasada. En el celular se elige en «Orden». Norte se acuerda del orden que dejaste.</p>
+            <p><strong>Pagado en dólares.</strong> Si cargás un gasto con <strong>Importe USD</strong>, aparece <strong>Monto Pagado USD</strong> con su botón <strong>= Total USD</strong>, igual que en pesos. Mientras no lo marques, lo que falta en dólares cuenta en el saldo pendiente y en la columna Saldo. Los gastos en dólares cargados antes de este cambio quedan como estaban. La columna <strong>Pagado USD</strong> se suma desde <strong>Columnas</strong>.</p>
           </div>
           <div class="ayuda-bloque">
             <h4>💳 Los resúmenes de tarjeta, agrupados</h4>
@@ -5404,13 +5408,25 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
 
       <div class="form-row">
         <div class="form-group">
-          <label>Monto Pagado</label>
+          <label>Monto Pagado $</label>
           <input class="money" id="txPagado" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
           <div id="txPagErr" role="alert" style="display:none;font-size:12px;font-weight:600;color:var(--danger);margin-top:5px;line-height:1.35"></div>
         </div>
         <div class="form-group" style="display:flex;align-items:flex-end">
           <label style="display:none"></label>
           <button type="button" class="btn btn-secondary" style="width:100%;font-size:12px" onclick="calcAsentar('txImpPesos');numSet('txPagado',numVal('txImpPesos'))">= Total (pagado completo)</button>
+        </div>
+      </div>
+      <!-- Pagado en dólares (v005.60.000): aparece cuando hay Importe USD. -->
+      <div class="form-row" id="txPagUsdRow" style="display:none">
+        <div class="form-group">
+          <label>Monto Pagado USD</label>
+          <input class="money" id="txPagadoUSD" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+          <div id="txPagUsdErr" role="alert" style="display:none;font-size:12px;font-weight:600;color:var(--danger);margin-top:5px;line-height:1.35"></div>
+        </div>
+        <div class="form-group" style="display:flex;align-items:flex-end">
+          <label style="display:none"></label>
+          <button type="button" class="btn btn-secondary" style="width:100%;font-size:12px" onclick="calcAsentar('txImpUSD');numSet('txPagadoUSD',numVal('txImpUSD'))">= Total USD (pagado completo)</button>
         </div>
       </div>
 
@@ -7903,7 +7919,7 @@ document.addEventListener('focusout', function (e) {
   if (calcEvaluar(el.value) !== null) calcModo(el.id, false, true);
 }, true);
 
-const CALC_TX = ['txImpPesos', 'txImpUSD', 'txPagado'];
+const CALC_TX = ['txImpPesos', 'txImpUSD', 'txPagado', 'txPagadoUSD'];
 
 // ── PRESUPUESTO / META DE AHORRO ────────────────────────────
 const getBudgets  = ()  => JSON.parse(localStorage.getItem(`fin_budgets_${curEmpresa()}`) || '{}');
@@ -10538,15 +10554,29 @@ function cmpHTML(lblPesos, pesos, usd){
     '<div class="cmp-row"><span class="cl">+ <b>' + fmtU(usd) + '</b><span class="fx-tag">of. ' + fmtPz(fxRate()) + '</span></span>' +
     '<span class="cv">' + fmtPz(fxAPesos(usd)) + '</span></div></div>';
 }
+/* Pagado en dólares (v005.60.000). Los movimientos guardados antes no tienen
+   `pagadoUSD`: para ellos vale el criterio de siempre (pagado salvo que quede
+   saldo en pesos). La tarjeta se rige por tcPagado, como siempre. */
+function txPagadoUSDDe(t) {
+  const usd = Number(t && t.impUSD) || 0;
+  if (!usd) return 0;
+  if (t.pagadoUSD != null && t.pagadoUSD !== '') return Number(t.pagadoUSD) || 0;
+  if (isTCOrigen(t)) return t.tcPagado === false ? 0 : usd;
+  return (Number(t.saldo) || 0) <= 0 ? usd : 0;
+}
+function txSaldoUSDDe(t) {
+  const usd = Number(t && t.impUSD) || 0;
+  if (usd <= 0) return 0;
+  if (isTCOrigen(t)) return t.tcPagado === false ? usd : 0;
+  return Math.max(0, usd - txPagadoUSDDe(t));
+}
 // USD todavía no pagado: mismo criterio que usa Reportes → Tarjetas
 function fxUsdPendiente(txs){
   return txs.reduce(function(acc, t){
-    const usd = Number(t.impUSD) || 0;
-    if (usd <= 0 || t.tipo !== 'Gasto') return acc;
-    let pagadoOk;
-    try { pagadoOk = isTCOrigen(t) ? t.tcPagado === true : (Number(t.saldo)||0) <= 0; }
-    catch(e){ pagadoOk = (Number(t.saldo)||0) <= 0; }
-    return pagadoOk ? acc : acc + usd;
+    if ((Number(t.impUSD) || 0) <= 0 || t.tipo !== 'Gasto') return acc;
+    let falta;
+    try { falta = txSaldoUSDDe(t); } catch(e){ falta = (Number(t.saldo)||0) > 0 ? Number(t.impUSD) : 0; }
+    return acc + falta;
   }, 0);
 }
 
@@ -11536,8 +11566,9 @@ function txOrdenGuardar() { try { localStorage.setItem(TX_ORDEN_KEY, JSON.string
    movimiento no tiene ese dato: esos van siempre al final, en los dos sentidos. */
 function txSaldoOrden(t) {
   if (t.tipoGasto === 'Fijo' && (Number(t.impPesos) || 0) === 0) return null;   // esqueleto sin importe
-  if (isTCOrigen(t)) return t.tcPagado === false ? (Number(t.impPesos) || 0) : 0;
-  return (Number(t.impPesos) || 0) - (Number(t.pagado) || 0);
+  if (isTCOrigen(t)) return t.tcPagado === false ? (Number(t.impPesos) || 0) + fxAPesos(Number(t.impUSD) || 0) : 0;
+  // lo que falta en dólares, pasado a pesos con la cotización del día, para comparar
+  return (Number(t.impPesos) || 0) - (Number(t.pagado) || 0) + fxAPesos(txSaldoUSDDe(t));
 }
 var TX_ORDEN_CAMPOS = {
   detalle: { nom: 'Detalle',             tipo: 'txt',   v: function (t) { return txDetalleLimpio(t); } },
@@ -11549,6 +11580,7 @@ var TX_ORDEN_CAMPOS = {
   usd:     { nom: 'Importe USD',         tipo: 'num',   v: function (t) { return (Number(t.impUSD) || 0) || null; } },
   venc:    { nom: 'Vencimiento',         tipo: 'fecha', v: function (t) { return t.venc; } },
   pagado:  { nom: 'Pagado',              tipo: 'num',   v: function (t) { return Number(t.pagado) || 0; } },
+  pagusd:  { nom: 'Pagado USD',          tipo: 'num',   v: function (t) { return (Number(t.impUSD) || 0) ? txPagadoUSDDe(t) : null; } },
   saldo:   { nom: 'Saldo',               tipo: 'num',   v: txSaldoOrden },
   fecha:   { nom: 'Fecha',               tipo: 'fecha', v: function (t) { return t.fecha; } },
   fijo:    { nom: 'Fijo/Variable',       tipo: 'txt',   v: function (t) { return t.tipoGasto; } },
@@ -11710,6 +11742,7 @@ const TX_COLS = {
   usd:     { tit: 'Importe USD', w: 7 },
   venc:    { tit: 'Vencimiento', w: 8 },
   pagado:  { tit: 'Pagado', w: 8 },
+  pagusd:  { tit: 'Pagado USD', w: 7, nueva: true },
   saldo:   { tit: 'Saldo', w: 7 },
   fecha:   { tit: 'Fecha', w: 7, nueva: true },
   fijo:    { tit: 'Fijo/Variable', w: 7, nueva: true },
@@ -11718,7 +11751,7 @@ const TX_COLS = {
   autor:   { tit: 'Cargado por', w: 8, nueva: true }
 };
 const TX_COLS_DEF = ['cuota', 'tipo', 'rubro', 'cliente', 'imp', 'usd', 'venc', 'pagado', 'saldo'];
-const TX_COLS_TODAS = TX_COLS_DEF.concat(['fecha', 'fijo', 'banco', 'titular', 'autor']);
+const TX_COLS_TODAS = TX_COLS_DEF.concat(['pagusd', 'fecha', 'fijo', 'banco', 'titular', 'autor']);
 let _txColsFirma = '';
 let _txColsTmp = null;
 
@@ -11916,7 +11949,8 @@ function renderTx() {
   const _txFijoCol = TXC.indexOf('fijo') >= 0;
   const filaTx = t => {
     const saldo = (Number(t.impPesos)||0) - (Number(t.pagado)||0);
-    const pendiente = t.tipoGasto === 'Fijo' && (Number(t.impPesos)||0) === 0;
+    const pendiente = t.tipoGasto === 'Fijo' && (Number(t.impPesos)||0) === 0 && !(Number(t.impUSD)||0);
+    const saldoU = isTCOrigen(t) ? 0 : txSaldoUSDDe(t);
     // Quedó con monto pagado pero sin importe (se podía hasta v005.56.001).
     const faltaImp = !pendiente && !isTCOrigen(t) && (Number(t.impPesos)||0) === 0 && (Number(t.pagado)||0) > 0;
     // Para TC: usar tcPagado como flag explícito (cubre ARS y USD)
@@ -11934,6 +11968,7 @@ function renderTx() {
     C.usd = `<td data-col="usd" style="color:${reint && Number(t.impUSD) ? 'var(--success)' : 'var(--muted)'}">${reint ? fmtUR(t.impUSD) : fmtU(t.impUSD)}</td>`;
     C.venc = `<td data-col="venc">${fmtD(t.venc)}</td>`;
     C.pagado = `<td data-col="pagado">${reint ? fmtPR(t.pagado) : fmtP(t.pagado)}</td>`;
+    C.pagusd = `<td data-col="pagusd">${(Number(t.impUSD)||0) ? (reint ? fmtUR(txPagadoUSDDe(t)) : fmtU(txPagadoUSDDe(t))) : '<span style="color:var(--muted)">—</span>'}</td>`;
     C.saldo = `<td data-col="saldo">${
         pendiente
           ? '<span style="color:var(--muted)">—</span>'
@@ -11943,7 +11978,9 @@ function renderTx() {
                 : `<span class="saldo-pend" style="font-size:11px">💳 ${(Number(t.impUSD)||0) !== 0 && !(Number(t.impPesos)||0) ? 'U$S '+((Number(t.impUSD)||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})) : fmtP(Number(t.impPesos)||0)}</span>`)
             : (isTCTx && t.tcPagado === true)
               ? '<span class="saldo-ok">✓ ' + tcLabel(t) + '</span>'
-              : saldo<=0 ? '<span class="saldo-ok">✓</span>' : '<span class="saldo-pend">'+fmtP(saldo)+'</span>'
+              : (saldo<=0 && saldoU<=0) ? '<span class="saldo-ok">✓</span>'
+                : [saldo > 0 ? '<span class="saldo-pend">'+fmtP(saldo)+'</span>' : '',
+                   saldoU > 0 ? '<span class="saldo-pend">'+fmtU(saldoU)+'</span>' : ''].filter(Boolean).join('<br>')
       }</td>`;
     C.acc = `<td data-col="acc">
         <button class="act-btn" onclick="openModal('${t.id}')" title="Editar">✏️</button>
@@ -12116,7 +12153,7 @@ function txExportarExcel(soloSeleccion) {
   const mesTxt = k => { const p = String(k || '').split('-'); return p.length === 2 ? p[1] + '/' + p[0] : (k || ''); };
   const n = v => Number(v) || 0;
   const cab = ['Mes', 'Fecha', 'Tipo', 'Detalle', 'Cuota', 'Rubro', 'Fijo/Variable', 'Tarjeta / Banco', 'Titular / Extensión',
-               'Cliente', 'Importe $', 'Importe USD', 'Pagado $', 'Saldo $', 'Vencimiento', 'Cargado por', 'Reparto (Dividir)'];
+               'Cliente', 'Importe $', 'Importe USD', 'Pagado $', 'Saldo $', 'Vencimiento', 'Cargado por', 'Reparto (Dividir)', 'Pagado USD', 'Saldo USD'];
   const datos = [cab].concat(ord.map(t => {
     const c = (typeof txCuotaDe === 'function') ? txCuotaDe(t) : null;
     const tc = isTCOrigen(t);
@@ -12126,16 +12163,18 @@ function txExportarExcel(soloSeleccion) {
       c ? c.a + ' de ' + c.t : '', t.rubro || '', t.tipoGasto || '',
       tc ? ((getBancoLabel(t) || 'Tarjeta') + ' (' + tcLabel(t) + ')') : '', txExtDe(t), t.cliente || '',
       n(t.impPesos), n(t.impUSD), n(t.pagado), n(t.saldo), fecha(t.venc), t.creadoPorNombre || '',
-      dvEsDividida(t) ? dvTextoReparto(t) : ''
+      dvEsDividida(t) ? dvTextoReparto(t) : '',
+      n(txPagadoUSDDe(t)), n(txSaldoUSDDe(t))
     ];
   }));
   const tot = ['', '', '', 'TOTAL (' + ord.length + ')', '', '', '', '', '', '',
                ord.reduce((s, t) => s + n(t.impPesos), 0), ord.reduce((s, t) => s + n(t.impUSD), 0),
-               ord.reduce((s, t) => s + n(t.pagado), 0), ord.reduce((s, t) => s + n(t.saldo), 0), '', '', ''];
+               ord.reduce((s, t) => s + n(t.pagado), 0), ord.reduce((s, t) => s + n(t.saldo), 0), '', '', '',
+               ord.reduce((s, t) => s + n(txPagadoUSDDe(t)), 0), ord.reduce((s, t) => s + n(txSaldoUSDDe(t)), 0)];
   datos.push([], tot);
   const ws = XLSX.utils.aoa_to_sheet(datos);
-  ws['!cols'] = [8, 11, 10, 32, 8, 26, 12, 22, 22, 14, 14, 12, 14, 14, 12, 16, 40].map(w => ({ wch: w }));
-  ws['!autofilter'] = { ref: 'A1:Q' + (ord.length + 1) };
+  ws['!cols'] = [8, 11, 10, 32, 8, 26, 12, 22, 22, 14, 14, 12, 14, 14, 12, 16, 40, 12, 12].map(w => ({ wch: w }));
+  ws['!autofilter'] = { ref: 'A1:S' + (ord.length + 1) };
   // Formato de número en las columnas de plata (K a N)
   for (let r = 1; r < datos.length; r++) ['K', 'L', 'M', 'N'].forEach(col => {
     const cel = ws[col + (r + 1)]; if (cel && cel.t === 'n') cel.z = '#,##0.00';
@@ -17760,7 +17799,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.59.000';
+const APP_VERSION = 'v005.60.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -18792,6 +18831,7 @@ function txPintarReintegro() {
 }
 document.addEventListener('input', function (e) {
   if (e.target && (e.target.id === 'txImpPesos' || e.target.id === 'txImpUSD')) txPintarReintegro();
+  if (e.target && e.target.id === 'txImpUSD') txPintarPagUsd();
 });
 function setTipoForm(tipo) {
   setTimeout(txPintarReintegro, 0);
@@ -18867,11 +18907,13 @@ function openModal(id) {
     document.getElementById('txFecha').value    = t.fecha     || '';
     document.getElementById('txVenc').value     = t.venc      || '';
     numSet('txPagado', t.pagado);
+    numSet('txPagadoUSD', txPagadoUSDDe(t));
     // La cuenta con la que se llegó a cada importe, si quedó guardada.
     const _cta = t.cta || {};
     calcPonerExpr('txImpPesos', _cta.impPesos);
     calcPonerExpr('txImpUSD',   _cta.impUSD);
     calcPonerExpr('txPagado',   _cta.pagado);
+    calcPonerExpr('txPagadoUSD', _cta.pagadoUSD);
   } else {
     document.getElementById('txForm').reset();
     // reset() limpia los valores pero no sabe nada de la calculadora.
@@ -18881,12 +18923,21 @@ function openModal(id) {
     document.getElementById('txFecha').value = fechaPorDefecto(curKey());
   }
   txPintarReintegro();
+  txPintarPagUsd();
   try { dvPintarModal(); } catch (e) {}
   document.getElementById('modalOverlay').classList.add('show');
 }
 
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('show');
+}
+// «Monto Pagado USD» sólo cuando hay algo en dólares (o ya había un pago en USD).
+function txPintarPagUsd() {
+  const fila = document.getElementById('txPagUsdRow'); if (!fila) return;
+  const usd = numVal('txImpUSD'), pag = numVal('txPagadoUSD');
+  const ver = (usd !== 0 && !isNaN(usd)) || (pag !== 0 && !isNaN(pag));
+  fila.style.display = ver ? '' : 'none';
+  if (!ver) { const er = document.getElementById('txPagUsdErr'); if (er) er.style.display = 'none'; }
 }
 
 function saveTx(e) {
@@ -18911,6 +18962,8 @@ function saveTx(e) {
   const impP   = numVal('txImpPesos');
   const impU   = numVal('txImpUSD');
   const pagado = numVal('txPagado');
+  // Si no hay importe en dólares, no hay pagado en dólares (la fila está oculta).
+  const pagadoUSD = impU ? (numVal('txPagadoUSD') || 0) : 0;
   const tipoGasto = document.getElementById('txTipoGasto').value || 'Variable';
 
   // El monto pagado es una parte del importe: sin importe no hay qué pagar, y
@@ -18925,12 +18978,23 @@ function saveTx(e) {
   if (impP >= 0 && pagado !== 0) {
     if (!impP) {
       _avisoPag(impU
-        ? 'El Monto pagado es en pesos y este movimiento no tiene Importe pesos. Dejalo vacío o completá también el importe en pesos.'
+        ? 'El Monto pagado $ es en pesos y este movimiento no tiene Importe pesos. Dejalo vacío: lo pagado en dólares va en Monto Pagado USD.'
         : 'Para cargar un Monto pagado, primero completá el Importe pesos.', 'txImpPesos');
       return;
     }
     if (pagado < 0) { _avisoPag('El Monto pagado no puede ser negativo.', 'txPagado'); return; }
     if (pagado > impP + 0.005) { _avisoPag('El Monto pagado no puede ser mayor que el importe (' + fmtP(impP) + ').', 'txPagado'); return; }
+  }
+  // Lo mismo para dólares.
+  const _pagUErr = document.getElementById('txPagUsdErr');
+  if (_pagUErr) _pagUErr.style.display = 'none';
+  const _avisoPagU = function (msg) {
+    if (_pagUErr) { _pagUErr.textContent = msg; _pagUErr.style.display = 'block'; }
+    const f = document.getElementById('txPagadoUSD'); if (f) f.focus();
+  };
+  if (impU >= 0 && pagadoUSD !== 0) {
+    if (pagadoUSD < 0) { _avisoPagU('El Monto pagado USD no puede ser negativo.'); return; }
+    if (pagadoUSD > impU + 0.005) { _avisoPagU('El Monto pagado USD no puede ser mayor que el importe (' + fmtU(impU) + ').'); return; }
   }
 
   const mes = document.getElementById('txMes').value || curKey();
@@ -18944,13 +19008,15 @@ function saveTx(e) {
     fecha:    document.getElementById('txFecha').value || '',
     venc:     document.getElementById('txVenc').value,
     pagado,
-    saldo: impP - pagado
+    saldo: impP - pagado,
+    pagadoUSD,
+    saldoUSD: impU - pagadoUSD
   };
 
   // La cuenta de cada importe, si sigue explicando ese número. Objeto ralo: la
   // enorme mayoría de los movimientos no lo va a tener y no ocupa nada.
   const cta = {};
-  [['impPesos', 'txImpPesos', impP], ['impUSD', 'txImpUSD', impU], ['pagado', 'txPagado', pagado]]
+  [['impPesos', 'txImpPesos', impP], ['impUSD', 'txImpUSD', impU], ['pagado', 'txPagado', pagado], ['pagadoUSD', 'txPagadoUSD', pagadoUSD]]
     .forEach(function (f) { const e = calcCuentaDe(f[1], f[2]); if (e) cta[f[0]] = e; });
   if (Object.keys(cta).length) tx.cta = cta;
 
@@ -19449,6 +19515,9 @@ function masImportar(){
       venc: y + '-' + String(m+1).padStart(2,'0') + '-' + String(f.fecha.getDate()).padStart(2,'0'),
       pagado: f.pagado,
       saldo: Math.max(0, f.impPesos - f.pagado),
+      // La planilla no trae pagado en dólares: el USD se toma como pagado.
+      pagadoUSD: f.impUSD > 0 ? f.impUSD : 0,
+      saldoUSD: 0,
       creadoPor: (typeof curUserId === 'function' ? curUserId() : ''),
       creadoPorNombre: (typeof curUserName === 'function' ? (curUserName() || '') : '')
     };
@@ -19604,6 +19673,8 @@ function doCopiarMes(){
       c.venc   = venc;
       c.pagado = 0;
       c.saldo  = Number(t.impPesos) || 0;
+      c.pagadoUSD = 0;
+      c.saldoUSD  = Number(t.impUSD) || 0;
       nuevos.push(c);
     });
   });
@@ -20140,6 +20211,8 @@ function saveQuickTx() {
     cliente: '', impPesos: pesos, impUSD: usd,
     fecha: (document.getElementById('qpFecha').value || ''), venc: '',
     pagado: pagadoFinal, saldo: Math.max(0, pesos - pagadoFinal),
+    // Pagado vacío = pagado completo, también en dólares.
+    pagadoUSD: (qpPagTexto === '') ? usd : 0, saldoUSD: (qpPagTexto === '') ? 0 : usd,
     creadoPor: dueno.id, creadoPorNombre: dueno.nombre
   };
   if (qpVia) tx.via = qpVia;
@@ -20206,6 +20279,8 @@ function clonarMesAnterior() {
     impUSD:   0,
     pagado:   0,
     saldo:    0,
+    pagadoUSD: 0,
+    saldoUSD:  0,
     // El clon todavía no ocurrió: tiene vencimiento, no fecha.
     fecha:    '',
     venc:     vencMes,
@@ -20692,8 +20767,10 @@ function nortiaLineaTx(t) {
   const m = String(t.mes || '').split('-')[1];
   const imp = Number(t.impUSD) ? `U$S${t.impUSD}` : `$${Number(t.impPesos || 0).toLocaleString('es-AR')}`;
   const saldo = Number(t.saldo || 0) > 0 ? ` [pendiente $${Number(t.saldo).toLocaleString('es-AR')}]` : '';
+  const _su = (function () { try { return isTCOrigen(t) ? 0 : txSaldoUSDDe(t); } catch (e) { return 0; } })();
+  const saldoU = _su > 0 ? ` [pendiente U$S${_su}]` : '';
   const banco = t.banco ? ` [${getBancoLabel(t)}]` : '';
-  return `${MESES[parseInt(m)-1]}: ${t.tipo} | ${t.rubro || '\u2014'} | ${t.detalle}${banco} | ${imp}${saldo}`;
+  return `${MESES[parseInt(m)-1]}: ${t.tipo} | ${t.rubro || '\u2014'} | ${t.detalle}${banco} | ${imp}${saldo}${saldoU}`;
 }
 
 // ── El mes que pide la pregunta ──────────────────────────────────────
