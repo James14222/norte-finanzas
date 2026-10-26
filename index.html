@@ -2555,6 +2555,10 @@ html[data-tema="noche"] #txTip { background: #2a3d50; border: 1px solid #3d5368;
 /* Si la columna es angosta se recorta el texto, nunca el ícono */
 #page-transacciones thead th.tx-th-ord .th-txt, .tc-th-ord .th-txt { display:inline-block; max-width:calc(100% - 16px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:bottom; }
 #page-transacciones thead th.tx-th-ord::after, .tc-th-ord::after { content:'⇅'; display:inline-block; margin-left:5px; font-size:.95em; font-weight:400; opacity:.38; transition:opacity .15s; }
+#page-transacciones thead th.tx-th-ord::after { display:none; }
+#page-transacciones thead th.tx-th-ord .th-txt { max-width:100%; }
+#page-transacciones thead tr:hover th.tx-th-ord::after, #page-transacciones thead th.tx-th-ord.ord-asc::after, #page-transacciones thead th.tx-th-ord.ord-desc::after { display:inline-block; }
+#page-transacciones thead tr:hover th.tx-th-ord .th-txt, #page-transacciones thead th.tx-th-ord.ord-asc .th-txt, #page-transacciones thead th.tx-th-ord.ord-desc .th-txt { max-width:calc(100% - 16px); }
 #page-transacciones thead th.tx-th-ord:hover::after, .tc-th-ord:hover::after { opacity:.75; }
 #page-transacciones thead th.ord-asc::after, .tc-th-ord.ord-asc::after { content:'▲'; opacity:1; color:var(--primary-dark); font-size:.75em; }
 #page-transacciones thead th.ord-desc::after, .tc-th-ord.ord-desc::after { content:'▼'; opacity:1; color:var(--primary-dark); font-size:.75em; }
@@ -4168,7 +4172,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
             <h4>Filtros y búsqueda</h4>
             <p>La barra superior te permite buscar por texto y filtrar por tipo (Ingresos / Gastos), por rubro y por integrante (<strong>Todos</strong> o <strong>Solo yo</strong>). Los filtros se combinan entre sí.</p>
             <p>Buscan en <strong>todos</strong> los movimientos del mes por igual, también en los que están adentro de un resumen de tarjeta cerrado. No hace falta abrir nada para encontrar algo.</p>
-            <p><strong>Ordenar.</strong> Tocá la cabecera <strong>Detalle</strong>, <strong>Importe $</strong> o <strong>Rubro</strong>: el primer toque ordena, el segundo invierte y el tercero vuelve al orden de siempre. Se ordena adentro de cada resumen de tarjeta y, aparte, entre los movimientos sueltos; los resúmenes no se mezclan. Ordenar por detalle junta todo lo de un mismo comercio (por ejemplo, las dos de Netflix), y combinado con el filtro de rubro sirve para revisar rubros de una pasada. En el celular se elige en «Orden». Norte se acuerda del orden que dejaste.</p>
+            <p><strong>Ordenar.</strong> Tocá la cabecera de <strong>cualquier columna</strong> —Detalle, Cuota, Tipo, Rubro, Cliente, Importe $, Importe USD, Vencimiento, Pagado, Saldo, Fecha, Fijo/Variable, Tarjeta / Banco, Titular / Extensión o Cargado por—: el primer toque ordena, el segundo invierte y el tercero vuelve al orden de siempre. Los textos arrancan de la A a la Z; los importes, las fechas y las cuotas, de mayor o más nueva. Lo que no tiene ese dato (por ejemplo, sin fecha o sin cliente) queda siempre al final. Cuota ordena por cuántas cuotas faltan. Se ordena adentro de cada resumen de tarjeta y, aparte, entre los movimientos sueltos; los resúmenes no se mezclan. Ordenar por detalle junta todo lo de un mismo comercio (por ejemplo, las dos de Netflix), y combinado con el filtro de rubro sirve para revisar rubros de una pasada. En el celular se elige en «Orden». Norte se acuerda del orden que dejaste.</p>
           </div>
           <div class="ayuda-bloque">
             <h4>💳 Los resúmenes de tarjeta, agrupados</h4>
@@ -11524,16 +11528,50 @@ function renderDeudaCuotas() {
    forma de mostrar: totales, saldo y selección no cambian. */
 var TX_ORDEN_KEY = 'norte_txOrden';
 var txOrden = (function () { try { var o = JSON.parse(localStorage.getItem(TX_ORDEN_KEY) || 'null'); if (o && o.campo) return o; } catch (e) {} return { campo: '', dir: 1 }; })();
+// (si el campo guardado no está en TX_ORDEN_CAMPOS, txCmpOrden usa el orden de siempre)
 function txNorm(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim(); }
 function txOrdenGuardar() { try { localStorage.setItem(TX_ORDEN_KEY, JSON.stringify(txOrden)); } catch (e) {} }
+/* Campos por los que se puede ordenar (v005.59.000). tipo: txt arranca A-Z;
+   num y fecha arrancan de mayor / más nueva. v(t) devuelve null cuando el
+   movimiento no tiene ese dato: esos van siempre al final, en los dos sentidos. */
+function txSaldoOrden(t) {
+  if (t.tipoGasto === 'Fijo' && (Number(t.impPesos) || 0) === 0) return null;   // esqueleto sin importe
+  if (isTCOrigen(t)) return t.tcPagado === false ? (Number(t.impPesos) || 0) : 0;
+  return (Number(t.impPesos) || 0) - (Number(t.pagado) || 0);
+}
+var TX_ORDEN_CAMPOS = {
+  detalle: { nom: 'Detalle',             tipo: 'txt',   v: function (t) { return txDetalleLimpio(t); } },
+  cuota:   { nom: 'Cuotas que faltan',   tipo: 'num',   v: function (t) { var c = txCuotaDe(t); return c ? c.t - c.a : null; } },
+  tipo:    { nom: 'Tipo',                tipo: 'txt',   v: function (t) { return esReintegro(t) ? 'Reintegro' : t.tipo; } },
+  rubro:   { nom: 'Rubro',               tipo: 'txt',   v: function (t) { return t.rubro; } },
+  cliente: { nom: 'Cliente',             tipo: 'txt',   v: function (t) { return t.cliente; } },
+  importe: { nom: 'Importe $',           tipo: 'num',   v: null },
+  usd:     { nom: 'Importe USD',         tipo: 'num',   v: function (t) { return (Number(t.impUSD) || 0) || null; } },
+  venc:    { nom: 'Vencimiento',         tipo: 'fecha', v: function (t) { return t.venc; } },
+  pagado:  { nom: 'Pagado',              tipo: 'num',   v: function (t) { return Number(t.pagado) || 0; } },
+  saldo:   { nom: 'Saldo',               tipo: 'num',   v: txSaldoOrden },
+  fecha:   { nom: 'Fecha',               tipo: 'fecha', v: function (t) { return t.fecha; } },
+  fijo:    { nom: 'Fijo/Variable',       tipo: 'txt',   v: function (t) { return t.tipoGasto; } },
+  banco:   { nom: 'Tarjeta / Banco',     tipo: 'txt',   v: function (t) { return isTCOrigen(t) ? (getBancoLabel(t) || 'Tarjeta') : null; } },
+  titular: { nom: 'Titular / Extensión', tipo: 'txt',   v: function (t) { return txExtDe(t); } },
+  autor:   { nom: 'Cargado por',         tipo: 'txt',   v: function (t) { return t.creadoPorNombre; } }
+};
+// La columna de la tabla (data-col) → el campo de orden. Importe $ se guardaba como 'importe'.
+var TX_ORDEN_COL = { imp: 'importe' };
+function txOrdenInicial(campo) { var c = TX_ORDEN_CAMPOS[campo]; return c && c.tipo !== 'txt' ? -1 : 1; }
 function txCmpOrden(defecto) {
-  if (!txOrden.campo) return defecto;
-  var c = txOrden.campo, d = txOrden.dir;
+  if (!txOrden.campo || !TX_ORDEN_CAMPOS[txOrden.campo]) return defecto;
+  var c = txOrden.campo, d = txOrden.dir, def = TX_ORDEN_CAMPOS[c];
   return function (a, b) {
     var r;
-    if (c === 'detalle') r = txNorm(txDetalleLimpio(a)).localeCompare(txNorm(txDetalleLimpio(b)));
-    else if (c === 'rubro') r = ((a.rubro ? 1 : 0) - (b.rubro ? 1 : 0)) || txNorm(a.rubro).localeCompare(txNorm(b.rubro));
-    else {
+    if (def.v) {
+      var va = def.v(a), vb = def.v(b);
+      var na = va == null || va === '', nb = vb == null || vb === '';
+      if (na || nb) return na && nb ? defecto(a, b) : (na ? 1 : -1);   // sin dato: al final
+      if (def.tipo === 'num') r = va - vb;
+      else if (def.tipo === 'fecha') r = va < vb ? -1 : va > vb ? 1 : 0;
+      else r = txNorm(va).localeCompare(txNorm(vb), 'es');
+    } else {
       // Importe: primero los de pesos, después los que son solo en dólares
       var ua = !(Number(a.impPesos) || 0) && (Number(a.impUSD) || 0) ? 1 : 0, ub = !(Number(b.impPesos) || 0) && (Number(b.impUSD) || 0) ? 1 : 0;
       if (ua !== ub) return ua - ub;
@@ -11543,7 +11581,7 @@ function txCmpOrden(defecto) {
   };
 }
 function txOrdenar(campo) {
-  var inicial = campo === 'importe' ? -1 : 1;
+  var inicial = txOrdenInicial(campo);
   if (txOrden.campo !== campo) txOrden = { campo: campo, dir: inicial };
   else if (txOrden.dir === inicial) txOrden.dir = -inicial;
   else txOrden = { campo: '', dir: 1 };
@@ -11554,21 +11592,34 @@ function txSetOrden(v) {
   txOrden = p[0] ? { campo: p[0], dir: Number(p[1]) || 1 } : { campo: '', dir: 1 };
   txOrdenGuardar(); renderTx();
 }
+function txOrdenSelectArmar(sel) {
+  if (!sel || sel.dataset.armado === '1') return;
+  var sentido = { txt: ['A-Z', 'Z-A'], num: ['mayor primero', 'menor primero'], fecha: ['más nueva primero', 'más vieja primero'] };
+  var html = '<option value="">Orden: el de siempre (por fecha)</option>';
+  Object.keys(TX_ORDEN_CAMPOS).forEach(function (k) {
+    var c = TX_ORDEN_CAMPOS[k], s = sentido[c.tipo], ini = txOrdenInicial(k);
+    if (k === 'cuota') s = ['más cuotas por pagar', 'menos cuotas por pagar'];
+    html += '<optgroup label="' + esc(c.nom) + '">' +
+      '<option value="' + k + '|' + ini + '">' + esc(c.nom) + ': ' + s[0] + '</option>' +
+      '<option value="' + k + '|' + (-ini) + '">' + esc(c.nom) + ': ' + s[1] + '</option></optgroup>';
+  });
+  sel.innerHTML = html; sel.dataset.armado = '1';
+}
 function txCabecerasOrden() {
-  var mapa = { 'Detalle': 'detalle', 'Rubro': 'rubro', 'Importe $': 'importe' };
-  var nombres = { detalle: 'detalle', rubro: 'rubro', importe: 'importe' };
   document.querySelectorAll('#page-transacciones thead th').forEach(function (th) {
+    var col = th.dataset.col; if (!col) return;
+    var k = TX_ORDEN_COL[col] || col; if (!TX_ORDEN_CAMPOS[k]) return;   // selección y acciones no ordenan
     var base = th.dataset.base || th.textContent.trim();
-    var k = mapa[base]; if (!k) return;
     th.dataset.base = base;
     th.classList.add('tx-th-ord');
     th.onclick = function () { txOrdenar(k); };
-    th.title = 'Ordenar por ' + nombres[k] + ' (dentro de cada resumen y entre los sueltos)';
+    th.title = 'Ordenar por ' + TX_ORDEN_CAMPOS[k].nom.toLowerCase() + ' (dentro de cada resumen y entre los sueltos)';
     th.innerHTML = '<span class="th-txt">' + esc(base) + '</span>';
     th.classList.toggle('ord-asc', txOrden.campo === k && txOrden.dir === 1);
     th.classList.toggle('ord-desc', txOrden.campo === k && txOrden.dir === -1);
   });
   var sel = document.getElementById('txOrdenSel');
+  txOrdenSelectArmar(sel);
   if (sel) sel.value = txOrden.campo ? txOrden.campo + '|' + txOrden.dir : '';
 }
 
@@ -17709,7 +17760,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.58.005';
+const APP_VERSION = 'v005.59.000';
 let novEntradas = [];
 
 function novLeida(e) {
