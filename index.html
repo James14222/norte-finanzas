@@ -2567,6 +2567,12 @@ html[data-tema="noche"] #txTip { background: #2a3d50; border: 1px solid #3d5368;
 #page-transacciones thead th.ord-desc::after, .tc-th-ord.ord-desc::after { content:'▼'; opacity:1; color:var(--primary-dark); font-size:.75em; }
 .tx-orden-movil { display:none; }
 @media (max-width: 880px) { .tx-orden-movil { display:block; } }
+/* Transferencias entre hogares (v005.61.000) */
+.trf-chip { display:inline-block; font-size:10.5px; font-weight:700; color:#0f766e; background:rgba(15,118,110,.10); border:1px solid rgba(15,118,110,.25); border-radius:999px; padding:1px 8px; margin-left:6px; white-space:nowrap; vertical-align:middle; }
+.trf-mon { display:flex; gap:0; }
+.trf-nota { font-size:11.5px; color:var(--muted); line-height:1.45; margin-top:6px; }
+.trf-err { display:none; font-size:12.5px; font-weight:600; color:var(--danger); margin:6px 0 10px; line-height:1.4; }
+#trfAviso { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:#0f766e; color:#fff; font-size:14px; font-weight:600; padding:12px 18px; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.25); z-index:9999; max-width:min(92vw,520px); line-height:1.4; text-align:center; }
 </style>
 <style id="rbMasivoEstilos">
 /* Rubros: borrado y carga masiva */
@@ -3293,6 +3299,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
           </div>
           <div class="tx-acciones">
             <button class="btn btn-secondary" onclick="clonarMesAnterior()" data-nom="Clonar anterior" data-tip="Copia todos los movimientos del mes anterior a este, con sus importes.">📋<span>Clonar<span class="tx-l"> anterior</span></span></button>
+            <button class="btn btn-secondary" id="trfBtn" style="display:none" onclick="trfAbrir()" data-nom="Transferir a otro hogar" data-tip="Pasá plata de este hogar a otro tuyo: sale como gasto acá y entra como ingreso allá, vinculados.">⇄<span>Transferir<span class="tx-l"> a otro hogar</span></span></button>
             <button class="btn btn-secondary" onclick="openMasivo()" data-nom="Carga masiva" data-tip="Cargá muchos movimientos de una vez desde un Excel.">📊 Carga masiva</button>
             <button class="btn btn-secondary" onclick="txPedirExportar()" data-nom="Exportar XLS" data-tip="Baja un Excel con lo que marcaste o, si no marcaste nada, con todo lo que ves.">📥 Exportar XLS</button>
             <button class="btn btn-secondary" id="txColsBtn" onclick="txColsAbrir()" data-nom="Columnas" data-tip="Elegí qué columnas ver y en qué orden. Queda igual en todos tus aparatos." aria-label="Columnas">⚙️<span class="tx-l">Columnas</span></button>
@@ -4177,6 +4184,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
             <p>Buscan en <strong>todos</strong> los movimientos del mes por igual, también en los que están adentro de un resumen de tarjeta cerrado. No hace falta abrir nada para encontrar algo.</p>
             <p><strong>Ordenar.</strong> Tocá la cabecera de <strong>cualquier columna</strong> —Detalle, Cuota, Tipo, Rubro, Cliente, Importe $, Importe USD, Vencimiento, Pagado, Saldo, Fecha, Fijo/Variable, Tarjeta / Banco, Titular / Extensión o Cargado por—: el primer toque ordena, el segundo invierte y el tercero vuelve al orden de siempre. Los textos arrancan de la A a la Z; los importes, las fechas y las cuotas, de mayor o más nueva. Lo que no tiene ese dato (por ejemplo, sin fecha o sin cliente) queda siempre al final. Cuota ordena por cuántas cuotas faltan. Se ordena adentro de cada resumen de tarjeta y, aparte, entre los movimientos sueltos; los resúmenes no se mezclan. Ordenar por detalle junta todo lo de un mismo comercio (por ejemplo, las dos de Netflix), y combinado con el filtro de rubro sirve para revisar rubros de una pasada. En el celular se elige en «Orden». Norte se acuerda del orden que dejaste.</p>
             <p><strong>Pagado en dólares.</strong> Si cargás un gasto con <strong>Importe USD</strong>, aparece <strong>Monto Pagado USD</strong> con su botón <strong>= Total USD</strong>, igual que en pesos. Mientras no lo marques, lo que falta en dólares cuenta en el saldo pendiente y en la columna Saldo. Los gastos en dólares cargados antes de este cambio quedan como estaban. La columna <strong>Pagado USD</strong> se suma desde <strong>Columnas</strong>.</p>
+            <p><strong>⇄ Transferir a otro hogar.</strong> Si sos administrador de más de un hogar, pasás plata de uno a otro: sale como <strong>gasto</strong> del hogar en el que estás y entra como <strong>ingreso</strong> en el que elijas, con el rubro que quieras de cada lado (por defecto «Transferencia entre hogares», que no tiene presupuesto). Los dos movimientos quedan vinculados y se ven con la marca ⇄. En el otro hogar aparece apenas alguien lo abre. Si cambiás el importe, la fecha o el período de uno, cambia el otro; si borrás uno, se borran los dos. En Reportes → «Todos mis hogares» las transferencias entre tus hogares no se suman, porque la plata no salió de la familia.</p>
           </div>
           <div class="ayuda-bloque">
             <h4>💳 Los resúmenes de tarjeta, agrupados</h4>
@@ -5744,6 +5752,61 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
         <button type="button" class="btn btn-secondary" onclick="dvCerrar()">Cancelar</button>
         <button type="button" class="btn btn-primary" onclick="dvGuardar(false)">Guardar</button>
       </span>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSFERENCIA ENTRE HOGARES (v005.61.000) -->
+<div class="overlay" id="trfOverlay">
+  <div class="modal">
+    <div class="modal-title">⇄ Transferir a otro hogar</div>
+    <div class="trf-nota" style="margin:-4px 0 14px">Sale como <strong>gasto</strong> de <strong id="trfOrigenNom">este hogar</strong> y entra como <strong>ingreso</strong> en el que elijas. Los dos movimientos quedan vinculados.</div>
+    <div class="form-group">
+      <label>Hogar de destino</label>
+      <select id="trfDestino" class="f-select" style="width:100%"></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Moneda</label>
+        <div class="tgl-group trf-mon" id="trfMonGrp">
+          <button type="button" class="tgl-btn active" data-m="ARS" onclick="trfMoneda('ARS')">Pesos</button>
+          <button type="button" class="tgl-btn" data-m="USD" onclick="trfMoneda('USD')">Dólares</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label id="trfImpLbl">Importe $</label>
+        <input class="money" id="trfImporte" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Detalle <span style="font-weight:400;text-transform:none;opacity:0.6">(opcional)</span></label>
+      <input type="text" id="trfDetalle" placeholder="Transferencia a …">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Fecha</label>
+        <input type="date" id="trfFecha">
+      </div>
+      <div class="form-group">
+        <label>Período <span style="font-weight:400;text-transform:none;opacity:0.6">(mes de impacto)</span></label>
+        <input type="month" id="trfMes">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Rubro de salida <span style="font-weight:400;text-transform:none;opacity:0.6">(gasto acá)</span></label>
+        <select id="trfRubroSale" class="f-select" style="width:100%"></select>
+      </div>
+      <div class="form-group">
+        <label>Rubro de entrada <span style="font-weight:400;text-transform:none;opacity:0.6">(ingreso allá)</span></label>
+        <select id="trfRubroEntra" class="f-select" style="width:100%"></select>
+      </div>
+    </div>
+    <div class="trf-nota">«Transferencia entre hogares» no tiene presupuesto: no se come el de ningún rubro. En «Todos mis hogares» no se suma, porque la plata no salió de la familia.</div>
+    <div class="trf-err" id="trfErr" role="alert"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" onclick="trfCerrar()">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="trfOk" onclick="trfGuardar()">Transferir</button>
     </div>
   </div>
 </div>
@@ -10268,15 +10331,21 @@ function initSync() { let myRef;
     // (evita quedarse sin datos si el browser limpió localStorage entre sesiones)
     applyRemoteSnapshot(remote);
     render();
+    try { trfProcesarBuzon(remote.buzon); } catch (e) {}
   }).then(() => {
     setSyncStatus('ok');
     // Escuchar cambios remotos en tiempo real (otros dispositivos)
     fbRef.on('value', snap => { if (fbRef !== myRef) return;
       const remote = snap.val();
-      if (!remote || remote._client === syncClientId) return;
-      applyRemoteSnapshot(remote);
-      render();
-      setSyncStatus('ok');
+      if (!remote) return;
+      // El buzón se mira aunque el último en escribir haya sido este aparato:
+      // lo que llega de otro hogar no cambia `_client`.
+      if (remote._client !== syncClientId) {
+        applyRemoteSnapshot(remote);
+        render();
+        setSyncStatus('ok');
+      }
+      try { trfProcesarBuzon(remote.buzon); } catch (e) {}
     });
   }).catch(err => {
     console.warn('Error de sincronización con Firebase:', err);
@@ -11885,6 +11954,7 @@ function renderTx() {
   try { txAplicarColumnas(); } catch (e) {}
   dcMigrarCuotas();   // una sola vez: la cuota sale de la descripción a su campo
   pintarPendienteTx();
+  try { trfPintarBoton(); } catch (e) {}
   const all = getData().filter(t => t.mes === curKey());
 
   // Poblar filtro de rubros: «Todos», «Sin asignar» y después los rubros del
@@ -11959,7 +12029,7 @@ function renderTx() {
     const reint = esReintegro(t);
     const C = {};
     C.sel = `<td data-col="sel"><input type="checkbox" class="tx-check" data-id="${t.id}" ${selectedTx.has(t.id)?'checked':''} onchange="toggleSelectTx('${t.id}', this.checked)"></td>`;
-    C.detalle = `<td data-col="detalle"><strong>${esc(txDetalleLimpio(t))}</strong>${txCuotaMovil(t)}${pendiente ? ' <span title="Esqueleto de movimiento fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${faltaImp ? ' <span onclick="openModal(\'' + t.id + '\')" title="Tiene monto pagado pero no importe: tocá para completar el importe" style="cursor:pointer;font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Falta el importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de ${tcLabel(t)==='TD'?'Débito':'Crédito'}" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>${(t.origen === 'TARJETA' && t.creadoPorNombre) ? '<span style="font-size:10.5px;font-weight:600;color:#5B6B7C;background:rgba(91,107,124,0.10);border:1px solid rgba(91,107,124,0.22);border-radius:6px;padding:1px 6px;margin-left:6px;white-space:nowrap">\uD83D\uDC64 ' + t.creadoPorNombre + '</span>' : ''}` : ''}${dvEsDividida(t) ? `<div class="dv-linea" onclick="dvAbrir('${t.id}')" title="Ver o cambiar el reparto">✂️ ${esc(dvTextoReparto(t))}${t.partesDe ? ' <span class="dv-hered">· igual que la cuota anterior</span>' : ''}</div>` : ''}</td>`;
+    C.detalle = `<td data-col="detalle"><strong>${esc(txDetalleLimpio(t))}</strong>${txCuotaMovil(t)}${trfChip(t)}${pendiente ? ' <span title="Esqueleto de movimiento fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${faltaImp ? ' <span onclick="openModal(\'' + t.id + '\')" title="Tiene monto pagado pero no importe: tocá para completar el importe" style="cursor:pointer;font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Falta el importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de ${tcLabel(t)==='TD'?'Débito':'Crédito'}" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>${(t.origen === 'TARJETA' && t.creadoPorNombre) ? '<span style="font-size:10.5px;font-weight:600;color:#5B6B7C;background:rgba(91,107,124,0.10);border:1px solid rgba(91,107,124,0.22);border-radius:6px;padding:1px 6px;margin-left:6px;white-space:nowrap">\uD83D\uDC64 ' + t.creadoPorNombre + '</span>' : ''}` : ''}${dvEsDividida(t) ? `<div class="dv-linea" onclick="dvAbrir('${t.id}')" title="Ver o cambiar el reparto">✂️ ${esc(dvTextoReparto(t))}${t.partesDe ? ' <span class="dv-hered">· igual que la cuota anterior</span>' : ''}</div>` : ''}</td>`;
     C.cuota = `<td data-col="cuota" class="tx-cuota-td">${txCuotaCelda(t)}</td>`;
     C.tipo = `<td data-col="tipo">${reint ? BADGE_REINTEGRO : `<span class="badge badge-${t.tipo.toLowerCase()}">${t.tipo}</span>`}</td>`;
     C.rubro = `<td data-col="rubro"><span class="rubro-tag">${esc(t.rubro||'-')}</span>${t.tipoGasto && !_txFijoCol ? `<span style="display:inline-block;margin-left:5px;font-size:10.5px;font-weight:600;color:var(--muted)">· <span class="tg-full">${t.tipoGasto}</span><span class="tg-abbr">${t.tipoGasto.charAt(0)}</span></span>` : ''}</td>`;
@@ -15568,11 +15638,25 @@ async function repCargarHogar(eid) {
 // Los movimientos de todos los hogares sumados, cada uno marcado con su hogar.
 function repDatosConsolidados() {
   const out = [];
-  (repConsolidablesIds || []).forEach(eid => {
+  const cons = repConsolidablesIds || [];
+  (cons).forEach(eid => {
     const rows = eid === curEmpresa() ? getData() : (repHogarDataCache[eid] || []);
-    rows.forEach(t => { if (t) out.push(Object.assign({}, t, { _hogar: eid })); });
+    // Una transferencia entre dos hogares de la suma no es plata que entró o
+    // salió de la familia: sumarla inflaría gastos e ingresos. Se cuenta aparte.
+    rows.forEach(t => { if (t && !(t.transf && cons.includes(t.transf.otroHogar))) out.push(Object.assign({}, t, { _hogar: eid })); });
   });
   return out;
+}
+function repTransfEntreHogares() {
+  const cons = repConsolidablesIds || [];
+  let n = 0, pesos = 0, usd = 0;
+  cons.forEach(eid => {
+    const rows = eid === curEmpresa() ? getData() : (repHogarDataCache[eid] || []);
+    rows.forEach(t => { if (t && t.transf && t.transf.dir === 'sale' && cons.includes(t.transf.otroHogar)) { n++; pesos += Number(t.impPesos) || 0; usd += Number(t.impUSD) || 0; } });
+  });
+  if (!n) return '';
+  return ' Las ' + (n === 1 ? 'transferencia' : n + ' transferencias') + ' entre tus hogares (' +
+    [pesos ? fmtP(pesos) : '', usd ? fmtU(usd) : ''].filter(Boolean).join(' + ') + ') no se suman: la plata no salió de la familia.';
 }
 function repNombreHogar(eid) {
   const e = (window.__misEmpresas || []).find(x => x.id === eid) || { id: eid };
@@ -15633,7 +15717,7 @@ async function onChangeRepHogar(empresaId) {
       try { await repCargarHogar(eid); } catch (e) { fallo = true; }
     }
     if (statusEl) statusEl.textContent = (fallo ? 'No pudimos cargar alguno de tus hogares. ' : '') +
-      'Sumando ' + (repConsolidablesIds || []).map(repNombreHogar).join(' + ') + '.';
+      'Sumando ' + (repConsolidablesIds || []).map(repNombreHogar).join(' + ') + '.' + repTransfEntreHogares();
     await cargarMiembrosParaFiltro();
     return;
   }
@@ -17799,7 +17883,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.60.000';
+const APP_VERSION = 'v005.61.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -19021,6 +19105,31 @@ function saveTx(e) {
   if (Object.keys(cta).length) tx.cta = cta;
 
   const data = getData();
+  // Una pata de transferencia: si cambia lo que comparten, cambia la otra.
+  const _prevTrf = id ? data.find(x => x.id === id && x.transf) : null;
+  let _trfUpd = null;
+  if (_prevTrf) {
+    const _prov = Object.assign({}, _prevTrf, tx);
+    if (tipo !== _prevTrf.tipo) { _avisoPag('Esto es una transferencia entre hogares: no se puede cambiar de ' + _prevTrf.tipo.toLowerCase() + ' a ' + tipo.toLowerCase() + '.', 'txImpPesos'); return; }
+    if (trfCambioComun(_prevTrf, _prov)) {
+      if (!trfPuedeTocar(_prevTrf)) { _avisoPag('Esto es una transferencia con ' + (_prevTrf.transf.otroNombre || 'otro hogar') + ': para cambiar el importe, la fecha o el período tenés que ser administrador de los dos hogares.', 'txImpPesos'); return; }
+      // Una transferencia se mueve entera: queda pagada por el importe.
+      tx.pagado = Number(impP) || 0; tx.saldo = 0; tx.pagadoUSD = Number(impU) || 0; tx.saldoUSD = 0;
+      _trfUpd = { eid: _prevTrf.transf.otroHogar, msg: { op: 'upd', id: _prevTrf.transf.otroTxId, campos: JSON.stringify(trfCamposComunes(Object.assign({}, _prevTrf, tx))) } };
+    }
+  }
+  if (_trfUpd) {
+    trfEnviar(_trfUpd.eid, _trfUpd.msg).then(function () {
+      const d2 = getData(), j = d2.findIndex(x => x.id === id);
+      if (j >= 0) { d2[j] = Object.assign({}, d2[j], tx); saveData(d2); }
+      try { pushNow(); } catch (e) {}
+      closeModal(); render();
+      trfAviso('⇄ También se actualizó la otra parte en ' + (_prevTrf.transf.otroNombre || 'el otro hogar') + '.');
+    }).catch(function () {
+      _avisoPag('No se pudo llegar al otro hogar (¿sin conexión?). No se guardó el cambio: probá de nuevo.', 'txImpPesos');
+    });
+    return;
+  }
   if (id) {
     const i = data.findIndex(x => x.id === id);
     if (i >= 0) {
@@ -19232,10 +19341,19 @@ function updateBulkBar() {
 }
 
 // ── DELETE ───────────────────────────────────────────────────
+function trfAvisoBorrado(ids) {
+  const set = new Set(ids);
+  const trfs = getData().filter(t => set.has(t.id) && t.transf);
+  if (!trfs.length) return '';
+  const otros = [...new Set(trfs.map(t => t.transf.otroNombre || 'otro hogar'))].join(', ');
+  const sinPermiso = trfs.filter(t => !trfPuedeTocar(t)).length;
+  return ' ' + (trfs.length === 1 ? 'Es una transferencia entre hogares: ' : 'Incluye ' + trfs.length + ' transferencias entre hogares: ') +
+    (sinPermiso ? 'se borra sólo esta parte (no sos administrador de ' + otros + ').' : 'también se borra la otra parte en ' + otros + '.');
+}
 function askDelete(id) {
   delIds = [id];
   document.getElementById('confirmTitle').textContent = '¿Eliminar transacción?';
-  document.getElementById('confirmMsg').textContent = 'Esta acción no se puede deshacer.';
+  document.getElementById('confirmMsg').textContent = 'Esta acción no se puede deshacer.' + trfAvisoBorrado([id]);
   document.getElementById('confirmOverlay').classList.add('show');
 }
 
@@ -19668,6 +19786,7 @@ function doCopiarMes(){
       // La copia todavía no pasó: hereda el importe, no el día.
       delete c.fecha;
       delete c.partesDe;   // el reparto viaja; el vínculo con la cuota anterior, no
+      delete c.transf;     // una copia de una transferencia no está vinculada al otro hogar
       c.id     = uid();
       c.mes    = k;
       c.venc   = venc;
@@ -19695,7 +19814,7 @@ function askDeleteBulk() {
   if (!selectedTx.size) return;
   delIds = [...selectedTx];
   document.getElementById('confirmTitle').textContent = `¿Eliminar ${delIds.length} transacciones?`;
-  document.getElementById('confirmMsg').textContent = 'Esta acción no se puede deshacer. Se eliminarán todos los registros seleccionados.';
+  document.getElementById('confirmMsg').textContent = 'Esta acción no se puede deshacer. Se eliminarán todos los registros seleccionados.' + trfAvisoBorrado(delIds);
   document.getElementById('confirmOverlay').classList.add('show');
 }
 function closeConfirm() {
@@ -19705,10 +19824,153 @@ function closeConfirm() {
 function doDelete() {
   if (!delIds || !delIds.length) return;
   const idSet = new Set(delIds);
+  // Las transferencias se llevan la otra parte (si se puede tocar el otro hogar).
+  getData().filter(t => idSet.has(t.id) && t.transf && trfPuedeTocar(t)).forEach(t => {
+    trfEnviar(t.transf.otroHogar, { op: 'del', id: t.transf.otroTxId }).catch(function () {});
+  });
   saveData(getData().filter(t => !idSet.has(t.id)));
   delIds.forEach(id => selectedTx.delete(id));
   closeConfirm();
   render();
+}
+
+// ── TRANSFERENCIAS ENTRE HOGARES (v005.61.000) ──────────────────────────
+var TRF_RUBRO = 'Transferencia entre hogares';
+var trfMon = 'ARS';
+function trfRolEn(eid) { const e = (window.__misEmpresas || []).find(x => x && x.id === eid); return e ? e.role : ''; }
+// Los otros hogares donde esta persona es administradora.
+function trfHogaresDestino() {
+  const act = curEmpresa();
+  return (window.__misEmpresas || []).filter(e => e && e.id !== act && e.role === 'admin');
+}
+function trfPuedo() { return trfRolEn(curEmpresa()) === 'admin' && trfHogaresDestino().length > 0; }
+function trfPuedeTocar(t) { return !!(t && t.transf) && trfRolEn(curEmpresa()) === 'admin' && trfRolEn(t.transf.otroHogar) === 'admin'; }
+function trfPintarBoton() { const b = document.getElementById('trfBtn'); if (b) b.style.display = trfPuedo() ? '' : 'none'; }
+function trfChip(t) {
+  const x = t && t.transf; if (!x) return '';
+  const quien = x.porNombre ? ' · la hizo ' + x.porNombre : '';
+  return ' <span class="trf-chip" title="Transferencia entre hogares' + esc(quien) + '. La otra parte está en ' + esc(x.otroNombre || 'otro hogar') + '.">⇄ ' +
+    (x.dir === 'sale' ? 'a ' : 'desde ') + esc(x.otroNombre || 'otro hogar') + '</span>';
+}
+function trfOpcionesRubro(tipo) {
+  const lista = (getAllRubros(tipo) || []).filter(r => r && r !== TRF_RUBRO && r !== 'Personalizado...');
+  return [TRF_RUBRO].concat(lista).map(r => '<option value="' + esc(r) + '">' + esc(r) + '</option>').join('');
+}
+function trfMoneda(m) {
+  trfMon = m === 'USD' ? 'USD' : 'ARS';
+  document.querySelectorAll('#trfMonGrp .tgl-btn').forEach(b => b.classList.toggle('active', b.dataset.m === trfMon));
+  const l = document.getElementById('trfImpLbl'); if (l) l.textContent = trfMon === 'USD' ? 'Importe USD' : 'Importe $';
+}
+function trfAbrir() {
+  if (!trfPuedo()) return;
+  const dest = trfHogaresDestino();
+  document.getElementById('trfDestino').innerHTML = dest.map(e => '<option value="' + esc(e.id) + '">' + esc(hogNombre(e)) + '</option>').join('');
+  document.getElementById('trfOrigenNom').textContent = hogNombre({ id: curEmpresa() });
+  document.getElementById('trfRubroSale').innerHTML = trfOpcionesRubro('Gasto');
+  document.getElementById('trfRubroEntra').innerHTML = trfOpcionesRubro('Ingreso');
+  document.getElementById('trfImporte').value = '';
+  document.getElementById('trfDetalle').value = '';
+  document.getElementById('trfMes').value = curKey();
+  document.getElementById('trfFecha').value = fechaPorDefecto(curKey());
+  const er = document.getElementById('trfErr'); er.style.display = 'none';
+  trfMoneda('ARS');
+  document.getElementById('trfOk').disabled = false;
+  document.getElementById('trfOverlay').classList.add('show');
+  setTimeout(() => { try { document.getElementById('trfImporte').focus(); } catch (e) {} }, 50);
+}
+function trfCerrar() { document.getElementById('trfOverlay').classList.remove('show'); }
+function trfAviso(msg) {
+  let a = document.getElementById('trfAviso');
+  if (!a) { a = document.createElement('div'); a.id = 'trfAviso'; document.body.appendChild(a); }
+  a.textContent = msg; a.style.display = 'block';
+  clearTimeout(trfAviso._t); trfAviso._t = setTimeout(() => { a.style.display = 'none'; }, 5000);
+}
+// Deja un aviso en el buzón del otro hogar. Devuelve una promesa.
+function trfEnviar(eid, msg) {
+  msg.ts = Date.now(); msg.por = curUserId();
+  return firebase.database().ref('norteSync/empresas/' + eid + '/buzon').push(msg);
+}
+async function trfGuardar() {
+  const er = document.getElementById('trfErr');
+  const mal = m => { er.textContent = m; er.style.display = 'block'; };
+  er.style.display = 'none';
+  const destId = document.getElementById('trfDestino').value;
+  const dest = trfHogaresDestino().find(e => e.id === destId);
+  const imp = numVal('trfImporte');
+  const mes = document.getElementById('trfMes').value || curKey();
+  const fecha = document.getElementById('trfFecha').value || '';
+  if (!dest) return mal('Elegí el hogar de destino.');
+  if (!(imp > 0)) return mal('Completá un importe mayor que cero.');
+  const origId = curEmpresa(), origNom = hogNombre({ id: origId }), destNom = hogNombre(dest);
+  const det = document.getElementById('trfDetalle').value.trim();
+  const rSale = document.getElementById('trfRubroSale').value || TRF_RUBRO;
+  const rEntra = document.getElementById('trfRubroEntra').value || TRF_RUBRO;
+  const usd = trfMon === 'USD';
+  const trfId = 'trf' + uid(), idSale = uid(), idEntra = uid(), ts = Date.now();
+  const yo = curUserId(), yoNom = curUserName();
+  const montos = { impPesos: usd ? 0 : imp, impUSD: usd ? imp : 0, pagado: usd ? 0 : imp, saldo: 0, pagadoUSD: usd ? imp : 0, saldoUSD: 0 };
+  const base = { mes, fecha, venc: '', cliente: '', tipoGasto: 'Variable', creadoPor: yo, creadoPorNombre: yoNom };
+  const sale = Object.assign({ id: idSale, tipo: 'Gasto', rubro: rSale, detalle: det || ('Transferencia a ' + destNom) }, base, montos,
+    { transf: { id: trfId, dir: 'sale', otroHogar: destId, otroNombre: destNom, otroTxId: idEntra, por: yo, porNombre: yoNom, ts } });
+  const entra = Object.assign({ id: idEntra, tipo: 'Ingreso', rubro: rEntra, detalle: det || ('Transferencia desde ' + origNom) }, base, montos,
+    { transf: { id: trfId, dir: 'entra', otroHogar: origId, otroNombre: origNom, otroTxId: idSale, por: yo, porNombre: yoNom, ts } });
+  const btn = document.getElementById('trfOk'); btn.disabled = true;
+  try {
+    // Primero el otro hogar: si eso falla no queda media transferencia.
+    await trfEnviar(destId, { op: 'alta', tx: JSON.stringify(entra) });
+  } catch (e) {
+    btn.disabled = false;
+    return mal('No se pudo llegar al otro hogar (¿sin conexión?). No se guardó nada: probá de nuevo.');
+  }
+  saveData(getData().concat([sale]));
+  try { pushNow(); } catch (e) {}
+  trfCerrar();
+  render();
+  trfAviso('⇄ Listo: salió de ' + origNom + ' y entra en ' + destNom + '. Allá aparece apenas se abra ese hogar.');
+}
+/* El buzón del hogar abierto: lo que otros hogares le mandaron. Se incorpora a
+   los movimientos y se vacía en la MISMA escritura que sube los datos, así no
+   queda nada aplicado dos veces ni nada borrado sin aplicar. */
+var _trfVistos = new Set(), _trfOcupado = false;
+function trfProcesarBuzon(buzon) {
+  if (!buzon || typeof buzon !== 'object' || _trfOcupado || !fbRef) return;
+  const keys = Object.keys(buzon).filter(k => !_trfVistos.has(k))
+    .sort((a, b) => ((buzon[a] || {}).ts || 0) - ((buzon[b] || {}).ts || 0));
+  if (!keys.length) return;
+  _trfOcupado = true;
+  let data = getData(), cambio = false;
+  keys.forEach(k => {
+    _trfVistos.add(k);
+    const m = buzon[k] || {};
+    try {
+      if (m.op === 'alta') {
+        const tx = JSON.parse(m.tx);
+        if (tx && tx.id && !data.some(t => t && t.id === tx.id)) { data.push(tx); cambio = true; }
+      } else if (m.op === 'upd') {
+        const i = data.findIndex(t => t && t.id === m.id);
+        if (i >= 0) { data[i] = Object.assign({}, data[i], JSON.parse(m.campos)); cambio = true; }
+      } else if (m.op === 'del') {
+        const n = data.length; data = data.filter(t => !(t && t.id === m.id)); if (data.length !== n) cambio = true;
+      }
+    } catch (e) {}
+  });
+  if (cambio) saveData(data);
+  const vaciar = {}; keys.forEach(k => { vaciar['buzon/' + k] = null; });
+  const myRef = fbRef;
+  clearTimeout(syncPushTimer); syncLocalDirty = true; setSyncStatus('pending');
+  fbRef.update(Object.assign(syncSnapshot(), vaciar))
+    .then(() => { if (myRef === fbRef) { syncLocalDirty = false; setSyncStatus('ok'); } _trfOcupado = false; })
+    .catch(() => { setSyncStatus('error'); keys.forEach(k => _trfVistos.delete(k)); _trfOcupado = false; });
+  if (cambio) { try { render(); } catch (e) {} }
+}
+// Lo que cambió en una pata y tiene que cambiar en la otra.
+function trfCamposComunes(t) {
+  return { mes: t.mes, fecha: t.fecha || '', impPesos: Number(t.impPesos) || 0, impUSD: Number(t.impUSD) || 0,
+           pagado: Number(t.impPesos) || 0, saldo: 0, pagadoUSD: Number(t.impUSD) || 0, saldoUSD: 0 };
+}
+function trfCambioComun(prev, nuevo) {
+  const a = trfCamposComunes(prev), b = trfCamposComunes(nuevo);
+  return ['mes', 'fecha', 'impPesos', 'impUSD'].some(k => a[k] !== b[k]);
 }
 
 // ── UTILS ────────────────────────────────────────────────────
@@ -20281,6 +20543,7 @@ function clonarMesAnterior() {
     saldo:    0,
     pagadoUSD: 0,
     saldoUSD:  0,
+    transf:    undefined,   // la copia no queda vinculada a otro hogar
     // El clon todavía no ocurrió: tiene vencimiento, no fecha.
     fecha:    '',
     venc:     vencMes,
@@ -20449,7 +20712,7 @@ function _confirmarReplicar({ skipList, addList, prevM, prevY }) {
   const allData = getData();
   // `fecha: ''` a propósito: el fijo replicado todavía no ocurrió, y heredar la
   // fecha del mes anterior inventaría un día que nadie vivió.
-  const skeleton = addList.map(t => ({ ...t, id: uid(), mes: curKey(), impPesos: 0, impUSD: 0, fecha: '', venc: '', pagado: 0, saldo: 0 }));
+  const skeleton = addList.map(t => ({ ...t, id: uid(), mes: curKey(), impPesos: 0, impUSD: 0, fecha: '', venc: '', pagado: 0, saldo: 0, pagadoUSD: 0, saldoUSD: 0, transf: undefined }));
   saveData([...allData, ...skeleton]);
   window._replicarTcCount = 0;
   render();
@@ -20768,7 +21031,7 @@ function nortiaLineaTx(t) {
   const imp = Number(t.impUSD) ? `U$S${t.impUSD}` : `$${Number(t.impPesos || 0).toLocaleString('es-AR')}`;
   const saldo = Number(t.saldo || 0) > 0 ? ` [pendiente $${Number(t.saldo).toLocaleString('es-AR')}]` : '';
   const _su = (function () { try { return isTCOrigen(t) ? 0 : txSaldoUSDDe(t); } catch (e) { return 0; } })();
-  const saldoU = _su > 0 ? ` [pendiente U$S${_su}]` : '';
+  const saldoU = (_su > 0 ? ` [pendiente U$S${_su}]` : '') + (t.transf ? ` [transferencia entre hogares ${t.transf.dir === 'sale' ? 'a' : 'desde'} ${t.transf.otroNombre || 'otro hogar'}]` : '');
   const banco = t.banco ? ` [${getBancoLabel(t)}]` : '';
   return `${MESES[parseInt(m)-1]}: ${t.tipo} | ${t.rubro || '\u2014'} | ${t.detalle}${banco} | ${imp}${saldo}${saldoU}`;
 }
