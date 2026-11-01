@@ -1254,6 +1254,48 @@ tr:hover td { background: #fafbfc; }
 .quick-panel { position:fixed; bottom:90px; right:28px; width:330px; background:var(--card); border-radius:16px; border:1px solid var(--border); box-shadow:0 8px 32px rgba(0,0,0,0.14); padding:18px 20px; z-index:159; display:none; }
 .quick-panel.show { display:block; animation:fadeUp 0.18s ease; }
 @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+/* ── Registro rápido más visible (v005.63.001) ── */
+.fab .fab-btn { width:60px; height:60px; font-size:32px; font-weight:300; position:relative;
+  background:linear-gradient(135deg, #FF9B70, #F0703F); border:3px solid #fff;
+  box-shadow:0 6px 22px rgba(240,112,63,0.55), 0 2px 6px rgba(12,28,43,0.18); }
+.fab .fab-btn:hover { background:linear-gradient(135deg, #FF8A5C, #E8603A); transform:scale(1.07); }
+.fab .fab-btn.open { background:#64748b; transform:rotate(45deg); }
+.fab .fab-btn::after { content:''; position:absolute; inset:-3px; border-radius:50%; pointer-events:none;
+  animation:fabPulso 6s ease-out infinite; }
+.fab.abierto .fab-btn::after { animation:none; }
+@keyframes fabPulso { 0%,62% { box-shadow:0 0 0 0 rgba(255,138,92,0.55); } 80% { box-shadow:0 0 0 16px rgba(255,138,92,0); } 81%,100% { box-shadow:0 0 0 0 rgba(255,138,92,0); } }
+.fab-eti { position:absolute; right:72px; bottom:15px; white-space:nowrap; background:var(--card); color:var(--text);
+  border:1.5px solid var(--primary); border-radius:999px; padding:6px 13px; font-size:13px; font-weight:800;
+  box-shadow:0 4px 14px rgba(12,28,43,0.14); pointer-events:none; transition:opacity .15s; }
+.fab-dial { position:absolute; right:4px; bottom:60px; padding-bottom:12px; display:flex; flex-direction:column; align-items:flex-end; gap:9px;
+  opacity:0; visibility:hidden; transform:translateY(8px); transition:opacity .15s, transform .15s, visibility .15s; }
+.fab-op { display:flex; align-items:center; gap:10px; background:none; border:none; padding:0; cursor:pointer; font-family:inherit; }
+.fab-op-txt { background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:999px; padding:6px 12px;
+  font-size:13px; font-weight:800; box-shadow:0 4px 14px rgba(12,28,43,0.16); white-space:nowrap; }
+.fab-op-txt small { font-weight:600; color:var(--muted); margin-left:4px; }
+.fab-op-ico { width:46px; height:46px; border-radius:50%; background:var(--card); border:2px solid var(--primary);
+  display:flex; align-items:center; justify-content:center; font-size:21px; box-shadow:0 4px 14px rgba(240,112,63,0.30); transition:transform .12s; }
+.fab-op:hover .fab-op-ico { transform:scale(1.08); background:rgba(255,138,92,0.14); }
+.fab-op:hover .fab-op-txt { border-color:var(--primary); }
+@media (hover:hover) and (pointer:fine) {
+  .fab:not(.abierto):hover .fab-dial, .fab:not(.abierto):focus-within .fab-dial { opacity:1; visibility:visible; transform:none; }
+  .fab:not(.abierto):hover .fab-eti { opacity:0; }
+}
+@media (hover:none), (pointer:coarse) { .fab-dial, .fab-eti { display:none; } }
+.fab.abierto .fab-eti { opacity:0; }
+.quick-panel { bottom:100px; }
+/* las 3 formas adentro del panel */
+.qp-modos { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:6px; }
+.qp-modo { display:flex; flex-direction:column; align-items:center; gap:1px; padding:9px 4px 8px !important; border-radius:11px !important;
+  min-height:62px; justify-content:center; line-height:1.15; }
+.qp-modo .qp-modo-ico { font-size:20px; line-height:1; margin-bottom:3px; }
+.qp-modo .qp-modo-tit { font-size:13px; font-weight:800; }
+.qp-modo .qp-modo-sub { font-size:10.5px; font-weight:600; opacity:.75; }
+.qp-modo.qp-modo-texto { background:rgba(37,99,235,0.08); border:1.5px solid rgba(37,99,235,0.45); color:#2563EB; cursor:pointer; font-family:inherit; }
+.qp-modo.qp-modo-texto:hover { background:rgba(37,99,235,0.14); }
+.qp-modos-tit { font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:0 0 7px; }
+html[data-tema="noche"] .qp-modo.qp-modo-texto { color:#8fb2ff; }
+@media (prefers-reduced-motion: reduce) { .fab .fab-btn::after { animation:none; } .fab-dial { transition:none; } }
 .qp-title { font-size:11.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:12px; }
 .qp-tipo { display:flex; background:var(--bg); border-radius:8px; padding:3px; margin-bottom:10px; }
 .qp-tipo-btn { flex:1; padding:5px; border-radius:6px; border:none; cursor:pointer; font-size:12.5px; font-weight:500; background:transparent; color:var(--muted); transition:all 0.15s; }
@@ -1537,6 +1579,8 @@ tr:hover td { background: #fafbfc; }
   /* Quick-add */
   .quick-panel { left:16px; right:16px; width:auto; bottom:84px; }
   .fab { right:18px; bottom:18px; }
+  .fab .fab-btn { width:58px; height:58px; }
+  .quick-panel { bottom:88px; }
 
   /* Reportes / Análisis tabs y selects */
   .rep-tabs { width:100%; overflow-x:auto; }
@@ -3841,10 +3885,12 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
         <button class="qp-tipo-btn" id="qpBtnFijo" onclick="setQpTipoGasto('Fijo')">Fijo</button>
       </div>
     </div>
-        <div class="qp-field" id="qpIaRow" style="display:flex;gap:8px;margin-bottom:2px">
-                <button type="button" class="btn btn-secondary qp-media-btn" style="flex:1" onclick="qpAbrirFoto()">📷 Foto</button>
-          <button type="button" class="btn btn-secondary qp-media-btn" style="flex:1" id="qpBtnVoz" onclick="qpToggleVoz()">🎤 Voz</button>
-          </div>
+        <div class="qp-modos-tit">Tres formas de cargar</div>
+        <div class="qp-field qp-modos" id="qpIaRow">
+          <button type="button" class="qp-modo qp-modo-texto" id="qpBtnTexto" onclick="qpModoTexto()"><span class="qp-modo-ico">✍️</span><span class="qp-modo-tit">Texto</span><span class="qp-modo-sub">escribilo abajo</span></button>
+          <button type="button" class="btn btn-secondary qp-media-btn qp-modo" id="qpBtnVoz" onclick="qpToggleVoz()"><span class="qp-modo-ico">🎤</span><span class="qp-modo-tit">Audio</span><span class="qp-modo-sub">dictalo</span></button>
+          <button type="button" class="btn btn-secondary qp-media-btn qp-modo" id="qpBtnFoto" onclick="qpAbrirFoto()"><span class="qp-modo-ico">📷</span><span class="qp-modo-tit">Foto</span><span class="qp-modo-sub">del ticket</span></button>
+        </div>
     <div id="qpIaContador" style="font-size:11.5px;color:#6b7f93;text-align:right;margin:2px 2px 6px"></div>
     <input type="file" id="qpFotoInput" accept="image/*" capture="environment" style="display:none" onchange="qpFotoSeleccionada(this)">
     <div id="qpIaStatus" style="display:none;font-size:12px;color:#6b7f93;margin:-4px 0 6px;padding:6px 10px;border-radius:8px;background:rgba(255,138,92,0.08)"></div>
@@ -3892,7 +3938,13 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
       <button class="btn btn-primary" style="flex:2" onclick="saveQuickTx()">Guardar</button>
     </div>
   </div>
-  <button class="fab-btn" id="fabBtn" onclick="toggleQuickPanel()" title="Registro rápido">+</button>
+  <div class="fab-dial" id="fabDial">
+    <button type="button" class="fab-op" onclick="fabElegir('texto')" title="Registrar escribiendo"><span class="fab-op-txt">Texto <small>escribilo</small></span><span class="fab-op-ico">✍️</span></button>
+    <button type="button" class="fab-op" onclick="fabElegir('audio')" title="Registrar dictando"><span class="fab-op-txt">Audio <small>dictalo</small></span><span class="fab-op-ico">🎤</span></button>
+    <button type="button" class="fab-op" onclick="fabElegir('foto')" title="Registrar con una foto del ticket"><span class="fab-op-txt">Foto <small>del ticket</small></span><span class="fab-op-ico">📷</span></button>
+  </div>
+  <div class="fab-eti" id="fabEti" aria-hidden="true">Registrar</div>
+  <button class="fab-btn" id="fabBtn" onclick="toggleQuickPanel()" title="Registro rápido: texto, audio o foto" aria-label="Registro rápido: texto, audio o foto">+</button>
 </div>
 
 <!-- ── AYUDA OVERLAY ─────────────────────────────────────────── -->
@@ -18039,7 +18091,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.63.000';
+const APP_VERSION = 'v005.63.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -20178,11 +20230,25 @@ function toggleQuickPanel() {
   const btn   = document.getElementById('fabBtn');
   const open  = panel.classList.toggle('show');
   btn.classList.toggle('open', open);
+  try { document.querySelector('.fab').classList.toggle('abierto', open); } catch (e) {}
   if (open) { resetQpForm(); document.getElementById('qpDetalle').focus(); loadQpMiembros(); }
 }
 function closeQuickPanel() {
   document.getElementById('quickPanel').classList.remove('show');
   document.getElementById('fabBtn').classList.remove('open');
+  try { document.querySelector('.fab').classList.remove('abierto'); } catch (e) {}
+}
+// Desde el menú del «+» (computadora): abre el registro rápido ya en el modo elegido.
+function fabElegir(modo) {
+  const panel = document.getElementById('quickPanel');
+  if (!panel.classList.contains('show')) toggleQuickPanel();
+  if (modo === 'audio') { if (!qpGrabandoVoz) qpToggleVoz(); }
+  else if (modo === 'foto') qpAbrirFoto();
+  else qpModoTexto();
+}
+function qpModoTexto() {
+  const d = document.getElementById('qpDetalle');
+  if (d) d.focus();
 }
 async function loadQpMiembros() {
   const eid = curEmpresa();
@@ -20414,7 +20480,7 @@ async function qpToggleVoz() {
       };
       qpMediaRecorder.start();
       qpGrabandoVoz = true;
-      btn.textContent = '⏹ Grabando… (tocá para terminar)';
+      btn.innerHTML = '<span class="qp-modo-ico">⏹</span><span class="qp-modo-tit">Grabando…</span><span class="qp-modo-sub">tocá para terminar</span>';
       btn.classList.add('active');
     } catch (e) {
       alert('No pudimos acceder al micrófono. Revisá los permisos del navegador.');
@@ -20422,7 +20488,7 @@ async function qpToggleVoz() {
   } else {
     qpMediaRecorder.stop();
     qpGrabandoVoz = false;
-    btn.textContent = '🎤 Voz';
+    btn.innerHTML = '<span class="qp-modo-ico">🎤</span><span class="qp-modo-tit">Audio</span><span class="qp-modo-sub">dictalo</span>';
     btn.classList.remove('active');
   }
 }
