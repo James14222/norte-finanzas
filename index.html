@@ -2483,6 +2483,11 @@ html[data-tema="noche"] #txTip { background: #2a3d50; border: 1px solid #3d5368;
 .acct-links{display:flex;gap:4px;padding:11px 20px 12px;margin-top:10px;border-top:1px solid rgba(255,255,255,.10)}
 .acct-links button{flex:1;border:0;background:rgba(255,255,255,.08);color:rgba(255,255,255,.75);border-radius:6px;padding:7px 0;font-size:15px;cursor:pointer;line-height:1}
 .acct-links button:hover{background:rgba(255,255,255,.18);color:#fff}
+/* v005.63.002: fija al pie del menú. En una compu de 800 px de alto el menú mide
+   ~1.065 y «Salir» quedaba fuera de la vista. Fondo propio (el del menú) para que lo
+   que scrollea por detrás no se transparente, y una sombra que marca el corte. */
+.sidebar .acct-links{position:sticky;bottom:0;z-index:3;background:var(--brand-navy);margin-top:10px;
+  box-shadow:0 -10px 14px -8px rgba(0,0,0,.45)}
 @media (max-width: 860px){
   .fx-strip{flex-direction:column}
   .fx-strip .fx-lbl{border-right:0;border-bottom:1px solid var(--border);min-width:0}
@@ -18091,7 +18096,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.63.001';
+const APP_VERSION = 'v005.63.002';
 let novEntradas = [];
 
 function novLeida(e) {
