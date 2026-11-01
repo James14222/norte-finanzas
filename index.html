@@ -2176,6 +2176,33 @@ tr:hover td { background: #fafbfc; }
 .gps-progress-bar-fill { background: linear-gradient(90deg,#2563EB,#6FE0CC); height: 100%; border-radius: 10px; transition: width .3s; }
 .gps-nav-item { background: rgba(37,99,235,0.08) !important; border-radius: 8px; }
 .gps-nav-item.active { background: rgba(37,99,235,0.18) !important; border-left-color: #2563EB !important; }
+/* Guía Pioneros (v005.63.000): ítem propio del menú. No lleva la clase .nav-item a
+   propósito: showPage marca el ítem activo por posición entre los .nav-item, y uno
+   más arriba de todo corría la marca de todos los demás. */
+.nav-guia { display: flex; align-items: center; gap: 12px; padding: 11px 20px; cursor: pointer; font-size: 14px; font-weight: 700;
+  border-left: 3px solid #6FE0CC; background: linear-gradient(90deg, rgba(111,224,204,0.20), rgba(111,224,204,0.02)); transition: all 0.15s; }
+.nav-guia:hover { background: linear-gradient(90deg, rgba(111,224,204,0.28), rgba(111,224,204,0.05)); }
+.nav-guia.active { background: linear-gradient(90deg, rgba(111,224,204,0.34), rgba(111,224,204,0.08)); }
+.nav-guia .ico { font-size: 17px; }
+.guia-aviso { display: flex; align-items: center; gap: 14px; background: linear-gradient(135deg, rgba(111,224,204,.13), rgba(37,99,235,.07)), var(--card);
+  border: 1px solid rgba(111,224,204,.45); border-radius: 13px; padding: 14px 16px; margin-bottom: 18px; }
+.guia-aviso-ico { font-size: 30px; line-height: 1; flex: 0 0 auto; }
+.guia-aviso-txt { flex: 1; min-width: 0; }
+.guia-aviso-eti { font-size: 10.5px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: #0f9f8a; }
+.guia-aviso-tit { font-size: 15px; font-weight: 800; color: var(--text); margin-top: 2px; letter-spacing: -.2px; }
+.guia-aviso-sub { font-size: 12.5px; color: var(--muted); line-height: 1.45; margin-top: 3px; }
+.guia-aviso-sub b { color: var(--text); }
+.guia-aviso-bar { height: 6px; border-radius: 4px; background: rgba(127,127,127,.18); overflow: hidden; margin-top: 8px; max-width: 260px; }
+.guia-aviso-bar i { display: block; height: 100%; background: #10b981; border-radius: 4px; }
+.guia-aviso-btn { flex: 0 0 auto; background: #2563EB; color: #fff; border: none; border-radius: 9px; padding: 10px 16px; font-size: 13.5px;
+  font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.guia-aviso-btn:hover { opacity: .9; }
+@media (max-width: 880px) {
+  .guia-aviso { flex-wrap: wrap; }
+  .guia-aviso-btn { flex: 1 1 100%; }
+}
+html[data-tema="noche"] .guia-aviso-eti { color: #6FE0CC; }
+.acct-gps { cursor: pointer; }
 .gps-nav-badge { margin-left: auto; background: #ef4444; color: #fff; font-size: 10.5px; font-weight: 800; min-width: 17px; height: 17px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; }
 .gps-confeti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: inherit; }
 .gps-confeti i { position: absolute; top: -16px; width: 8px; height: 14px; border-radius: 2px; opacity: .9; animation-name: gpsCaeConfeti; animation-timing-function: linear; animation-iteration-count: infinite; }
@@ -3097,6 +3124,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
     </div>
   </div>
   <div class="sidebar-nav">
+    <div class="nav-guia" id="navGuia" style="display:none" onclick="guiaIr()"><span class="ico">🧭</span> Guía Pioneros<span id="guiaNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
     <div class="nav-item active" onclick="showPage('dashboard')"><span class="ico">📊</span> Mi Rumbo</div>
     <div class="nav-item" onclick="showPage('transacciones')"><span class="ico">📋</span> Transacciones</div>
     <div class="nav-item" onclick="showPage('presupuesto')"><span class="ico">🎯</span> Presupuesto</div>
@@ -3148,6 +3176,9 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
 
     <!-- DASHBOARD -->
     <div id="page-dashboard" class="page active" style="position:relative"><div id="rumboDeco"></div><div id="rumboHeader"></div><div id="fxStrip" class="fx-strip" style="display:none"></div>
+      <!-- Guía Pioneros: en qué capítulo vas (v005.63.000). Lo pinta guiaActualizar.
+           Va primero, antes de los números: en el celular, más abajo no se veía. -->
+      <div class="guia-aviso" id="guiaAviso" style="display:none"></div>
       <div class="cards-grid">
         <div class="card k-ing">
           <div class="card-label">Ingresos del mes</div>
@@ -4137,7 +4168,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
               <strong>Tu plan</strong> — y, si entraste por el Club Pionero, tu distintivo de Pionero<br>
               <strong>Constancia</strong> — cuatro cuadraditos, uno por cada una de las últimas cuatro semanas. Se encienden si esa semana cargaste algo<br>
               <strong>Última carga</strong> — hace cuánto no registrás un movimiento<br>
-              <strong>Tu nivel</strong> — el nivel de Progreso que alcanzaste. Si sos Pionero, en su lugar ves los puntos del GPS
+              <strong>Tu nivel</strong> — el nivel de Progreso que alcanzaste. Si sos Pionero, además ves los puntos de tu <strong>Guía Pioneros</strong> (tocalos para ir a la guía)
             </div>
             <div class="ayuda-tip">La constancia se mide <strong>por semana y no por día</strong> a propósito. Registrar todos los días no es la meta: si subís el resumen de la tarjeta una vez por mes y cargás tus gastos fijos, lo estás haciendo bien. Lo que queremos es que no se te pase una semana entera.</div>
           </div>
@@ -4741,7 +4772,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
           </div>
           <div class="ayuda-bloque">
             <h4>El recorrido guiado de cuatro semanas</h4>
-            <p>Esta parte es sólo para los <strong>Pioneros</strong>, el grupo fundador que entró antes de que Norte se vendiera. Si tu cuenta no está en el programa, no la vas a ver — y no te falta nada: es un recorrido de aprendizaje, no una función de la app.</p>
+            <p>Esta parte es sólo para los <strong>Pioneros</strong>. Si tu cuenta está en el programa, la encontrás en el menú como <strong>🧭 Guía Pioneros</strong>, arriba de todo, y <strong>Mi Rumbo</strong> te avisa en qué capítulo vas, cuántos puntos llevás y, si corresponde, cuántos días te quedan. Si tu cuenta no está en el programa, no la vas a ver — y no te falta nada: es un recorrido de aprendizaje, no una función de la app.</p>
             <ol class="ayuda-steps">
               <li>Cada semana se te <strong>desbloquea un capítulo</strong> — son cuatro en total, uno cada 7 días</li>
               <li>Leés el capítulo completo dentro de la app (son cortos y prácticos)</li>
@@ -5124,7 +5155,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
   </div>
 </div>
 
-<!-- TU GPS PAGE --><div id="page-tugps" class="page"><div class="gps-wrap" style="max-width:760px;margin:0 auto;padding:8px 24px 40px;display:flex;flex-direction:column"><div class="gps-header"><div style="display:flex;align-items:center;gap:12px"><button class="menu-toggle gps-volver" onclick="toggleSidebar()" aria-label="Volver al menu" title="Volver al menu">&#9776;</button><div><div class="gps-header-title">Novedades</div><div class="gps-header-sub">Tu Canal de Novedades</div></div></div></div><div id="gpsBody" style="margin-top:16px;position:relative;z-index:1"><div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando...</div></div></div></div>
+<!-- TU GPS PAGE --><div id="page-tugps" class="page"><div class="gps-wrap" style="max-width:760px;margin:0 auto;padding:8px 24px 40px;display:flex;flex-direction:column"><div class="gps-header"><div style="display:flex;align-items:center;gap:12px"><button class="menu-toggle gps-volver" onclick="toggleSidebar()" aria-label="Volver al menu" title="Volver al menu">&#9776;</button><div><div class="gps-header-title" id="gpsHdrTit">Novedades</div><div class="gps-header-sub" id="gpsHdrSub">Tu Canal de Novedades</div></div></div></div><div id="gpsBody" style="margin-top:16px;position:relative;z-index:1"><div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando...</div></div></div></div>
 <!-- ADMIN PAGE -->
 <div id="page-admin" class="page">
   <div style="max-width:1400px;margin:0 auto;padding:28px 24px;display:flex;flex-direction:column">
@@ -10829,15 +10860,15 @@ function renderAcctBox(){
   if (links) links.style.display = 'flex';
   const inicial = (nombre[0] || '?').toUpperCase();
   const hogar = (document.getElementById('sidebarEmpresa') && document.getElementById('sidebarEmpresa').textContent) || '';
-  const esPionero = String(miOrigenCuenta || '') === 'club_pioneros';
+  const esPionero = ['club_pioneros', 'club_pioneros_2'].indexOf(String(miOrigenCuenta || '')) >= 0;
   const c = acctConstancia();
   let ultimaFila = '';
   // El GPS Pioneros, si corresponde. No reemplaza a nada: es un programa de
   // cuatro semanas con final, y convive con el progreso, que no lo tiene.
   if (esPionero && miGPS && typeof miGPS.puntos === 'number'){
     const pts = Math.max(0, Math.min(40, miGPS.puntos));
-    ultimaFila += '<div class="acct-lbl">GPS Pioneros</div><div class="acct-val">' + pts + ' de 40 puntos</div>'
-                + '<div class="acct-bar"><i style="width:' + (pts/40*100) + '%"></i></div>';
+    ultimaFila += '<div class="acct-gps" onclick="guiaIr()" title="Ir a tu Guía Pioneros"><div class="acct-lbl">Guía Pioneros</div><div class="acct-val">' + pts + ' de 40 puntos</div>'
+                + '<div class="acct-bar"><i style="width:' + (pts/40*100) + '%"></i></div></div>';
   }
   // Y el progreso, SIEMPRE: esta ficha es la única puerta a esa pantalla desde
   // que salió del menú. Si acá no aparece, no hay forma de entrar.
@@ -18008,7 +18039,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.62.002';
+const APP_VERSION = 'v005.63.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -25011,12 +25042,16 @@ function subtituloRumbo() {
       var uidAhora = (getSession() || {}).userId || null;
       if (uidAhora !== _gpsBadgeUid) {
         _gpsBadgeUid = uidAhora; _gpsParticipa = false; _gpsCapPendiente = false;
+        window._guiaDatos = null; try { guiaActualizar(); } catch (e) {}
         badge.style.display = 'none';
       }
     } catch (e) {}
     try {
       var d = await gpsLlamar('obtenerProgramaGuiado');
       _gpsParticipa = !!d.participa;
+      window._guiaDatos = d;
+      if (d.participa && d.programa && !_gpsUltimoPrograma) _gpsUltimoPrograma = d.programa;
+      try { guiaActualizar(); } catch (e) {}
       if (!d.participa) {
         // No es Pionero: no hay capítulos que avisar, pero sí novedades y
         // mensajes. Se repinta en vez de apagar el distintivo.
@@ -25041,6 +25076,8 @@ function subtituloRumbo() {
     try {
       var d = await gpsLlamar('obtenerProgramaGuiado');
       _gpsLoaded = true;
+      window._guiaDatos = d;
+      try { guiaActualizar(); } catch (e) {}
       gpsPintar(d);
     } catch (e) {
       body.innerHTML = '<div style="font-size:13px;color:#ef4444;padding:12px 0">No pudimos cargar tu progreso: ' + esc(e.message) + '</div>';
@@ -25294,11 +25331,93 @@ function subtituloRumbo() {
   var _origShowPageGps = window.showPage;
   window.showPage = function (p) {
     var r = _origShowPageGps.apply(this, arguments);
+    var desdeGuia = p === 'tugps' && window._guiaDesdeGuia === true;
+    window._guiaDesdeGuia = false;
     var nav = document.getElementById('navTuGps');
-    if (nav) nav.classList.toggle('active', p === 'tugps');
+    if (nav) nav.classList.toggle('active', p === 'tugps' && !desdeGuia);
+    var ng = document.getElementById('navGuia');
+    if (ng) ng.classList.toggle('active', desdeGuia);
+    try { gpioCabecera(desdeGuia); } catch (e) {}
     return r;
   };
 })();
+
+/* ── GUÍA PIONEROS (v005.63.000) ─────────────────────────────────────────────
+   La guía vivía escondida dentro de «Novedades». Ahora tiene ítem propio en el
+   menú y un aviso en Mi Rumbo. Todo sale de lo que devuelve obtenerProgramaGuiado
+   (window._guiaDatos): participa, programa y, en la camada 2, plazo.restantes. */
+var GUIA_TITULOS = { 1: 'Metete adentro', 2: 'Cero fugas', 3: 'Ponete límites', 4: 'Sacale el jugo' };
+function guiaEstado(d) {
+  if (!d || !d.participa || !d.programa) return null;
+  var p = d.programa, caps = p.capitulos || {};
+  if (p.accesoPermanente) return { vitalicio: true, p: p };
+  var pend = 0, prox = 0;
+  for (var n = 1; n <= 4; n++) {
+    var c = caps[n] || {};
+    if (!pend && c.disponible && !c.quizEnviado) pend = n;
+    if (!prox && !c.disponible) prox = n;
+  }
+  var r = d.plazo && typeof d.plazo.restantes === 'number' ? d.plazo.restantes : null;
+  return { p: p, pend: pend, prox: prox, puntos: Math.max(0, Math.min(40, Number(p.puntos) || 0)), restantes: r };
+}
+function guiaFechaCap(p, n) {
+  try {
+    var c = (p.capitulos || {})[n] || {};
+    var f = c.fechaDisponible ? new Date(c.fechaDisponible) : new Date(new Date(p.fechaInicio).getTime() + 7 * (n - 1) * 86400000);
+    if (isNaN(f)) return '';
+    var m = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    return f.getDate() + ' de ' + m[f.getMonth()];
+  } catch (e) { return ''; }
+}
+function guiaActualizar() {
+  var e = guiaEstado(window._guiaDatos);
+  var nav = document.getElementById('navGuia'), bdg = document.getElementById('guiaNavBadge'), av = document.getElementById('guiaAviso');
+  if (nav) nav.style.display = e ? '' : 'none';
+  if (bdg) bdg.style.display = (e && e.pend) ? 'inline-flex' : 'none';
+  if (!av) return;
+  if (!e || e.vitalicio || (!e.pend && !e.prox)) { av.style.display = 'none'; av.innerHTML = ''; return; }
+  var tit, btn, n = 0;
+  if (e.pend) {
+    n = e.pend;
+    tit = 'Capítulo ' + n + ' de 4: ' + GUIA_TITULOS[n] + (n === 1 && !e.puntos ? ' — empezá por acá' : ' — ya está disponible');
+    btn = (n === 1 && !e.puntos) ? 'Empezar' : 'Ver capítulo';
+  } else {
+    var f = guiaFechaCap(e.p, e.prox);
+    tit = 'Capítulo ' + (e.prox - 1) + ' aprobado. El ' + e.prox + ' se abre ' + (f ? 'el ' + f : 'la semana que viene');
+    btn = 'Ver tu guía';
+  }
+  var sub = '<b>' + e.puntos + ' de 40 puntos</b>';
+  if (e.restantes !== null) {
+    sub += ' · Te ' + (e.restantes === 1 ? 'queda <b>1 día</b>' : 'quedan <b>' + e.restantes + ' días</b>') + ' para completarla y que Norte quede tuya para siempre.';
+  } else {
+    sub += ' · Al completar los 4 capítulos, Norte queda tuya para siempre.';
+  }
+  av.innerHTML = '<div class="guia-aviso-ico" aria-hidden="true">🧭</div>'
+    + '<div class="guia-aviso-txt"><div class="guia-aviso-eti">Tu Guía Pioneros</div>'
+    + '<div class="guia-aviso-tit">' + esc(tit) + '</div>'
+    + '<div class="guia-aviso-sub">' + sub + '</div>'
+    + '<div class="guia-aviso-bar"><i style="width:' + (e.puntos / 40 * 100) + '%"></i></div></div>'
+    + '<button class="guia-aviso-btn" onclick="guiaIr(' + n + ')">' + btn + ' →</button>';
+  av.style.display = 'flex';
+}
+function gpioCabecera(desdeGuia) {
+  var t = document.getElementById('gpsHdrTit'), s = document.getElementById('gpsHdrSub');
+  if (t) t.textContent = desdeGuia ? 'Guía Pioneros' : 'Novedades';
+  if (s) s.textContent = desdeGuia ? 'Tus 4 capítulos para que Norte quede tuya' : 'Tu Canal de Novedades';
+}
+// Abre la guía y, si se pide, el capítulo: espera a que la pantalla lo tenga pintado.
+function guiaIr(n) {
+  window._guiaDesdeGuia = true;
+  showPage('tugps');
+  if (!n) return;
+  var vueltas = 0;
+  var iv = setInterval(function () {
+    vueltas++;
+    if (typeof window.gpsVerCapitulo === 'function' && document.querySelector('#gpsBody [onclick*="gpsVerCapitulo(' + n + ')"]')) {
+      clearInterval(iv); window.gpsVerCapitulo(n);
+    } else if (vueltas > 50) clearInterval(iv);
+  }, 150);
+}
 
 /* FIX: paginas Admin y Tu GPS quedaron fuera de .main, causaba desborde/solapamiento */
 (function () { var m = document.querySelector('.main'); if (!m) return; ['page-tugps', 'page-admin'].forEach(function (id) { var el = document.getElementById(id); if (el && !m.contains(el)) m.appendChild(el); }); })();
