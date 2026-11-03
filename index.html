@@ -4217,6 +4217,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
             </ol>
             <p><strong>No es un ingreso.</strong> Las tarjetas de Ingresos y Gastos siguen mostrando sólo lo que pasó en el mes, y Reportes, el presupuesto y NortIA no lo cuentan: si no, la misma plata figuraría dos veces en el año.</p>
             <p><strong>Sólo al mes siguiente.</strong> Para llevarla más lejos, cuando termine noviembre pasás su plata disponible —que ya incluye lo que vino de octubre— a diciembre, y así.</p>
+            <p><strong>Suma Puntos Norte:</strong> 15 puntos por mes en que pasás la plata disponible (una vez por mes: editarlo o deshacerlo no vuelve a sumar).</p>
             <p><strong>Hasta 3 meses para atrás.</strong> Podés pasar, editar o ajustar la plata disponible de los últimos 3 meses. Lo más viejo queda cerrado: si después cargás un movimiento en un mes de hace más de 3 meses, el traspaso de ese mes ya no cambia.</p>
             <div class="ayuda-tip">Si después de pasarla cargás un gasto en octubre (por ejemplo, llegó el resumen de la tarjeta), Mi Rumbo te avisa que pasaste más de lo que quedó y lo ajustás con un toque. Nada se corrige solo. También podés editar o deshacer el traspaso cuando quieras, desde el mismo botón.</div>
           </div>
@@ -8525,8 +8526,13 @@ function pdPintar() {
     btn.style.display = ver ? 'flex' : 'none';
     if (ver) {
       const yaUso = Object.keys(tr).length > 0;
-      if (c.pasado > 0) { btn.className = 'pd-btn pd-editar'; btn.innerHTML = `✎ Editar lo que pasaste a ${sig}`; }
-      else { btn.className = 'pd-btn'; btn.innerHTML = `<span class="pd-fl">➜</span> Pasar la plata disponible a ${sig}` + (yaUso ? '' : ' <span class="pd-nuevo">NUEVO</span>'); }
+      if (c.pasado > 0) {
+        btn.className = 'pd-btn pd-editar'; btn.innerHTML = `✎ Editar lo que pasaste a ${sig}`;
+        btn.title = `Ya pasaste ${fmtPz(c.pasado)} a ${sig}. Tocá para cambiar el monto o deshacerlo.`;
+      } else {
+        btn.className = 'pd-btn'; btn.innerHTML = `<span class="pd-fl">➜</span> Pasar la plata disponible a ${sig}` + (yaUso ? '' : ' <span class="pd-nuevo">NUEVO</span>');
+        btn.title = `Lleva a ${sig} los ${fmtPz(Math.max(0, c.disponible))} que te sobraron en ${pdMes(k)}. Podés editarlo o deshacerlo después.`;
+      }
       btn.onclick = function () { pdAbrir(k); };
     }
   }
@@ -13677,6 +13683,10 @@ const PN_REGLAS_DEF = {
     rsdes:  { pts: 25, tope: 50, por: 'mes',    nom: 'Abrir un destino de Reserva' },
     cua:    { pts: 5,  tope: 25, por: 'mes',    nom: 'Anotar en El Cuaderno' },
     tc:     { pts: 25, tope: 25, por: 'mes',    nom: 'Importar el resumen de la tarjeta' },
+    // v005.65.001: pasar la plata disponible al mes siguiente. Una vez por mes
+    // de origen (la id es el mes) y con tope mensual: no se junta pasando tres
+    // meses viejos el mismo día.
+    trasp:  { pts: 15, tope: 15, por: 'mes',    nom: 'Pasar la plata disponible al mes siguiente' },
     sem:    { pts: 20, tope: 20, por: 'semana', nom: 'Semana activa' },
     racha:  { pts: 50, tope: 50, por: 'mes',    nom: 'Cuatro semanas seguidas' },
     // El premio más grande, y el más difícil. Vale lo que vale porque exige
@@ -13986,6 +13996,16 @@ function pnEventos() {
       const a = aut['presu:' + clave];
       push('presu', clave, a ? a.ts : pnTsDeMes(mes), dueno(a && a.por));
     });
+  });
+
+  // Plata disponible: un evento por mes de origen. La fecha es la del traspaso
+  // y el autor, quien lo hizo (los traspasos guardan `por`).
+  let T = {};
+  try { T = (typeof getTraspasos === 'function') ? (getTraspasos() || {}) : {}; } catch (e) { T = {}; }
+  Object.keys(T).forEach(ym => {
+    const x = T[ym];
+    if (!x || !(Number(x.monto) > 0)) return;
+    push('trasp', ym, Date.parse(x.fecha || '') || 0, dueno(x.por));
   });
 
   // El Cuaderno ya guarda quién anotó cada precio y cuándo.
@@ -18397,7 +18417,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.65.000';
+const APP_VERSION = 'v005.65.001';
 let novEntradas = [];
 
 function novLeida(e) {
