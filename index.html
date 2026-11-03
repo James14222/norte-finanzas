@@ -80,12 +80,14 @@
     });
     const ai = getAI(nortiaApp, { backend: new AgentPlatformBackend() });
     const model = getGenerativeModel(ai, {
-      model: "gemini-3.7-flash",
-      generationConfig: { responseMimeType: "application/json", responseSchema: HALLAZGOS_SCHEMA, temperature: 0.3 }
+      model: "gemini-3.8-flash",
+      generationConfig: { responseMimeType: "application/json", responseSchema: HALLAZGOS_SCHEMA, thinkingConfig: { thinkingLevel: "LOW" } }
     });
     const modelChat = getGenerativeModel(ai, {
-      model: "gemini-3.7-flash",
-      generationConfig: { temperature: 0.3, maxOutputTokens: 1500, thinkingConfig: { thinkingBudget: 0 } }
+      model: "gemini-3.8-flash",
+      // 3.8 Flash (v005.65.000): el razonamiento no se apaga y cuenta dentro de
+      // maxOutputTokens; con 1500 la respuesta podía cortarse. Sólo se cobra lo usado.
+      generationConfig: { maxOutputTokens: 4000, thinkingConfig: { thinkingLevel: "LOW" } }
     });
     /* Lector de resúmenes en PDF. Antes usaba modelChat, y cuando el chat bajó
        a 1500 tokens de respuesta (v005.47.004) un resumen de varias decenas de
@@ -93,8 +95,8 @@
        modelo aparte, con lugar de sobra y respuesta en JSON, no afecta al chat.
        Solo se cobra lo que de verdad se escribe. */
     const modelLector = getGenerativeModel(ai, {
-      model: "gemini-3.7-flash",
-      generationConfig: { temperature: 0.1, maxOutputTokens: 16384, responseMimeType: "application/json", thinkingConfig: { thinkingBudget: 0 } }
+      model: "gemini-3.8-flash",
+      generationConfig: { maxOutputTokens: 32768, responseMimeType: "application/json", thinkingConfig: { thinkingLevel: "LOW" } }
     });
 
         const GASTO_EXTRACT_SCHEMA = {
@@ -117,8 +119,8 @@
       required: ["detectado", "tipo", "detalle", "rubro", "impPesos"]
     };
     const modelGasto = getGenerativeModel(ai, {
-      model: "gemini-3.7-flash",
-      generationConfig: { responseMimeType: "application/json", responseSchema: GASTO_EXTRACT_SCHEMA, temperature: 0.1 }
+      model: "gemini-3.8-flash",
+      generationConfig: { responseMimeType: "application/json", responseSchema: GASTO_EXTRACT_SCHEMA, thinkingConfig: { thinkingLevel: "LOW" } }
     });
     // Puente hacia el resto de la app (scripts clásicos, no-módulo)
     window.nortiaGenerarHallazgos = async function (resumenCalculado) {
@@ -18395,7 +18397,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.64.002';
+const APP_VERSION = 'v005.65.000';
 let novEntradas = [];
 
 function novLeida(e) {
