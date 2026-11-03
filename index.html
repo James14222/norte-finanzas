@@ -471,6 +471,43 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   border-radius: 9px; border: 1px solid var(--border); background: var(--card);
   color: var(--primary); }
 .bal-apartar:hover { border-color: var(--primary); }
+/* ── Plata disponible (v005.64.000) ── */
+.pd-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 8px; padding: 9px 12px;
+  font-family: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer; border-radius: 9px; border: none; color: #fff;
+  background: linear-gradient(135deg, #14b8a6, #2563EB); box-shadow: 0 3px 12px rgba(37,99,235,.28); line-height: 1.2; }
+.pd-btn:hover { filter: brightness(1.08); }
+.pd-btn .pd-fl { font-size: 15px; line-height: 1; }
+.pd-btn { position: relative; }
+.pd-btn .pd-nuevo { position: absolute; top: -8px; right: -6px; background: #fff; color: #2563EB; font-size: 9.5px; font-weight: 900; letter-spacing: .06em;
+  border-radius: 999px; padding: 2px 7px; border: 1.5px solid #2563EB; box-shadow: 0 2px 6px rgba(37,99,235,.25); }
+.pd-btn.pd-editar { background: var(--card); color: #0f9f8a; border: 1.5px solid #14b8a6; box-shadow: none; }
+html[data-tema="noche"] .pd-btn.pd-editar { color: #6FE0CC; }
+.pd-linea { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+.pd-linea b { color: var(--text); }
+.pd-linea .pd-disp { color: #0f9f8a; font-weight: 800; }
+html[data-tema="noche"] .pd-linea .pd-disp { color: #6FE0CC; }
+.pd-linea .pd-mal { color: #ef4444; font-weight: 700; }
+.pd-aviso { display: flex; align-items: center; gap: 14px; border-radius: 13px; padding: 13px 16px; margin-bottom: 18px;
+  background: linear-gradient(135deg, rgba(20,184,166,.12), rgba(37,99,235,.07)), var(--card); border: 1px solid rgba(20,184,166,.45); }
+.pd-aviso.pd-aviso-mal { background: linear-gradient(135deg, rgba(245,158,11,.14), rgba(239,68,68,.06)), var(--card); border-color: rgba(245,158,11,.55); }
+.pd-aviso-ico { font-size: 26px; line-height: 1; flex: 0 0 auto; }
+.pd-aviso-txt { flex: 1; min-width: 0; font-size: 13.5px; color: var(--text); line-height: 1.45; }
+.pd-aviso-txt .pd-aviso-eti { font-size: 10.5px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: #0f9f8a; margin-bottom: 2px; }
+html[data-tema="noche"] .pd-aviso-txt .pd-aviso-eti { color: #6FE0CC; }
+.pd-aviso-acc { display: flex; gap: 8px; flex: 0 0 auto; }
+.pd-aviso-acc button { font-family: inherit; font-size: 13px; font-weight: 700; border-radius: 9px; padding: 9px 14px; cursor: pointer; white-space: nowrap; }
+.pd-aviso-acc .pd-si { background: linear-gradient(135deg, #14b8a6, #2563EB); color: #fff; border: none; }
+.pd-aviso-acc .pd-no { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
+@media (max-width: 880px) { .pd-aviso { flex-wrap: wrap; } .pd-aviso-acc { flex: 1 1 100%; } .pd-aviso-acc button { flex: 1; } }
+.pd-cuenta { border: 1px solid var(--border); border-radius: 10px; padding: 4px 12px; margin-bottom: 14px; }
+.pd-cuenta .pd-r { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; font-size: 13px; border-bottom: 1px solid var(--border); }
+.pd-cuenta .pd-r:last-child { border-bottom: none; font-weight: 800; font-size: 14px; }
+.pd-cuenta .pd-r span:first-child { color: var(--muted); }
+.pd-cuenta .pd-r:last-child span:first-child { color: var(--text); }
+.pd-cuenta .pd-r .pd-tot { color: #0f9f8a; }
+html[data-tema="noche"] .pd-cuenta .pd-r .pd-tot { color: #6FE0CC; }
+.pd-nota { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 10px; }
+.pd-alerta { display: none; margin-top: 10px; font-size: 12.5px; font-weight: 600; color: #ef4444; }
 
 .rs-acc { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 11px; }
 .rs-acc button { font-size: 12px; padding: 5px 11px; border-radius: 8px; cursor: pointer;
@@ -2460,6 +2497,10 @@ html[data-tema="noche"] #txTip { background: #2a3d50; border: 1px solid #3d5368;
 .yr-tip{position:absolute;background:var(--brand-navy);color:#fff;border-radius:6px;padding:6px 10px;font-size:11.5px;line-height:1.4;pointer-events:none;opacity:0;transition:opacity .12s;z-index:5;white-space:nowrap;box-shadow:0 4px 14px rgba(27,58,75,.28)}
 .yr-tip b{display:block;font-size:12px}
 .yr-bar{cursor:pointer}
+.yr-trf{cursor:pointer}
+.yr-trf circle{fill:#65a30d;stroke:#fff;stroke-width:1.5}
+.yr-trf:hover circle{fill:#4d7c0f}
+.yr-sum i.yr-trf-ley{border-radius:50%;background:#65a30d}
 .acct-box{padding:10px 20px 0;border-top:1px solid rgba(255,255,255,.10);margin-top:6px}
 .acct-who{display:flex;align-items:center;gap:9px}
 .acct-av{width:30px;height:30px;border-radius:50%;flex:none;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);display:grid;place-items:center;font-size:12.5px;font-weight:800;color:#fff;overflow:hidden}
@@ -3228,6 +3269,8 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
       <!-- Guía Pioneros: en qué capítulo vas (v005.63.000). Lo pinta guiaActualizar.
            Va primero, antes de los números: en el celular, más abajo no se veía. -->
       <div class="guia-aviso" id="guiaAviso" style="display:none"></div>
+      <!-- Plata disponible: recordatorio al empezar el mes o aviso para ajustar (v005.64.000) -->
+      <div class="pd-aviso" id="pdAviso" style="display:none"></div>
       <div class="cards-grid">
         <div class="card k-ing">
           <div class="card-label">Ingresos del mes</div>
@@ -3248,6 +3291,9 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
                mirar antes de apartar: cuánto sobró. En la pantalla de Reserva
                ese número no se ve. -->
           <button class="bal-apartar" id="dBalApartar" onclick="rsAbrirApartar()">⚓ Apartar para mi Reserva</button>
+          <!-- Plata disponible (v005.64.000): lo pinta pdPintar() -->
+          <div class="pd-linea" id="pdLinea" style="display:none"></div>
+          <button class="pd-btn" id="pdBtn" style="display:none" onclick="pdAbrir()"></button>
         </div>
         <div class="card k-pend">
           <div class="card-label" id="d-pend-lbl">Saldo pendiente</div>
@@ -4154,6 +4200,23 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
               <strong>Saldo pendiente</strong> — la suma de lo que todavía no pagaste (tarjetas, gastos parciales)
             </div>
             <div class="ayuda-tip">El <strong>Saldo pendiente</strong> es el número que más gente subestima. Un balance en verde con $400.000 pendientes no es un mes en verde: es un mes con deuda por delante.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>➜ Plata disponible: lo que sobró pasa al mes siguiente</h4>
+            <p>Si un mes terminó y te quedó plata —no la gastaste, no la apartaste a la Reserva ni la pasaste a otro hogar—, la podés <strong>pasar al mes siguiente</strong>. Así el mes nuevo arranca con ese saldo a favor.</p>
+            <div class="ayuda-ejemplo">
+              <strong>Plata disponible</strong> = Ingresos − Gastos + lo que vino del mes anterior − lo apartado a la Reserva. Cuenta sólo los importes en pesos.<br>
+              <strong>Ejemplo:</strong> en octubre entraron $1.800.000, gastaste $1.500.000 y apartaste $100.000: tenés <strong>$200.000</strong> de plata disponible para pasar a noviembre.
+            </div>
+            <ol class="ayuda-steps">
+              <li>Cuando el mes terminó, en la tarjeta <strong>Balance</strong> aparece el botón <strong>➜ Pasar la plata disponible a noviembre</strong>. Los primeros días del mes nuevo, Mi Rumbo también te lo recuerda.</li>
+              <li>Ves la cuenta, elegís cuánto pasar (como mucho, lo disponible) y confirmás.</li>
+              <li>En noviembre, el Balance muestra <strong>+ $200.000 disponible de octubre</strong> y la <strong>Plata disponible</strong> del mes.</li>
+            </ol>
+            <p><strong>No es un ingreso.</strong> Las tarjetas de Ingresos y Gastos siguen mostrando sólo lo que pasó en el mes, y Reportes, el presupuesto y NortIA no lo cuentan: si no, la misma plata figuraría dos veces en el año.</p>
+            <p><strong>Sólo al mes siguiente.</strong> Para llevarla más lejos, cuando termine noviembre pasás su plata disponible —que ya incluye lo que vino de octubre— a diciembre, y así.</p>
+            <p><strong>Hasta 3 meses para atrás.</strong> Podés pasar, editar o ajustar la plata disponible de los últimos 3 meses. Lo más viejo queda cerrado: si después cargás un movimiento en un mes de hace más de 3 meses, el traspaso de ese mes ya no cambia.</p>
+            <div class="ayuda-tip">Si después de pasarla cargás un gasto en octubre (por ejemplo, llegó el resumen de la tarjeta), Mi Rumbo te avisa que pasaste más de lo que quedó y lo ajustás con un toque. Nada se corrige solo. También podés editar o deshacer el traspaso cuando quieras, desde el mismo botón.</div>
           </div>
           <div class="ayuda-bloque">
             <h4>Cómo se cuentan los dólares</h4>
@@ -5159,6 +5222,26 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="rsCerrarApartar()">Cancelar</button>
       <button class="btn btn-primary" onclick="rsGuardarApartar()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="pdOverlay">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <span>Pasar la plata disponible</span>
+      <button onclick="pdCerrar()" aria-label="Cerrar" style="background:none;border:none;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:0 2px">×</button>
+    </div>
+    <div style="font-size:12.5px;color:var(--muted);margin:-6px 0 14px" id="pdSub"></div>
+    <div class="pd-cuenta" id="pdCuenta"></div>
+    <div class="qp-label" id="pdLbl" style="margin-bottom:6px">Cuánto pasás</div>
+    <input class="qp-input money" id="pdMonto" type="text" inputmode="decimal" autocomplete="off" placeholder="0" oninput="pdRecalcular()">
+    <div class="pd-alerta" id="pdAlerta"></div>
+    <div class="pd-nota" id="pdNota"></div>
+    <div class="modal-actions" style="flex-wrap:wrap">
+      <button class="btn btn-secondary" id="pdDeshacerBtn" style="margin-right:auto;display:none" onclick="pdDeshacer()">Deshacer el traspaso</button>
+      <button class="btn btn-secondary" onclick="pdCerrar()">Cancelar</button>
+      <button class="btn btn-primary" id="pdGuardarBtn" onclick="pdGuardar()">Pasar</button>
     </div>
   </div>
 </div>
@@ -8366,6 +8449,185 @@ function rsAviso(activos) {
   return '';
 }
 
+// ── PLATA DISPONIBLE (v005.64.000) ─────────────────────────────
+// Pasar lo que sobró de un mes al siguiente. No es una transacción: vive en su
+// propio registro, por hogar y por mes de origen —{ '2026-10': {monto, destino,
+// fecha, por, porNombre} }—, así que Reportes, presupuesto, anillos, NortIA, Excel
+// y Puntos Norte no lo ven. Sólo Mi Rumbo lo muestra, aparte de los ingresos.
+// Un solo registro por mes = las dos puntas (la que sale y la que llega) no se
+// pueden desincronizar.
+function getTraspasos() {
+  try { const v = JSON.parse(localStorage.getItem(`fin_traspasos_${curEmpresa()}`) || '{}'); return (v && typeof v === 'object') ? v : {}; }
+  catch (e) { return {}; }
+}
+function saveTraspasos(t) {
+  localStorage.setItem(`fin_traspasos_${curEmpresa()}`, JSON.stringify(t || {}));
+  try { schedulePush(); } catch (e) {}
+}
+function pdSigKey(k) { const [y, m] = k.split('-').map(Number); return m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, '0')}`; }
+function pdMes(k) { return MESES[Number(k.split('-')[1]) - 1].toLowerCase(); }
+function pdHoyKey() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+// Cierre liviano (pedido de Jaime): sólo se pueden pasar, editar, ajustar o deshacer
+// traspasos de los 3 meses anteriores al actual. Lo más viejo queda como está,
+// aunque después se cargue un movimiento en ese mes.
+const PD_MESES_ABIERTOS = 3;
+function pdMasViejoAbierto() { let k = pdHoyKey(); for (let i = 0; i < PD_MESES_ABIERTOS; i++) k = prevKey(k); return k; }
+function pdEditable(k) { return k < pdHoyKey() && k >= pdMasViejoAbierto(); }
+// Sólo pesos (decisión de Jaime). Ingresos − Gastos + lo que vino − lo apartado.
+function pdCalc(k, tr) {
+  tr = tr || getTraspasos();
+  let ing = 0, gas = 0;
+  try {
+    getDataAnalisis().forEach(t => {
+      if (!t || t.mes !== k) return;
+      const p = Number(t.impPesos) || 0;
+      if (t.tipo === 'Ingreso') ing += p; else if (t.tipo === 'Gasto') gas += p;
+    });
+  } catch (e) {}
+  const prev = tr[prevKey(k)];
+  const recibido = prev ? (Number(prev.monto) || 0) : 0;
+  let reserva = 0; try { reserva = rsApartadoEnMes(k); } catch (e) {}
+  const disponible = Math.round(ing - gas + recibido - reserva);
+  const pasado = tr[k] ? (Number(tr[k].monto) || 0) : 0;
+  return { ing, gas, recibido, reserva, disponible, pasado, queda: disponible - pasado, terminado: k < pdHoyKey(), editable: pdEditable(k) };
+}
+// El primer mes cuyo traspaso quedó más grande que su plata disponible (cambió
+// algo después de pasarlo). Se resuelve de a uno: ajustar ése recalcula el
+// siguiente, que si queda mal aparece en el próximo render.
+function pdInconsistente(tr) {
+  tr = tr || getTraspasos();
+  const ks = Object.keys(tr).filter(k => tr[k] && Number(tr[k].monto) > 0 && pdEditable(k)).sort();
+  for (const k of ks) { const c = pdCalc(k, tr); if (c.pasado > c.disponible + 0.5) return { k, c }; }
+  return null;
+}
+function pdNudgeKey(k) { return `norte_pd_nudge_${curEmpresa()}_${k}`; }
+function pdPintar() {
+  const k = curKey(), tr = getTraspasos(), c = pdCalc(k, tr), sig = pdMes(pdSigKey(k));
+  const linea = document.getElementById('pdLinea'), btn = document.getElementById('pdBtn');
+  if (linea) {
+    const partes = [];
+    if (c.recibido) partes.push(`+ <b>${fmtPz(c.recibido)}</b> disponible de ${pdMes(prevKey(k))}`);
+    if (c.recibido || c.pasado) partes.push(`Plata disponible: <span class="pd-disp">${fmtPz(c.disponible)}</span>`);
+    if (c.pasado) {
+      let t = `Pasaste <b>${fmtPz(c.pasado)}</b> a ${sig}`;
+      if (!c.editable) t += ' · <span title="Pasaron más de 3 meses: ya no se ajusta">cerrado</span>';
+      else if (c.queda >= 1) t += ` · te quedan ${fmtPz(c.queda)}`;
+      else if (c.queda <= -1) t += ` · <span class="pd-mal">es más de lo disponible</span>`;
+      partes.push(t);
+    }
+    linea.innerHTML = partes.join('<br>');
+    linea.style.display = partes.length ? '' : 'none';
+  }
+  if (btn) {
+    const ver = c.editable && (c.disponible >= 1 || c.pasado > 0);
+    btn.style.display = ver ? 'flex' : 'none';
+    if (ver) {
+      const yaUso = Object.keys(tr).length > 0;
+      if (c.pasado > 0) { btn.className = 'pd-btn pd-editar'; btn.innerHTML = `✎ Editar lo que pasaste a ${sig}`; }
+      else { btn.className = 'pd-btn'; btn.innerHTML = `<span class="pd-fl">➜</span> Pasar la plata disponible a ${sig}` + (yaUso ? '' : ' <span class="pd-nuevo">NUEVO</span>'); }
+      btn.onclick = function () { pdAbrir(k); };
+    }
+  }
+  pdPintarAviso(tr);
+}
+function pdPintarAviso(tr) {
+  const av = document.getElementById('pdAviso');
+  if (!av) return;
+  tr = tr || getTraspasos();
+  // 1) Algo cambió en un mes que ya se pasó: avisar y ofrecer ajustar.
+  const mal = pdInconsistente(tr);
+  if (mal) {
+    const { k, c } = mal, sig = pdMes(pdSigKey(k));
+    const d = Math.max(0, c.disponible);
+    av.className = 'pd-aviso pd-aviso-mal';
+    av.innerHTML = '<div class="pd-aviso-ico" aria-hidden="true">⚠️</div>'
+      + `<div class="pd-aviso-txt"><div class="pd-aviso-eti">Plata disponible</div>Pasaste <b>${fmtPz(c.pasado)}</b> de ${pdMes(k)} a ${sig}, pero ahora ${pdMes(k)} tiene <b>${fmtPz(d)}</b> disponibles: cambió algo en ${pdMes(k)} después de pasarla.</div>`
+      + '<div class="pd-aviso-acc">'
+      + (d >= 1 ? `<button class="pd-si" onclick="pdAjustar('${k}')">Ajustar a ${fmtPz(d)}</button>` : `<button class="pd-si" onclick="pdAjustar('${k}')">Deshacer el traspaso</button>`)
+      + `<button class="pd-no" onclick="pdAbrir('${k}')">Ver</button></div>`;
+    av.style.display = 'flex';
+    return;
+  }
+  // 2) Los primeros días del mes: ¿pasás lo que te quedó del mes que terminó?
+  const hoy = pdHoyKey(), P = prevKey(hoy);
+  let ver = false, c = null;
+  if (curKey() === hoy && new Date().getDate() <= 7 && !tr[P]) {
+    let cerrado = false; try { cerrado = localStorage.getItem(pdNudgeKey(P)) === '1'; } catch (e) {}
+    if (!cerrado) { c = pdCalc(P, tr); ver = c.disponible >= 1 && c.ing > 0; }
+  }
+  if (!ver) { av.style.display = 'none'; av.innerHTML = ''; return; }
+  av.className = 'pd-aviso';
+  av.innerHTML = '<div class="pd-aviso-ico" aria-hidden="true">➜</div>'
+    + `<div class="pd-aviso-txt"><div class="pd-aviso-eti">Nuevo · Plata disponible</div>${MESES[Number(P.split('-')[1]) - 1]} terminó con <b>${fmtPz(c.disponible)}</b> de plata disponible. ¿La pasás a ${pdMes(hoy)}?</div>`
+    + '<div class="pd-aviso-acc">'
+    + `<button class="pd-si" onclick="pdAbrir('${P}')">Pasarla a ${pdMes(hoy)}</button>`
+    + `<button class="pd-no" onclick="pdAhoraNo('${P}')" title="Saca este recordatorio. Podés pasarla igual desde el Balance de ${pdMes(P)}.">Ocultar aviso</button></div>`;
+  av.style.display = 'flex';
+}
+function pdAhoraNo(k) { try { localStorage.setItem(pdNudgeKey(k), '1'); } catch (e) {} pdPintarAviso(); }
+let pdMesAbierto = null;
+function pdAbrir(k) {
+  k = k || curKey();
+  if (!pdEditable(k)) { alert('Sólo se puede pasar la plata disponible de los últimos 3 meses.'); return; }
+  const tr = getTraspasos(), c = pdCalc(k, tr), sig = pdSigKey(k);
+  pdMesAbierto = k;
+  document.getElementById('pdSub').textContent = `${MESES[Number(k.split('-')[1]) - 1]} ${k.split('-')[0]} → ${pdMes(sig)}`;
+  const fila = (a, b, cls) => `<div class="pd-r"><span>${a}</span><span${cls ? ' class="' + cls + '"' : ''}>${b}</span></div>`;
+  let html = fila('Ingresos en pesos', fmtPz(c.ing)) + fila('− Gastos en pesos', fmtPz(c.gas));
+  if (c.recibido) html += fila(`+ Disponible de ${pdMes(prevKey(k))}`, fmtPz(c.recibido));
+  if (c.reserva) html += fila('− Apartado a tu Reserva', fmtPz(c.reserva));
+  html += fila('Plata disponible', fmtPz(c.disponible), 'pd-tot');
+  document.getElementById('pdCuenta').innerHTML = html;
+  document.getElementById('pdLbl').textContent = `Cuánto pasás a ${pdMes(sig)}`;
+  numSet('pdMonto', c.pasado > 0 ? c.pasado : Math.max(0, c.disponible));
+  document.getElementById('pdNota').innerHTML =
+      `Si todavía no cargaste el resumen de la tarjeta de ${pdMes(k)}, cargalo antes: si no, la plata disponible puede ser menor.<br>`
+    + `No es un ingreso: en ${pdMes(sig)} se ve aparte, como «Disponible de ${pdMes(k)}». Cuenta sólo pesos.`;
+  document.getElementById('pdDeshacerBtn').style.display = c.pasado > 0 ? '' : 'none';
+  document.getElementById('pdGuardarBtn').textContent = c.pasado > 0 ? 'Guardar' : `Pasar a ${pdMes(sig)}`;
+  pdRecalcular();
+  document.getElementById('pdOverlay').classList.add('show');
+}
+function pdCerrar() { document.getElementById('pdOverlay').classList.remove('show'); pdMesAbierto = null; }
+function pdRecalcular() {
+  if (!pdMesAbierto) return;
+  const c = pdCalc(pdMesAbierto), m = Math.round(numVal('pdMonto'));
+  const al = document.getElementById('pdAlerta'), bt = document.getElementById('pdGuardarBtn');
+  let msg = '';
+  if (m > c.disponible) msg = `No podés pasar más de la plata disponible (${fmtPz(Math.max(0, c.disponible))}).`;
+  else if (m <= 0) msg = 'Escribí cuánto querés pasar.';
+  al.textContent = msg; al.style.display = msg ? 'block' : 'none';
+  bt.disabled = !!msg; bt.style.opacity = msg ? '.5' : '';
+}
+function pdGuardar() {
+  const k = pdMesAbierto; if (!k || !pdEditable(k)) return;
+  const c = pdCalc(k), m = Math.round(numVal('pdMonto'));
+  if (m <= 0 || m > c.disponible) { pdRecalcular(); return; }
+  const tr = getTraspasos();
+  tr[k] = Object.assign({}, tr[k] || {}, { monto: m, destino: pdSigKey(k), fecha: new Date().toISOString(),
+    por: curUserId(), porNombre: (function () { try { return curUserName(); } catch (e) { return ''; } })() });
+  delete tr[k].ajustado;
+  saveTraspasos(tr);
+  pdCerrar();
+  render();
+}
+function pdDeshacer() {
+  const k = pdMesAbierto; if (!k || !pdEditable(k)) return;
+  if (!confirm(`¿Deshacer el traspaso de ${pdMes(k)} a ${pdMes(pdSigKey(k))}? La plata vuelve a quedar en ${pdMes(k)}.`)) return;
+  const tr = getTraspasos(); delete tr[k]; saveTraspasos(tr);
+  pdCerrar(); render();
+}
+// Ajuste de un toque desde el aviso: lo pasado queda igual a lo disponible (o
+// se deshace si ya no queda nada).
+function pdAjustar(k) {
+  const tr = getTraspasos(); if (!tr[k] || !pdEditable(k)) return;
+  const c = pdCalc(k, tr);
+  if (c.disponible >= 1) { tr[k].monto = c.disponible; tr[k].ajustado = new Date().toISOString(); }
+  else delete tr[k];
+  saveTraspasos(tr);
+  render();
+}
+
 // ── La tarjeta de Mi Rumbo ──────────────────────────────────────
 function rsPintarDash() {
   const card = document.getElementById('reservaDashCard');
@@ -8856,6 +9118,7 @@ function exportarDatos() {
     fin_meta_ahorro:  localStorage.getItem(`fin_meta_ahorro_${eid}`)  || '0',
     fin_reservas:     localStorage.getItem(`fin_reservas_${eid}`)     || '{}',
     fin_cuaderno:     localStorage.getItem(`fin_cuaderno_${eid}`)     || '{}',
+    fin_traspasos:    localStorage.getItem(`fin_traspasos_${eid}`)    || '{}',
   };
   const json = JSON.stringify(backup, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
@@ -8892,6 +9155,7 @@ function importarDatos(input) {
       if (finBudgets) localStorage.setItem(`fin_budgets_${eid}`, finBudgets);
       if (finMeta)    localStorage.setItem(`fin_meta_ahorro_${eid}`, finMeta);
       if (finReservas) localStorage.setItem(`fin_reservas_${eid}`, finReservas);
+      if (backup.fin_traspasos) localStorage.setItem(`fin_traspasos_${eid}`, backup.fin_traspasos);
 
       render();
 
@@ -10273,7 +10537,9 @@ function getSyncKeys() {
   // ninguno de los dos sería el verdadero.
   return [`fin_data_${eid}`, `fin_budgets_${eid}`, `fin_meta_ahorro_${eid}`,
           `fin_bankconfigs_${eid}`, `fin_rubros_${eid}`, `fin_reservas_${eid}`,
-          `fin_cuaderno_${eid}`, `fin_pnledger_${eid}`, `fin_pnautor_${eid}`];
+          `fin_cuaderno_${eid}`, `fin_pnledger_${eid}`, `fin_pnautor_${eid}`,
+          // Plata disponible (v005.64.000): es del hogar, como la Reserva.
+          `fin_traspasos_${eid}`];
 }
 function getSyncPath() { return `norteSync/empresas/${curEmpresa()}`; }
 // Compat aliases (se sobreescriben después del login)
@@ -10776,6 +11042,9 @@ function renderAnioPanel(){
   if (!wrap) return;
   const key = curKey(), anio = Number(key.split('-')[0]), hasta = Number(key.split('-')[1]);
   const all = getDataAnalisis();
+  // Plata disponible (v005.64.001): no cambia las barras; se marca aparte.
+  let trs = {}; try { trs = getTraspasos(); } catch (e) {}
+  const trMonto = mk => (trs[mk] && Number(trs[mk].monto) > 0) ? Number(trs[mk].monto) : 0;
   const rows = [];
   for (let m = 1; m <= hasta; m++){
     const mk = anio + '-' + String(m).padStart(2,'0');
@@ -10815,7 +11084,8 @@ function renderAnioPanel(){
     const act = (r.m === hasta);
     bars += '<rect class="yr-bar" x="'+x+'" y="'+y.toFixed(1)+'" width="'+BW+'" height="'+h.toFixed(1)+'" rx="3" fill="'+col+'"'
          + (act ? ' stroke="#1B3A4B" stroke-width="1.5" stroke-opacity=".55"' : '')
-         + ' data-m="'+r.m+'" data-neto="'+r.neto+'" data-ing="'+r.ing+'" data-gas="'+r.gas+'"></rect>';
+         + ' data-m="'+r.m+'" data-neto="'+r.neto+'" data-ing="'+r.ing+'" data-gas="'+r.gas+'"'
+         + ' data-vino="'+trMonto(prevKey(r.mk))+'" data-paso="'+trMonto(r.mk)+'"></rect>';
     labels += '<text x="'+cx(i)+'" y="'+(TOP+H+28)+'" text-anchor="middle" font-size="11" fill="'+(act?'#1e293b':'#94a3b8')+'"'
            + (act?' font-weight="800"':'')+'>'+MESES[r.m-1].slice(0,3)+'</text>';
     pts.push([cx(i), zeroY - r.neto * k]);
@@ -10842,33 +11112,61 @@ function renderAnioPanel(){
     curva = '<path d="'+curva+'" fill="none" stroke="#1B3A4B" stroke-opacity=".5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>';
     dots = pts.map(p => '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3.2" fill="#fff" stroke="#1B3A4B" stroke-opacity=".55" stroke-width="1.6"></circle>').join('');
   }
+  // Flechitas ➜ en la línea del $0, en el hueco entre un mes y el siguiente.
+  let flechas = '', hayFlecha = false;
+  const flecha = (x, desde, hacia, monto) => {
+    hayFlecha = true;
+    return '<g class="yr-trf" data-desde="'+desde+'" data-hacia="'+hacia+'" data-monto="'+monto+'">'
+      + '<circle cx="'+x.toFixed(1)+'" cy="'+zeroY.toFixed(1)+'" r="8"></circle>'
+      + '<path d="M '+(x-3.6).toFixed(1)+' '+zeroY.toFixed(1)+' L '+(x+3.4).toFixed(1)+' '+zeroY.toFixed(1)
+      + ' M '+(x+0.6).toFixed(1)+' '+(zeroY-2.9).toFixed(1)+' L '+(x+3.6).toFixed(1)+' '+zeroY.toFixed(1)+' L '+(x+0.6).toFixed(1)+' '+(zeroY+2.9).toFixed(1)
+      + '" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></g>';
+  };
+  rows.forEach(function(r, i){
+    const mo = trMonto(r.mk);
+    if (mo && i < rows.length - 1) flechas += flecha(cx(i) + (BW + GAP) / 2, r.mk, rows[i+1].mk, mo);
+    if (i === 0){ const pv = prevKey(r.mk), mv = trMonto(pv); if (mv) flechas += flecha(Math.max(9, cx(0) - (BW + GAP) / 2), pv, r.mk, mv); }
+  });
   const actual = rows[rows.length-1];
   wrap.innerHTML =
     '<div class="yr-head"><span></span><span style="font-size:13px;font-weight:700;color:'
       + (actual.neto === null ? 'var(--muted)' : (actual.neto>=0?'var(--success)':'var(--danger)')) + '">'
       + MESES[hasta-1] + ' ' + (actual.neto === null ? '—' : fmtPz(actual.neto)) + '</span></div>'
     + '<div class="yr-sum"><span><i style="background:#10b981"></i><b>' + verdes + (verdes===1?' mes':' meses') + '</b> en verde</span>'
-    + '<span><i style="background:#ef4444"></i><b>' + rojos + (rojos===1?' mes':' meses') + '</b> en rojo</span></div>'
+    + '<span><i style="background:#ef4444"></i><b>' + rojos + (rojos===1?' mes':' meses') + '</b> en rojo</span>'
+    + (hayFlecha ? '<span><i class="yr-trf-ley"></i>plata disponible que pasó al mes siguiente</span>' : '') + '</div>'
     + '<div class="yr-wrap" id="yrWrap"><div class="yr-tip" id="yrTip"></div>'
     + '<svg viewBox="0 0 '+W+' '+(TOP+H+40)+'" width="100%" role="img" aria-label="Saldo neto por mes">'
     + '<line x1="0" y1="'+zeroY.toFixed(1)+'" x2="'+W+'" y2="'+zeroY.toFixed(1)+'" stroke="#cbd5e1" stroke-width="1"></line>'
     + '<text x="'+(W-2)+'" y="'+(zeroY-5).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="#94a3b8">$0</text>'
-    + bars + curva + dots + labels + '</svg></div>'
+    + bars + curva + dots + flechas + labels + '</svg></div>'
     + '<div class="yr-foot">Saldo neto del mes (ingresos − gastos)'
     + (fxActivo() ? ', con los dólares convertidos. Si pasás a <b>Solo pesos</b>, el gráfico se recalcula.' : '.')
+    + (hayFlecha ? ' Las flechas marcan la plata disponible que pasaste al mes siguiente: no cambian las barras, que siguen mostrando cómo terminó cada mes.' : '')
     + '</div>';
   yrHookTooltip();
 }
 function yrHookTooltip(){
   const wrap = document.getElementById('yrWrap'), tip = document.getElementById('yrTip');
   if (!wrap || !tip) return;
+  const mesDe = k => MESES[Number(String(k).split('-')[1]) - 1];
   const show = function(ev){
-    const b = ev.target;
+    let b = ev.target;
+    const fl = b && b.closest ? b.closest('.yr-trf') : null;
+    if (fl) {
+      b = fl;
+      tip.innerHTML = '<b>Plata disponible</b>' + fmtPz(fl.getAttribute('data-monto')) + ' de ' + mesDe(fl.getAttribute('data-desde')).toLowerCase()
+                    + ' a ' + mesDe(fl.getAttribute('data-hacia')).toLowerCase();
+    } else {
     if (!b || !b.classList || !b.classList.contains('yr-bar')) return;
     const m = Number(b.getAttribute('data-m'));
+    const vino = Number(b.getAttribute('data-vino')) || 0, paso = Number(b.getAttribute('data-paso')) || 0;
     tip.innerHTML = '<b>' + MESES[m-1] + '</b>Ingresos ' + fmtPz(b.getAttribute('data-ing'))
                   + ' · Gastos ' + fmtPz(b.getAttribute('data-gas'))
-                  + '<br>Neto ' + fmtPz(b.getAttribute('data-neto'));
+                  + '<br>Neto ' + fmtPz(b.getAttribute('data-neto'))
+                  + (vino ? '<br>➜ Vino ' + fmtPz(vino) + ' de ' + MESES[(m + 10) % 12].toLowerCase() : '')
+                  + (paso ? '<br>➜ Pasaste ' + fmtPz(paso) + ' a ' + MESES[m % 12].toLowerCase() : '');
+    }
     tip.style.opacity = '1';
     const wr = wrap.getBoundingClientRect(), br = b.getBoundingClientRect();
     let left = br.left - wr.left + br.width/2 - tip.offsetWidth/2;
@@ -11066,6 +11364,7 @@ function renderDash() {
             // Mini-resumen de la Reserva. Si el hogar no tiene ningún destino la
             // tarjeta no aparece: nada de estados vacíos pidiendo que configures algo.
             try { rsPintarDash(); } catch (e) {}
+            try { pdPintar(); } catch (e) {}
             try { pnPintarDash(); } catch (e) {}
             try { pnPintarAviso(); } catch (e) {}
             try { pnPintarIconos(); } catch (e) {}
@@ -18096,7 +18395,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.63.003';
+const APP_VERSION = 'v005.64.002';
 let novEntradas = [];
 
 function novLeida(e) {
