@@ -259,6 +259,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .card-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
 .card-value { font-size: 22px; font-weight: 700; margin-top: 6px; line-height: 1.2; }
 .card-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.card-sub.pend-cobrar { color: var(--success); font-weight: 600; margin-top: 6px; }
 .card-icon { float: right; font-size: 24px; opacity: 0.15; margin-top: -4px; }
 .positive { color: var(--success); }
 .negative { color: var(--danger); }
@@ -3302,6 +3303,8 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
           <div class="card-vrow"><div class="card-value warning-c" id="d-pend">$0</div><div class="card-icon">⏳</div></div>
           <div class="card-sub" id="d-pend-sub">Por pagar</div>
           <div id="d-pend-cmp"></div>
+          <!-- v005.65.002: lo que falta cobrar de los ingresos, aparte del pendiente -->
+          <div class="card-sub pend-cobrar" id="d-pend-cobrar" style="display:none" title="Lo que todavía no cobraste de los ingresos de este mes. No es deuda: no suma al saldo pendiente."></div>
         </div>
       </div>
       <!-- Semáforo -->
@@ -4201,6 +4204,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
               <strong>Balance</strong> — Ingresos − Gastos. Verde si es positivo, rojo si gastaste más de lo que entró<br>
               <strong>Saldo pendiente</strong> — la suma de lo que todavía no pagaste (tarjetas, gastos parciales)
             </div>
+            <p>Sólo cuenta gastos. Si cargaste un ingreso que todavía no cobraste del todo (el <strong>Monto pagado</strong> es menor que el importe), lo que falta no es deuda: aparece abajo de la card como <strong>«Además tenés $X por cobrar»</strong>.</p>
             <div class="ayuda-tip">El <strong>Saldo pendiente</strong> es el número que más gente subestima. Un balance en verde con $400.000 pendientes no es un mes en verde: es un mes con deuda por delante.</div>
           </div>
           <div class="ayuda-bloque">
@@ -11272,10 +11276,26 @@ function cargarGPSPioneros(){
 function saldoPendienteDelMes() {
   const all     = getData().filter(t => t.mes === curKey());
   fxCargarModo();
-  const pend    = all.reduce((s, t) => s + (Number(t.saldo) || 0), 0);
+  // v005.65.002: sólo gastos. Lo que falta cobrar de un ingreso no es deuda:
+  // va aparte, como «por cobrar» (antes se sumaba acá, como si se debiera).
+  const pend    = all.filter(t => t.tipo === 'Gasto').reduce((s, t) => s + (Number(t.saldo) || 0), 0);
   const usdPend = fxUsdPendiente(all);
   const on      = fxActivo();
-  return { pend, usdPend, on, total: on ? pend + fxAPesos(usdPend) : pend };
+  const ingr    = all.filter(t => t.tipo === 'Ingreso');
+  const cobrar    = ingr.reduce((s, t) => s + Math.max(0, Number(t.saldo) || 0), 0);
+  const cobrarUSD = ingr.reduce((s, t) => s + (isTCOrigen(t) ? 0 : txSaldoUSDDe(t)), 0);
+  return { pend, usdPend, on, total: on ? pend + fxAPesos(usdPend) : pend,
+           cobrar, cobrarUSD, cobrarTotal: on ? cobrar + fxAPesos(cobrarUSD) : cobrar };
+}
+
+// «$400.000 por cobrar» / «$400.000 y U$S 100 por cobrar». '' si no hay nada.
+function txtPorCobrar(r) {
+  if (!r) return '';
+  if (r.on) return r.cobrarTotal > 0 ? fmtP(r.cobrarTotal) : '';
+  const p = [];
+  if (r.cobrar > 0) p.push(fmtP(r.cobrar));
+  if (r.cobrarUSD > 0) p.push(fmtU(r.cobrarUSD));
+  return p.join(' y ');
 }
 
 // Pinta la caja repetida en Transacciones. Se llama desde renderTx(), así que
@@ -11283,14 +11303,17 @@ function saldoPendienteDelMes() {
 function pintarPendienteTx() {
   const val = document.getElementById('tx-pend');
   if (!val) return;
-  const { pend, usdPend, on, total } = saldoPendienteDelMes();
+  const _sp = saldoPendienteDelMes();
+  const { pend, usdPend, on, total } = _sp;
+  const _cob = txtPorCobrar(_sp);
   val.textContent = fmtP(total);
   const lbl = document.getElementById('tx-pend-lbl');
   if (lbl) lbl.textContent = (on && usdPend) ? 'Saldo pendiente · total en pesos' : 'Saldo pendiente';
   const caja = document.getElementById('txPend');
-  if (caja) caja.title = (on && usdPend)
+  if (caja) caja.title = ((on && usdPend)
     ? 'Incluye ' + fmtU(usdPend) + ' pendientes, valuados en pesos'
-    : 'Lo que registraste y todavía no terminaste de pagar, en el mes que estás viendo';
+    : 'Lo que registraste y todavía no terminaste de pagar, en el mes que estás viendo')
+    + (_cob ? '. Aparte, tenés ' + _cob + ' por cobrar (no cuenta como deuda).' : '');
 }
 
 function renderDash() {
@@ -11306,7 +11329,12 @@ function renderDash() {
   const bal     = totIngP - totGasP;
 
   // ── Dólar integrado ───────────────────────────────────────
-  const { pend, usdPend, on } = saldoPendienteDelMes();
+  const _sp = saldoPendienteDelMes();
+  const { pend, usdPend, on } = _sp;
+  {
+    const el = document.getElementById('d-pend-cobrar'), c = txtPorCobrar(_sp);
+    if (el) { el.textContent = c ? 'Además tenés ' + c + ' por cobrar' : ''; el.style.display = c ? '' : 'none'; }
+  }
   const ingT     = on ? totIngP + fxAPesos(totIngU) : totIngP;
   const gasT     = on ? totGasP + fxAPesos(totGasU) : totGasP;
   const balT     = ingT - gasT;
@@ -18417,7 +18445,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.65.001';
+const APP_VERSION = 'v005.65.002';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -21356,12 +21384,16 @@ function parseQuery(text) {
 
 function qPendiente(allData, mesKey) {
   const data = mesKey ? allData.filter(t=>t.mes===mesKey) : allData.filter(t=>t.mes.startsWith(String(curYear)));
-  const pend = data.filter(t=>(Number(t.saldo)||0)>0).sort((a,b)=>b.saldo-a.saldo);
-  if (!pend.length) return '✅ No tenés saldos pendientes en ese período.';
+  // v005.65.002: pendiente = gastos; lo que falta cobrar va en un renglón aparte.
+  const pend = data.filter(t=>t.tipo==='Gasto' && (Number(t.saldo)||0)>0).sort((a,b)=>b.saldo-a.saldo);
+  const cobrar = data.filter(t=>t.tipo==='Ingreso').reduce((s,t)=>s+Math.max(0,Number(t.saldo)||0),0);
+  const lineaCobrar = cobrar > 0 ? `💰 Por cobrar (no es deuda): <strong>${fmtP(cobrar)}</strong>` : '';
+  if (!pend.length) return '✅ No tenés saldos pendientes en ese período.' + (lineaCobrar ? '<br><br>' + lineaCobrar : '');
   const total = pend.reduce((s,t)=>s+(Number(t.saldo)||0),0);
   return `<strong>Total pendiente: ${fmtP(total)}</strong><br><br>` +
     pend.slice(0,6).map(t=>`• <strong>${esc(t.detalle)}</strong>: ${fmtP(t.saldo)}<br>&nbsp;&nbsp;<em>${MESES[parseInt(t.mes.split('-')[1])-1]} · ${t.rubro}</em>`).join('<br>') +
-    (pend.length>6 ? `<br><em>...y ${pend.length-6} más</em>` : '');
+    (pend.length>6 ? `<br><em>...y ${pend.length-6} más</em>` : '') +
+    (lineaCobrar ? '<br><br>' + lineaCobrar : '');
 }
 
 function qResumen(allData, key) {
@@ -21370,13 +21402,14 @@ function qResumen(allData, key) {
   if (!data.length) return `No hay datos para ${MESES[parseInt(m)-1]} ${y}.`;
   const totIng = data.filter(t=>t.tipo==='Ingreso').reduce((s,t)=>s+(Number(t.impPesos)||0),0);
   const totGas = data.filter(t=>t.tipo==='Gasto').reduce((s,t)=>s+(Number(t.impPesos)||0),0);
-  const pend   = data.reduce((s,t)=>s+(Number(t.saldo)||0),0);
+  const pend   = data.filter(t=>t.tipo==='Gasto').reduce((s,t)=>s+(Number(t.saldo)||0),0);
+  const cobrar = data.filter(t=>t.tipo==='Ingreso').reduce((s,t)=>s+Math.max(0,Number(t.saldo)||0),0);
   const bal = totIng-totGas;
   return `<strong>📋 ${MESES[parseInt(m)-1]} ${y}</strong><br><br>
 💚 Ingresos: <strong>${fmtP(totIng)}</strong><br>
 🔴 Gastos: <strong>${fmtP(totGas)}</strong><br>
 ⚖️ Balance: <strong style="color:${bal>=0?'var(--success)':'var(--danger)'}">${fmtP(bal)}</strong><br>
-⏳ Pendiente: <strong>${fmtP(pend)}</strong><br><br>
+⏳ Pendiente: <strong>${fmtP(pend)}</strong><br>${cobrar > 0 ? `💰 Por cobrar: <strong>${fmtP(cobrar)}</strong><br>` : ''}<br>
 <em>${data.filter(t=>t.tipo==='Gasto').length} gastos y ${data.filter(t=>t.tipo==='Ingreso').length} ingresos registrados</em>`;
 }
 
@@ -21525,7 +21558,7 @@ function buildFinancialContext() {
     const [, m] = k.split('-');
     const ing  = d.filter(t => t.tipo === 'Ingreso').reduce((s, t) => s + (Number(t.impPesos) || 0), 0);
     const gas  = d.filter(t => t.tipo === 'Gasto').reduce((s, t) => s + (Number(t.impPesos) || 0), 0);
-    const pend = d.reduce((s, t) => s + (Number(t.saldo) || 0), 0);
+    const pend = d.filter(t => t.tipo === 'Gasto').reduce((s, t) => s + (Number(t.saldo) || 0), 0);
     return `${MESES[parseInt(m)-1]} ${year}: Ingresos=$${ing.toLocaleString('es-AR')} Gastos=$${gas.toLocaleString('es-AR')} Balance=$${(ing-gas).toLocaleString('es-AR')} Pendiente=$${pend.toLocaleString('es-AR')}`;
   }).join('\n');
 
@@ -21834,7 +21867,8 @@ function buildResumenCalculado() {
   const ingresosMes = all.filter(t => delMes(t) && t.tipo === 'Ingreso');
   const totalGastos = gastosMes.reduce((s,t)=>s+(Number(t.impPesos)||0),0);
   const totalIngresos = ingresosMes.reduce((s,t)=>s+(Number(t.impPesos)||0),0);
-  const pendiente = all.filter(delMes).reduce((s,t)=>s+(Number(t.saldo)||0),0);
+  const pendiente = gastosMes.reduce((s,t)=>s+(Number(t.saldo)||0),0);
+  const porCobrar = ingresosMes.reduce((s,t)=>s+Math.max(0,Number(t.saldo)||0),0);
 
   // Calidad de datos: sin clasificar
   const sinRubro = gastosMes.filter(t => !t.rubro || t.rubro === '\u2014').length;
@@ -21864,6 +21898,7 @@ function buildResumenCalculado() {
   lines.push(`Ingresos del mes: $${totalIngresos.toLocaleString('es-AR')}`);
   lines.push(`Gastos del mes: $${totalGastos.toLocaleString('es-AR')}`);
   lines.push(`Saldo pendiente por pagar: $${pendiente.toLocaleString('es-AR')}`);
+  if (porCobrar > 0) lines.push(`Ingresos del mes todav\u00eda por cobrar (no es deuda): $${porCobrar.toLocaleString('es-AR')}`);
   if (promedioGastoMensual) lines.push(`Promedio de gastos de los \u00faltimos meses: $${promedioGastoMensual.toLocaleString('es-AR')}`);
   if (pctComprometido !== null) lines.push(`% de ingresos ya comprometido en gastos fijos: ${pctComprometido}%`);
   lines.push(`Transacciones sin rubro clasificado este mes: ${sinRubro} (${pctSinRubro}% del total)`);
