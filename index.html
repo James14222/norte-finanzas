@@ -14062,6 +14062,10 @@ function rdDeRemoto(r) {
     const dias = r[uid];
     if (!dias || typeof dias !== 'object') return;
     if (!o[uid] || typeof o[uid] !== 'object') o[uid] = {};
+    // v005.66.001: abierto o achicado, como lo dejó esta persona en cualquier aparato.
+    if (typeof dias.min === 'boolean' && uid === rdMiUid() && rdMinimizado() !== dias.min) {
+      rdMinLocal(dias.min); cambio = true;
+    }
     Object.keys(dias).forEach(function (d) {
       if (!/^\d{8}$/.test(d)) return;
       const v = Number(dias[d]);
@@ -14147,9 +14151,24 @@ function rdSvg(pos, mov) {
   }
   return s + '</svg>';
 }
-function rdMinimizado() { try { return localStorage.getItem('fin_rd_min') === '1'; } catch (e) { return false; } }
+// Abierto o achicado (v005.66.001): por usuario y en la nube, así aparece como
+// lo dejó la última vez, en este aparato o en otro.
+function rdMinKey() { return 'fin_rd_min_' + (rdMiUid() || 'anon'); }
+function rdMinimizado() {
+  try {
+    const v = localStorage.getItem(rdMinKey());
+    if (v !== null) return v === '1';
+    return localStorage.getItem('fin_rd_min') === '1';   // la de antes, del aparato
+  } catch (e) { return false; }
+}
+function rdMinLocal(min) { try { localStorage.setItem(rdMinKey(), min ? '1' : '0'); } catch (e) {} }
 function rdToggle() {
-  try { localStorage.setItem('fin_rd_min', rdMinimizado() ? '0' : '1'); } catch (e) {}
+  const min = !rdMinimizado();
+  rdMinLocal(min);
+  const uid = rdMiUid(), eid = curEmpresa();
+  if (uid && eid) {
+    try { firebase.database().ref('norteSync/empresas/' + eid + '/rachaDiaria/' + uid + '/min').set(min).catch(function () {}); } catch (e) {}
+  }
   rdPintar();
 }
 let _rdMov = null;
@@ -18710,7 +18729,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.66.000';
+const APP_VERSION = 'v005.66.001';
 let novEntradas = [];
 
 function novLeida(e) {
