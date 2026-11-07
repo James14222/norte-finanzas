@@ -260,6 +260,34 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .card-value { font-size: 22px; font-weight: 700; margin-top: 6px; line-height: 1.2; }
 .card-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
 .card-sub.pend-cobrar { color: var(--success); font-weight: 600; margin-top: 6px; }
+/* Rumbo diario (v005.66.000) */
+.rd-banda { position: relative; overflow: hidden; border-radius: 16px; padding: 14px 18px 8px; margin-bottom: 16px; color: #fff;
+  background: linear-gradient(135deg, #1B3A4B 0%, #22475c 60%, #28506A 100%); box-shadow: 0 2px 10px rgba(27,58,75,.18); }
+.rd-banda::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(circle at 1px 1px, rgba(255,255,255,.07) 1px, transparent 1.4px); background-size: 16px 16px; }
+html[data-tema="noche"] .rd-banda { border: 1px solid rgba(255,255,255,.08); box-shadow: none; }
+.rd-top { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.rd-tit { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: #FFB199; cursor: help; }
+.rd-num { font-size: 30px; font-weight: 800; line-height: 1.05; margin-top: 2px; }
+.rd-num small { font-size: 14px; font-weight: 600; opacity: .75; margin-left: 6px; }
+.rd-msg { font-size: 13px; opacity: .92; margin-top: 3px; line-height: 1.4; }
+.rd-msg b { color: #FFB199; }
+.rd-der { display: flex; align-items: flex-start; gap: 10px; }
+.rd-rec { font-size: 11.5px; opacity: .75; text-align: right; white-space: nowrap; }
+.rd-rec b { display: block; font-size: 15px; opacity: 1; }
+.rd-min { background: rgba(255,255,255,.12); border: 0; color: #fff; border-radius: 8px; width: 28px; height: 28px; cursor: pointer; font-size: 14px; line-height: 1; flex-shrink: 0; }
+.rd-min:hover { background: rgba(255,255,255,.22); }
+.rd-svg { position: relative; display: block; width: 100%; height: auto; margin-top: 2px; }
+.rd-gris { filter: grayscale(1); }
+.rd-banda.rd-chico { padding: 9px 12px 9px 16px; }
+.rd-banda.rd-chico .rd-top { align-items: center; }
+.rd-linea { font-size: 13.5px; font-weight: 600; }
+.rd-linea b { color: #FFB199; }
+@media (max-width: 700px) {
+  .rd-banda { padding: 12px 14px 6px; border-radius: 14px; }
+  .rd-num { font-size: 26px; }
+  .rd-rec { display: none; }
+}
 .card-icon { float: right; font-size: 24px; opacity: 0.15; margin-top: -4px; }
 .positive { color: var(--success); }
 .negative { color: var(--danger); }
@@ -3274,6 +3302,8 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
       <div class="guia-aviso" id="guiaAviso" style="display:none"></div>
       <!-- Plata disponible: recordatorio al empezar el mes o aviso para ajustar (v005.64.000) -->
       <div class="pd-aviso" id="pdAviso" style="display:none"></div>
+      <!-- Rumbo diario (v005.66.000): días seguidos de ingreso. Lo pinta rdPintar(). -->
+      <div class="rd-banda" id="rdBanda" style="display:none"></div>
       <div class="cards-grid">
         <div class="card k-ing">
           <div class="card-label">Ingresos del mes</div>
@@ -4224,6 +4254,18 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
             <p><strong>Suma Puntos Norte:</strong> 15 puntos por mes en que pasás la plata disponible (una vez por mes: editarlo o deshacerlo no vuelve a sumar).</p>
             <p><strong>Hasta 3 meses para atrás.</strong> Podés pasar, editar o ajustar la plata disponible de los últimos 3 meses. Lo más viejo queda cerrado: si después cargás un movimiento en un mes de hace más de 3 meses, el traspaso de ese mes ya no cambia.</p>
             <div class="ayuda-tip">Si después de pasarla cargás un gasto en octubre (por ejemplo, llegó el resumen de la tarjeta), Mi Rumbo te avisa que pasaste más de lo que quedó y lo ajustás con un toque. Nada se corrige solo. También podés editar o deshacer el traspaso cuando quieras, desde el mismo botón.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>🧭 Días seguidos de ingreso (Rumbo diario)</h4>
+            <p>Arriba de Mi Rumbo hay un recorrido de 30 pasos. Cada día que entrás a Norte con tu usuario —a cualquier pantalla— avanzás un paso. Cada integrante del hogar tiene el suyo.</p>
+            <div class="ayuda-ejemplo">
+              <strong>Día 5 · la Isla 🏝️</strong> — +10 Puntos Norte<br>
+              <strong>Día 15 · el Puerto ⚓</strong> — +25 Puntos Norte<br>
+              <strong>Día 30 · el Tesoro 💎</strong> — +60 Puntos Norte
+            </div>
+            <p><strong>Si un día no entrás, vuelve a cero.</strong> No importa el mes: cuentan los días seguidos, aunque el recorrido cruce de octubre a noviembre.</p>
+            <p><strong>Después del día 30</strong> arranca otra vuelta y los premios se pueden volver a ganar. A la derecha queda tu mejor racha y las vueltas completas.</p>
+            <div class="ayuda-tip">Si el recorrido te ocupa mucho lugar, achicalo con la flechita: queda una línea con los días que llevás. Para no cortarlo, te puede servir dejar Norte en la pantalla de inicio del celular.</div>
           </div>
           <div class="ayuda-bloque">
             <h4>Cómo se cuentan los dólares</h4>
@@ -10729,6 +10771,7 @@ function initSync() { let myRef;
     // Siempre aplicamos el snapshot remoto al arrancar: es la fuente de verdad
     // (evita quedarse sin datos si el browser limpió localStorage entre sesiones)
     applyRemoteSnapshot(remote);
+    try { rdDeRemoto(remote.rachaDiaria); } catch (e) {}
     render();
     try { trfProcesarBuzon(remote.buzon); } catch (e) {}
   }).then(() => {
@@ -10737,6 +10780,9 @@ function initSync() { let myRef;
     fbRef.on('value', snap => { if (fbRef !== myRef) return;
       const remote = snap.val();
       if (!remote) return;
+      // Rumbo diario: se mira siempre. Lo escribe cada uno con set() y no cambia
+      // `_client`, así que el filtro de abajo se lo saltearía.
+      try { if (rdDeRemoto(remote.rachaDiaria) && curPage === 'dashboard') rdPintar(); } catch (e) {}
       // El buzón se mira aunque el último en escribir haya sido este aparato:
       // lo que llega de otro hogar no cambia `_client`.
       if (remote._client !== syncClientId) {
@@ -10931,7 +10977,7 @@ function updateMonthDisplay() {
   document.getElementById('sideYear').textContent = curYear;
 }
 
-function render() { if (curPage !== 'dashboard') { const _mn = document.querySelector('.month-nav'); const _tb = document.querySelector('.topbar'); if (_tb && _mn && !_tb.contains(_mn)) { _mn.querySelectorAll('button').forEach(b => { b.style.background=''; b.style.borderColor=''; b.style.color=''; }); const _md = document.getElementById('monthDisplay'); if (_md) { _md.style.color=''; _md.style.fontWeight=''; } _tb.appendChild(_mn); } }
+function render() { try { rdMarcarHoy(); } catch (e) {} if (curPage !== 'dashboard') { const _mn = document.querySelector('.month-nav'); const _tb = document.querySelector('.topbar'); if (_tb && _mn && !_tb.contains(_mn)) { _mn.querySelectorAll('button').forEach(b => { b.style.background=''; b.style.borderColor=''; b.style.color=''; }); const _md = document.getElementById('monthDisplay'); if (_md) { _md.style.color=''; _md.style.fontWeight=''; } _tb.appendChild(_mn); } }
   if      (curPage === 'dashboard')     renderDash();
   else if (curPage === 'transacciones') renderTx();
   else if (curPage === 'presupuesto')   renderPresupuesto();
@@ -11329,6 +11375,7 @@ function renderDash() {
   const bal     = totIngP - totGasP;
 
   // ── Dólar integrado ───────────────────────────────────────
+  try { rdPintar(); } catch (e) {}
   const _sp = saldoPendienteDelMes();
   const { pend, usdPend, on } = _sp;
   {
@@ -13715,6 +13762,11 @@ const PN_REGLAS_DEF = {
     // de origen (la id es el mes) y con tope mensual: no se junta pasando tres
     // meses viejos el mismo día.
     trasp:  { pts: 15, tope: 15, por: 'mes',    nom: 'Pasar la plata disponible al mes siguiente' },
+    // v005.66.000: Rumbo diario, días seguidos entrando a Norte. Topes de dos
+    // por mes: una vuelta de 30 días puede cerrar dos veces en un mes de 31.
+    rd5:    { pts: 10, tope: 20,  por: 'mes',   nom: 'Rumbo diario: 5 días seguidos (la Isla)' },
+    rd15:   { pts: 25, tope: 50,  por: 'mes',   nom: 'Rumbo diario: 15 días seguidos (el Puerto)' },
+    rd30:   { pts: 60, tope: 120, por: 'mes',   nom: 'Rumbo diario: 30 días seguidos (el Tesoro)' },
     sem:    { pts: 20, tope: 20, por: 'semana', nom: 'Semana activa' },
     racha:  { pts: 50, tope: 50, por: 'mes',    nom: 'Cuatro semanas seguidas' },
     // El premio más grande, y el más difícil. Vale lo que vale porque exige
@@ -13954,6 +14006,205 @@ function pnSemanasDeMes(ym) {
 // Se deriva entero de los datos. Cada evento tiene una id estable —siempre la
 // misma para la misma acción— que es lo que hace que el ledger sea idempotente:
 // conciliar dos veces no acredita dos veces.
+// ── Rumbo diario (v005.66.000) ─────────────────────────────────────────
+// Días seguidos entrando a Norte, por persona. Cada día que abrís la app se
+// escribe norteSync/empresas/<hogar>/rachaDiaria/<uid>/<AAAAMMDD> con la hora
+// del servidor. Es un hijo aparte y no una clave del snapshot del hogar: el
+// snapshot es «el último que escribe gana» y dos integrantes entrando el mismo
+// día se borrarían el día uno al otro.
+const RD_VUELTA = 30;
+const RD_HITOS = {
+  5:  { k: 'rd5',  ic: '🏝️', nom: 'la Isla',   al: 'a la Isla' },
+  15: { k: 'rd15', ic: '⚓', nom: 'el Puerto', al: 'al Puerto' },
+  30: { k: 'rd30', ic: '💎', nom: 'el Tesoro', al: 'al Tesoro' }
+};
+function rdKey() { return 'fin_rdias_' + curEmpresa(); }
+function rdGet() {
+  try { const o = JSON.parse(localStorage.getItem(rdKey()) || '{}'); return (o && typeof o === 'object') ? o : {}; }
+  catch (e) { return {}; }
+}
+function rdSave(o) { try { localStorage.setItem(rdKey(), JSON.stringify(o)); } catch (e) {} }
+function rdYmd(ts) {
+  const d = new Date(Number(ts) || 0);
+  return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+}
+function rdMediodia(ymd) { return new Date(+ymd.slice(0, 4), +ymd.slice(4, 6) - 1, +ymd.slice(6, 8), 12).getTime(); }
+// Número de día corrido: dos fechas son seguidas si difieren en 1.
+function rdNum(ymd) { return Math.round(Date.UTC(+ymd.slice(0, 4), +ymd.slice(4, 6) - 1, +ymd.slice(6, 8)) / 864e5); }
+function rdMiUid() {
+  try { const u = firebase.auth().currentUser; return u ? u.uid : ''; } catch (e) { return ''; }
+}
+let _rdEscrito = {};
+// Marca hoy. Se llama desde render() y al volver a la app: barato si ya está.
+function rdMarcarHoy() {
+  const uid = rdMiUid(), eid = curEmpresa();
+  if (!uid || !eid) return;
+  const hoy = rdYmd(Date.now());
+  const o = rdGet();
+  if (!o[uid] || typeof o[uid] !== 'object') o[uid] = {};
+  if (!o[uid][hoy]) { o[uid][hoy] = Date.now(); rdSave(o); }
+  const k = eid + '|' + uid + '|' + hoy;
+  if (_rdEscrito[k]) return;
+  _rdEscrito[k] = 1;
+  try {
+    firebase.database().ref('norteSync/empresas/' + eid + '/rachaDiaria/' + uid + '/' + hoy)
+      .set(firebase.database.ServerValue.TIMESTAMP)
+      .catch(function () { delete _rdEscrito[k]; });
+  } catch (e) { delete _rdEscrito[k]; }
+}
+// Lo que llega de la nube se suma a lo local (nunca borra). La hora del
+// servidor reemplaza a la del aparato. Devuelve true si cambió algo.
+function rdDeRemoto(r) {
+  if (!r || typeof r !== 'object') return false;
+  const o = rdGet();
+  let cambio = false;
+  Object.keys(r).forEach(function (uid) {
+    const dias = r[uid];
+    if (!dias || typeof dias !== 'object') return;
+    if (!o[uid] || typeof o[uid] !== 'object') o[uid] = {};
+    Object.keys(dias).forEach(function (d) {
+      if (!/^\d{8}$/.test(d)) return;
+      const v = Number(dias[d]);
+      if (v > 1e12) { if (o[uid][d] !== v) { o[uid][d] = v; cambio = true; } }
+      else if (!o[uid][d]) { o[uid][d] = rdMediodia(d); cambio = true; }
+    });
+  });
+  if (cambio) rdSave(o);
+  return cambio;
+}
+// Los días que cuentan: la hora guardada tiene que caer en ese día (±36 h por
+// husos y relojes). Con la hora del servidor, adelantar el reloj del aparato
+// no inventa días.
+function rdDias(uid, o) {
+  const m = (o || rdGet())[uid] || {};
+  return Object.keys(m).filter(function (d) {
+    if (!/^\d{8}$/.test(d)) return false;
+    const v = Number(m[d]);
+    return v > 0 && Math.abs(v - rdMediodia(d)) <= 36 * 3600000;
+  }).sort();
+}
+// Tramos de días seguidos: [{ini, fin, dias:[AAAAMMDD…]}], del más viejo al más nuevo.
+function rdTramos(uid, o) {
+  const out = [];
+  rdDias(uid, o).forEach(function (d) {
+    const n = rdNum(d), t = out[out.length - 1];
+    if (t && n === t.fin + 1) { t.fin = n; t.dias.push(d); }
+    else if (!t || n > t.fin) out.push({ ini: n, fin: n, dias: [d] });
+  });
+  return out;
+}
+function rdEstado(uid) {
+  const tr = rdTramos(uid);
+  const hoy = rdNum(rdYmd(Date.now()));
+  const ult = tr[tr.length - 1];
+  const viva = !!(ult && (ult.fin === hoy || ult.fin === hoy - 1));
+  const racha = viva ? ult.dias.length : 0;
+  const mejor = tr.reduce(function (m, t) { return Math.max(m, t.dias.length); }, 0);
+  const vueltas = tr.reduce(function (s, t) { return s + Math.floor(t.dias.length / RD_VUELTA); }, 0);
+  // «Se cortó»: hoy arrancás de nuevo y antes hubo una racha de 2 o más.
+  const previa = viva ? tr[tr.length - 2] : ult;
+  const cortada = (racha <= 1 && previa && previa.dias.length >= 2) ? previa.dias.length : 0;
+  const pos = racha ? ((racha - 1) % RD_VUELTA) + 1 : 0;
+  const vuelta = racha ? Math.floor((racha - 1) / RD_VUELTA) + 1 : 1;
+  return { racha: racha, pos: pos, vuelta: vuelta, hoyOk: !!(ult && ult.fin === hoy), mejor: mejor, vueltas: vueltas, cortada: cortada };
+}
+function rdPts(pos) {
+  try { const h = RD_HITOS[pos], a = pnReglas().acciones[h.k]; return a ? Number(a.pts) || 0 : 0; } catch (e) { return 0; }
+}
+// El mapa: 30 pasos sobre una ruta ondulada. Lo recorrido en naranja, lo que
+// falta punteado, los premios en gris hasta que llegás.
+function rdSvg(pos, mov) {
+  const W = mov ? 360 : 1000, H = mov ? 100 : 126, N = RD_VUELTA;
+  const P = [];
+  for (let i = 0; i < N; i++) P.push([26 + i * (W - 52) / (N - 1), H * (mov ? 0.58 : 0.52) + (mov ? 12 : 18) * Math.sin(i * 0.52)]);
+  const tramo = function (a, b) {
+    let d = 'M' + P[a][0].toFixed(1) + ' ' + P[a][1].toFixed(1);
+    for (let i = a + 1; i <= b; i++) {
+      const x0 = P[i - 1][0], y0 = P[i - 1][1], x1 = P[i][0], y1 = P[i][1], mx = (x0 + x1) / 2;
+      d += ' C' + mx.toFixed(1) + ' ' + y0.toFixed(1) + ' ' + mx.toFixed(1) + ' ' + y1.toFixed(1) + ' ' + x1.toFixed(1) + ' ' + y1.toFixed(1);
+    }
+    return d;
+  };
+  let s = '<svg class="rd-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Día ' + pos + ' de ' + N + ' del recorrido">';
+  s += '<path d="' + tramo(0, N - 1) + '" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="' + (mov ? 1.6 : 3) + '" stroke-dasharray="' + (mov ? '1 5' : '2 9') + '" stroke-linecap="round"/>';
+  if (pos > 1) s += '<path d="' + tramo(0, pos - 1) + '" fill="none" stroke="#FF8A5C" stroke-width="' + (mov ? 2.6 : 4.5) + '" stroke-linecap="round"/>';
+  for (let i = 0; i < N; i++) {
+    const x = P[i][0], y = P[i][1], d = i + 1, hi = RD_HITOS[d];
+    if (hi) {
+      const ok = pos >= d, r = mov ? 14 : 22, pts = rdPts(d);
+      s += '<g opacity="' + (ok ? 1 : .55) + '"><title>Día ' + d + ': ' + hi.nom + ' · +' + pts + ' Puntos Norte</title>' +
+        '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + (ok ? '#FF8A5C' : 'rgba(255,255,255,.10)') + '" stroke="' + (ok ? '#fff' : 'rgba(255,255,255,.45)') + '" stroke-width="2"' + (ok ? '' : ' stroke-dasharray="4 4"') + '/>' +
+        '<text x="' + x + '" y="' + (y + (mov ? 5 : 8)) + '" text-anchor="middle" font-size="' + (mov ? 14 : 22) + '"' + (ok ? '' : ' class="rd-gris"') + '>' + hi.ic + '</text></g>';
+      s += '<text x="' + (d === N ? x + r : x) + '" y="' + (y - r - 7) + '" text-anchor="' + (d === N ? 'end' : 'middle') + '" font-size="' + (mov ? 10 : 14) + '" font-weight="700" fill="' + (ok ? '#FFB199' : 'rgba(255,255,255,.75)') + '">Día ' + d + ' · +' + pts + (ok ? ' ✓' : '') + '</text>';
+      if (d === pos) s += '<text x="' + (d === N ? x - r : x) + '" y="' + (y + r + (mov ? 11 : 16)) + '" text-anchor="' + (d === N ? 'end' : 'middle') + '" font-size="' + (mov ? 10 : 13) + '" font-weight="800" fill="#fff">Hoy</text>';
+    } else if (d === pos) {
+      s += '<circle cx="' + x + '" cy="' + y + '" r="' + (mov ? 12 : 19) + '" fill="rgba(255,138,92,.25)"/><circle cx="' + x + '" cy="' + y + '" r="' + (mov ? 9 : 13) + '" fill="#fff"/>' +
+        '<text x="' + x + '" y="' + (y + (mov ? 4 : 6)) + '" text-anchor="middle" font-size="' + (mov ? 11 : 17) + '">🧭</text>' +
+        '<text x="' + x + '" y="' + (y + (mov ? 24 : 38)) + '" text-anchor="middle" font-size="' + (mov ? 10 : 13) + '" font-weight="800" fill="#fff">Hoy</text>';
+    } else {
+      s += '<circle cx="' + x + '" cy="' + y + '" r="' + (mov ? 2.6 : 5) + '" fill="' + (d < pos ? '#FF8A5C' : 'rgba(255,255,255,.35)') + '"/>';
+    }
+  }
+  return s + '</svg>';
+}
+function rdMinimizado() { try { return localStorage.getItem('fin_rd_min') === '1'; } catch (e) { return false; } }
+function rdToggle() {
+  try { localStorage.setItem('fin_rd_min', rdMinimizado() ? '0' : '1'); } catch (e) {}
+  rdPintar();
+}
+let _rdMov = null;
+function rdPintar() {
+  const el = document.getElementById('rdBanda');
+  if (!el) return;
+  const uid = rdMiUid();
+  if (!uid || !curEmpresa()) { el.style.display = 'none'; return; }
+  const E = rdEstado(uid);
+  if (!E.racha) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  const mov = window.innerWidth < 700;
+  _rdMov = mov;
+  const prox = [5, 15, 30].find(function (d) { return d > E.pos; });
+  const enHito = E.hoyOk && RD_HITOS[E.pos];
+  let msg;
+  if (enHito) {
+    msg = '¡Llegaste ' + RD_HITOS[E.pos].al + ' ' + RD_HITOS[E.pos].ic + '! Sumaste <b>+' + rdPts(E.pos) + ' Puntos Norte</b>.' +
+      (E.pos === RD_VUELTA ? ' Mañana arranca la vuelta ' + (E.vuelta + 1) + '.' : ' Volvé mañana para seguir.');
+  } else if (!prox) {
+    msg = 'Completaste la vuelta ' + E.vuelta + '. Hoy arranca la vuelta ' + (E.vuelta + 1) + '.';
+  } else {
+    const falta = prox - E.pos, h = RD_HITOS[prox];
+    msg = (E.cortada ? 'Se cortó tu racha de ' + E.cortada + ' días: hoy arrancás de nuevo. ' : '') +
+      'Faltan <b>' + falta + (falta === 1 ? ' día' : ' días') + '</b> para ' + h.nom + ' ' + h.ic + ' <b>+' + rdPts(prox) + ' puntos</b>.' +
+      (E.cortada ? '' : ' Volvé mañana para no cortar el rumbo.');
+  }
+  const ayuda = 'Suma un día cada vez que entrás a Norte con tu usuario. Si un día no entrás, vuelve a cero. Premios: día 5, día 15 y día 30.';
+  const vtxt = E.vuelta > 1 ? ' · vuelta ' + E.vuelta : '';
+  if (rdMinimizado()) {
+    el.className = 'rd-banda rd-chico';
+    el.innerHTML = '<div class="rd-top"><div class="rd-linea" title="' + ayuda + '">🧭 ' + E.racha + (E.racha === 1 ? ' día seguido' : ' días seguidos') + ' de ingreso' +
+      (prox && !enHito ? ' · faltan <b>' + (prox - E.pos) + '</b> para ' + RD_HITOS[prox].nom + ' ' + RD_HITOS[prox].ic : '') + '</div>' +
+      '<button class="rd-min" onclick="rdToggle()" title="Mostrar el recorrido" aria-label="Mostrar el recorrido">▾</button></div>';
+    return;
+  }
+  el.className = 'rd-banda';
+  el.innerHTML = '<div class="rd-top"><div>' +
+      '<div class="rd-tit" title="' + ayuda + '">Días seguidos de ingreso a la app</div>' +
+      '<div class="rd-num">' + E.pos + '<small>de ' + RD_VUELTA + vtxt + '</small></div>' +
+      '<div class="rd-msg">' + msg + '</div></div>' +
+    '<div class="rd-der"><div class="rd-rec">Tu mejor racha<b>' + E.mejor + (E.mejor === 1 ? ' día' : ' días') + '</b>' +
+      (E.vueltas ? (E.vueltas === 1 ? '1 vuelta completa' : E.vueltas + ' vueltas completas') : '') + '</div>' +
+    '<button class="rd-min" onclick="rdToggle()" title="Achicar" aria-label="Achicar el recorrido">▴</button></div></div>' +
+    rdSvg(E.pos, mov);
+}
+window.addEventListener('resize', function () {
+  if (_rdMov === null || (window.innerWidth < 700) === _rdMov) return;
+  try { if (curPage === 'dashboard') rdPintar(); } catch (e) {}
+});
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState !== 'visible') return;
+  try { rdMarcarHoy(); if (curPage === 'dashboard') rdPintar(); } catch (e) {}
+});
+
 function pnEventos() {
   const tit = pnTitular();
   const aut = pnAutores();
@@ -14105,6 +14356,20 @@ function pnEventos() {
       push('mes', u + ':' + ym, pnTsDeMes(ym), u);
     });
   });
+
+  // Rumbo diario (v005.66.000). Va DESPUÉS de semana activa / racha / mes
+  // completo: abrir la app no es usar Norte en la semana. Un evento por hito
+  // de cada tramo; la id lleva el primer día del tramo y el número de día, así
+  // la vuelta 2 vuelve a cobrar y el mismo hito no cobra dos veces.
+  try {
+    const RDc = rdGet();
+    Object.keys(RDc).forEach(u => {
+      rdTramos(u, RDc).forEach(t => t.dias.forEach((d, i) => {
+        const hi = RD_HITOS[(i % RD_VUELTA) + 1];
+        if (hi) push(hi.k, u + ':' + t.dias[0] + ':' + (i + 1), rdMediodia(d), u);
+      }));
+    });
+  } catch (e) {}
 
   ev.sort((a, b) => a.ts - b.ts || (a.k + a.e < b.k + b.e ? -1 : 1));
   return ev;
@@ -18445,7 +18710,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.65.002';
+const APP_VERSION = 'v005.66.000';
 let novEntradas = [];
 
 function novLeida(e) {
