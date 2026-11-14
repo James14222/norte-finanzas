@@ -18729,7 +18729,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.66.001';
+const APP_VERSION = 'v005.67.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -19701,6 +19701,67 @@ async function hbAResponder() {
 // el nodo entero, así que alcanza con un listener. La cuenta es de HILOS con
 // algo sin responder, no de mensajes: lo accionable es "cuánta gente espera".
 let adminChatSinResponder = 0;
+// Canjes de Puntos Norte que Jaime todavía no vio. «Visto» se guarda en
+// norteSync/prefs/<uid>/admCanjesVisto (y en este aparato, por si la regla
+// todavía no se publicó): así el aviso no vuelve a aparecer en la compu
+// después de haberlo visto en el celular.
+let adminCanjesNuevos = 0;
+let _adminCanjesRef = null;
+let _adminCanjesLista = [];
+let _adminCanjesListo = false;
+let _adminCanjesVisto = 0;
+function admCanjesVistoTs() {
+  let loc = 0;
+  try { loc = Number(localStorage.getItem('fin_adm_canjes_visto')) || 0; } catch (e) {}
+  return Math.max(_adminCanjesVisto, loc);
+}
+function admCanjesContar() {
+  const v = admCanjesVistoTs();
+  adminCanjesNuevos = _adminCanjesLista.filter(function (c) { return c.ts > v; }).length;
+}
+function admCanjesMarcarVistos() {
+  const ult = _adminCanjesLista.length ? _adminCanjesLista[0].ts : 0;
+  const t = Math.max(Date.now(), ult);
+  _adminCanjesVisto = t;
+  try { localStorage.setItem('fin_adm_canjes_visto', String(t)); } catch (e) {}
+  try {
+    const u = firebase.auth().currentUser;
+    if (u) firebase.database().ref('norteSync/prefs/' + u.uid + '/admCanjesVisto').set(t).catch(function () {});
+  } catch (e) {}
+  admCanjesContar();
+  pintarBadgeAdmin();
+}
+function iniciarListenerCanjesAdmin() {
+  if (_adminCanjesRef) return;
+  try {
+    const u = firebase.auth().currentUser;
+    if (u) firebase.database().ref('norteSync/prefs/' + u.uid + '/admCanjesVisto').once('value').then(function (sn) {
+      _adminCanjesVisto = Number(sn && sn.val()) || 0;
+      admCanjesContar(); pintarBadgeAdmin();
+    }).catch(function () {});
+  } catch (e) {}
+  try {
+    _adminCanjesRef = firebase.database().ref('norteSync/canjes');
+    _adminCanjesRef.on('value', function (snap) {
+      const v = (snap && snap.val()) || {};
+      const out = [];
+      Object.keys(v).forEach(function (h) {
+        Object.keys(v[h] || {}).forEach(function (uid) {
+          Object.keys(v[h][uid] || {}).forEach(function (id) {
+            const c = v[h][uid][id];
+            if (c && Number(c.pts) > 0) out.push({ h: h, uid: uid, id: id, tipo: c.tipo || '', cod: c.cod || '',
+                                                    pts: Number(c.pts) || 0, ts: Number(c.ts) || 0 });
+          });
+        });
+      });
+      out.sort(function (a, b) { return b.ts - a.ts; });
+      _adminCanjesLista = out;
+      _adminCanjesListo = true;
+      admCanjesContar(); pintarBadgeAdmin();
+      if (curPage === 'admin' && typeof window.saPintarCanjes === 'function') { try { window.saPintarCanjes(); } catch (e) {} }
+    }, function () { _adminCanjesLista = []; _adminCanjesListo = true; adminCanjesNuevos = 0; pintarBadgeAdmin(); });
+  } catch (e) { _adminCanjesRef = null; }
+}
 let _adminChatRef = null;
 
 function esElSuperAdminLocal() {
@@ -19711,8 +19772,12 @@ function esElSuperAdminLocal() {
 function pintarBadgeAdmin() {
   const b = document.getElementById('adminNavBadge');
   if (!b) return;
-  if (!esElSuperAdminLocal() || adminChatSinResponder <= 0) { b.style.display = 'none'; return; }
-  b.textContent = adminChatSinResponder > 9 ? '9+' : String(adminChatSinResponder);
+  const tot = adminChatSinResponder + adminCanjesNuevos;
+  if (!esElSuperAdminLocal() || tot <= 0) { b.style.display = 'none'; return; }
+  b.textContent = tot > 9 ? '9+' : String(tot);
+  b.title = [adminChatSinResponder ? adminChatSinResponder + (adminChatSinResponder === 1 ? ' Pionero espera' : ' Pioneros esperan') + ' respuesta' : '',
+             adminCanjesNuevos ? adminCanjesNuevos + (adminCanjesNuevos === 1 ? ' canje nuevo' : ' canjes nuevos') + ' de Puntos Norte' : '']
+            .filter(Boolean).join(' · ');
   b.style.display = 'inline-flex';
 }
 
@@ -19721,10 +19786,12 @@ function iniciarListenerChatsAdmin() {
     // Si cambió la cuenta, hay que soltar el listener y limpiar: si no, el
     // distintivo del superadmin le queda pegado al usuario siguiente.
     if (_adminChatRef) { try { _adminChatRef.off(); } catch (e) {} _adminChatRef = null; }
-    adminChatSinResponder = 0;
+    if (_adminCanjesRef) { try { _adminCanjesRef.off(); } catch (e) {} _adminCanjesRef = null; }
+    adminChatSinResponder = 0; adminCanjesNuevos = 0; _adminCanjesLista = []; _adminCanjesListo = false;
     pintarBadgeAdmin();
     return;
   }
+  iniciarListenerCanjesAdmin();
   if (_adminChatRef) return;
   try {
     _adminChatRef = firebase.database().ref('norteSync/pioneroChat');
@@ -24429,7 +24496,11 @@ function subtituloRumbo() {
           '</div>' +
         '</div>' +
         '<div id="saBody"><div style="font-size:13px;color:var(--muted);padding:12px 0">Cargando…</div></div>' +
-      '</div>';
+      '</div>' +
+      '<div class="admin-group-label">Puntos Norte y antigüedad</div>' +
+      '<div class="card admin-section" id="saCanjesCard" style="margin-bottom:8px"></div>' +
+      '<div class="card admin-section" id="saRankCard" style="margin-bottom:8px"></div>' +
+      '<div class="card admin-section" id="saAntigCard" style="margin-bottom:8px"></div>';
     page.insertBefore(wrap, page.children[1] || null);
     return true;
   }
@@ -24458,6 +24529,8 @@ function subtituloRumbo() {
         _saPuntosFalla = (e && e.message) ? String(e.message) : 'no se pudo leer';
       }
       var us = d.usuarios || [];
+      _saUsuarios = us;
+      _saCanjesVistoPrev = null;
       // Cuántas personas entraron de verdad en el último mes. Es el número que
       // la suma de cuentas no dice.
       var activas = us.filter(function (x) { return diasDesde(senalPersonal(x)) < 30; }).length;
@@ -24608,10 +24681,240 @@ function subtituloRumbo() {
           '<thead><tr><th>Nombre</th><th>Email</th><th>Hogar</th><th title="Lo que contestó en el formulario, antes de pagar. Las cuentas anteriores a septiembre de 2026 no lo tienen.">Ciudad y objetivos</th><th title="El nivel de progreso del hogar: dice cuánto usan Norte de verdad, no sólo si entraron. Se calcula en el aparato de cada uno y sólo viaja el resultado — nunca sus movimientos.">Uso</th><th title="Puntos Norte de ESTA persona. A diferencia del uso, que es del hogar, cada integrante tiene su propio saldo. Tocá para ver el detalle.">Puntos Norte</th><th>Plan</th><th>Estado</th><th title="Cuándo entró ESTA persona: la más reciente entre abrir la app y loguearse. No incluye la carga de datos, que es del hogar y la comparten todos los integrantes — esa va en la segunda línea. Pasá el mouse por cada fila para ver las señales una por una.">Última actividad</th><th></th></tr></thead>' +
           '<tbody>' + filas + '</tbody>' +
         '</table></div>';
+      saPintarExtras();
     } catch (e) {
       body.innerHTML = '<div style="font-size:13px;color:#ef4444;padding:12px 0">No pudimos cargar los usuarios: ' + esc(e.message) + '</div>';
     }
   };
+
+  // ── Canjes, ranking de puntos y antigüedad (v005.67) ─────────────────────
+  // Todo sale de lo que el panel ya leyó: la lista de cuentas, los resúmenes
+  // de Puntos Norte y de Progreso de cada hogar, y los canjes que escucha el
+  // distintivo del menú. Ni un movimiento, ni un importe.
+  var _saUsuarios = [];
+  var _saCanjesVistoPrev = null;
+  var _saRankMetrica = 'mes';
+  var _saAntigOrden = 'datos';
+  var _saAntigTodos = false;
+  var _saCanjesTodos = false;
+  var SA_DERIVA_MESES = 3;
+
+  function saUsuarioPorUid(uid) {
+    return _saUsuarios.filter(function (u) { return u.uid === uid; })[0] || null;
+  }
+  function saNomUsuario(u) {
+    if (!u) return 'Cuenta borrada';
+    return u.nombre || String(u.email || '').split('@')[0] || 'Sin nombre';
+  }
+  function saNomHogar(id) {
+    var h = _saHogares.filter(function (x) { return x.id === id; })[0];
+    return h ? h.nombre : id;
+  }
+  function saFechaHora(ts) {
+    try { return new Date(ts).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }); }
+    catch (e) { return '—'; }
+  }
+  function saNomCanje(c) {
+    try { if (typeof pnNomCanje === 'function') return pnNomCanje(c); } catch (e) {}
+    return c.tipo;
+  }
+  function saChips(opts, actual, fn) {
+    return '<div style="display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden">' +
+      opts.map(function (o) {
+        var on = o[0] === actual;
+        return '<button class="btn" style="font-size:12px;padding:5px 11px;border:0;border-radius:0;' +
+          (on ? 'background:var(--primary);color:#fff;font-weight:700' : 'background:transparent;color:var(--text)') +
+          '" onclick="' + fn + '(\'' + o[0] + '\')">' + o[1] + '</button>';
+      }).join('') + '</div>';
+  }
+  var SA_TH = 'style="text-align:left;font-size:11px;color:var(--muted);font-weight:700;padding:6px 8px;border-bottom:1px solid var(--border);white-space:nowrap"';
+  var SA_TD = 'style="padding:8px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text);vertical-align:top"';
+  function saPersona(u) {
+    return '<div style="font-weight:700">' + esc(saNomUsuario(u)) + '</div>' +
+      (u && u.email ? '<div style="font-size:11.5px;color:var(--muted)">' + esc(u.email) + '</div>' : '');
+  }
+  function saMedalla(i) { return i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : String(i + 1); }
+
+  function saPintarExtras() {
+    try { window.saPintarCanjes(); } catch (e) {}
+    try { saPintarRanking(); } catch (e) {}
+    try { saPintarAntiguedad(); } catch (e) {}
+  }
+
+  // ── Quién canjeó ──
+  window.saPintarCanjes = function () {
+    var el = document.getElementById('saCanjesCard');
+    if (!el || !esSuper()) return;
+    var cab = '<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">🎁 Canjes de Puntos Norte</div>';
+    if (!_adminCanjesListo) {
+      el.innerHTML = cab + '<div style="font-size:13px;color:var(--muted)">Cargando…</div>'; return;
+    }
+    var lista = _adminCanjesLista;
+    if (_saCanjesVistoPrev === null) _saCanjesVistoPrev = admCanjesVistoTs();
+    var visto = _saCanjesVistoPrev;
+    var nuevos = lista.filter(function (c) { return c.ts > visto; }).length;
+    var total = lista.reduce(function (a, c) { return a + c.pts; }, 0);
+    if (!lista.length) {
+      el.innerHTML = cab + '<div style="font-size:13px;color:var(--muted)">Todavía nadie canjeó. Cuando alguien lo haga, el menú Admin te lo avisa con el número rojo.</div>';
+      return;
+    }
+    var ver = _saCanjesTodos ? lista : lista.slice(0, 15);
+    el.innerHTML = cab +
+      '<div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">' +
+        lista.length + (lista.length === 1 ? ' canje' : ' canjes') + ' · ' + total.toLocaleString('es-AR') + ' puntos en total' +
+        (nuevos ? ' · <b style="color:#ef4444">' + nuevos + (nuevos === 1 ? ' nuevo' : ' nuevos') + ' desde la última vez que miraste</b>' : '') +
+      '</div>' +
+      '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">' +
+        '<thead><tr><th ' + SA_TH + '>Cuándo</th><th ' + SA_TH + '>Quién</th><th ' + SA_TH + '>Hogar</th><th ' + SA_TH + '>Qué canjeó</th><th ' + SA_TH.replace('text-align:left', 'text-align:right') + '>Puntos</th></tr></thead><tbody>' +
+        ver.map(function (c) {
+          var nuevo = c.ts > visto;
+          return '<tr' + (nuevo ? ' style="background:rgba(239,68,68,.07)"' : '') + '>' +
+            '<td ' + SA_TD + '><span style="white-space:nowrap">' + saFechaHora(c.ts) + '</span>' +
+              (nuevo ? '<div><span style="display:inline-block;margin-top:3px;font-size:10px;font-weight:800;color:#fff;background:#ef4444;border-radius:5px;padding:1px 6px">NUEVO</span></div>' : '') + '</td>' +
+            '<td ' + SA_TD + '>' + saPersona(saUsuarioPorUid(c.uid)) + '</td>' +
+            '<td ' + SA_TD + '>' + esc(saNomHogar(c.h)) + '</td>' +
+            '<td ' + SA_TD + '>' + esc(saNomCanje(c)) + '</td>' +
+            '<td ' + SA_TD.replace('vertical-align:top', 'vertical-align:top;text-align:right;font-weight:800') + '>' + c.pts.toLocaleString('es-AR') + '</td></tr>';
+        }).join('') +
+      '</tbody></table></div>' +
+      (lista.length > 15 ? '<div style="margin-top:8px"><button class="btn" style="font-size:12px;padding:5px 12px;border:1px solid var(--border)" onclick="saCanjesVerTodos()">' +
+        (_saCanjesTodos ? 'Ver sólo los últimos 15' : 'Ver los ' + lista.length) + '</button></div>' : '');
+    // Al mostrarlos quedan vistos: el número rojo se apaga, pero la marca
+    // NUEVO sigue en esta pantalla hasta que vuelvas a entrar a Admin.
+    if (lista.some(function (c) { return c.ts > admCanjesVistoTs(); })) admCanjesMarcarVistos();
+  };
+  window.saCanjesVerTodos = function () { _saCanjesTodos = !_saCanjesTodos; window.saPintarCanjes(); };
+
+  // ── Ranking de Puntos Norte ──
+  // Por persona: si alguien está en dos hogares, se suman. Los puntos «del mes»
+  // sólo cuentan si el resumen es de este mes: uno viejo diría puntos de otro mes.
+  function saPuntosPorPersona() {
+    var ym = new Date().toISOString().slice(0, 7);
+    return _saUsuarios.filter(function (u) { return !u.esSuperAdmin; }).map(function (u) {
+      var t = { u: u, mes: 0, saldo: 0, ganados: 0, idx: 0, rango: '', hogares: [] }, hay = false;
+      (u.hogares || []).forEach(function (h) {
+        var r = saPuntosDe(u, h);
+        if (!r || !r.p) return;
+        hay = true;
+        t.hogares.push(h.nombre || h.id);
+        if (r.ym === ym) t.mes += Number(r.p.mes) || 0;
+        t.saldo += Number(r.p.saldo) || 0;
+        t.ganados += Number(r.p.ganados) || 0;
+        if ((Number(r.p.idx) || 0) >= t.idx) { t.idx = Number(r.p.idx) || 0; t.rango = r.p.rango || ''; }
+      });
+      return hay ? t : null;
+    }).filter(Boolean);
+  }
+  function saPintarRanking() {
+    var el = document.getElementById('saRankCard');
+    if (!el) return;
+    var M = { mes: ['Este mes', 'puntos de este mes'], saldo: ['Disponibles', 'puntos para canjear'], ganados: ['Ganados', 'puntos ganados'] };
+    var met = M[_saRankMetrica] ? _saRankMetrica : 'mes';
+    var todos = saPuntosPorPersona();
+    var conPts = todos.filter(function (t) { return t[met] > 0; })
+      .sort(function (a, b) { return (b[met] - a[met]) || (b.idx - a.idx); });
+    var top = conPts.slice(0, 10);
+    el.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px">' +
+        '<div style="font-size:15px;font-weight:700;color:var(--text)">🏆 Ranking de Puntos Norte · top 10</div>' +
+        saChips([['mes', 'Este mes'], ['saldo', 'Disponibles'], ['ganados', 'Ganados en total']], met, 'saRankElegir') +
+      '</div>' +
+      (_saPuntosFalla ? '<div style="font-size:13px;color:#E8C050">No se pudieron leer los puntos: ' + esc(_saPuntosFalla) + '</div>' :
+       !top.length ? '<div style="font-size:13px;color:var(--muted)">Nadie tiene ' + M[met][1] + ' todavía.</div>' :
+      '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">' +
+        '<thead><tr><th ' + SA_TH + '>#</th><th ' + SA_TH + '>Quién</th><th ' + SA_TH + '>Hogar</th><th ' + SA_TH + '>Índice de Hábito</th><th ' + SA_TH.replace('text-align:left', 'text-align:right') + '>' + M[met][0] + '</th></tr></thead><tbody>' +
+        top.map(function (t, i) {
+          return '<tr><td ' + SA_TD.replace('vertical-align:top', 'vertical-align:top;font-size:16px;width:34px') + '>' + saMedalla(i) + '</td>' +
+            '<td ' + SA_TD + '>' + saPersona(t.u) + '</td>' +
+            '<td ' + SA_TD + '>' + esc(t.hogares.join(' · ')) + '</td>' +
+            '<td ' + SA_TD + '>' + t.idx + ' <span style="color:var(--muted);font-size:12px">· ' + esc(t.rango || '—') + '</span></td>' +
+            '<td ' + SA_TD.replace('vertical-align:top', 'vertical-align:top;text-align:right;font-size:15px;font-weight:800') + '>' + t[met].toLocaleString('es-AR') + '</td></tr>';
+        }).join('') + '</tbody></table></div>') +
+      '<div style="font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:10px">' +
+        conPts.length + (conPts.length === 1 ? ' persona tiene ' : ' personas tienen ') + M[met][1] + '. ' +
+        'Sin contar tu cuenta de superadmin. Si alguien está en más de un hogar, se suman. ' +
+        'Sale del resumen que sube el aparato de cada persona al abrir Norte: si alguien no entra hace días, su número puede estar atrasado.</div>';
+  }
+  window.saRankElegir = function (m) { _saRankMetrica = m; saPintarRanking(); };
+
+  // ── Antigüedad y Deriva ──
+  // Deriva necesita historia: con menos de tres meses cargados no hay ritmo,
+  // hay una foto (Deriva-propuesta.md). Lo que importa es cuántos meses con
+  // datos tiene el hogar, no cuándo se creó la cuenta: alguien que se sumó
+  // ayer y cargó seis resúmenes de tarjeta ya tiene historia.
+  function saPintarAntiguedad() {
+    var el = document.getElementById('saAntigCard');
+    if (!el) return;
+    var filas = _saUsuarios.filter(function (u) { return !u.esSuperAdmin; }).map(function (u) {
+      var h = (u.hogares || [])[0] || null;
+      var pr = h ? _saProgreso[h.id] : null;
+      return { u: u, h: h, alta: u.createdAt || null, dias: u.createdAt ? diasDesde(u.createdAt) : -1,
+               meses: pr ? Number(pr.mesesTotal) || 0 : 0, movs: pr ? Number(pr.movimientos) || 0 : 0,
+               semanas: pr ? Number(pr.semanas) || 0 : 0, activo: diasDesde(senalPersonal(u)) < 30 };
+    });
+    filas.sort(_saAntigOrden === 'alta'
+      ? function (a, b) { return (b.dias - a.dias) || (b.meses - a.meses); }
+      : function (a, b) { return (b.meses - a.meses) || (b.movs - a.movs) || (b.dias - a.dias); });
+
+    // Los números para decidir, por hogar (Deriva mira los datos del hogar).
+    var hog = {};
+    filas.forEach(function (f) {
+      if (!f.h) return;
+      var x = hog[f.h.id] || (hog[f.h.id] = { meses: f.meses, activo: false });
+      if (f.activo) x.activo = true;
+    });
+    var hs = Object.keys(hog).map(function (k) { return hog[k]; });
+    var activos = hs.filter(function (x) { return x.activo; });
+    var listos = activos.filter(function (x) { return x.meses >= SA_DERIVA_MESES; }).length;
+    var listos6 = activos.filter(function (x) { return x.meses >= 6; }).length;
+    var casi = activos.filter(function (x) { return x.meses === SA_DERIVA_MESES - 1; }).length;
+
+    var kpi = function (n, l, c) {
+      return '<div style="min-width:110px"><div style="font-size:24px;font-weight:800;color:' + (c || 'var(--text)') + ';line-height:1">' + n + '</div>' +
+             '<div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-top:3px">' + l + '</div></div>';
+    };
+    var ver = _saAntigTodos ? filas : filas.slice(0, 10);
+    el.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px">' +
+        '<div style="font-size:15px;font-weight:700;color:var(--text)">⏳ Antigüedad de uso · ¿hora de Deriva?</div>' +
+        saChips([['datos', 'Meses con datos'], ['alta', 'Fecha de alta']], _saAntigOrden, 'saAntigOrdenar') +
+      '</div>' +
+      '<div style="display:flex;gap:22px;flex-wrap:wrap;margin-bottom:10px">' +
+        kpi(activos.length, 'HOGARES ACTIVOS (30 DÍAS)') +
+        kpi(listos, 'ACTIVOS CON 3+ MESES', listos ? 'var(--primary)' : 'var(--text)') +
+        kpi(listos6, 'ACTIVOS CON 6+ MESES') +
+        kpi(casi, 'A UN MES DE LLEGAR') +
+      '</div>' +
+      '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:12px">Deriva necesita al menos ' + SA_DERIVA_MESES +
+        ' meses de historia cargada en el hogar: con menos no hay ritmo, hay una foto. Hoy ' +
+        (listos === 1 ? 'lo cumple <b style="color:var(--text)">1 hogar activo</b>' : 'lo cumplen <b style="color:var(--text)">' + listos + ' hogares activos</b>') +
+        ' de ' + activos.length + '.</div>' +
+      '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">' +
+        '<thead><tr><th ' + SA_TH + '>#</th><th ' + SA_TH + '>Quién</th><th ' + SA_TH + '>Hogar</th><th ' + SA_TH + '>Alta</th>' +
+        '<th ' + SA_TH + ' title="Meses distintos con movimientos cargados en su hogar principal, incluidos los que cargó hacia atrás.">Meses con datos</th>' +
+        '<th ' + SA_TH + '>Movimientos</th><th ' + SA_TH + ' title="Semanas con actividad en el hogar.">Semanas activas</th><th ' + SA_TH + '>Deriva</th></tr></thead><tbody>' +
+        ver.map(function (f, i) {
+          var listo = f.meses >= SA_DERIVA_MESES;
+          var alta = f.alta ? fecha(f.alta) + '<div style="font-size:11.5px;color:var(--muted)">' +
+            (f.dias < 60 ? (f.dias <= 0 ? 'hoy' : 'hace ' + f.dias + (f.dias === 1 ? ' día' : ' días')) : 'hace ' + Math.floor(f.dias / 30) + ' meses') + '</div>' : '—';
+          return '<tr' + (f.activo ? '' : ' style="opacity:.6"') + '><td ' + SA_TD.replace('vertical-align:top', 'vertical-align:top;width:30px;color:var(--muted)') + '>' + (i + 1) + '</td>' +
+            '<td ' + SA_TD + '>' + saPersona(f.u) + (f.activo ? '' : '<div style="font-size:11px;color:var(--muted)">sin entrar hace 30+ días</div>') + '</td>' +
+            '<td ' + SA_TD + '>' + esc(f.h ? (f.h.nombre || f.h.id) : '—') + '</td>' +
+            '<td ' + SA_TD + '>' + alta + '</td>' +
+            '<td ' + SA_TD.replace('vertical-align:top', 'vertical-align:top;font-weight:800;font-size:15px') + '>' + f.meses + '</td>' +
+            '<td ' + SA_TD + '>' + f.movs.toLocaleString('es-AR') + '</td>' +
+            '<td ' + SA_TD + '>' + f.semanas + '</td>' +
+            '<td ' + SA_TD + '>' + (listo
+              ? '<span style="font-size:11px;font-weight:800;color:#0f766e;background:rgba(111,191,168,.22);border-radius:6px;padding:2px 7px;white-space:nowrap">Lista</span>'
+              : '<span style="font-size:11.5px;color:var(--muted);white-space:nowrap">' + (SA_DERIVA_MESES - f.meses === 1 ? 'falta 1 mes' : 'faltan ' + (SA_DERIVA_MESES - f.meses) + ' meses') + '</span>') + '</td></tr>';
+        }).join('') + '</tbody></table></div>' +
+      (filas.length > 10 ? '<div style="margin-top:8px"><button class="btn" style="font-size:12px;padding:5px 12px;border:1px solid var(--border)" onclick="saAntigVerTodos()">' +
+        (_saAntigTodos ? 'Ver sólo los primeros 10' : 'Ver las ' + filas.length + ' cuentas') + '</button></div>' : '') +
+      '<div style="font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:10px">Sin contar tu cuenta de superadmin. Los meses y movimientos son del hogar principal de cada persona ' +
+        'y salen del resumen de Progreso que sube su aparato: si alguien no entra hace días, puede estar atrasado. Las filas grises no entraron en los últimos 30 días.</div>';
+  }
+  window.saAntigOrdenar = function (o) { _saAntigOrden = o; saPintarAntiguedad(); };
+  window.saAntigVerTodos = function () { _saAntigTodos = !_saAntigTodos; saPintarAntiguedad(); };
 
 
   // ── LA VENTANA DE DETALLE DEL USO ──────────────────────────────
