@@ -2341,6 +2341,30 @@ html[data-tema="noche"] .qp-modo.qp-modo-texto { color:#8fb2ff; }
 .drv-enc .op.on { background: #FF8A5C; border-color: #FF8A5C; color: #fff; font-weight: 700; }
 .drv-enc textarea { width: 100%; margin-top: 8px; border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; font: inherit; font-size: 13.5px; background: var(--bg); color: var(--text); resize: vertical; box-sizing: border-box; }
 .drv-enc .pie { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.drv-card.clic, .drv-sub.clic { cursor: pointer; }
+.drv-card.clic:hover { border-color: #FF8A5C; }
+.drv-sub.clic:hover { background: var(--bg); }
+.drv-fila.clic { cursor: pointer; border-radius: 6px; }
+.drv-fila.clic:hover { background: var(--bg); }
+.drv-ver { margin-top: 8px; font-size: 12px; font-weight: 700; color: #FF8A5C; }
+.drv-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.drv-chipt { border: 1px solid var(--border); background: var(--card); color: var(--text); border-radius: 999px; padding: 6px 12px; font-size: 13px; cursor: pointer; font-family: inherit; }
+.drv-chipt:hover { border-color: #FF8A5C; }
+.drv-chipt b { color: var(--muted); font-weight: 700; margin-left: 4px; }
+.drv-chipt.sin { border-style: dashed; }
+.drv-det { background: var(--card); color: var(--text); border-radius: 18px; width: 100%; max-width: 680px; max-height: 88vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+.drv-det-cab { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 20px 10px; border-bottom: 1px solid var(--border); }
+.drv-det-cab h3 { margin: 0; font-size: 17px; font-weight: 800; }
+.drv-det-cab small { display: block; font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+.drv-det-body { overflow: auto; padding: 4px 20px 16px; }
+.drv-det-mes { position: sticky; top: 0; background: var(--card); padding: 10px 0 6px; font-size: 11.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
+.drv-det-fila { display: flex; gap: 10px; padding: 7px 0; border-top: 1px solid var(--border); font-size: 13px; }
+.drv-det-fila .f { width: 46px; flex: none; color: var(--muted); }
+.drv-det-fila .d { flex: 1; min-width: 0; }
+.drv-det-fila .d small { display: block; font-size: 11px; color: var(--muted); margin-top: 1px; }
+.drv-det-fila .i { white-space: nowrap; font-weight: 700; }
+.drv-via-c { color: #2f9e88; }
+.drv-via-r { color: #C98A2B; }
 .guia-aviso { display: flex; align-items: center; gap: 14px; background: linear-gradient(135deg, rgba(111,224,204,.13), rgba(37,99,235,.07)), var(--card);
   border: 1px solid rgba(111,224,204,.45); border-radius: 13px; padding: 14px 16px; margin-bottom: 18px; }
 .guia-aviso-ico { font-size: 30px; line-height: 1; flex: 0 0 auto; }
@@ -3291,7 +3315,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
   </div>
   <div class="sidebar-nav">
     <div class="nav-guia" id="navGuia" style="display:none" onclick="guiaIr()"><span class="ico">🧭</span> Guía Pioneros<span id="guiaNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
-    <div class="nav-deriva" id="navDeriva" style="display:none" onclick="showPage('deriva')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20 L20 4" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.2 2.4" fill="none" opacity=".55"/><path d="M3 20 C 8 17, 7 11, 12 10 S 17 6, 19 5" stroke="#FF8A5C" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M19 2.6 L21.4 5 L19 7.4 L16.6 5 Z" fill="#FF8A5C"/></svg> Deriva<span class="drv-chip">PILOTO</span></div>
+    <div class="nav-deriva" id="navDeriva" style="display:none" onclick="showPage('deriva')"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor" opacity=".55"><circle cx="5" cy="6" r="1.7"/><circle cx="10" cy="6" r="1.7"/><circle cx="5" cy="12" r="1.7"/><circle cx="10" cy="12" r="1.7"/></g><g fill="#FF8A5C"><circle cx="5" cy="18" r="1.7"/><circle cx="10" cy="18" r="1.7"/><circle cx="15" cy="18" r="1.7"/><circle cx="20" cy="18" r="1.7"/></g></svg> Deriva<span class="drv-chip">PILOTO</span></div>
     <div class="nav-item active" onclick="showPage('dashboard')"><span class="ico">📊</span> Mi Rumbo</div>
     <div class="nav-item" onclick="showPage('transacciones')"><span class="ico">📋</span> Transacciones</div>
     <div class="nav-item" onclick="showPage('presupuesto')"><span class="ico">🎯</span> Presupuesto</div>
@@ -11316,7 +11340,7 @@ function drvCalcular() {
   const todos = Object.keys(cuenta).filter(function (m) { return m < hoy; }).sort();
   const completos = todos.filter(function (m) { return cuenta[m] >= minimo; }).slice(-8);
   const enCurso = cuenta[hoy] ? hoy : null;
-  const res = { hoy: hoy, completos: completos, enCurso: enCurso, totalMov: 0, leidos: 0, ritmos: [], subs: [], dinero: null,
+  const res = { hoy: hoy, completos: completos, enCurso: enCurso, totalMov: 0, leidos: 0, ritmos: [], subs: [], dinero: null, sin: [], temas: [],
                 flojos: todos.filter(function (m) { return cuenta[m] < minimo; }).length };
   if (completos.length < 3) { res.poca = true; return res; }
   const ventana = {}; completos.forEach(function (m) { ventana[m] = 1; }); if (enCurso) ventana[enCurso] = 1;
@@ -11328,15 +11352,20 @@ function drvCalcular() {
     if (!ventana[t.mes]) return;
     res.totalMov++;
     const x = derivaTema(t);
-    if (!x) return;
+    const mov = { mes: t.mes, fecha: String(t.fecha || ''), det: String([t.detalle, t.cliente].filter(Boolean).join(' · ')).trim(),
+                  rubro: String(t.rubro || ''), pesos: Number(t.impPesos) || 0, usd: Number(t.impUSD) || 0 };
+    if (!x) { res.sin.push(mov); return; }
     res.leidos++;
+    mov.via = x.via; mov.key = x.key; mov.tema = x.tema;
     const o = T[x.tema] || (T[x.tema] = { tema: x.tema, con: x.con, veces: {}, pesos: {}, usd: {}, comercio: 0, rubro: 0, items: [] });
     o.veces[t.mes] = (o.veces[t.mes] || 0) + 1;
     o.pesos[t.mes] = (o.pesos[t.mes] || 0) + (Number(t.impPesos) || 0);
     o.usd[t.mes] = (o.usd[t.mes] || 0) + (Number(t.impUSD) || 0);
     o[x.via === 'rubro' ? 'rubro' : 'comercio']++;
-    o.items.push({ mes: t.mes, key: x.key, pesos: Number(t.impPesos) || 0, usd: Number(t.impUSD) || 0 });
+    o.items.push(mov);
   });
+  res.temas = Object.keys(T).map(function (k) { return { tema: k, con: T[k].con, items: T[k].items }; })
+    .sort(function (a, b) { return b.items.length - a.items.length; });
 
   // Ritmos: los dos últimos meses completos contra los anteriores.
   const ult2 = completos.slice(-2), antes = completos.slice(0, -2);
@@ -11357,7 +11386,7 @@ function drvCalcular() {
     else if (nuevo <= viejo * 0.6 && viejo - nuevo >= 1.5 && Math.max(v1, v2) <= viejo - 1) tipo = 'baja';
     const plata2 = ult2.reduce(function (a, m) { return a + (o.pesos[m] || 0); }, 0);
     const ing2 = ult2.reduce(function (a, m) { return a + (ingresos[m] || 0); }, 0);
-    res.ritmos.push({ tema: k, veces: o.veces, total: total, viejo: viejo, nuevo: nuevo, tipo: tipo,
+    res.ritmos.push({ tema: k, veces: o.veces, total: total, viejo: viejo, nuevo: nuevo, tipo: tipo, items: o.items,
       peso: ing2 > 0 ? plata2 / ing2 * 100 : null, plataMes: plata2 / 2, comercio: o.comercio, rubro: o.rubro });
   });
   const ord = { sube: 0, baja: 1, parejo: 2 };
@@ -11372,7 +11401,8 @@ function drvCalcular() {
   ['Suscripciones de ocio', 'Herramientas y software'].forEach(function (k) {
     (T[k] ? T[k].items : []).forEach(function (it) {
       const nom = drvNomServicio(it.key || k);
-      const S = subs[nom] || (subs[nom] = { nom: nom, meses: {}, pesos: {}, usd: {} });
+      const S = subs[nom] || (subs[nom] = { nom: nom, meses: {}, pesos: {}, usd: {}, items: [] });
+      S.items.push(it);
       S.meses[it.mes] = 1; S.pesos[it.mes] = (S.pesos[it.mes] || 0) + it.pesos; S.usd[it.mes] = (S.usd[it.mes] || 0) + it.usd;
     });
   });
@@ -11384,16 +11414,17 @@ function drvCalcular() {
     const mesP = pres.reduce(function (a, m) { return a + (S.pesos[m] || 0); }, 0) / pres.length;
     const mesU = pres.reduce(function (a, m) { return a + (S.usd[m] || 0); }, 0) / pres.length;
     const desde = completos.filter(function (m) { return S.meses[m]; })[0];
-    return { nom: S.nom, mesP: mesP, mesU: mesU, anioP: mesP * 12, anioU: mesU * 12, fijo: pres.length >= 2, desde: desde, ult: pres[pres.length - 1],
+    return { nom: S.nom, mesP: mesP, mesU: mesU, anioP: mesP * 12, anioU: mesU * 12, fijo: pres.length >= 2, desde: desde, ult: pres[pres.length - 1], items: S.items,
              orden: mesP * 12 + mesU * 12 * (fx || 1000) };
   }).filter(Boolean).sort(function (a, b) { return b.orden - a.orden; });
 
   // Lo que se paga por la plata: comisiones, intereses, percepciones, deudas.
-  const din = { mesP: 0, mesU: 0, partes: {} };
+  const din = { mesP: 0, mesU: 0, partes: {}, items: [] };
   ['Costos del dinero', 'Deudas'].forEach(function (k) {
     if (!T[k]) return;
     T[k].items.forEach(function (it) {
       if (ult3.indexOf(it.mes) < 0) return;
+      din.items.push(it);
       din.mesP += it.pesos / ult3.length; din.mesU += it.usd / ult3.length;
       const p = it.key || k.toLowerCase();
       din.partes[p] = (din.partes[p] || 0) + it.pesos;
@@ -11408,16 +11439,17 @@ function drvCalcular() {
 }
 
 // ── La pantalla ─────────────────────────────────────────────────────────────
-function drvTira(r, R) {
+function drvTira(r, R, idx) {
+  const clic = function (m) { return idx === undefined ? '' : ' clic" title="Ver los movimientos de ' + drvMesTxt(m) + '" onclick="event.stopPropagation();drvDetalle(\'r\',' + idx + ',\'' + m + '\')'; };
   const filas = R.completos.map(function (m, i) {
     const n = r.veces[m] || 0;
     const rec = i >= R.completos.length - 2;
-    return '<div class="drv-fila' + (rec ? ' reciente' : '') + '"><span class="drv-mes">' + drvMesTxt(m) + '</span>' +
+    return '<div class="drv-fila' + (rec ? ' reciente' : '') + clic(m) + '"><span class="drv-mes">' + drvMesTxt(m) + '</span>' +
       '<span class="drv-puntos">' + (n ? '●'.repeat(Math.min(n, 22)) + (n > 22 ? ' +' + (n - 22) : '') : '·') + '</span><span class="drv-n">' + n + '</span></div>';
   });
   if (R.enCurso) {
     const n = r.veces[R.enCurso] || 0;
-    filas.push('<div class="drv-fila curso"><span class="drv-mes">' + drvMesTxt(R.enCurso) + ' · en curso</span>' +
+    filas.push('<div class="drv-fila curso' + clic(R.enCurso) + '"><span class="drv-mes">' + drvMesTxt(R.enCurso) + ' · en curso</span>' +
       '<span class="drv-puntos">' + (n ? '○'.repeat(Math.min(n, 22)) : '·') + '</span><span class="drv-n">' + n + '</span></div>');
   }
   return filas.join('');
@@ -11427,7 +11459,7 @@ function drvPregunta(r) {
   if (r.tipo === 'baja') return '¿Lo dejaste a propósito, o se está pagando por otro lado que no llega a Norte?';
   return 'Es de lo más parejo de tu casa. ¿Te cierra este ritmo?';
 }
-function drvTarjetaRitmo(r, R) {
+function drvTarjetaRitmo(r, R, idx) {
   const tag = r.tipo === 'sube' ? '<span class="drv-tag sube">Subió el ritmo</span>'
             : r.tipo === 'baja' ? '<span class="drv-tag baja">Bajó el ritmo</span>'
             : '<span class="drv-tag parejo">Parejo</span>';
@@ -11440,10 +11472,62 @@ function drvTarjetaRitmo(r, R) {
   const peso = (r.peso !== null && r.peso >= 0.5)
     ? '<div class="drv-peso">Los últimos dos meses fue el ' + drvNum(r.peso) + '% de lo que entra en tu casa (unos ' + drvPesos(r.plataMes) + ' por mes).</div>' : '';
   const via = r.rubro ? 'Lo reconocí por el comercio en ' + r.comercio + ' y por el rubro en ' + r.rubro + '.' : 'Lo reconocí por el nombre del comercio.';
-  return '<div class="drv-card"><div class="drv-cab"><div class="drv-tema">' + esc(r.tema) + '</div>' + tag + '</div>' +
-    drvTira(r, R) + '<div class="drv-dato">' + dato + '</div>' + peso +
+  return '<div class="drv-card clic" onclick="drvDetalle(\'r\',' + idx + ')" title="Ver los movimientos"><div class="drv-cab"><div class="drv-tema">' + esc(r.tema) + '</div>' + tag + '</div>' +
+    drvTira(r, R, idx) + '<div class="drv-dato">' + dato + '</div>' + peso +
     '<div class="drv-preg">' + (r.tipo === 'parejo' && conAlgo < R.completos.length ? '¿Esto se compra en otro lado, o fue algo puntual?' : drvPregunta(r)) +
-    '</div><div class="drv-via">' + via + '</div></div>';
+    '</div><div class="drv-via">' + via + '</div><div class="drv-ver">Ver los ' + r.items.length + ' movimientos →</div></div>';
+}
+let _drvUltimo = null;
+function drvFechaCorta(f, mes) {
+  const m = String(f || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? m[3] + '/' + m[2] : drvMesTxt(mes);
+}
+// tipo: 'r' ritmo, 's' suscripción, 'd' costos del dinero, 't' tema, 'n' sin reconocer.
+function drvDetalle(tipo, i, soloMes) {
+  const R = _drvUltimo;
+  if (!R) return;
+  let tit = '', sub = '', items = [];
+  if (tipo === 'r' && R.ritmos[i]) { tit = R.ritmos[i].tema; items = R.ritmos[i].items; }
+  else if (tipo === 's' && R.subs[i]) { tit = R.subs[i].nom; items = R.subs[i].items; sub = 'Todos los cobros que encontré de este servicio.'; }
+  else if (tipo === 'd' && R.dinero) { tit = 'Lo que pagás por la plata'; items = R.dinero.items; sub = 'Comisiones, intereses, percepciones y deudas de los últimos tres meses.'; }
+  else if (tipo === 't' && R.temas[i]) { tit = R.temas[i].tema; items = R.temas[i].items; }
+  else if (tipo === 'n') { tit = 'Sin reconocer'; items = R.sin; sub = 'Gastos que no pude asignar a ningún tema: ni el texto ni el rubro dicen qué son. No entran en ningún ritmo.'; }
+  else return;
+  if (soloMes) items = items.filter(function (x) { return x.mes === soloMes; });
+  if (!sub) sub = 'Debajo de cada movimiento, por qué lo puse acá: la palabra del comercio que reconocí, o el rubro que elegiste vos.';
+  const meses = {};
+  items.forEach(function (x) { (meses[x.mes] = meses[x.mes] || []).push(x); });
+  const orden = Object.keys(meses).sort().reverse();
+  const cuerpo = orden.map(function (m) {
+    const xs = meses[m].slice().sort(function (a, b) { return String(b.fecha).localeCompare(String(a.fecha)); });
+    const totP = xs.reduce(function (a, x) { return a + x.pesos; }, 0), totU = xs.reduce(function (a, x) { return a + x.usd; }, 0);
+    return '<div class="drv-det-mes"><span>' + drvMesTxt(m) + (m === R.enCurso ? ' · en curso' : '') + ' · ' + xs.length + (xs.length === 1 ? ' vez' : ' veces') + '</span><span>' + drvPlata(totP, totU) + '</span></div>' +
+      xs.map(function (x) {
+        const por = tipo === 'n' ? 'rubro: ' + esc(x.rubro || 'sin rubro')
+          : x.via === 'rubro' ? '<span class="drv-via-r">por el rubro «' + esc(x.rubro) + '»</span>'
+          : '<span class="drv-via-c">por «' + esc(x.key) + '» en el texto</span>' + (x.rubro ? ' · rubro: ' + esc(x.rubro) : '');
+        const temaOtro = (tipo === 's' || tipo === 'd') && x.tema ? ' · tema: ' + esc(x.tema) : '';
+        return '<div class="drv-det-fila"><span class="f">' + drvFechaCorta(x.fecha, x.mes) + '</span>' +
+          '<span class="d">' + esc(x.det || '(sin detalle)') + '<small>' + por + temaOtro + '</small></span>' +
+          '<span class="i">' + drvPlata(x.pesos, x.usd) + '</span></div>';
+      }).join('');
+  }).join('');
+  drvDetalleCerrar();
+  const ov = document.createElement('div');
+  ov.className = 'drv-encov'; ov.id = 'drvDetOv';
+  ov.onclick = function (e) { if (e.target === ov) drvDetalleCerrar(); };
+  ov.innerHTML = '<div class="drv-det" role="dialog" aria-modal="true" aria-labelledby="drvDetTit">' +
+    '<div class="drv-det-cab"><div><h3 id="drvDetTit">' + esc(tit) + (soloMes ? ' · ' + drvMesTxt(soloMes) : '') + '</h3><small>' +
+      items.length + (items.length === 1 ? ' movimiento' : ' movimientos') + '. ' + sub + '</small></div>' +
+    '<button type="button" class="btn" style="border:1px solid var(--border);flex:none" onclick="drvDetalleCerrar()" aria-label="Cerrar">✕</button></div>' +
+    '<div class="drv-det-body">' + (cuerpo || '<div class="drv-peso" style="padding:14px 0">No hay movimientos.</div>') + '</div></div>';
+  document.body.appendChild(ov);
+  document.addEventListener('keydown', drvDetalleEsc);
+}
+function drvDetalleEsc(e) { if (e.key === 'Escape') drvDetalleCerrar(); }
+function drvDetalleCerrar() {
+  const ov = document.getElementById('drvDetOv'); if (ov) ov.remove();
+  document.removeEventListener('keydown', drvDetalleEsc);
 }
 function drvPlata(p, u) {
   const a = []; if (p > 0) a.push(drvPesos(p)); if (u > 0) a.push(drvUsd(u));
@@ -11458,15 +11542,16 @@ function drvTarjetaInercia(R) {
     return '<div class="drv-card"><div class="drv-tema">Lo que se cobra solo</div><div class="drv-peso" style="margin-top:8px">' +
       'No encontré suscripciones ni costos bancarios en tus últimos tres meses. Si pagás alguna con tarjeta, aparece cuando cargás el resumen.</div></div>';
   }
-  const filas = R.subs.map(function (x) {
-    if (!x.fijo) return '<div class="drv-sub"><div>' + esc(x.nom) + '<small>' + drvPlata(x.mesP, x.mesU) + ' en ' + drvMesTxt(x.ult) +
+  const filas = R.subs.map(function (x, i) {
+    const on = ' clic" title="Ver los cobros" onclick="drvDetalle(\'s\',' + i + ')';
+    if (!x.fijo) return '<div class="drv-sub' + on + '"><div>' + esc(x.nom) + '<small>' + drvPlata(x.mesP, x.mesU) + ' en ' + drvMesTxt(x.ult) +
       ' · apareció una sola vez en los últimos 3 meses: puede ser un pago anual o algo suelto</small></div>' +
       '<b style="color:var(--muted);font-weight:600">no lo sumé</b></div>';
-    return '<div class="drv-sub"><div>' + esc(x.nom) + '<small>' + drvPlata(x.mesP, x.mesU) + ' por mes · se cobra todos los meses' +
+    return '<div class="drv-sub' + on + '"><div>' + esc(x.nom) + '<small>' + drvPlata(x.mesP, x.mesU) + ' por mes · se cobra todos los meses' +
       (x.desde ? ' · desde ' + drvMesTxt(x.desde) : '') + '</small></div>' +
       '<b>' + drvPlata(x.anioP, x.anioU) + ' al año</b></div>';
   }).join('');
-  const din = R.dinero ? '<div class="drv-sub"><div>Lo que pagás por la plata<small>' + esc(R.dinero.top.join(', ')) +
+  const din = R.dinero ? '<div class="drv-sub clic" title="Ver los cobros" onclick="drvDetalle(\'d\')"><div>Lo que pagás por la plata<small>' + esc(R.dinero.top.join(', ')) +
       ' · promedio ' + drvPlata(R.dinero.mesP, R.dinero.mesU) + ' por mes</small></div><b>' + drvPlata(R.dinero.anioP, R.dinero.anioU) + ' al año</b></div>' : '';
   return '<div class="drv-card"><div class="drv-cab"><div class="drv-tema">Lo que se cobra solo</div></div>' +
     '<div class="drv-big">' + drvPlata(sp, su) + '</div><div class="drv-peso" style="margin:2px 0 10px">por año, si sigue como en los últimos tres meses</div>' +
@@ -11479,7 +11564,7 @@ function drvRender() {
   if (!cont) return;
   if (!drvHabilitado()) { cont.innerHTML = ''; return; }
   const hero = function (sub, lee) {
-    return '<div class="drv-hero"><h2>' + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20 L20 4" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.2 2.4" fill="none" opacity=".55"/><path d="M3 20 C 8 17, 7 11, 12 10 S 17 6, 19 5" stroke="#FF8A5C" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M19 2.6 L21.4 5 L19 7.4 L16.6 5 Z" fill="#FF8A5C"/></svg>' + ' Deriva <span class="drv-chip" style="margin-left:4px">PILOTO</span></h2>' +
+    return '<div class="drv-hero"><h2>' + '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor" opacity=".55"><circle cx="5" cy="6" r="1.7"/><circle cx="10" cy="6" r="1.7"/><circle cx="5" cy="12" r="1.7"/><circle cx="10" cy="12" r="1.7"/></g><g fill="#FF8A5C"><circle cx="5" cy="18" r="1.7"/><circle cx="10" cy="18" r="1.7"/><circle cx="15" cy="18" r="1.7"/><circle cx="20" cy="18" r="1.7"/></g></svg>' + ' Deriva <span class="drv-chip" style="margin-left:4px">PILOTO</span></h2>' +
       '<p>' + sub + '</p>' + (lee ? '<div class="drv-lee">' + lee + '</div>' : '') + '</div>';
   };
   if (drvPremiumBloquea()) {
@@ -11489,6 +11574,7 @@ function drvRender() {
   }
   let R;
   try { R = drvCalcular(); } catch (e) { cont.innerHTML = hero('No pude leer tus datos ahora. Probá de nuevo en un rato.'); return; }
+  _drvUltimo = R;
   const intro = 'Todas las apps comparan pesos. Con la inflación, los pesos mienten: un +30% puede ser que gastaste más o que aumentó. ' +
     'Deriva cuenta <b style="color:#fff">veces</b>: cuántas veces por mes pasa cada cosa en tu casa, y si ese ritmo cambió.';
   if (R.poca) {
@@ -11504,11 +11590,18 @@ function drvRender() {
     (R.flojos ? ' (dejé afuera ' + (R.flojos === 1 ? 'un mes' : R.flojos + ' meses') + ' con muy pocos movimientos cargados)' : '') + '. Reconocí ' + R.leidos + ' de ' + R.totalMov + ' gastos (' + pct + '%)' +
     (pct < 90 ? ': los pagos por transferencia o QR muchas veces no dicen el comercio.' : '.');
   const ritmos = R.ritmos.length
-    ? '<div class="drv-grid">' + R.ritmos.map(function (r) { return drvTarjetaRitmo(r, R); }).join('') + '</div>'
+    ? '<div class="drv-grid">' + R.ritmos.map(function (r, i) { return drvTarjetaRitmo(r, R, i); }).join('') + '</div>'
     : '<div class="drv-card"><div class="drv-peso">Ningún hábito llega todavía a cuatro veces en estos meses. Con más movimientos con el nombre del comercio, aparecen.</div></div>';
   cont.innerHTML = hero(intro, lee) +
     '<div class="drv-sec">Tus ritmos</div>' + ritmos +
     '<div class="drv-sec">Lo que se cobra solo</div>' + drvTarjetaInercia(R) +
+    '<div class="drv-sec">Cómo leí tus gastos</div>' +
+    '<div class="drv-card"><div class="drv-peso" style="margin:0 0 10px">Todos los temas que encontré en estos meses. Tocá uno para ver qué movimientos puse ahí y por qué.</div>' +
+    '<div class="drv-chips">' + R.temas.map(function (t, i) {
+      return '<button type="button" class="drv-chipt" onclick="drvDetalle(\'t\',' + i + ')">' + esc(t.tema) + '<b>' + t.items.length + '</b></button>';
+    }).join('') +
+    (R.sin.length ? '<button type="button" class="drv-chipt sin" onclick="drvDetalle(\'n\')">Sin reconocer<b>' + R.sin.length + '</b></button>' : '') +
+    '</div></div>' +
     '<div style="font-size:12px;color:var(--muted);line-height:1.55;margin:16px 2px 4px">Deriva es un piloto: lo estás viendo antes que nadie. ' +
     'Los números salen sólo de lo que cargaste; Norte no inventa ni completa nada. ' +
     '<a href="#" onclick="drvEncAbrir(true);return false" style="color:var(--primary);font-weight:700">Contanos qué te pareció</a></div>';
@@ -19326,7 +19419,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.68.000';
+const APP_VERSION = 'v005.68.001';
 let novEntradas = [];
 
 function novLeida(e) {
