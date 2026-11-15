@@ -1156,6 +1156,26 @@ tr:hover td { background: #fafbfc; }
 .form-group input, .form-group select { width: 100%; padding: 8px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 13.5px; color: var(--text); background: var(--bg); outline: none; transition: border-color 0.15s; }
 .form-group input:focus, .form-group select:focus { border-color: var(--primary); background: white; }
 .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+/* Formulario de movimientos (v005.68.002) */
+.tx-tipos { display: flex; flex-wrap: wrap; gap: 0 26px; }
+.tx-pag { display: flex; gap: 8px; align-items: stretch; }
+.tx-pag .calc-wrap, .tx-pag > input { flex: 1; min-width: 0; }
+.tx-total-btn { flex: none; width: 42px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--bg); color: var(--success, #16a34a); cursor: pointer; padding: 0; transition: all .15s; }
+.tx-total-btn:hover { border-color: var(--success, #16a34a); background: rgba(34,197,94,.12); }
+.tx-total-btn:active { transform: scale(.94); }
+.tx-total-btn.hecho { background: var(--success, #16a34a); color: #fff; border-color: var(--success, #16a34a); }
+#dvModalWrap .dv-fila { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+#dvModalWrap .dv-modal-res { display: inline; margin-top: 0; }
+@media (min-width: 881px) {
+  #modalOverlay .modal { max-width: 700px; padding: 22px 26px 0; max-height: 94vh; }
+  #modalOverlay .modal-title { margin-bottom: 12px; }
+  #modalOverlay .form-group { margin-bottom: 11px; }
+  #modalOverlay .tx-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  #modalOverlay .tx-3 { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 14px; }
+  #modalOverlay .modal-actions { position: sticky; bottom: 0; background: var(--card); margin-top: 10px; padding: 12px 0 18px; z-index: 3; }
+  #dvModalWrap .btn { padding: 6px 12px; font-size: 12.5px; }
+}
 
 /* CONFIRM */
 .confirm-box { background: var(--card); border-radius: 14px; padding: 28px 24px; max-width: 340px; width: 90%; text-align: center; }
@@ -5661,6 +5681,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
     <form id="txForm" onsubmit="saveTx(event)">
       <input type="hidden" id="txId">
 
+      <div class="tx-tipos">
       <div class="form-group">
         <label>Tipo</label>
         <div class="tgl-group" style="width:fit-content">
@@ -5678,7 +5699,9 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
         </div>
         <input type="hidden" id="txTipoGasto" value="Variable">
       </div>
+      </div>
 
+      <div class="tx-2">
       <div class="form-group">
         <label>Detalle</label>
         <input type="text" id="txDetalle" required placeholder="Ej: Sueldo, Alquiler, Netflix...">
@@ -5687,6 +5710,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
       <div class="form-group">
         <label>Cliente <span style="font-weight:400;text-transform:none;opacity:0.6">(opcional)</span></label>
         <input type="text" id="txCliente" placeholder="Ej: Super, Farmacia...">
+      </div>
       </div>
 
       <div class="form-group">
@@ -5702,8 +5726,8 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
           ¿Querés ordenar toda tu lista? Se administra en <strong>Administración → Rubros</strong>.
         </div>
         <div id="dvModalWrap" style="display:none;margin-top:10px">
-          <button type="button" class="btn btn-secondary dv-btn" onclick="dvAbrirDesdeModal()">✂️ Dividir</button>
-          <span id="dvModalResumen" class="dv-modal-res"></span>
+          <div class="dv-fila"><button type="button" class="btn btn-secondary dv-btn" onclick="dvAbrirDesdeModal()">✂️ Dividir</button>
+          <span id="dvModalResumen" class="dv-modal-res"></span></div>
         </div>
       </div>
 
@@ -5720,6 +5744,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
       <div id="txReintegroAviso" style="display:none;margin:-4px 0 12px;padding:8px 12px;border-radius:8px;background:#dcfce7;color:#166534;font-size:12.5px;line-height:1.4">
         <strong>↩ Reintegro.</strong> Un gasto con importe negativo es plata que vuelve (bonificación, devolución). Resta del gasto del mes y del pago de la tarjeta.
       </div>
+      <div class="tx-3">
       <div class="form-group">
         <label>Fecha <span style="font-weight:400;text-transform:none;opacity:0.6">(cuándo pasó)</span></label>
         <input type="date" id="txFecha">
@@ -5727,8 +5752,6 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
           Viene la de hoy. Cambiala si lo estás cargando después.
         </div>
       </div>
-
-      <div class="form-row">
         <div class="form-group">
           <label>Período <span style="font-weight:400;text-transform:none;opacity:0.6">(mes de impacto)</span></label>
           <input type="month" id="txMes" required>
@@ -5739,27 +5762,27 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
         </div>
       </div>
 
+      <!-- Pagado $ y Pagado USD en la misma línea (v005.68.002). El USD aparece
+           sólo cuando hay Importe USD (txPintarPagUsd). El botón del anillo
+           completo reemplaza a «= Total (pagado completo)»: copia el importe. -->
       <div class="form-row">
         <div class="form-group">
           <label>Monto Pagado $</label>
-          <input class="money" id="txPagado" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+          <div class="tx-pag">
+            <input class="money" id="txPagado" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+            <button type="button" class="tx-total-btn" title="Pagado completo: copia el importe total" aria-label="Pagado completo: copia el importe total"
+              onclick="calcAsentar('txImpPesos');numSet('txPagado',numVal('txImpPesos'));txTotalHecho(this)"><svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M7.6 12.4 L10.6 15.3 L16.6 9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
           <div id="txPagErr" role="alert" style="display:none;font-size:12px;font-weight:600;color:var(--danger);margin-top:5px;line-height:1.35"></div>
         </div>
-        <div class="form-group" style="display:flex;align-items:flex-end">
-          <label style="display:none"></label>
-          <button type="button" class="btn btn-secondary" style="width:100%;font-size:12px" onclick="calcAsentar('txImpPesos');numSet('txPagado',numVal('txImpPesos'))">= Total (pagado completo)</button>
-        </div>
-      </div>
-      <!-- Pagado en dólares (v005.60.000): aparece cuando hay Importe USD. -->
-      <div class="form-row" id="txPagUsdRow" style="display:none">
-        <div class="form-group">
+        <div class="form-group" id="txPagUsdRow" style="display:none">
           <label>Monto Pagado USD</label>
-          <input class="money" id="txPagadoUSD" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+          <div class="tx-pag">
+            <input class="money" id="txPagadoUSD" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+            <button type="button" class="tx-total-btn" title="Pagado completo en dólares: copia el importe USD" aria-label="Pagado completo en dólares: copia el importe USD"
+              onclick="calcAsentar('txImpUSD');numSet('txPagadoUSD',numVal('txImpUSD'));txTotalHecho(this)"><svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M7.6 12.4 L10.6 15.3 L16.6 9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
           <div id="txPagUsdErr" role="alert" style="display:none;font-size:12px;font-weight:600;color:var(--danger);margin-top:5px;line-height:1.35"></div>
-        </div>
-        <div class="form-group" style="display:flex;align-items:flex-end">
-          <label style="display:none"></label>
-          <button type="button" class="btn btn-secondary" style="width:100%;font-size:12px" onclick="calcAsentar('txImpUSD');numSet('txPagadoUSD',numVal('txImpUSD'))">= Total USD (pagado completo)</button>
         </div>
       </div>
 
@@ -19419,7 +19442,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.68.001';
+const APP_VERSION = 'v005.68.002';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -20619,6 +20642,11 @@ function closeModal() {
   document.getElementById('modalOverlay').classList.remove('show');
 }
 // «Monto Pagado USD» sólo cuando hay algo en dólares (o ya había un pago en USD).
+function txTotalHecho(b) {
+  if (!b) return;
+  b.classList.add('hecho');
+  setTimeout(function () { b.classList.remove('hecho'); }, 700);
+}
 function txPintarPagUsd() {
   const fila = document.getElementById('txPagUsdRow'); if (!fila) return;
   const usd = numVal('txImpUSD'), pag = numVal('txPagadoUSD');
