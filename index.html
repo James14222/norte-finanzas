@@ -2296,6 +2296,51 @@ html[data-tema="noche"] .qp-modo.qp-modo-texto { color:#8fb2ff; }
 .nav-guia:hover { background: linear-gradient(90deg, rgba(111,224,204,0.28), rgba(111,224,204,0.05)); }
 .nav-guia.active { background: linear-gradient(90deg, rgba(111,224,204,0.34), rgba(111,224,204,0.08)); }
 .nav-guia .ico { font-size: 17px; }
+/* Deriva · piloto (v005.68). Ítem propio y destacado, fuera de .nav-item por la
+   misma razón que la Guía: showPage marca el activo por posición. */
+.nav-deriva { display: flex; align-items: center; gap: 12px; padding: 11px 20px; cursor: pointer; font-size: 14px; font-weight: 700;
+  border-left: 3px solid #FF8A5C; background: linear-gradient(90deg, rgba(255,138,92,0.22), rgba(255,138,92,0.02)); transition: all 0.15s; }
+.nav-deriva:hover { background: linear-gradient(90deg, rgba(255,138,92,0.30), rgba(255,138,92,0.05)); }
+.nav-deriva.active { background: linear-gradient(90deg, rgba(255,138,92,0.38), rgba(255,138,92,0.08)); }
+.nav-deriva svg { width: 19px; height: 19px; flex: none; }
+.drv-chip { margin-left: auto; font-size: 9.5px; font-weight: 800; letter-spacing: .08em; color: #0E2233; background: #FF8A5C; border-radius: 5px; padding: 2px 6px; }
+.drv-hero { background: linear-gradient(150deg, #0E2233 0%, #15364A 70%, #1B4258 100%); color: #EAF2F7; border-radius: 16px; padding: 22px 24px; margin-bottom: 16px; position: relative; overflow: hidden; }
+.drv-hero h2 { margin: 0; font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 10px; color: #fff; }
+.drv-hero h2 svg { width: 30px; height: 30px; flex: none; }
+.drv-hero p { margin: 8px 0 0; font-size: 14px; line-height: 1.55; color: rgba(234,242,247,.82); max-width: 720px; }
+.drv-hero .drv-lee { margin-top: 12px; font-size: 12.5px; color: rgba(234,242,247,.62); }
+.drv-sec { font-size: 12px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin: 22px 2px 10px; }
+.drv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.drv-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+.drv-cab { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.drv-tema { font-size: 16px; font-weight: 800; color: var(--text); }
+.drv-tag { font-size: 11px; font-weight: 800; border-radius: 6px; padding: 3px 8px; white-space: nowrap; }
+.drv-tag.sube { color: #fff; background: #E8673A; }
+.drv-tag.baja { color: #2f9e88; background: rgba(111,191,168,.18); }
+.drv-tag.parejo { color: var(--muted); background: var(--bg); }
+.drv-fila { display: flex; align-items: center; gap: 10px; padding: 2px 0; }
+.drv-mes { width: 96px; flex: none; font-size: 12px; color: var(--muted); }
+.drv-puntos { flex: 1; min-width: 0; font-size: 13px; letter-spacing: 2px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.drv-fila.reciente .drv-puntos { color: #FF8A5C; }
+.drv-fila.curso .drv-puntos { color: var(--muted); opacity: .6; }
+.drv-n { width: 26px; text-align: right; font-size: 12px; font-weight: 700; color: var(--text); }
+.drv-dato { margin-top: 10px; font-size: 14px; line-height: 1.5; color: var(--text); }
+.drv-peso { margin-top: 4px; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+.drv-preg { margin-top: 10px; padding: 9px 12px; border-radius: 10px; background: var(--bg); font-size: 13.5px; font-style: italic; color: var(--text); }
+.drv-via { margin-top: 8px; font-size: 11.5px; color: var(--muted); }
+.drv-big { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1.1; }
+.drv-sub { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--border); font-size: 13.5px; color: var(--text); }
+.drv-sub small { display: block; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.drv-sub b { white-space: nowrap; }
+.drv-encov { position: fixed; inset: 0; z-index: 10050; background: rgba(6,16,24,.62); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.drv-enc { background: var(--card); color: var(--text); border-radius: 18px; width: 100%; max-width: 460px; max-height: 92vh; overflow: auto; padding: 22px 22px 18px; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+.drv-enc h3 { margin: 0 0 4px; font-size: 18px; font-weight: 800; }
+.drv-enc .q { margin-top: 16px; font-size: 14px; font-weight: 700; }
+.drv-enc .ops { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.drv-enc .op { border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 9px; padding: 8px 12px; font-size: 13.5px; cursor: pointer; font-family: inherit; }
+.drv-enc .op.on { background: #FF8A5C; border-color: #FF8A5C; color: #fff; font-weight: 700; }
+.drv-enc textarea { width: 100%; margin-top: 8px; border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; font: inherit; font-size: 13.5px; background: var(--bg); color: var(--text); resize: vertical; box-sizing: border-box; }
+.drv-enc .pie { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
 .guia-aviso { display: flex; align-items: center; gap: 14px; background: linear-gradient(135deg, rgba(111,224,204,.13), rgba(37,99,235,.07)), var(--card);
   border: 1px solid rgba(111,224,204,.45); border-radius: 13px; padding: 14px 16px; margin-bottom: 18px; }
 .guia-aviso-ico { font-size: 30px; line-height: 1; flex: 0 0 auto; }
@@ -3246,6 +3291,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
   </div>
   <div class="sidebar-nav">
     <div class="nav-guia" id="navGuia" style="display:none" onclick="guiaIr()"><span class="ico">🧭</span> Guía Pioneros<span id="guiaNavBadge" class="gps-nav-badge" style="display:none">1</span></div>
+    <div class="nav-deriva" id="navDeriva" style="display:none" onclick="showPage('deriva')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20 L20 4" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.2 2.4" fill="none" opacity=".55"/><path d="M3 20 C 8 17, 7 11, 12 10 S 17 6, 19 5" stroke="#FF8A5C" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M19 2.6 L21.4 5 L19 7.4 L16.6 5 Z" fill="#FF8A5C"/></svg> Deriva<span class="drv-chip">PILOTO</span></div>
     <div class="nav-item active" onclick="showPage('dashboard')"><span class="ico">📊</span> Mi Rumbo</div>
     <div class="nav-item" onclick="showPage('transacciones')"><span class="ico">📋</span> Transacciones</div>
     <div class="nav-item" onclick="showPage('presupuesto')"><span class="ico">🎯</span> Presupuesto</div>
@@ -3808,6 +3854,8 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
          La libreta de precios del hogar. Vive aparte de todo lo
          financiero: nada de lo que se anota acá entra en el balance,
          el presupuesto, los reportes ni el saldo pendiente. -->
+    <div id="page-deriva" class="page"><div id="drvCont"></div></div>
+
     <div id="page-cuaderno" class="page">
       <!-- El encabezado lleva una cuenta escrita a mano de fondo, cortada por
            el borde: las cifras son trazos dibujados, no una tipografia, asi
@@ -10852,6 +10900,8 @@ function norteAlTope() {
 
 function showPage(p) {
 window.scrollTo(0, 0);
+  try { if (curPage === 'deriva' && p !== 'deriva') drvAlSalir(); } catch (e) {}
+  try { const _nd = document.getElementById('navDeriva'); if (_nd) _nd.classList.toggle('active', p === 'deriva'); } catch (e) {}
   norteMarcarPantalla(p);
   document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -10862,7 +10912,7 @@ window.scrollTo(0, 0);
   // esta línea se subrayaba el ítem equivocado de ahí para abajo.
   const navIdx = ['dashboard','transacciones','presupuesto','reserva','analisis','reportes','puntos','cuaderno','consultas'].indexOf(p);
   if (navIdx >= 0) document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
-  document.getElementById('pageTitle').textContent = {dashboard:'Mi Rumbo',transacciones:'Transacciones',presupuesto:'Presupuesto',reserva:'Reserva',analisis:'Análisis',progreso:'Progreso',puntos:'Puntos Norte',reportes:'Reportes',cuaderno:'El Cuaderno',consultas:'NortIA',admin:'Administración',tugps:'Novedades'}[p] || p;
+  document.getElementById('pageTitle').textContent = {dashboard:'Mi Rumbo',transacciones:'Transacciones',presupuesto:'Presupuesto',reserva:'Reserva',analisis:'Análisis',progreso:'Progreso',puntos:'Puntos Norte',reportes:'Reportes',cuaderno:'El Cuaderno',consultas:'NortIA',admin:'Administración',tugps:'Novedades',deriva:'Deriva'}[p] || p;
   curPage = p;
   /* El selector de meses sólo tiene sentido donde los datos son de un mes.
      En estas pantallas no filtra nada —está verificado, ninguna lee el mes— y
@@ -10870,7 +10920,7 @@ window.scrollTo(0, 0);
      no hace nada confunde más que no estar. */
   // Puntos Norte tiene su propio selector de mes adentro de la tarjeta del
   // índice: dos controles de mes en la misma pantalla es uno de más.
-  const SIN_MES = ['cuaderno', 'progreso', 'consultas', 'tugps', 'admin', 'puntos'];
+  const SIN_MES = ['cuaderno', 'progreso', 'consultas', 'tugps', 'admin', 'puntos', 'deriva'];
   const _mnav = document.querySelector('.month-nav');
   if (_mnav) _mnav.style.display = SIN_MES.indexOf(p) >= 0 ? 'none' : '';
   if (p === 'reportes') initReportesFiltros();
@@ -10885,7 +10935,8 @@ window.scrollTo(0, 0);
   const fabEl = document.querySelector('.fab');
   // En Administración el botón flotante tapaba las acciones de la lista de
   // rubros, y ahí no se cargan movimientos: se esconde, igual que en NortIA.
-  if (fabEl) fabEl.style.display = (p === 'consultas' || p === 'admin' || p === 'reserva' || p === 'puntos') ? 'none' : '';
+  if (fabEl) fabEl.style.display = (p === 'consultas' || p === 'admin' || p === 'reserva' || p === 'puntos' || p === 'deriva') ? 'none' : '';
+  if (p === 'deriva') { try { drvAlEntrar(); } catch (e) {} }
   render();
   if (p === 'consultas') actualizarNortiaChatCounter();
   if (p === 'reportes') fijarArribaAlEntrar();
@@ -10988,7 +11039,553 @@ function render() { try { rdMarcarHoy(); } catch (e) {} if (curPage !== 'dashboa
   else if (curPage === 'reportes')      renderReportes();
   else if (curPage === 'cuaderno')    { renderCuaderno(); cuTutoQuizas(); }
   else if (curPage === 'admin')         renderAdmin();
+  else if (curPage === 'deriva')        drvRender();
   // consultas no necesita re-render al cambiar mes
+}
+
+
+// ══════════ DERIVA · piloto (v005.68) ══════════════════════════════════════
+// Todas las apps comparan pesos; en la Argentina los pesos mienten. Deriva
+// cuenta VECES: «venías en 4 por mes y ahora son 7» no lo ensucia la inflación.
+// Piloto de diciembre 2026: lo ve quien Jaime activa desde Admin
+// (norteSync/derivaPiloto/<uid>). Oferta de lanzamiento en todos los planes;
+// desde marzo 2027 pasa a PRO y TOP (DRV_PREMIUM_DESDE).
+// Los números los calcula el código, nunca la IA. Un número inventado no cuesta
+// una funcionalidad: cuesta la confianza en todas.
+const DRV_PREMIUM_DESDE = '2027-03';
+const DRV_SUPER = 'RUO9uxaH26QZDC1eMVuA0kjMYkw2';
+// ── DERIVA · tabla de temas ────────────────────────────────────────────────
+// El tema NO se guarda en el movimiento: se deduce al leer, de lo que ya está
+// escrito en `detalle` (que en los importados es el texto del resumen tal cual)
+// y en `cliente`. Si mañana la tabla mejora, mejora toda la historia para atrás.
+//
+// Orden: gana la primera que matchea. Lo específico va antes que lo genérico.
+// Las claves con espacio final ('dia ', 'gol ') son a propósito: sin él pegan
+// adentro de cualquier palabra.
+
+const DERIVA_TEMAS = [
+
+  // ── COMER ────────────────────────────────────────────────────────────────
+  { con: 'Comer', tema: 'Comer afuera', keys: [
+    'pedidosya','pedidos ya','rappi','glovo','ifood','delivery',
+    'mcdonalds','burger','subway','mostaza','starbucks','havanna','freddo',
+    'sushi','pizza','resto','restaurant','parrilla','rotiseria','cerveceria',
+    'cafeteria','cafe ','heladeria','bodegon','cantina','bar ' ] },
+
+  { con: 'Comer', tema: 'Súper', keys: [
+    'supermercado','hipermercado','carrefour','coto','jumbo','walmart','disco',
+    'vea ','changomas','chango mas','dia ','la anonima','makro','diarco',
+    'mayorista','autoservicio','market' ] },
+
+  { con: 'Comer', tema: 'Del barrio', keys: [
+    'panaderia','panificadora','verduleria','fiambreria','carniceria',
+    'pescaderia','dietetica','almacen','frutas','verduras' ] },
+
+  { con: 'Comer', tema: 'Kiosco', keys: ['kiosco','maxikiosco'] },
+
+  // ── EL AUTO ──────────────────────────────────────────────────────────────
+  { con: 'El auto', tema: 'Nafta', keys: [
+    'ypf','shell','axion','petrobras','puma energ','gulf','refinor',
+    'estacion de servicio','nafta','combustible' ] },
+
+  { con: 'El auto', tema: 'Mantenimiento', keys: [
+    'taller','mecanico','lubricentro','lubri','gomeria','neumatico','cubierta',
+    'autopartes','lava auto','vtv' ] },
+
+  { con: 'El auto', tema: 'Tenerlo parado', keys: [
+    'cochera','estacionamiento','parking','peaje','autopista','patente' ] },
+
+  // ── EL TECHO ─────────────────────────────────────────────────────────────
+  { con: 'El techo', tema: 'Alquiler y expensas', keys: [
+    'alquiler','expensas','consorcio','inmobiliaria' ] },
+
+  { con: 'El techo', tema: 'Luz, gas, agua', keys: [
+    'edesur','edenor','metrogas','aysa','aguas','edemsa','eden ','edelap',
+    'epec','camuzzi','naturgy','ecogas','gasnor','edesa','absa',
+    'obras sanitarias' ] },
+
+  { con: 'El techo', tema: 'Conectividad', keys: [
+    'movistar','claro','personal','telecom','fibertel','cablevision','directv',
+    'speedy','arnet','iplan','telecentro','starlink','internet','banda ancha' ] },
+
+  { con: 'El techo', tema: 'Impuestos del inmueble', keys: [
+    'abl','inmobiliario','municipalidad','rentas' ] },
+
+  // ── ESTAR BIEN ───────────────────────────────────────────────────────────
+  { con: 'Estar bien', tema: 'Prepaga', keys: [
+    'swiss medical','osde','galeno','medife','ioma','accord','sancor salud' ] },
+
+  { con: 'Estar bien', tema: 'Farmacia', keys: [
+    'farmacia','farmacity','farmalink','drogueria' ] },
+
+  { con: 'Estar bien', tema: 'Consultas y estudios', keys: [
+    'clinica','sanatorio','hospital','laboratorio','bioquimic','optica',
+    'dentist','odontolog','medico','medica','kinesio','psicolog','terapia',
+    'oftalmolog','dermatolog','vacuna','radiolog','ecografia' ] },
+
+  { con: 'Estar bien', tema: 'Moverse el cuerpo', keys: [
+    'gimnasio','smartfit','megatlon','sportclub','padel','natacion','pilates',
+    'yoga' ] },
+
+  // ── MOVERSE ──────────────────────────────────────────────────────────────
+  { con: 'Moverse', tema: 'Apps de viaje', keys: [
+    'uber','cabify','bolt','didi','taxi','remis' ] },
+
+  { con: 'Moverse', tema: 'Transporte público', keys: [
+    'carga sube','sube','subte','tren ','colectivo','buquebus' ] },
+
+  { con: 'Moverse', tema: 'Viajes', keys: [
+    'aerolinea','aeroline','iberia','latam','american air','avianca','gol ',
+    'vuelo','despegar','booking','airbnb','hotel' ] },
+
+  // ── INERCIA ──────────────────────────────────────────────────────────────
+  { con: 'Inercia', tema: 'Suscripciones de ocio', keys: [
+    'netflix','spotify','hbo','disney','prime video','amazon prime','youtube',
+    'twitch','apple tv','flow','deezer','paramount','steam','playstation',
+    'xbox','duolingo' ] },
+
+  { con: 'Inercia', tema: 'Herramientas y software', keys: [
+    'anthropic','openai','chatgpt','google cloud','google *cloud',
+    'google workspace','google *workspace','microsoft','zoom','slack','notion',
+    'figma','github','aws','heroku','digitalocean','dropbox','1password',
+    'linkedin','canva','adobe' ] },
+
+  { con: 'Inercia', tema: 'Costos del dinero', keys: [
+    'comision','mantenimiento cuenta','costo tarjeta','cargo tarjeta','sellado',
+    'percepcion','impuesto pais','interes','punitorio','recargo','mora' ] },
+
+  { con: 'Inercia', tema: 'Deudas', keys: [
+    'prestamo','credito personal','refinanciacion' ] },
+
+  // ── TEMAS SUELTOS ────────────────────────────────────────────────────────
+  // Se pueden contar, pero todavía no contestan una pregunta más grande.
+  { con: '', tema: 'Salidas', keys: [
+    'cinemark','hoyts','showcase','village','cinema','teatro','ticketek',
+    'plateanet','boliche','museo' ] },
+
+  { con: '', tema: 'Ropa', keys: [
+    'zara','h&m','falabella','forever','adidas','nike','puma ','rapsodia',
+    'kosiuko','wanama','paula cahen','ayres','lacoste','tommy','levi','gap ',
+    'pull and bear','stradivarius','bershka','dexter','stock center','grimoldi',
+    'prune','todomoda','isadora','vitamina','akiabara','portsaid','yagmour',
+    'sarkany','vans','topper' ] },
+
+  { con: '', tema: 'Estudiar', keys: [
+    'udemy','coursera','platzi','domestika','crehana','universidad','colegio',
+    'jardin','instituto','academia','posgrado','maestria','uade','utn',
+    'libreria' ] },
+
+  { con: '', tema: 'Seguros', keys: [
+    'seguro','zurich','sura','rio uruguay','prudential','mapfre','la caja',
+    'sancor seguros','allianz','federacion patronal','san cristobal','experta' ] },
+
+  { con: '', tema: 'Impuestos', keys: [
+    'afip','arca','arba','agip','monotributo','ingresos brutos','iibb' ] }
+];
+
+// Segunda capa: cuando el texto no dice nada pero el rubro que eligió la persona
+// sí. Sólo los rubros que apuntan a UN tema. 'Supermercado / Alimentación' no
+// está a propósito: no distingue el súper de comer afuera, que es justo lo que
+// Deriva necesita saber. Preferimos no contarlo antes que contarlo mal.
+const DERIVA_RUBRO_TEMA = {
+  'Alquiler / Vivienda':         ['El techo', 'Alquiler y expensas'],
+  'Servicios (luz, gas, agua)':  ['El techo', 'Luz, gas, agua'],
+  'Telefonía / Cable':           ['El techo', 'Conectividad'],
+  'Impuestos / Tasas':           ['', 'Impuestos'],
+  'Seguros':                     ['', 'Seguros'],
+  'Deudas / Cuotas':             ['Inercia', 'Deudas'],
+  'Educación':                   ['', 'Estudiar'],
+  'Indumentaria':                ['', 'Ropa']
+};
+
+function derivaNorm(s) {
+  s = String(s || '').toLowerCase();
+  try { s = s.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (e) {}
+  return ' ' + s.replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim() + ' ';
+}
+
+// Devuelve {con, tema, via} o null. `via` dice de dónde salió, para poder
+// mostrárselo a la persona: un número que no se puede explicar no sirve.
+//
+// Se compara por palabra entera y no por pedazo de palabra, que es lo que hace
+// hoy tcGuessRubro con `includes`. Por eso hoy la clave 'personal' (telefonía)
+// se come cualquier "GASTOS PERSONALES", y 'coto' se comería un "COTORRA".
+// Normalizar todo a palabras separadas por espacios arregla eso y de paso hace
+// que 'MERPAGO*RAPPI' y 'NETFLIX.COM' matcheen sin reglas especiales.
+function derivaTema(t) {
+  const txt = derivaNorm((t.detalle || '') + ' ' + (t.cliente || ''));
+  for (const f of DERIVA_TEMAS) {
+    for (const k of f.keys) {
+      if (txt.indexOf(derivaNorm(k)) >= 0) {
+        return { con: f.con, tema: f.tema, via: 'comercio', key: k.trim() };
+      }
+    }
+  }
+  const r = DERIVA_RUBRO_TEMA[t.rubro];
+  if (r) return { con: r[0], tema: r[1], via: 'rubro', key: '' };
+  return null;
+}
+
+
+// Los temas que son conducta: pasan varias veces por mes y el ritmo dice algo.
+// Alquiler, servicios, prepaga, impuestos o seguros se pagan una vez por mes y
+// no tienen ritmo que mirar: quedan afuera a propósito.
+const DRV_RITMO = { 'Comer afuera': 1, 'Súper': 1, 'Del barrio': 1, 'Kiosco': 1, 'Nafta': 1, 'Mantenimiento': 1,
+  'Farmacia': 1, 'Consultas y estudios': 1, 'Moverse el cuerpo': 1, 'Apps de viaje': 1, 'Transporte público': 1,
+  'Viajes': 1, 'Salidas': 1, 'Ropa': 1 };
+const DRV_MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const DRV_NOMBRES = { openai: 'OpenAI', chatgpt: 'ChatGPT', hbo: 'HBO', aws: 'AWS', 'prime video': 'Prime Video',
+  'amazon prime': 'Amazon Prime', 'apple tv': 'Apple TV', 'google cloud': 'Google Cloud', 'google *cloud': 'Google Cloud',
+  'google workspace': 'Google Workspace', 'google *workspace': 'Google Workspace', github: 'GitHub', '1password': '1Password',
+  linkedin: 'LinkedIn', digitalocean: 'DigitalOcean', youtube: 'YouTube', playstation: 'PlayStation' };
+
+let _drvPiloto = false, _drvRef = null, _drvUid = '', _drvEnc = null, _drvEncSesion = false, _drvEntro = 0;
+
+function drvEsSuper() { try { return curUserId() === DRV_SUPER; } catch (e) { return false; } }
+function drvHabilitado() { return drvEsSuper() || _drvPiloto; }
+function drvYM(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+function drvMesTxt(ym) {
+  const p = String(ym).split('-'); const m = DRV_MESES[Number(p[1]) - 1] || ym;
+  return p[0] === String(new Date().getFullYear()) ? m : m + " '" + p[0].slice(2);
+}
+function drvNum(n) { const r = Math.round(n * 10) / 10; return (r % 1 === 0 ? String(r) : r.toFixed(1).replace('.', ',')); }
+function drvPesos(n) { return '$' + Math.round(Number(n) || 0).toLocaleString('es-AR'); }
+function drvUsd(n) { return 'US$ ' + (Number(n) || 0).toLocaleString('es-AR', { maximumFractionDigits: 2 }); }
+function drvCuotaNum(c) { const m = String(c || '').match(/^\s*(\d+)\s*\/\s*\d+/); return m ? Number(m[1]) : 0; }
+function drvNomServicio(k) {
+  k = String(k || '').trim(); if (DRV_NOMBRES[k]) return DRV_NOMBRES[k];
+  return k.replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+}
+function drvPremiumBloquea() {
+  if (drvEsSuper()) return false;
+  return drvYM() >= DRV_PREMIUM_DESDE && (typeof miPlanActual === 'undefined' || miPlanActual === 'FOCO');
+}
+
+function drvPintarMenu() {
+  const n = document.getElementById('navDeriva');
+  if (n) n.style.display = drvHabilitado() ? 'flex' : 'none';
+  if (!drvHabilitado() && curPage === 'deriva') showPage('dashboard');
+}
+
+function drvIniciar() {
+  const uid = curUserId();
+  if (uid === _drvUid && _drvRef) return;
+  if (_drvRef) { try { _drvRef.off(); } catch (e) {} _drvRef = null; }
+  _drvUid = uid; _drvPiloto = false; _drvEnc = null; _drvEncSesion = false;
+  // El último estado conocido en este aparato: el ítem aparece sin esperar a la red.
+  try { _drvPiloto = localStorage.getItem('fin_drv_piloto_' + uid) === '1'; } catch (e) {}
+  drvPintarMenu();
+  if (!uid || uid === 'desconocido' || typeof firebase === 'undefined' || !firebase.database) return;
+  try {
+    _drvRef = firebase.database().ref('norteSync/derivaPiloto/' + uid);
+    _drvRef.on('value', function (sn) {
+      const v = sn && sn.val();
+      _drvPiloto = !!(v && v.activo);
+      try { localStorage.setItem('fin_drv_piloto_' + uid, _drvPiloto ? '1' : '0'); } catch (e) {}
+      drvPintarMenu();
+      drvEncQuizas(5000);
+    }, function () {});
+    firebase.database().ref('norteSync/derivaEncuesta/' + uid).once('value').then(function (sn) {
+      _drvEnc = (sn && sn.val()) || {};
+      drvEncQuizas(5000);
+    }).catch(function () { _drvEnc = {}; });
+  } catch (e) {}
+}
+
+// ── El cálculo ──────────────────────────────────────────────────────────────
+// Un mes es el período de Norte (t.mes): el resumen de tarjeta de octubre cuenta
+// en octubre. Así cada mes se compara con otro armado igual, y un resumen que
+// todavía no se cargó no parece una baja. El mes en curso se muestra aparte y
+// no entra en ninguna comparación.
+// Una cuota 2/12 no es una compra nueva: sólo cuenta la primera.
+function drvCalcular() {
+  const hoy = drvYM();
+  const filas = (getData() || []).filter(function (t) {
+    return t && /^\d{4}-\d{2}$/.test(String(t.mes || '')) && t.mes <= hoy && !t.transf;
+  });
+  const gastos = filas.filter(function (t) {
+    return t.tipo === 'Gasto' && ((Number(t.impPesos) || 0) > 0 || (Number(t.impUSD) || 0) > 0) && drvCuotaNum(t.cuota) <= 1;
+  });
+  // Un mes con cuatro movimientos sueltos no es un mes cargado: es el alquiler
+  // y poco más. Contarlo como «cero veces» inventaría un ritmo viejo bajo. Por
+  // eso entra sólo el mes que tiene al menos un tercio de lo que es normal en
+  // la casa (la mediana), y nunca menos de ocho gastos.
+  const cuenta = {}; gastos.forEach(function (t) { cuenta[t.mes] = (cuenta[t.mes] || 0) + 1; });
+  const cs = Object.keys(cuenta).filter(function (m) { return m < hoy; }).map(function (m) { return cuenta[m]; }).sort(function (a, b) { return a - b; });
+  const minimo = Math.max(8, Math.round((cs.length ? cs[Math.floor(cs.length / 2)] : 0) * 0.35));
+  const todos = Object.keys(cuenta).filter(function (m) { return m < hoy; }).sort();
+  const completos = todos.filter(function (m) { return cuenta[m] >= minimo; }).slice(-8);
+  const enCurso = cuenta[hoy] ? hoy : null;
+  const res = { hoy: hoy, completos: completos, enCurso: enCurso, totalMov: 0, leidos: 0, ritmos: [], subs: [], dinero: null,
+                flojos: todos.filter(function (m) { return cuenta[m] < minimo; }).length };
+  if (completos.length < 3) { res.poca = true; return res; }
+  const ventana = {}; completos.forEach(function (m) { ventana[m] = 1; }); if (enCurso) ventana[enCurso] = 1;
+  const ingresos = {};
+  filas.forEach(function (t) { if (t.tipo === 'Ingreso' && ventana[t.mes]) ingresos[t.mes] = (ingresos[t.mes] || 0) + (Number(t.impPesos) || 0); });
+
+  const T = {};
+  gastos.forEach(function (t) {
+    if (!ventana[t.mes]) return;
+    res.totalMov++;
+    const x = derivaTema(t);
+    if (!x) return;
+    res.leidos++;
+    const o = T[x.tema] || (T[x.tema] = { tema: x.tema, con: x.con, veces: {}, pesos: {}, usd: {}, comercio: 0, rubro: 0, items: [] });
+    o.veces[t.mes] = (o.veces[t.mes] || 0) + 1;
+    o.pesos[t.mes] = (o.pesos[t.mes] || 0) + (Number(t.impPesos) || 0);
+    o.usd[t.mes] = (o.usd[t.mes] || 0) + (Number(t.impUSD) || 0);
+    o[x.via === 'rubro' ? 'rubro' : 'comercio']++;
+    o.items.push({ mes: t.mes, key: x.key, pesos: Number(t.impPesos) || 0, usd: Number(t.impUSD) || 0 });
+  });
+
+  // Ritmos: los dos últimos meses completos contra los anteriores.
+  const ult2 = completos.slice(-2), antes = completos.slice(0, -2);
+  Object.keys(T).forEach(function (k) {
+    if (!DRV_RITMO[k]) return;
+    const o = T[k];
+    const veces = completos.map(function (m) { return o.veces[m] || 0; });
+    const total = veces.reduce(function (a, b) { return a + b; }, 0);
+    // Menos de una vez por mes no es un ritmo: es algo que pasa de vez en cuando.
+    if (total < Math.max(4, completos.length)) return;
+    const viejo = antes.reduce(function (a, m) { return a + (o.veces[m] || 0); }, 0) / antes.length;
+    const nuevo = ult2.reduce(function (a, m) { return a + (o.veces[m] || 0); }, 0) / 2;
+    // Un cambio de ritmo tiene que verse en LOS DOS meses: un pico en uno solo
+    // (las fiestas, un viaje) no es un hábito nuevo.
+    const v1 = o.veces[ult2[0]] || 0, v2 = o.veces[ult2[1]] || 0;
+    let tipo = 'parejo';
+    if (nuevo >= viejo * 1.5 && nuevo - viejo >= 1.5 && Math.min(v1, v2) >= viejo + 1) tipo = 'sube';
+    else if (nuevo <= viejo * 0.6 && viejo - nuevo >= 1.5 && Math.max(v1, v2) <= viejo - 1) tipo = 'baja';
+    const plata2 = ult2.reduce(function (a, m) { return a + (o.pesos[m] || 0); }, 0);
+    const ing2 = ult2.reduce(function (a, m) { return a + (ingresos[m] || 0); }, 0);
+    res.ritmos.push({ tema: k, veces: o.veces, total: total, viejo: viejo, nuevo: nuevo, tipo: tipo,
+      peso: ing2 > 0 ? plata2 / ing2 * 100 : null, plataMes: plata2 / 2, comercio: o.comercio, rubro: o.rubro });
+  });
+  const ord = { sube: 0, baja: 1, parejo: 2 };
+  res.ritmos.sort(function (a, b) {
+    return (ord[a.tipo] - ord[b.tipo]) || (Math.abs(b.nuevo - b.viejo) - Math.abs(a.nuevo - a.viejo)) || (b.total - a.total);
+  });
+  res.ritmos = res.ritmos.slice(0, 6);
+
+  // Lo que se cobra solo: suscripciones por servicio, mirando los últimos tres meses.
+  const ult3 = completos.slice(-3);
+  const subs = {};
+  ['Suscripciones de ocio', 'Herramientas y software'].forEach(function (k) {
+    (T[k] ? T[k].items : []).forEach(function (it) {
+      const nom = drvNomServicio(it.key || k);
+      const S = subs[nom] || (subs[nom] = { nom: nom, meses: {}, pesos: {}, usd: {} });
+      S.meses[it.mes] = 1; S.pesos[it.mes] = (S.pesos[it.mes] || 0) + it.pesos; S.usd[it.mes] = (S.usd[it.mes] || 0) + it.usd;
+    });
+  });
+  const fx = (typeof fxRate === 'function') ? fxRate() : 0;
+  res.subs = Object.keys(subs).map(function (k) {
+    const S = subs[k];
+    const pres = ult3.filter(function (m) { return S.meses[m]; });
+    if (!pres.length) return null;   // ya no se cobra
+    const mesP = pres.reduce(function (a, m) { return a + (S.pesos[m] || 0); }, 0) / pres.length;
+    const mesU = pres.reduce(function (a, m) { return a + (S.usd[m] || 0); }, 0) / pres.length;
+    const desde = completos.filter(function (m) { return S.meses[m]; })[0];
+    return { nom: S.nom, mesP: mesP, mesU: mesU, anioP: mesP * 12, anioU: mesU * 12, fijo: pres.length >= 2, desde: desde, ult: pres[pres.length - 1],
+             orden: mesP * 12 + mesU * 12 * (fx || 1000) };
+  }).filter(Boolean).sort(function (a, b) { return b.orden - a.orden; });
+
+  // Lo que se paga por la plata: comisiones, intereses, percepciones, deudas.
+  const din = { mesP: 0, mesU: 0, partes: {} };
+  ['Costos del dinero', 'Deudas'].forEach(function (k) {
+    if (!T[k]) return;
+    T[k].items.forEach(function (it) {
+      if (ult3.indexOf(it.mes) < 0) return;
+      din.mesP += it.pesos / ult3.length; din.mesU += it.usd / ult3.length;
+      const p = it.key || k.toLowerCase();
+      din.partes[p] = (din.partes[p] || 0) + it.pesos;
+    });
+  });
+  if (din.mesP > 0 || din.mesU > 0) {
+    din.anioP = din.mesP * 12; din.anioU = din.mesU * 12;
+    din.top = Object.keys(din.partes).sort(function (a, b) { return din.partes[b] - din.partes[a]; }).slice(0, 4);
+    res.dinero = din;
+  }
+  return res;
+}
+
+// ── La pantalla ─────────────────────────────────────────────────────────────
+function drvTira(r, R) {
+  const filas = R.completos.map(function (m, i) {
+    const n = r.veces[m] || 0;
+    const rec = i >= R.completos.length - 2;
+    return '<div class="drv-fila' + (rec ? ' reciente' : '') + '"><span class="drv-mes">' + drvMesTxt(m) + '</span>' +
+      '<span class="drv-puntos">' + (n ? '●'.repeat(Math.min(n, 22)) + (n > 22 ? ' +' + (n - 22) : '') : '·') + '</span><span class="drv-n">' + n + '</span></div>';
+  });
+  if (R.enCurso) {
+    const n = r.veces[R.enCurso] || 0;
+    filas.push('<div class="drv-fila curso"><span class="drv-mes">' + drvMesTxt(R.enCurso) + ' · en curso</span>' +
+      '<span class="drv-puntos">' + (n ? '○'.repeat(Math.min(n, 22)) : '·') + '</span><span class="drv-n">' + n + '</span></div>');
+  }
+  return filas.join('');
+}
+function drvPregunta(r) {
+  if (r.tipo === 'sube') return r.tema === 'Comer afuera' ? '¿Fue a propósito o se fue dando?' : '¿Qué cambió en tu casa estos dos meses?';
+  if (r.tipo === 'baja') return '¿Lo dejaste a propósito, o se está pagando por otro lado que no llega a Norte?';
+  return 'Es de lo más parejo de tu casa. ¿Te cierra este ritmo?';
+}
+function drvTarjetaRitmo(r, R) {
+  const tag = r.tipo === 'sube' ? '<span class="drv-tag sube">Subió el ritmo</span>'
+            : r.tipo === 'baja' ? '<span class="drv-tag baja">Bajó el ritmo</span>'
+            : '<span class="drv-tag parejo">Parejo</span>';
+  const conAlgo = R.completos.filter(function (m) { return r.veces[m]; }).length;
+  const dato = r.tipo === 'parejo'
+    ? (conAlgo === R.completos.length
+        ? (function (p) { return 'Más o menos <b>' + drvNum(p) + (drvNum(p) === '1' ? ' vez' : ' veces') + ' por mes</b>, todos los meses.'; })((r.viejo * (R.completos.length - 2) + r.nuevo * 2) / R.completos.length)
+        : 'Pasó en <b>' + conAlgo + ' de ' + R.completos.length + ' meses</b>, ' + r.total + (r.total === 1 ? ' vez' : ' veces') + ' en total: va y viene, todavía no es un ritmo.')
+    : 'Venías en <b>' + drvNum(r.viejo) + ' por mes</b>; los últimos dos meses, <b>' + drvNum(r.nuevo) + '</b>.';
+  const peso = (r.peso !== null && r.peso >= 0.5)
+    ? '<div class="drv-peso">Los últimos dos meses fue el ' + drvNum(r.peso) + '% de lo que entra en tu casa (unos ' + drvPesos(r.plataMes) + ' por mes).</div>' : '';
+  const via = r.rubro ? 'Lo reconocí por el comercio en ' + r.comercio + ' y por el rubro en ' + r.rubro + '.' : 'Lo reconocí por el nombre del comercio.';
+  return '<div class="drv-card"><div class="drv-cab"><div class="drv-tema">' + esc(r.tema) + '</div>' + tag + '</div>' +
+    drvTira(r, R) + '<div class="drv-dato">' + dato + '</div>' + peso +
+    '<div class="drv-preg">' + (r.tipo === 'parejo' && conAlgo < R.completos.length ? '¿Esto se compra en otro lado, o fue algo puntual?' : drvPregunta(r)) +
+    '</div><div class="drv-via">' + via + '</div></div>';
+}
+function drvPlata(p, u) {
+  const a = []; if (p > 0) a.push(drvPesos(p)); if (u > 0) a.push(drvUsd(u));
+  return a.join(' + ') || '$0';
+}
+function drvTarjetaInercia(R) {
+  // Lo que apareció una sola vez no se multiplica por doce: puede ser un pago
+  // anual o algo suelto, y anualizarlo inflaría el total. Se muestra, no se suma.
+  const sp = R.subs.reduce(function (a, x) { return a + (x.fijo ? x.anioP : 0); }, 0) + (R.dinero ? R.dinero.anioP : 0);
+  const su = R.subs.reduce(function (a, x) { return a + (x.fijo ? x.anioU : 0); }, 0) + (R.dinero ? R.dinero.anioU : 0);
+  if (!R.subs.length && !R.dinero) {
+    return '<div class="drv-card"><div class="drv-tema">Lo que se cobra solo</div><div class="drv-peso" style="margin-top:8px">' +
+      'No encontré suscripciones ni costos bancarios en tus últimos tres meses. Si pagás alguna con tarjeta, aparece cuando cargás el resumen.</div></div>';
+  }
+  const filas = R.subs.map(function (x) {
+    if (!x.fijo) return '<div class="drv-sub"><div>' + esc(x.nom) + '<small>' + drvPlata(x.mesP, x.mesU) + ' en ' + drvMesTxt(x.ult) +
+      ' · apareció una sola vez en los últimos 3 meses: puede ser un pago anual o algo suelto</small></div>' +
+      '<b style="color:var(--muted);font-weight:600">no lo sumé</b></div>';
+    return '<div class="drv-sub"><div>' + esc(x.nom) + '<small>' + drvPlata(x.mesP, x.mesU) + ' por mes · se cobra todos los meses' +
+      (x.desde ? ' · desde ' + drvMesTxt(x.desde) : '') + '</small></div>' +
+      '<b>' + drvPlata(x.anioP, x.anioU) + ' al año</b></div>';
+  }).join('');
+  const din = R.dinero ? '<div class="drv-sub"><div>Lo que pagás por la plata<small>' + esc(R.dinero.top.join(', ')) +
+      ' · promedio ' + drvPlata(R.dinero.mesP, R.dinero.mesU) + ' por mes</small></div><b>' + drvPlata(R.dinero.anioP, R.dinero.anioU) + ' al año</b></div>' : '';
+  return '<div class="drv-card"><div class="drv-cab"><div class="drv-tema">Lo que se cobra solo</div></div>' +
+    '<div class="drv-big">' + drvPlata(sp, su) + '</div><div class="drv-peso" style="margin:2px 0 10px">por año, si sigue como en los últimos tres meses</div>' +
+    filas + din +
+    '<div class="drv-preg">¿Las usás todas? Una que no uses es plata que se va sola todo el año, sin que nadie lo decida.</div></div>';
+}
+
+function drvRender() {
+  const cont = document.getElementById('drvCont');
+  if (!cont) return;
+  if (!drvHabilitado()) { cont.innerHTML = ''; return; }
+  const hero = function (sub, lee) {
+    return '<div class="drv-hero"><h2>' + '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20 L20 4" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.2 2.4" fill="none" opacity=".55"/><path d="M3 20 C 8 17, 7 11, 12 10 S 17 6, 19 5" stroke="#FF8A5C" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M19 2.6 L21.4 5 L19 7.4 L16.6 5 Z" fill="#FF8A5C"/></svg>' + ' Deriva <span class="drv-chip" style="margin-left:4px">PILOTO</span></h2>' +
+      '<p>' + sub + '</p>' + (lee ? '<div class="drv-lee">' + lee + '</div>' : '') + '</div>';
+  };
+  if (drvPremiumBloquea()) {
+    cont.innerHTML = hero('Deriva es parte de Norte PRO y TOP. Durante el lanzamiento estuvo abierta para todos los planes.') +
+      '<button class="btn btn-primary" onclick="openPlanModal()">Ver los planes</button>';
+    return;
+  }
+  let R;
+  try { R = drvCalcular(); } catch (e) { cont.innerHTML = hero('No pude leer tus datos ahora. Probá de nuevo en un rato.'); return; }
+  const intro = 'Todas las apps comparan pesos. Con la inflación, los pesos mienten: un +30% puede ser que gastaste más o que aumentó. ' +
+    'Deriva cuenta <b style="color:#fff">veces</b>: cuántas veces por mes pasa cada cosa en tu casa, y si ese ritmo cambió.';
+  if (R.poca) {
+    cont.innerHTML = hero(intro) +
+      '<div class="drv-card"><div class="drv-tema">Todavía me falta historia</div><div class="drv-dato">Para ver un ritmo necesito al menos <b>3 meses completos</b> cargados. ' +
+      'Hoy tenés ' + R.completos.length + (R.completos.length === 1 ? ' mes completo' : ' meses completos') + '.</div>' +
+      '<div class="drv-peso">Lo más rápido: subí resúmenes de tarjeta de meses anteriores. Cada resumen es un mes entero de historia.</div></div>';
+    return;
+  }
+  const pct = R.totalMov ? Math.round(R.leidos / R.totalMov * 100) : 0;
+  const lee = 'Mirando ' + R.completos.length + ' meses completos (' + drvMesTxt(R.completos[0]) + ' a ' + drvMesTxt(R.completos[R.completos.length - 1]) + ')' +
+    (R.enCurso ? ' y ' + drvMesTxt(R.enCurso) + ' en curso' : '') +
+    (R.flojos ? ' (dejé afuera ' + (R.flojos === 1 ? 'un mes' : R.flojos + ' meses') + ' con muy pocos movimientos cargados)' : '') + '. Reconocí ' + R.leidos + ' de ' + R.totalMov + ' gastos (' + pct + '%)' +
+    (pct < 90 ? ': los pagos por transferencia o QR muchas veces no dicen el comercio.' : '.');
+  const ritmos = R.ritmos.length
+    ? '<div class="drv-grid">' + R.ritmos.map(function (r) { return drvTarjetaRitmo(r, R); }).join('') + '</div>'
+    : '<div class="drv-card"><div class="drv-peso">Ningún hábito llega todavía a cuatro veces en estos meses. Con más movimientos con el nombre del comercio, aparecen.</div></div>';
+  cont.innerHTML = hero(intro, lee) +
+    '<div class="drv-sec">Tus ritmos</div>' + ritmos +
+    '<div class="drv-sec">Lo que se cobra solo</div>' + drvTarjetaInercia(R) +
+    '<div style="font-size:12px;color:var(--muted);line-height:1.55;margin:16px 2px 4px">Deriva es un piloto: lo estás viendo antes que nadie. ' +
+    'Los números salen sólo de lo que cargaste; Norte no inventa ni completa nada. ' +
+    '<a href="#" onclick="drvEncAbrir(true);return false" style="color:var(--primary);font-weight:700">Contanos qué te pareció</a></div>';
+}
+
+// ── La encuesta del piloto ───────────────────────────────────────────────────
+// Aparece sola una vez que la persona miró Deriva: al salir de la pantalla
+// (si estuvo al menos 15 segundos) o al abrir la app otro día. Si dice «más
+// tarde», vuelve a aparecer al día siguiente; como mucho tres veces.
+function drvEncGuardar(patch) {
+  _drvEnc = Object.assign(_drvEnc || {}, patch);
+  try { firebase.database().ref('norteSync/derivaEncuesta/' + curUserId()).update(patch).catch(function () {}); } catch (e) {}
+}
+function drvAlEntrar() {
+  _drvEntro = Date.now();
+  if (!_drvEnc || drvEsSuper()) return;
+  const p = { vistas: (Number(_drvEnc.vistas) || 0) + 1, ultVista: Date.now() };
+  if (!_drvEnc.primeraVista) p.primeraVista = Date.now();
+  drvEncGuardar(p);
+}
+function drvAlSalir() {
+  if (_drvEntro && Date.now() - _drvEntro >= 15000) drvEncQuizas(700, true);
+  _drvEntro = 0;
+}
+function drvEncQuizas(ms, saliendo) {
+  if (_drvEncSesion || drvEsSuper() || !_drvPiloto || !_drvEnc) return;
+  if (_drvEnc.resp || (Number(_drvEnc.preguntas) || 0) >= 3) return;
+  if (!saliendo && !_drvEnc.primeraVista) return;            // nunca entró: todavía no hay qué opinar
+  if (Date.now() - (Number(_drvEnc.ultPregunta) || 0) < 20 * 3600000) return;
+  if (!saliendo && curPage === 'deriva') return;
+  _drvEncSesion = true;
+  setTimeout(function () { drvEncAbrir(false); }, ms || 0);
+}
+const DRV_ENC_Q = [
+  { k: 'r1', q: '¿Deriva te mostró algo de tu casa que no sabías?', ops: [['si', 'Sí'], ['algo', 'Más o menos'], ['no', 'No']] },
+  { k: 'r2', q: '¿Qué te sirvió más?', ops: [['ritmos', 'Los ritmos'], ['solo', 'Lo que se cobra solo'], ['nada', 'Nada todavía']] },
+  { k: 'r3', q: '¿Lo mirarías todos los meses?', ops: [['1', '1'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5']], ayuda: '1 = nunca · 5 = seguro que sí' }
+];
+let _drvEncResp = {};
+function drvEncAbrir(manual) {
+  if (document.getElementById('drvEncOv')) return;
+  const prueba = drvEsSuper();
+  if (!manual && !prueba) drvEncGuardar({ preguntas: (Number((_drvEnc || {}).preguntas) || 0) + 1, ultPregunta: Date.now() });
+  _drvEncResp = {};
+  const ov = document.createElement('div');
+  ov.className = 'drv-encov'; ov.id = 'drvEncOv';
+  ov.innerHTML = '<div class="drv-enc" role="dialog" aria-modal="true" aria-labelledby="drvEncTit">' +
+    '<h3 id="drvEncTit">¿Qué te pareció Deriva?</h3>' +
+    '<div style="font-size:13px;color:var(--muted);line-height:1.5">Sos de las primeras personas en verlo. Son tres toques y nos ayudás a decidir cómo sigue.' +
+    (prueba ? ' <b>(Vista previa del superadmin: no se guarda.)</b>' : '') + '</div>' +
+    DRV_ENC_Q.map(function (x) {
+      return '<div class="q">' + x.q + '</div><div class="ops">' + x.ops.map(function (o) {
+        return '<button type="button" class="op" data-k="' + x.k + '" data-v="' + o[0] + '" onclick="drvEncElegir(this)">' + o[1] + '</button>';
+      }).join('') + '</div>' + (x.ayuda ? '<div style="font-size:11.5px;color:var(--muted);margin-top:5px">' + x.ayuda + '</div>' : '');
+    }).join('') +
+    '<div class="q">¿Qué le cambiarías o agregarías? <span style="font-weight:400;color:var(--muted)">(opcional)</span></div>' +
+    '<textarea id="drvEncTxt" rows="3" maxlength="600" placeholder="Lo que quieras contarnos"></textarea>' +
+    '<div id="drvEncErr" style="display:none;margin-top:8px;font-size:12.5px;color:#ef4444">Contestá al menos la primera pregunta.</div>' +
+    '<div class="pie"><button type="button" class="btn" style="border:1px solid var(--border)" onclick="drvEncCerrar()">Más tarde</button>' +
+    '<button type="button" class="btn btn-primary" id="drvEncEnviar" onclick="drvEncEnviar()">Enviar</button></div></div>';
+  document.body.appendChild(ov);
+}
+function drvEncElegir(b) {
+  const k = b.getAttribute('data-k');
+  _drvEncResp[k] = b.getAttribute('data-v');
+  document.querySelectorAll('#drvEncOv .op[data-k="' + k + '"]').forEach(function (x) { x.classList.toggle('on', x === b); });
+}
+function drvEncCerrar() { const ov = document.getElementById('drvEncOv'); if (ov) ov.remove(); }
+function drvEncEnviar() {
+  if (!_drvEncResp.r1) { document.getElementById('drvEncErr').style.display = 'block'; return; }
+  const resp = { r1: _drvEncResp.r1, r2: _drvEncResp.r2 || '', r3: _drvEncResp.r3 || '',
+    txt: String((document.getElementById('drvEncTxt') || {}).value || '').trim().slice(0, 600),
+    ts: Date.now(), hogar: curEmpresa(), v: (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '') };
+  if (!drvEsSuper()) drvEncGuardar({ resp: resp });
+  const box = document.querySelector('#drvEncOv .drv-enc');
+  if (box) box.innerHTML = '<h3>¡Gracias!</h3><div style="font-size:14px;color:var(--muted);line-height:1.5;margin-top:6px">Lo vamos a leer uno por uno.</div>';
+  setTimeout(drvEncCerrar, 1600);
 }
 
 
@@ -18729,7 +19326,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.67.000';
+const APP_VERSION = 'v005.68.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -22525,6 +23122,7 @@ function iaPoolId() { return miHeredaDe || curEmpresa(); }
 function iniciarListenerPlan() {
   const empresaId = curEmpresa();
   try { iniciarLecturas(); iniciarListenerFX(); cargarGPSPioneros(); iniciarListenerNovedades(); iniciarListenerChatsAdmin(); } catch(e){}
+  try { drvIniciar(); } catch (e) {}
   firebase.database().ref('norteSync/billing/' + empresaId).on('value', snap => {
     const v = snap.val();
     miPlanActual = (v && v.tier) || 'FOCO';
@@ -24500,7 +25098,8 @@ function subtituloRumbo() {
       '<div class="admin-group-label">Puntos Norte y antigüedad</div>' +
       '<div class="card admin-section" id="saCanjesCard" style="margin-bottom:8px"></div>' +
       '<div class="card admin-section" id="saRankCard" style="margin-bottom:8px"></div>' +
-      '<div class="card admin-section" id="saAntigCard" style="margin-bottom:8px"></div>';
+      '<div class="card admin-section" id="saAntigCard" style="margin-bottom:8px"></div>' +
+      '<div class="card admin-section" id="saDrvCard" style="margin-bottom:8px"></div>';
     page.insertBefore(wrap, page.children[1] || null);
     return true;
   }
@@ -24530,6 +25129,9 @@ function subtituloRumbo() {
       }
       var us = d.usuarios || [];
       _saUsuarios = us;
+      _saDrv = {}; _saDrvEnc = {};
+      try { _saDrv = (await firebase.database().ref('norteSync/derivaPiloto').once('value')).val() || {}; } catch (e) { _saDrv = {}; }
+      try { _saDrvEnc = (await firebase.database().ref('norteSync/derivaEncuesta').once('value')).val() || {}; } catch (e) { _saDrvEnc = {}; }
       _saCanjesVistoPrev = null;
       // Cuántas personas entraron de verdad en el último mes. Es el número que
       // la suma de cuentas no dice.
@@ -24698,6 +25300,8 @@ function subtituloRumbo() {
   var _saAntigTodos = false;
   var _saCanjesTodos = false;
   var SA_DERIVA_MESES = 3;
+  var _saDrv = {};
+  var _saDrvEnc = {};
 
   function saUsuarioPorUid(uid) {
     return _saUsuarios.filter(function (u) { return u.uid === uid; })[0] || null;
@@ -24739,6 +25343,7 @@ function subtituloRumbo() {
     try { window.saPintarCanjes(); } catch (e) {}
     try { saPintarRanking(); } catch (e) {}
     try { saPintarAntiguedad(); } catch (e) {}
+    try { saPintarDrv(); } catch (e) {}
   }
 
   // ── Quién canjeó ──
@@ -24892,7 +25497,8 @@ function subtituloRumbo() {
       '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">' +
         '<thead><tr><th ' + SA_TH + '>#</th><th ' + SA_TH + '>Quién</th><th ' + SA_TH + '>Hogar</th><th ' + SA_TH + '>Alta</th>' +
         '<th ' + SA_TH + ' title="Meses distintos con movimientos cargados en su hogar principal, incluidos los que cargó hacia atrás.">Meses con datos</th>' +
-        '<th ' + SA_TH + '>Movimientos</th><th ' + SA_TH + ' title="Semanas con actividad en el hogar.">Semanas activas</th><th ' + SA_TH + '>Deriva</th></tr></thead><tbody>' +
+        '<th ' + SA_TH + '>Movimientos</th><th ' + SA_TH + ' title="Semanas con actividad en el hogar.">Semanas activas</th><th ' + SA_TH + '>Deriva</th>' +
+        '<th ' + SA_TH + ' title="Quién ve el piloto de Deriva. Lo activás o lo sacás con un toque.">Piloto</th></tr></thead><tbody>' +
         ver.map(function (f, i) {
           var listo = f.meses >= SA_DERIVA_MESES;
           var alta = f.alta ? fecha(f.alta) + '<div style="font-size:11.5px;color:var(--muted)">' +
@@ -24906,7 +25512,8 @@ function subtituloRumbo() {
             '<td ' + SA_TD + '>' + f.semanas + '</td>' +
             '<td ' + SA_TD + '>' + (listo
               ? '<span style="font-size:11px;font-weight:800;color:#0f766e;background:rgba(111,191,168,.22);border-radius:6px;padding:2px 7px;white-space:nowrap">Lista</span>'
-              : '<span style="font-size:11.5px;color:var(--muted);white-space:nowrap">' + (SA_DERIVA_MESES - f.meses === 1 ? 'falta 1 mes' : 'faltan ' + (SA_DERIVA_MESES - f.meses) + ' meses') + '</span>') + '</td></tr>';
+              : '<span style="font-size:11.5px;color:var(--muted);white-space:nowrap">' + (SA_DERIVA_MESES - f.meses === 1 ? 'falta 1 mes' : 'faltan ' + (SA_DERIVA_MESES - f.meses) + ' meses') + '</span>') + '</td>' +
+            '<td ' + SA_TD + '>' + saDrvBoton(f.u) + '</td></tr>';
         }).join('') + '</tbody></table></div>' +
       (filas.length > 10 ? '<div style="margin-top:8px"><button class="btn" style="font-size:12px;padding:5px 12px;border:1px solid var(--border)" onclick="saAntigVerTodos()">' +
         (_saAntigTodos ? 'Ver sólo los primeros 10' : 'Ver las ' + filas.length + ' cuentas') + '</button></div>' : '') +
@@ -24914,6 +25521,64 @@ function subtituloRumbo() {
         'y salen del resumen de Progreso que sube su aparato: si alguien no entra hace días, puede estar atrasado. Las filas grises no entraron en los últimos 30 días.</div>';
   }
   window.saAntigOrdenar = function (o) { _saAntigOrden = o; saPintarAntiguedad(); };
+
+  // ── Deriva · piloto ──
+  function saDrvActivo(uid) { var v = _saDrv[uid]; return !!(v && v.activo); }
+  function saDrvBoton(u) {
+    if (!u || !u.uid) return '';
+    return saDrvActivo(u.uid)
+      ? '<button class="btn" style="font-size:12px;padding:4px 10px;border:1px solid #6FBFA8;color:#0f766e;font-weight:700;white-space:nowrap" onclick="saDrvToggle(\'' + u.uid + '\')" title="Tocá para sacarlo del piloto">✓ Activo</button>'
+      : '<button class="btn" style="font-size:12px;padding:4px 10px;border:1px solid var(--border);white-space:nowrap" onclick="saDrvToggle(\'' + u.uid + '\')">Activar</button>';
+  }
+  window.saDrvToggle = async function (uid) {
+    if (!esSuper()) return;
+    var u = saUsuarioPorUid(uid);
+    var activo = saDrvActivo(uid);
+    if (activo && !confirm('¿Sacar a ' + saNomUsuario(u) + ' del piloto de Deriva? Deja de verlo al instante.')) return;
+    try {
+      var ref = firebase.database().ref('norteSync/derivaPiloto/' + uid);
+      if (activo) { await ref.remove(); delete _saDrv[uid]; }
+      else {
+        var v = { activo: true, ts: Date.now(), por: (getSession() || {}).userId || '' };
+        await ref.set(v); _saDrv[uid] = v;
+      }
+      saPintarAntiguedad(); saPintarDrv();
+    } catch (e) { alert('No se pudo: ' + (e && e.message || e)); }
+  };
+  var SA_DRV_TXT = {
+    r1: { si: 'Sí, algo nuevo', algo: 'Más o menos', no: 'Nada nuevo' },
+    r2: { ritmos: 'los ritmos', solo: 'lo que se cobra solo', nada: 'nada todavía' }
+  };
+  function saPintarDrv() {
+    var el = document.getElementById('saDrvCard');
+    if (!el) return;
+    var uids = Object.keys(_saDrv).filter(function (k) { return _saDrv[k] && _saDrv[k].activo; });
+    var resp = uids.filter(function (k) { return _saDrvEnc[k] && _saDrvEnc[k].resp; });
+    var vieron = uids.filter(function (k) { return _saDrvEnc[k] && _saDrvEnc[k].primeraVista; });
+    var filas = uids.map(function (k) {
+      var u = saUsuarioPorUid(k), e = _saDrvEnc[k] || {}, r = e.resp;
+      var opinion = r
+        ? '<b>' + esc(SA_DRV_TXT.r1[r.r1] || r.r1) + '</b>' + (r.r2 ? ' · le sirvió ' + esc(SA_DRV_TXT.r2[r.r2] || r.r2) : '') +
+          (r.r3 ? ' · lo miraría todos los meses: ' + esc(r.r3) + '/5' : '') +
+          (r.txt ? '<div style="margin-top:4px;font-style:italic;color:var(--text)">«' + esc(r.txt) + '»</div>' : '')
+        : '<span style="color:var(--muted)">' + (e.preguntas ? 'sin contestar (se le preguntó ' + e.preguntas + (e.preguntas === 1 ? ' vez' : ' veces') + ')' : 'todavía no se le preguntó') + '</span>';
+      return '<tr><td ' + SA_TD + '>' + saPersona(u) + '</td>' +
+        '<td ' + SA_TD + '>' + fecha(new Date(Number(_saDrv[k].ts) || 0).toISOString()) + '</td>' +
+        '<td ' + SA_TD + '>' + (e.primeraVista ? (Number(e.vistas) || 1) + (Number(e.vistas) === 1 ? ' vez' : ' veces') + '<div style="font-size:11.5px;color:var(--muted)">última ' + haceCuanto(new Date(Number(e.ultVista || e.primeraVista)).toISOString()) + '</div>' : '<span style="color:var(--muted)">todavía no entró</span>') + '</td>' +
+        '<td ' + SA_TD + '>' + opinion + '</td></tr>';
+    }).join('');
+    el.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px">' +
+        '<div style="font-size:15px;font-weight:700;color:var(--text)">🧭 Deriva · piloto</div>' +
+        '<button class="btn" style="font-size:12px;padding:5px 12px;border:1px solid var(--border)" onclick="drvEncAbrir(true)">Ver la encuesta como la ven</button>' +
+      '</div>' +
+      '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:10px">' +
+        uids.length + (uids.length === 1 ? ' persona activada' : ' personas activadas') + ' · ' + vieron.length + ' ya entraron · ' + resp.length + ' contestaron la encuesta. ' +
+        'Se activa con el botón <b>Activar</b> de la tabla de antigüedad. Vos lo ves siempre, con los datos del hogar en el que estés.</div>' +
+      (uids.length ? '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr>' +
+        '<th ' + SA_TH + '>Quién</th><th ' + SA_TH + '>Activado</th><th ' + SA_TH + '>Entró</th><th ' + SA_TH + '>Qué opinó</th></tr></thead><tbody>' + filas + '</tbody></table></div>'
+        : '<div style="font-size:13px;color:var(--muted)">Todavía no activaste a nadie.</div>');
+  }
   window.saAntigVerTodos = function () { _saAntigTodos = !_saAntigTodos; saPintarAntiguedad(); };
 
 
