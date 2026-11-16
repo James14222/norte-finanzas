@@ -1157,6 +1157,12 @@ tr:hover td { background: #fafbfc; }
 .form-group input:focus, .form-group select:focus { border-color: var(--primary); background: white; }
 .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
 /* Formulario de movimientos (v005.68.002) */
+.usd-eq { margin-top: 5px; font-size: 11.5px; color: var(--muted); line-height: 1.4; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.usd-eq b { color: var(--text); font-weight: 700; }
+.usd-eq button { border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 7px; padding: 3px 9px; font-size: 11.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.usd-eq button:hover { border-color: var(--primary); color: var(--primary); }
+.tx-pesif-nota { margin: -4px 0 12px; padding: 8px 12px; border-radius: 8px; background: rgba(37,99,235,.10); color: var(--text); font-size: 12.5px; line-height: 1.45; }
+.tx-pesif-nota a { color: var(--primary); font-weight: 700; cursor: pointer; margin-left: 6px; }
 .tx-tipos { display: flex; flex-wrap: wrap; gap: 0 26px; }
 .tx-pag { display: flex; gap: 8px; align-items: stretch; }
 .tx-pag .calc-wrap, .tx-pag > input { flex: 1; min-width: 0; }
@@ -4086,6 +4092,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
       <div class="qp-field">
         <div class="qp-label">Importe USD</div>
         <input class="qp-input money" id="qpUSD" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+        <div class="usd-eq" id="qpUsdEq" style="display:none"></div>
       </div>
     </div>
     <div class="qp-row">
@@ -5739,8 +5746,10 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
         <div class="form-group">
           <label>Importe USD</label>
           <input class="money" id="txImpUSD" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+          <div class="usd-eq" id="txUsdEq" style="display:none"></div>
         </div>
       </div>
+      <div id="txPesifNota" class="tx-pesif-nota" style="display:none"></div>
       <div id="txReintegroAviso" style="display:none;margin:-4px 0 12px;padding:8px 12px;border-radius:8px;background:#dcfce7;color:#166534;font-size:12.5px;line-height:1.4">
         <strong>↩ Reintegro.</strong> Un gasto con importe negativo es plata que vuelve (bonificación, devolución). Resta del gasto del mes y del pago de la tarjeta.
       </div>
@@ -19442,7 +19451,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.68.002';
+const APP_VERSION = 'v005.69.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -20634,6 +20643,8 @@ function openModal(id) {
   }
   txPintarReintegro();
   txPintarPagUsd();
+  _txPesif = null;
+  try { txPintarUsd(); } catch (e) {}
   try { dvPintarModal(); } catch (e) {}
   document.getElementById('modalOverlay').classList.add('show');
 }
@@ -20642,6 +20653,91 @@ function closeModal() {
   document.getElementById('modalOverlay').classList.remove('show');
 }
 // «Monto Pagado USD» sólo cuando hay algo en dólares (o ya había un pago en USD).
+// ── Dólares en el formulario (v005.69) ─────────────────────────────────────
+// Norte guarda los dólares como dólares y los convierte al mostrar, con la
+// cotización oficial del día (fxRate). Acá sólo se MUESTRA cuánto es en pesos.
+// «Pasar a pesos» es la excepción a pedido: convierte el movimiento y lo deja
+// fijo en pesos, para quien lo pagó en pesos y no quiere que su valor siga
+// moviéndose con el dólar. Nunca deja los dos importes cargados: eso lo
+// contaría dos veces en todos los totales.
+let _txPesif = null;
+function usdEqTxt(usd) {
+  const r = (typeof fxRate === 'function') ? fxRate() : 0;
+  if (!(r > 0) || !(usd > 0)) return '';
+  return '<span>≈ <b>' + fmtPz(Math.round(usd * r)) + '</b> al dólar oficial de hoy (' + fmtPz(r) + ', BNA)</span>';
+}
+function txHoyISO() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function txPuedePesificar() {
+  const id = (document.getElementById('txId') || {}).value;
+  const t = id ? getData().find(function (x) { return x.id === id; }) : null;
+  if (t && t.transf) return false;                                   // transferencias: se mueven enteras entre hogares
+  if (t && typeof dvEsDividida === 'function' && dvEsDividida(t)) return false;   // el reparto está hecho en dólares
+  return true;
+}
+function txPintarUsd() {
+  const eq = document.getElementById('txUsdEq');
+  if (eq) {
+    const usd = numVal('txImpUSD');
+    const txt = usdEqTxt(usd);
+    eq.innerHTML = txt ? txt + (txPuedePesificar() ? '<button type="button" onclick="txPasarAPesos()" title="Convertir este movimiento a pesos con la cotización de hoy">💱 Pasar a pesos</button>' : '') : '';
+    eq.style.display = txt ? 'flex' : 'none';
+  }
+  const nota = document.getElementById('txPesifNota');
+  if (!nota) return;
+  if (_txPesif) {
+    nota.innerHTML = '💱 Pasado a pesos: ' + fmtU(_txPesif.usd) + ' × ' + fmtPz(_txPesif.tc) + ' (oficial BNA de hoy) = <b>' +
+      fmtPz(Math.round(_txPesif.usd * _txPesif.tc)) + '</b>. Se guarda al tocar Guardar.<a onclick="txDeshacerPesos()">Deshacer</a>';
+    nota.style.display = 'block';
+    return;
+  }
+  const id = (document.getElementById('txId') || {}).value;
+  const t = id ? getData().find(function (x) { return x.id === id; }) : null;
+  if (t && t.pesificado && !numVal('txImpUSD')) {
+    const f = String(t.pesificado.fecha || '').split('-').reverse().join('/');
+    nota.innerHTML = '💱 Este movimiento era de ' + fmtU(t.pesificado.usd) + ' y se pasó a pesos' + (f ? ' el ' + f : '') +
+      ', a ' + fmtPz(t.pesificado.tc) + ' por dólar. Si el resumen te cobró otro importe, corregilo en Importe pesos.';
+    nota.style.display = 'block';
+    return;
+  }
+  nota.style.display = 'none';
+}
+function qpPintarUsd() {
+  const eq = document.getElementById('qpUsdEq');
+  if (!eq) return;
+  const txt = usdEqTxt(numVal('qpUSD'));
+  eq.innerHTML = txt; eq.style.display = txt ? 'flex' : 'none';
+}
+document.addEventListener('input', function (e) {
+  const id = e.target && e.target.id;
+  if (id === 'txImpUSD') { try { txPintarUsd(); } catch (er) {} }
+  if (id === 'qpUSD') { try { qpPintarUsd(); } catch (er) {} }
+});
+function txPasarAPesos() {
+  const r = (typeof fxRate === 'function') ? fxRate() : 0;
+  ['txImpPesos', 'txImpUSD', 'txPagado', 'txPagadoUSD'].forEach(function (c) { try { calcAsentar(c); } catch (e) {} });
+  const usd = numVal('txImpUSD');
+  if (!(r > 0) || !(usd > 0)) return;
+  const pesos = Math.round(usd * r * 100) / 100;
+  if (!confirm('¿Pasar ' + fmtU(usd) + ' a pesos?\n\n' +
+      'Con el dólar oficial de hoy (' + fmtPz(r) + ', BNA) son ' + fmtPz(Math.round(pesos)) + '.\n' +
+      'Queda fijo en pesos: ya no cambia con el dólar ni aparece como deuda en dólares.\n\n' +
+      'Si lo pagaste con tarjeta, el resumen suele cobrarlo más caro por los impuestos: cuando sepas el importe real, corregilo en Importe pesos.')) return;
+  const impP = numVal('txImpPesos') || 0, pagP = numVal('txPagado') || 0, pagU = numVal('txPagadoUSD') || 0;
+  _txPesif = { usd: usd, pagU: pagU, tc: r, fecha: txHoyISO(), prev: { impP: impP, impU: usd, pagP: pagP, pagU: pagU } };
+  ['txImpPesos', 'txImpUSD', 'txPagado', 'txPagadoUSD'].forEach(function (c) { try { calcReset(c); } catch (e) {} });
+  numSet('txImpPesos', Math.round((impP + pesos) * 100) / 100);
+  numSet('txImpUSD', 0);
+  numSet('txPagado', Math.round((pagP + pagU * r) * 100) / 100);
+  numSet('txPagadoUSD', 0);
+  txPintarPagUsd(); txPintarReintegro(); txPintarUsd();
+}
+function txDeshacerPesos() {
+  if (!_txPesif) return;
+  const p = _txPesif.prev;
+  _txPesif = null;
+  numSet('txImpPesos', p.impP); numSet('txImpUSD', p.impU); numSet('txPagado', p.pagP); numSet('txPagadoUSD', p.pagU);
+  txPintarPagUsd(); txPintarReintegro(); txPintarUsd();
+}
 function txTotalHecho(b) {
   if (!b) return;
   b.classList.add('hecho');
@@ -20734,6 +20830,9 @@ function saveTx(e) {
   [['impPesos', 'txImpPesos', impP], ['impUSD', 'txImpUSD', impU], ['pagado', 'txPagado', pagado], ['pagadoUSD', 'txPagadoUSD', pagadoUSD]]
     .forEach(function (f) { const e = calcCuentaDe(f[1], f[2]); if (e) cta[f[0]] = e; });
   if (Object.keys(cta).length) tx.cta = cta;
+  // Si se pasó a pesos en este formulario, queda escrito cuántos dólares eran,
+  // a qué cotización y cuándo: el número en pesos se puede explicar siempre.
+  if (_txPesif) tx.pesificado = { usd: _txPesif.usd, pagUsd: _txPesif.pagU, tc: _txPesif.tc, fecha: _txPesif.fecha };
 
   const data = getData();
   // Una pata de transferencia: si cambia lo que comparten, cambia la otra.
@@ -21765,6 +21864,7 @@ function resetQpForm() {
   qpVia = '';
   setQpTipo('Gasto');
   ['qpDetalle','qpPesos','qpUSD','qpRubro','qpRubroCustom','qpPagado','qpDueno'].forEach(id => document.getElementById(id).value = '');
+  try { qpPintarUsd(); } catch (e) {}
   document.getElementById('qpDuenoField').style.display = 'none';
   document.getElementById('qpCustomRubroWrap').classList.remove('show');
   document.getElementById('qpMes').value = curKey();
@@ -22108,7 +22208,10 @@ function saveQuickTx() {
   // Vacío significa "pagado completo", así que se mira el texto y no el número:
   // con numVal() un campo vacío da 0 y se perdería esa diferencia.
   const qpPagTexto = (document.getElementById('qpPagado').value || '').trim();
-  if (!detalle || !pesos) { alert('Completá al menos Detalle e Importe $'); return; }
+  // Alcanza con un importe: en pesos o en dólares. Los dólares se guardan tal
+  // cual y los totales los convierten con la cotización del día; exigir pesos
+  // obligaba a hacer la cuenta a mano (y si se cargaban los dos, se contaba doble).
+  if (!detalle || (!pesos && !usd)) { alert('Completá al menos Detalle y un importe (en pesos o en dólares).'); return; }
   const pagadoFinal = (qpPagTexto === '') ? pesos : numVal('qpPagado');
   const qpMes = document.getElementById('qpMes').value || curKey();
   const tipoGasto = qpTipoGasto || 'Variable';
