@@ -2368,6 +2368,113 @@ html[data-tema="noche"] .qp-modo.qp-modo-texto { color:#8fb2ff; }
 .drv-enc textarea { width: 100%; margin-top: 8px; border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; font: inherit; font-size: 13.5px; background: var(--bg); color: var(--text); resize: vertical; box-sizing: border-box; }
 .drv-enc .pie { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
 .drv-card.clic, .drv-sub.clic { cursor: pointer; }
+/* ── Deriva v2 (v005.70). Fondo propio, siempre oscuro: es una carta náutica,
+   no una pantalla más de la app. ── */
+#page-deriva.active { padding: 0; }
+.main:has(#page-deriva.active) .content { padding: 0; }
+.drv2 { --abismo:#0A1B2A; --casco:#12293B; --casco2:#183449; --espuma:#EAF2F7; --niebla:#8DA3B5; --linea:#24425A;
+  --coral:#FF8A5C; --coral2:#FFB497; --vidrio:#5FD3BC;
+  --disp:'Bricolage Grotesque',Inter,system-ui,-apple-system,'Segoe UI',sans-serif;
+  background: var(--abismo); color: var(--espuma); min-height: 100%; padding: 26px 28px 56px; border-radius: 0; }
+.drv2 .in { max-width: 1120px; margin: 0 auto; }
+.drv2 .marca { display:flex; align-items:center; gap:10px; color:var(--niebla); font-size:13.5px; font-weight:600; }
+.drv2 .marca svg { width:22px; height:22px; }
+.drv2 .marca .pil { color:var(--abismo); background:var(--coral); border-radius:6px; padding:1px 7px; font-size:11px; font-weight:700; }
+.drv2 .tit { font-family:var(--disp); font-weight:700; font-size:clamp(28px,4.4vw,52px); line-height:1.05; letter-spacing:-.02em; max-width:18ch; margin:14px 0 8px; color:#fff; }
+.drv2 .tit .n { color:var(--coral); }
+.drv2 .baj { color:var(--niebla); max-width:64ch; margin:0; font-size:14.5px; line-height:1.55; }
+.drv2 .carta { position:relative; margin-top:22px; background:linear-gradient(180deg,var(--casco) 0%,var(--abismo) 100%); border-radius:22px; padding:16px 0 8px; overflow:hidden; }
+.drv2 .desliza { overflow-x:auto; -webkit-overflow-scrolling:touch; padding:0 16px; }
+.drv2 .carta svg { display:block; width:100%; height:auto; min-width:640px; }
+.drv2 .carta .ret line { stroke:var(--linea); stroke-width:1; }
+.drv2 .carta .mes { fill:var(--niebla); font:600 12px Inter,system-ui,sans-serif; }
+.drv2 .carta .eti { font:700 13px Inter,system-ui,sans-serif; }
+.drv2 .carta .eti tspan { font-weight:500; fill:var(--niebla); }
+.drv2 .franja { cursor:pointer; }
+.drv2 .franja:hover { filter:brightness(1.12); }
+.drv2 .lect { display:flex; flex-wrap:wrap; gap:6px 18px; color:var(--niebla); font-size:12.5px; padding:6px 22px 8px; }
+.drv2 .lect i { display:inline-block; width:18px; height:6px; border-radius:3px; margin-right:6px; vertical-align:middle; }
+.drv2 h2 { font-family:var(--disp); font-weight:700; font-size:25px; letter-spacing:-.01em; margin:44px 0 6px; color:#fff; }
+.drv2 .sub { color:var(--niebla); margin:0 0 16px; max-width:66ch; font-size:14px; line-height:1.55; }
+.drv2 .filas { border-top:1px solid var(--linea); }
+.drv2 .fila { display:grid; grid-template-columns:minmax(130px,1.2fr) minmax(150px,1.3fr) minmax(150px,1fr) 104px; align-items:center; gap:16px; padding:15px 6px; border-bottom:1px solid var(--linea); cursor:pointer; }
+.drv2 .fila:hover { background:rgba(255,255,255,.03); }
+.drv2 .fila:focus-visible, .drv2 .franja:focus-visible, .drv2 button:focus-visible { outline:2px solid var(--coral); outline-offset:2px; }
+.drv2 .tema { font-weight:700; font-size:16px; }
+.drv2 .tema small { display:block; font-weight:500; color:var(--niebla); font-size:12.5px; margin-top:1px; }
+.drv2 .barras { display:flex; align-items:flex-end; gap:6px; height:48px; }
+.drv2 .barras .c { flex:1; max-width:22px; display:flex; flex-direction:column; align-items:center; gap:3px; height:100%; justify-content:flex-end; }
+.drv2 .barras b { display:block; width:100%; border-radius:4px; background:#3E5A71; min-height:2px; }
+.drv2 .barras .c.ult b { background:var(--cb,var(--coral)); }
+.drv2 .barras .c.cur b { background:transparent; box-shadow:inset 0 0 0 1.4px #53708A; }
+.drv2 .barras em { font-style:normal; font-size:10px; color:var(--niebla); line-height:1; }
+.drv2 .antes { font-size:13.5px; color:var(--niebla); }
+.drv2 .antes strong { font-family:var(--disp); font-size:22px; color:var(--espuma); font-weight:700; margin:0 2px; }
+.drv2 .delta { justify-self:end; font-family:var(--disp); font-weight:800; font-size:20px; border-radius:12px; padding:6px 12px; min-width:90px; text-align:center; }
+.drv2 .delta.sube { background:rgba(255,138,92,.16); color:var(--coral); }
+.drv2 .delta.baja { background:rgba(95,211,188,.14); color:var(--vidrio); }
+.drv2 .delta.parejo, .drv2 .delta.va { background:rgba(141,163,181,.12); color:var(--niebla); font-size:13px; font-family:Inter,system-ui,sans-serif; font-weight:600; }
+.drv2 .goteo { background:var(--casco); border-radius:22px; padding:24px; }
+.drv2 .total { font-family:var(--disp); font-weight:800; font-size:clamp(34px,5vw,56px); letter-spacing:-.02em; line-height:1; color:#fff; }
+.drv2 .total span { font-size:.48em; color:var(--niebla); font-weight:700; margin-left:8px; }
+.drv2 .goteo p { color:var(--niebla); margin:8px 0 18px; font-size:14px; }
+.drv2 .tira { display:flex; height:34px; border-radius:10px; overflow:hidden; gap:2px; }
+.drv2 .tira div { height:100%; cursor:pointer; }
+.drv2 .servs { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:4px 32px; margin-top:16px; }
+.drv2 .serv { display:flex; align-items:baseline; gap:9px; font-size:13.5px; padding:6px 0; cursor:pointer; color:var(--espuma); }
+.drv2 .serv:hover { color:#fff; }
+.drv2 .serv i { flex:none; width:10px; height:10px; border-radius:3px; transform:translateY(1px); }
+.drv2 .serv b { margin-left:auto; font-weight:600; white-space:nowrap; }
+.drv2 .serv.suelto { color:var(--niebla); }
+.drv2 .serv.suelto b { font-weight:500; }
+.drv2 .preg { margin-top:16px; padding-top:14px; border-top:1px solid var(--linea); font-size:15px; }
+.drv2 .lente { display:grid; grid-template-columns:minmax(0,320px) minmax(0,1fr); gap:24px; align-items:start; }
+.drv2 .vision { background:var(--casco); border-radius:22px; padding:22px; }
+.drv2 .anillo { position:relative; width:170px; height:170px; margin:4px auto 10px; }
+.drv2 .anillo svg { transform:rotate(-90deg); }
+.drv2 .anillo .cc { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.drv2 .anillo strong { font-family:var(--disp); font-size:38px; font-weight:800; line-height:1; color:#fff; }
+.drv2 .anillo span { font-size:12.5px; color:var(--niebla); }
+.drv2 .vision ul { list-style:none; padding:0; margin:12px 0 0; font-size:13.5px; }
+.drv2 .vision li { display:flex; justify-content:space-between; gap:10px; padding:7px 0; border-top:1px solid var(--linea); }
+.drv2 .vision li b { font-weight:600; }
+.drv2 .vision li button { all:unset; cursor:pointer; color:var(--coral2); font-weight:600; }
+.drv2 .empuje { margin-top:8px; font-size:13px; color:var(--niebla); line-height:1.5; }
+.drv2 .empuje strong { color:var(--espuma); }
+.drv2 .esc { display:flex; flex-direction:column; gap:10px; }
+.drv2 .pel { display:grid; grid-template-columns:44px 1fr auto; gap:14px; align-items:center; padding:16px 18px; border-radius:16px; background:var(--casco); }
+.drv2 .pel .ic { width:44px; height:44px; border-radius:12px; display:grid; place-items:center; background:var(--casco2); }
+.drv2 .pel .ic svg { width:24px; height:24px; }
+.drv2 .pel h3 { margin:0; font-size:15.5px; color:var(--espuma); }
+.drv2 .pel p { margin:2px 0 0; color:var(--niebla); font-size:13px; line-height:1.45; }
+.drv2 .pel .est { font-size:12.5px; font-weight:700; white-space:nowrap; color:var(--espuma); }
+.drv2 .pel.ok .est { color:var(--vidrio); }
+.drv2 .pel.lock { background:transparent; box-shadow:inset 0 0 0 1.5px var(--linea); }
+.drv2 .pel.lock .ic { background:transparent; box-shadow:inset 0 0 0 1.5px var(--linea); }
+.drv2 .barrita { grid-column:2/4; height:6px; border-radius:3px; background:var(--linea); overflow:hidden; }
+.drv2 .barrita b { display:block; height:100%; background:var(--coral); border-radius:3px; }
+.drv2 .temas { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.drv2 .temas button { border:1px solid var(--linea); background:transparent; color:var(--espuma); border-radius:999px; padding:6px 12px; font:inherit; font-size:13px; cursor:pointer; }
+.drv2 .temas button:hover { border-color:var(--coral); }
+.drv2 .temas button b { color:var(--niebla); font-weight:700; margin-left:5px; }
+.drv2 .pie { margin-top:36px; color:var(--niebla); font-size:12.5px; max-width:72ch; line-height:1.55; }
+.drv2 .pie a { color:var(--coral); font-weight:700; cursor:pointer; }
+.drv2 .vacio { background:var(--casco); border-radius:22px; padding:24px; margin-top:22px; font-size:14.5px; color:var(--espuma); line-height:1.55; }
+@media (max-width:760px) {
+  .drv2 { padding:18px 14px 44px; }
+  .drv2 .carta { margin-left:-2px; margin-right:-2px; }
+  .drv2 .fila { grid-template-columns:1fr auto; gap:8px 12px; }
+  .drv2 .fila .barras { grid-column:1/3; order:3; }
+  .drv2 .fila .antes { grid-column:1/3; order:4; }
+  .drv2 .lente { grid-template-columns:1fr; }
+  .drv2 .pel { grid-template-columns:40px 1fr; }
+  .drv2 .pel .est { grid-column:2; }
+  .drv2 .barrita { grid-column:1/3; }
+}
+@media (prefers-reduced-motion:no-preference) {
+  .drv2 .franja { animation:drv2sube .8s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes drv2sube { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+}
 .drv-card.clic:hover { border-color: #FF8A5C; }
 .drv-sub.clic:hover { background: var(--bg); }
 .drv-fila.clic { cursor: pointer; border-radius: 6px; }
@@ -11591,52 +11698,231 @@ function drvTarjetaInercia(R) {
     '<div class="drv-preg">¿Las usás todas? Una que no uses es plata que se va sola todo el año, sin que nadie lo decida.</div></div>';
 }
 
+// ══════════ DERIVA v2 · la pantalla (v005.70) ══════════════════════════════
+// Arranca por el hallazgo dicho en una frase; abajo, la carta de ritmos (cada
+// hábito es una franja y su ancho es cuántas veces pasó ese mes), qué cambió,
+// lo que se cobra solo y cuánto ve Deriva de la casa. Todos los números salen
+// de drvCalcular: la pantalla no cuenta nada por su cuenta.
+const DRV_VERBO = { 'Comer afuera': 'sale a comer afuera', 'Súper': 'va al súper', 'Del barrio': 'compra en el barrio',
+  'Kiosco': 'pasa por el kiosco', 'Nafta': 'carga nafta', 'Mantenimiento': 'lleva el auto al taller', 'Farmacia': 'va a la farmacia',
+  'Consultas y estudios': 'va al médico', 'Moverse el cuerpo': 'va a entrenar', 'Apps de viaje': 'pide un auto',
+  'Transporte público': 'viaja en transporte público', 'Viajes': 'viaja', 'Salidas': 'sale', 'Ropa': 'compra ropa' };
+const DRV_MES_LARGO = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+function drv2MesLargo(ym) { return DRV_MES_LARGO[Number(String(ym).split('-')[1]) - 1] || ym; }
+function drv2Fuente() {
+  // La tipografía de Deriva se pide sólo cuando se abre Deriva: al resto de la
+  // app no le agrega ni un byte. Si no carga, queda la del sistema.
+  if (document.getElementById('drv2Fuente')) return;
+  const l = document.createElement('link');
+  l.id = 'drv2Fuente'; l.rel = 'stylesheet';
+  l.href = 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap';
+  document.head.appendChild(l);
+}
+function drv2Veces(r, m) { return r.veces[m] || 0; }
+function drv2ConAlgo(r, R) { return R.completos.filter(function (m) { return r.veces[m]; }).length; }
+function drv2Tipo(r, R) { return r.tipo === 'parejo' && drv2ConAlgo(r, R) < R.completos.length ? 'va' : r.tipo; }
+function drv2Color(t, i) { return t === 'sube' ? '#FF8A5C' : t === 'baja' ? '#5FD3BC' : ['#4D6B84', '#3E5A71', '#5B7891', '#46627A'][i % 4]; }
+
+function drv2Titular(R) {
+  const r = R.ritmos.filter(function (x) { return x.tipo === 'sube'; })[0] || R.ritmos.filter(function (x) { return x.tipo === 'baja'; })[0];
+  if (!r) return { h: 'El ritmo de tu casa viene parejo.', b: 'Ningún hábito cambió de ritmo en los últimos dos meses. Deriva no mira cuánta plata, mira cuántas veces: con la inflación, eso es lo único que no miente.' };
+  const verbo = DRV_VERBO[r.tema] || ('tiene «' + r.tema + '»');
+  const ahora = Math.round(r.nuevo), m0 = R.completos[0], antes = drv2Veces(r, m0);
+  const vez = function (n) { return n === 1 ? 'vez' : 'veces'; };
+  return {
+    h: 'Tu casa ' + esc(verbo) + ' <span class="n">' + ahora + ' ' + vez(ahora) + '</span> por mes. En ' + drv2MesLargo(m0) + ' ' + (antes === 1 ? 'era' : 'eran') + ' ' + antes + '.',
+    b: 'Deriva no mira cuánta plata, mira cuántas veces. Con la inflación, eso es lo único que no miente: este es el ritmo de tu casa en los últimos ' + R.completos.length + ' meses.'
+  };
+}
+
+function drv2Carta(R) {
+  const cols = R.completos.concat(R.enCurso ? [R.enCurso] : []);
+  const n = cols.length;
+  const W = 1060, L = 40, Rm = 210, top = 46, bot = 52;
+  const tot = cols.map(function (m) { return R.ritmos.reduce(function (a, r) { return a + drv2Veces(r, m); }, 0); });
+  const maxT = Math.max.apply(null, tot.concat([1]));
+  const u = Math.min(14, 260 / maxT);
+  const H = top + bot + Math.max(150, maxT * u + 20);
+  const xs = cols.map(function (m, i) { return L + i * (W - L - Rm) / Math.max(1, n - 1); });
+  const mid = top + (H - top - bot) / 2;
+  // Lo parejo afuera, lo que cambió al medio: así el cambio queda en el centro de la vista.
+  const idx = R.ritmos.map(function (r, i) { return i; });
+  const peso = function (i) { const t = drv2Tipo(R.ritmos[i], R); return t === 'sube' ? 3 : t === 'baja' ? 2 : 0; };
+  const orden = [];
+  idx.slice().sort(function (a, b) { return peso(a) - peso(b); }).forEach(function (i, k) { if (k % 2) orden.push(i); else orden.unshift(i); });
+  let base = cols.map(function (m, i) { return mid - tot[i] * u / 2; });
+  const capas = orden.map(function (i, k) {
+    const r = R.ritmos[i], y0 = base.slice();
+    const y1 = base.map(function (b, j) { return b + drv2Veces(r, cols[j]) * u; });
+    base = y1;
+    return { r: r, i: i, y0: y0, y1: y1, t: drv2Tipo(r, R), c: drv2Color(drv2Tipo(r, R), k) };
+  });
+  const ida = function (ys) { let d = ''; for (let i = 0; i < n; i++) { if (!i) { d += 'M' + xs[0] + ' ' + ys[0]; continue; } const cx = (xs[i - 1] + xs[i]) / 2; d += ' C' + cx + ' ' + ys[i - 1] + ' ' + cx + ' ' + ys[i] + ' ' + xs[i] + ' ' + ys[i]; } return d; };
+  const vuelta = function (ys) { let d = ' L' + xs[n - 1] + ' ' + ys[n - 1]; for (let i = n - 2; i >= 0; i--) { const cx = (xs[i + 1] + xs[i]) / 2; d += ' C' + cx + ' ' + ys[i + 1] + ' ' + cx + ' ' + ys[i] + ' ' + xs[i] + ' ' + ys[i]; } return d + 'Z'; };
+  let s = '<defs><pattern id="drv2Ray" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#0A1B2A" opacity=".55"/><line x1="0" y1="0" x2="0" y2="7" stroke="#183449" stroke-width="3"/></pattern></defs>';
+  s += '<g class="ret">' + xs.map(function (x) { return '<line x1="' + x + '" x2="' + x + '" y1="' + (top - 8) + '" y2="' + (H - bot + 6) + '"/>'; }).join('') + '</g>';
+  capas.forEach(function (c, k) {
+    s += '<path class="franja" tabindex="0" role="button" aria-label="Ver los movimientos de ' + esc(c.r.tema) + '" style="animation-delay:' + (k * 80) + 'ms" onclick="drvDetalle(\'r\',' + c.i + ')" onkeydown="if(event.key===\'Enter\')drvDetalle(\'r\',' + c.i + ')" d="' + ida(c.y1) + vuelta(c.y0) + '" fill="' + c.c + '"><title>' + esc(c.r.tema) + '</title></path>';
+  });
+  if (R.enCurso && n > 1) {
+    const xa = (xs[n - 2] + xs[n - 1]) / 2 + 4;
+    s += '<rect x="' + xa + '" y="' + (top - 10) + '" width="' + (xs[n - 1] - xa + 2) + '" height="' + (H - bot - top + 20) + '" fill="url(#drv2Ray)" pointer-events="none"/>';
+  }
+  s += cols.map(function (m, i) { return '<text class="mes" x="' + xs[i] + '" y="' + (H - 14) + '" text-anchor="middle">' + drvMesTxt(m) + (m === R.enCurso ? ' · en curso' : '') + '</text>'; }).join('');
+  // Etiquetas al costado, a la altura del último mes completo, sin pisarse.
+  const io = R.completos.length - 1, mUlt = R.completos[io];
+  let ult = -1e9;
+  capas.map(function (c) { return { c: c, y: (c.y0[io] + c.y1[io]) / 2 }; })
+    .sort(function (a, b) { return a.y - b.y; })
+    .forEach(function (o) {
+      const yy = Math.max(o.y, ult + 19); ult = yy;
+      const col = o.c.t === 'sube' ? '#FF8A5C' : o.c.t === 'baja' ? '#5FD3BC' : '#B9CAD7';
+      s += '<text class="eti" x="' + (xs[n - 1] + 16) + '" y="' + (yy + 4) + '" fill="' + col + '">' + esc(o.c.r.tema) + ' <tspan>' + drv2Veces(o.c.r, mUlt) + ' en ' + drvMesTxt(mUlt) + '</tspan></text>';
+    });
+  // La marca sobre el pico de lo que más subió.
+  const cs = capas.filter(function (c) { return c.t === 'sube'; })[0];
+  if (cs) {
+    let jm = 0; R.completos.forEach(function (m, j) { if (drv2Veces(cs.r, m) >= drv2Veces(cs.r, R.completos[jm])) jm = j; });
+    const y = Math.min.apply(null, capas.map(function (c) { return Math.min(c.y0[jm], c.y1[jm]); }));
+    const v = drv2Veces(cs.r, R.completos[jm]);
+    s += '<line x1="' + xs[jm] + '" x2="' + xs[jm] + '" y1="' + (y - 26) + '" y2="' + (y - 4) + '" stroke="#FF8A5C" stroke-width="1.5"/>' +
+      '<text x="' + xs[jm] + '" y="' + (y - 33) + '" text-anchor="middle" fill="#FFB497" font-family="Bricolage Grotesque, Inter, sans-serif" font-weight="700" font-size="16">' +
+      v + (v === 1 ? ' vez' : ' veces') + ' en ' + drv2MesLargo(R.completos[jm]) + '</text>';
+  }
+  return '<div class="carta"><div class="desliza"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Carta de los ritmos de tu casa mes a mes">' + s + '</svg></div>' +
+    '<div class="lect"><span><i style="background:#FF8A5C"></i>Se aceleró</span><span><i style="background:#5FD3BC"></i>Se frenó</span><span><i style="background:#4D6B84"></i>Parejo</span>' +
+    '<span>El ancho de cada franja es cuántas veces pasó ese mes.' + (R.enCurso ? ' ' + drv2MesLargo(R.enCurso).replace(/^./, function (c) { return c.toUpperCase(); }) + ' todavía está en curso.' : '') + ' Tocá una franja para ver sus movimientos.</span></div></div>';
+}
+
+function drv2Filas(R) {
+  const cols = R.completos.concat(R.enCurso ? [R.enCurso] : []);
+  const mx = Math.max.apply(null, R.ritmos.map(function (r) { return Math.max.apply(null, cols.map(function (m) { return drv2Veces(r, m); })); }).concat([1]));
+  return '<div class="filas">' + R.ritmos.map(function (r, i) {
+    const t = drv2Tipo(r, R);
+    const cb = t === 'sube' ? '#FF8A5C' : t === 'baja' ? '#5FD3BC' : '#9BB1C2';
+    const barras = cols.map(function (m, j) {
+      const v = drv2Veces(r, m), cl = m === R.enCurso ? ' cur' : (j >= R.completos.length - 2 ? ' ult' : '');
+      return '<div class="c' + cl + '"><b style="height:' + Math.max(2, Math.round(v / mx * 34)) + 'px"></b><em>' + drvMesTxt(m).charAt(0) + '</em></div>';
+    }).join('');
+    const sub = r.peso !== null && r.peso >= 0.5 ? drvPesos(r.plataMes) + ' por mes · ' + drvNum(r.peso) + '% de lo que entra'
+      : t === 'va' ? r.total + (r.total === 1 ? ' vez' : ' veces') + ' en ' + R.completos.length + ' meses'
+      : t === 'baja' ? 'se fue apagando' : r.total + ' veces en ' + R.completos.length + ' meses';
+    const antes = t === 'va' ? '<span>Pasó en ' + drv2ConAlgo(r, R) + ' de ' + R.completos.length + ' meses</span>'
+      : '<span>antes</span> <strong>' + drvNum(r.viejo) + '</strong> <span>ahora</span> <strong>' + drvNum(r.nuevo) + '</strong>';
+    const d = t === 'va' ? 'puntual' : t === 'parejo' ? 'parejo'
+      : (r.viejo > 0 ? (r.nuevo >= r.viejo ? '+' : '−') + Math.round(Math.abs(r.nuevo - r.viejo) / r.viejo * 100) + '%' : 'nuevo');
+    return '<div class="fila" tabindex="0" role="button" aria-label="Ver los movimientos de ' + esc(r.tema) + '" onclick="drvDetalle(\'r\',' + i + ')" onkeydown="if(event.key===\'Enter\')drvDetalle(\'r\',' + i + ')">' +
+      '<div class="tema">' + esc(r.tema) + '<small>' + sub + '</small></div>' +
+      '<div class="barras" style="--cb:' + cb + '">' + barras + '</div>' +
+      '<div class="antes">' + antes + '</div><div class="delta ' + t + '">' + d + '</div></div>';
+  }).join('') + '</div>';
+}
+
+function drv2Goteo(R) {
+  const fijos = R.subs.filter(function (x) { return x.fijo; });
+  const sp = fijos.reduce(function (a, x) { return a + x.anioP; }, 0) + (R.dinero ? R.dinero.anioP : 0);
+  const su = fijos.reduce(function (a, x) { return a + x.anioU; }, 0) + (R.dinero ? R.dinero.anioU : 0);
+  if (!R.subs.length && !R.dinero) {
+    return '<div class="goteo"><p style="margin:0">No encontré suscripciones ni costos bancarios en tus últimos tres meses. Si pagás alguna con tarjeta, aparece cuando cargás el resumen.</p></div>';
+  }
+  const pal = ['#FF8A5C', '#FF9F78', '#FFB497', '#E8C27A', '#C9A766', '#A98C57', '#5FD3BC', '#4FB3A1', '#7FD4C6', '#B9CAD7'];
+  const fx = (typeof fxRate === 'function' && fxRate() > 0) ? fxRate() : 1000;
+  const segs = [];
+  R.subs.forEach(function (x, i) { if (x.fijo) segs.push({ nom: x.nom, v: x.anioP + x.anioU * fx, on: 'drvDetalle(\'s\',' + i + ')', c: pal[segs.length % pal.length] }); });
+  if (R.dinero) segs.push({ nom: 'Lo que pagás por la plata', v: R.dinero.anioP + R.dinero.anioU * fx, on: 'drvDetalle(\'d\')', c: '#8DA3B5' });
+  const tot = segs.reduce(function (a, x) { return a + x.v; }, 0) || 1;
+  let k = 0;
+  const lista = R.subs.map(function (x, i) {
+    const col = x.fijo ? pal[k++ % pal.length] : '#3E5A71';
+    return '<div class="serv' + (x.fijo ? '' : ' suelto') + '" role="button" tabindex="0" onclick="drvDetalle(\'s\',' + i + ')"><i style="background:' + col + '"></i>' + esc(x.nom) +
+      '<b>' + (x.fijo ? drvPlata(x.mesP, x.mesU) + ' por mes' : 'apareció una vez · no lo sumé') + '</b></div>';
+  }).join('') + (R.dinero ? '<div class="serv" role="button" tabindex="0" onclick="drvDetalle(\'d\')"><i style="background:#8DA3B5"></i>Lo que pagás por la plata<b>' + drvPlata(R.dinero.mesP, R.dinero.mesU) + ' por mes</b></div>' : '');
+  const nF = fijos.length;
+  const usdTxt = su > 0 ? '<span>' + (sp > 0 ? '+ ' : '') + drvUsd(su) + ' al año</span>' : '<span>al año</span>';
+  return '<div class="goteo"><div class="total">' + (sp > 0 ? drvPesos(sp) : '') + usdTxt + '</div>' +
+    '<p>' + (nF === 1 ? 'Un servicio que se debita' : nF + ' servicios que se debitan') + ' todos los meses' + (R.dinero ? ', más lo que te cobran por la plata' : '') + ', si sigue como en los últimos tres meses.</p>' +
+    '<div class="tira">' + segs.map(function (x) { return '<div title="' + esc(x.nom) + '" onclick="' + x.on + '" style="flex:' + (x.v / tot) + ';background:' + x.c + '"></div>'; }).join('') + '</div>' +
+    '<div class="servs">' + lista + '</div>' +
+    '<div class="preg">¿Usaste ' + (nF === 1 ? 'ese servicio' : 'los ' + nF) + ' este mes? Cada uno que no uses es plata que se va sola todo el año.</div></div>';
+}
+
+function drv2Lente(R) {
+  const pct = R.totalMov ? Math.round(R.leidos / R.totalMov * 100) : 0;
+  const meses = R.completos.length;
+  const C = 2 * Math.PI * 74;
+  let destinos = 0;
+  try { destinos = Object.keys(getReserva().destinos || {}).length; } catch (e) {}
+  const ok = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4L19 7" fill="none" stroke="#5FD3BC" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const lock = '<svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="9.5" rx="2.2" fill="none" stroke="#8DA3B5" stroke-width="1.8"/><path d="M8.5 10.5V8a3.5 3.5 0 017 0v2.5" fill="none" stroke="#8DA3B5" stroke-width="1.8"/></svg>';
+  // Lo que viene: se muestra qué hace falta para que se abra. Cuando se llega a
+  // la meta dice «Próximamente», porque todavía no está construido.
+  const E = [
+    { ok: meses >= 3, h: 'Tus ritmos', p: 'Cuántas veces por mes pasa cada cosa, y si cambió.', est: 'Abierto' },
+    { ok: true, h: 'Lo que se cobra solo', p: 'Suscripciones y comisiones, con su costo al año.', est: 'Abierto' },
+    { ok: false, h: 'Lo que vuelve cada varios meses', p: 'Patente, seguro, matrícula: cuándo caen juntos, antes de que pase.',
+      est: meses >= 6 ? 'Próximamente' : (6 - meses === 1 ? 'A 1 mes' : 'A ' + (6 - meses) + ' meses'), pct: Math.min(100, meses / 6 * 100) },
+    { ok: false, h: 'Cuánto te cuesta el auto', p: 'Junta nafta, seguro, patente y taller aunque estén en rubros distintos.',
+      est: pct >= 70 ? 'Próximamente' : 'Con 70% leído', pct: Math.min(100, pct / 70 * 100) },
+    { ok: false, h: 'Qué te está desplazando', p: '«Ese aumento es lo que le falta por mes a tu destino en la Reserva».',
+      est: destinos ? 'Próximamente' : 'Con un destino en Reserva', pct: destinos ? 100 : 0 }
+  ];
+  const esc_ = E.map(function (e) {
+    return '<div class="pel ' + (e.ok ? 'ok' : 'lock') + '"><div class="ic">' + (e.ok ? ok : lock) + '</div><div><h3>' + e.h + '</h3><p>' + e.p + '</p></div><div class="est">' + e.est + '</div>' +
+      (e.ok ? '' : '<div class="barrita"><b style="width:' + Math.round(e.pct) + '%"></b></div>') + '</div>';
+  }).join('');
+  const temas = (R.temas || []).map(function (t, i) { return '<button type="button" onclick="drvDetalle(\'t\',' + i + ')">' + esc(t.tema) + '<b>' + t.items.length + '</b></button>'; }).join('');
+  return '<div class="lente"><div class="vision">' +
+    '<div class="anillo"><svg viewBox="0 0 170 170" width="170" height="170"><circle cx="85" cy="85" r="74" fill="none" stroke="#24425A" stroke-width="12"/>' +
+      '<circle cx="85" cy="85" r="74" fill="none" stroke="#FF8A5C" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + (C * pct / 100).toFixed(1) + ' ' + C.toFixed(1) + '"/></svg>' +
+      '<div class="cc"><strong>' + pct + '%</strong><span>de tus gastos, leídos</span></div></div>' +
+    '<ul><li><span>Meses con historia</span><b>' + meses + '</b></li><li><span>Gastos reconocidos</span><b>' + R.leidos + ' de ' + R.totalMov + '</b></li>' +
+      '<li><span>Sin reconocer</span>' + (R.sin.length ? '<button type="button" onclick="drvDetalle(\'n\')">' + R.sin.length + ', ver cuáles</button>' : '<b>0</b>') + '</li></ul>' +
+    (pct < 90 ? '<p class="empuje">Lo que más le falta: <strong>transferencias y pagos con QR</strong> sin el nombre del comercio. Completar el campo Cliente los ilumina.</p>' : '') +
+    (R.flojos ? '<p class="empuje">Dejé afuera ' + (R.flojos === 1 ? 'un mes' : R.flojos + ' meses') + ' con muy pocos movimientos cargados.</p>' : '') +
+    '</div><div><div class="esc">' + esc_ + '</div>' +
+    (temas ? '<div class="sub" style="margin:18px 0 0">Cómo leí tus gastos. Tocá un tema para ver qué movimientos puse ahí y por qué.</div><div class="temas">' + temas + '</div>' : '') +
+    '</div></div>';
+}
+
+function drv2Marca() {
+  return '<div class="marca"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="#EAF2F7" opacity=".55"><circle cx="5" cy="6" r="1.7"/><circle cx="10" cy="6" r="1.7"/><circle cx="5" cy="12" r="1.7"/><circle cx="10" cy="12" r="1.7"/></g><g fill="#FF8A5C"><circle cx="5" cy="18" r="1.7"/><circle cx="10" cy="18" r="1.7"/><circle cx="15" cy="18" r="1.7"/><circle cx="20" cy="18" r="1.7"/></g></svg> Deriva <span class="pil">piloto</span></div>';
+}
+function drv2Pie() {
+  return '<p class="pie">Deriva es una prueba: la estás viendo antes que nadie y sólo con lo que cargaste vos. Norte no inventa ni completa nada. ' +
+    '<a onclick="drvEncAbrir(true)">Contanos qué te pareció</a></p>';
+}
+
 function drvRender() {
   const cont = document.getElementById('drvCont');
   if (!cont) return;
   if (!drvHabilitado()) { cont.innerHTML = ''; return; }
-  const hero = function (sub, lee) {
-    return '<div class="drv-hero"><h2>' + '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor" opacity=".55"><circle cx="5" cy="6" r="1.7"/><circle cx="10" cy="6" r="1.7"/><circle cx="5" cy="12" r="1.7"/><circle cx="10" cy="12" r="1.7"/></g><g fill="#FF8A5C"><circle cx="5" cy="18" r="1.7"/><circle cx="10" cy="18" r="1.7"/><circle cx="15" cy="18" r="1.7"/><circle cx="20" cy="18" r="1.7"/></g></svg>' + ' Deriva <span class="drv-chip" style="margin-left:4px">PILOTO</span></h2>' +
-      '<p>' + sub + '</p>' + (lee ? '<div class="drv-lee">' + lee + '</div>' : '') + '</div>';
-  };
+  drv2Fuente();
+  const marco = function (html) { return '<div class="drv2"><div class="in">' + drv2Marca() + html + drv2Pie() + '</div></div>'; };
   if (drvPremiumBloquea()) {
-    cont.innerHTML = hero('Deriva es parte de Norte PRO y TOP. Durante el lanzamiento estuvo abierta para todos los planes.') +
-      '<button class="btn btn-primary" onclick="openPlanModal()">Ver los planes</button>';
+    cont.innerHTML = marco('<h1 class="tit">Deriva es parte de Norte PRO y TOP.</h1><p class="baj">Durante el lanzamiento estuvo abierta para todos los planes.</p>' +
+      '<p style="margin-top:18px"><button class="btn btn-primary" onclick="openPlanModal()">Ver los planes</button></p>');
     return;
   }
   let R;
-  try { R = drvCalcular(); } catch (e) { cont.innerHTML = hero('No pude leer tus datos ahora. Probá de nuevo en un rato.'); return; }
+  try { R = drvCalcular(); } catch (e) { cont.innerHTML = marco('<div class="vacio">No pude leer tus datos ahora. Probá de nuevo en un rato.</div>'); return; }
   _drvUltimo = R;
-  const intro = 'Todas las apps comparan pesos. Con la inflación, los pesos mienten: un +30% puede ser que gastaste más o que aumentó. ' +
-    'Deriva cuenta <b style="color:#fff">veces</b>: cuántas veces por mes pasa cada cosa en tu casa, y si ese ritmo cambió.';
   if (R.poca) {
-    cont.innerHTML = hero(intro) +
-      '<div class="drv-card"><div class="drv-tema">Todavía me falta historia</div><div class="drv-dato">Para ver un ritmo necesito al menos <b>3 meses completos</b> cargados. ' +
-      'Hoy tenés ' + R.completos.length + (R.completos.length === 1 ? ' mes completo' : ' meses completos') + '.</div>' +
-      '<div class="drv-peso">Lo más rápido: subí resúmenes de tarjeta de meses anteriores. Cada resumen es un mes entero de historia.</div></div>';
+    const m = R.completos.length;
+    cont.innerHTML = marco('<h1 class="tit">Para ver tu ritmo ' + (3 - m === 1 ? 'me falta 1 mes' : 'me faltan ' + (3 - m) + ' meses') + '.</h1>' +
+      '<p class="baj">Deriva cuenta cuántas veces pasa cada cosa en tu casa, y para ver un ritmo necesita al menos tres meses completos cargados. Hoy tenés ' + m + (m === 1 ? ' mes completo.' : ' meses completos.') +
+      ' Lo más rápido: subí resúmenes de tarjeta de meses anteriores. Cada uno es un mes entero de historia.</p>');
     return;
   }
-  const pct = R.totalMov ? Math.round(R.leidos / R.totalMov * 100) : 0;
-  const lee = 'Mirando ' + R.completos.length + ' meses completos (' + drvMesTxt(R.completos[0]) + ' a ' + drvMesTxt(R.completos[R.completos.length - 1]) + ')' +
-    (R.enCurso ? ' y ' + drvMesTxt(R.enCurso) + ' en curso' : '') +
-    (R.flojos ? ' (dejé afuera ' + (R.flojos === 1 ? 'un mes' : R.flojos + ' meses') + ' con muy pocos movimientos cargados)' : '') + '. Reconocí ' + R.leidos + ' de ' + R.totalMov + ' gastos (' + pct + '%)' +
-    (pct < 90 ? ': los pagos por transferencia o QR muchas veces no dicen el comercio.' : '.');
-  const ritmos = R.ritmos.length
-    ? '<div class="drv-grid">' + R.ritmos.map(function (r, i) { return drvTarjetaRitmo(r, R, i); }).join('') + '</div>'
-    : '<div class="drv-card"><div class="drv-peso">Ningún hábito llega todavía a cuatro veces en estos meses. Con más movimientos con el nombre del comercio, aparecen.</div></div>';
-  cont.innerHTML = hero(intro, lee) +
-    '<div class="drv-sec">Tus ritmos</div>' + ritmos +
-    '<div class="drv-sec">Lo que se cobra solo</div>' + drvTarjetaInercia(R) +
-    '<div class="drv-sec">Cómo leí tus gastos</div>' +
-    '<div class="drv-card"><div class="drv-peso" style="margin:0 0 10px">Todos los temas que encontré en estos meses. Tocá uno para ver qué movimientos puse ahí y por qué.</div>' +
-    '<div class="drv-chips">' + R.temas.map(function (t, i) {
-      return '<button type="button" class="drv-chipt" onclick="drvDetalle(\'t\',' + i + ')">' + esc(t.tema) + '<b>' + t.items.length + '</b></button>';
-    }).join('') +
-    (R.sin.length ? '<button type="button" class="drv-chipt sin" onclick="drvDetalle(\'n\')">Sin reconocer<b>' + R.sin.length + '</b></button>' : '') +
-    '</div></div>' +
-    '<div style="font-size:12px;color:var(--muted);line-height:1.55;margin:16px 2px 4px">Deriva es un piloto: lo estás viendo antes que nadie. ' +
-    'Los números salen sólo de lo que cargaste; Norte no inventa ni completa nada. ' +
-    '<a href="#" onclick="drvEncAbrir(true);return false" style="color:var(--primary);font-weight:700">Contanos qué te pareció</a></div>';
+  const T = drv2Titular(R);
+  cont.innerHTML = marco(
+    '<h1 class="tit">' + T.h + '</h1><p class="baj">' + T.b + '</p>' +
+    (R.ritmos.length ? drv2Carta(R) : '<div class="vacio">Ningún hábito llega todavía a una vez por mes. Con más movimientos con el nombre del comercio, aparecen.</div>') +
+    (R.ritmos.length ? '<h2>Qué cambió</h2><p class="sub">Los últimos dos meses contra los anteriores. Tocá un hábito para ver uno por uno los movimientos y por qué los puse ahí.</p>' + drv2Filas(R) : '') +
+    '<h2>Lo que se cobra solo</h2>' + drv2Goteo(R) +
+    '<h2>Lo que Deriva ve de tu casa</h2><p class="sub">Cuanto más cargás, más ve. Cada mes y cada gasto con el nombre del comercio le suman vista, y algunas lecturas se abren cuando llega a la meta.</p>' +
+    drv2Lente(R));
+  // En el celular la carta se desliza: que arranque mostrando lo más reciente.
+  try { const dz = cont.querySelector('.desliza'); if (dz && dz.scrollWidth > dz.clientWidth) dz.scrollLeft = dz.scrollWidth; } catch (e) {}
 }
 
 // ── La encuesta del piloto ───────────────────────────────────────────────────
@@ -19451,7 +19737,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.69.000';
+const APP_VERSION = 'v005.70.000';
 let novEntradas = [];
 
 function novLeida(e) {
