@@ -11277,7 +11277,8 @@ const DERIVA_TEMAS = [
     'supermercado','hipermercado','carrefour','coto','jumbo','walmart','disco',
     'vea ','changomas','chango mas','dia ','la anonima','makro','diarco',
     'mayorista','autoservicio','market','supermercados','vital ','yaguar',
-    'la gallega','cooperativa obrera','maxiconsumo','carrefour express' ] },
+    'la gallega','cooperativa obrera','maxiconsumo','carrefour express','supermarket',
+    'unimarket' ] },
 
   { con: 'Comer', tema: 'Del barrio', keys: [
     'panaderia','panificadora','verduleria','fiambreria','carniceria',
@@ -11289,14 +11290,15 @@ const DERIVA_TEMAS = [
   { con: 'El auto', tema: 'Nafta', keys: [
     'ypf','shell','axion','petrobras','puma energ','gulf','refinor',
     'estacion de servicio','nafta','combustible','shellbox','shell box',
-    'serviclub','full ypf','ypf full','axion on' ] },
+    'serviclub','full ypf','ypf full','axion on','appypfcomb','app ypf' ] },
 
   { con: 'El auto', tema: 'Mantenimiento', keys: [
     'taller','mecanico','lubricentro','lubri','gomeria','neumatico','cubierta',
-    'autopartes','lava auto','vtv' ] },
+    'autopartes','lava auto','vtv','verificacion tecnica' ] },
 
   { con: 'El auto', tema: 'Tenerlo parado', keys: [
-    'cochera','estacionamiento','parking','peaje','autopista','patente' ] },
+    'cochera','estacionamiento','parking','peaje','autopista','patente',
+    'peajes','autopistas','telepeaje','aubasa','ausol','camino pque','camino del parque' ] },
 
   // ── EL TECHO ─────────────────────────────────────────────────────────────
   { con: 'El techo', tema: 'Alquiler y expensas', keys: [
@@ -11319,7 +11321,7 @@ const DERIVA_TEMAS = [
     'swiss medical','osde','galeno','medife','ioma','accord','sancor salud' ] },
 
   { con: 'Estar bien', tema: 'Farmacia', keys: [
-    'farmacia','farmacity','farmalink','drogueria' ] },
+    'farmacia','farmacity','farmalink','drogueria','farmplus','farmaplus' ] },
 
   { con: 'Estar bien', tema: 'Consultas y estudios', keys: [
     'clinica','sanatorio','hospital','laboratorio','bioquimic','optica',
@@ -11339,7 +11341,7 @@ const DERIVA_TEMAS = [
 
   { con: 'Moverse', tema: 'Viajes', keys: [
     'aerolinea','aeroline','iberia','latam','american air','avianca','gol ',
-    'vuelo','despegar','booking','airbnb','hotel' ] },
+    'vuelo','despegar','booking','airbnb','hotel','civitatis','duty free' ] },
 
   // ── INERCIA ──────────────────────────────────────────────────────────────
   { con: 'Inercia', tema: 'Suscripciones de ocio', keys: [
@@ -11351,7 +11353,7 @@ const DERIVA_TEMAS = [
     'anthropic','openai','chatgpt','google cloud','google *cloud',
     'google workspace','google *workspace','microsoft','zoom','slack','notion',
     'figma','github','aws','heroku','digitalocean','dropbox','1password',
-    'linkedin','canva','adobe' ] },
+    'linkedin','canva','adobe','ilovepdf','google one','google google o' ] },
 
   { con: 'Inercia', tema: 'Costos del dinero', keys: [
     'comision','mantenimiento cuenta','costo tarjeta','cargo tarjeta','sellado',
@@ -11450,7 +11452,8 @@ const DRV_MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','
 const DRV_NOMBRES = { openai: 'OpenAI', chatgpt: 'ChatGPT', hbo: 'HBO', aws: 'AWS', 'prime video': 'Prime Video',
   'amazon prime': 'Amazon Prime', 'apple tv': 'Apple TV', 'google cloud': 'Google Cloud', 'google *cloud': 'Google Cloud',
   'google workspace': 'Google Workspace', 'google *workspace': 'Google Workspace', github: 'GitHub', '1password': '1Password',
-  linkedin: 'LinkedIn', digitalocean: 'DigitalOcean', youtube: 'YouTube', playstation: 'PlayStation' };
+  linkedin: 'LinkedIn', digitalocean: 'DigitalOcean', youtube: 'YouTube', playstation: 'PlayStation',
+  'google one': 'Google One', 'google google o': 'Google One', ilovepdf: 'iLovePDF' };
 
 let _drvPiloto = false, _drvRef = null, _drvUid = '', _drvEnc = null, _drvEncSesion = false, _drvEntro = 0;
 
@@ -11786,7 +11789,7 @@ function drvAprendeSubir() {
 }
 // La palabra que identifica al comercio: sale del detalle sin los prefijos de
 // la tarjeta o de Mercado Pago, sin números y sin palabras que no dicen nada.
-const DRV_RUIDO = ' merpago mercadopago mercpago mp dlo dlocal payu ebanx paypal pago pagos compra compras debito debit credito tarjeta visa master mastercard amex cabal www com ar net sa srl sas de del la el los las y en a al cuota cuotas caba bs as buenos aires argentina bill store pay transferencia transf trf qr qrs ';
+const DRV_RUIDO = ' merpago mercadopago mercpago mp dlo dlocal payu ebanx paypal pago pagos compra compras debito debit credito tarjeta visa master mastercard amex cabal www com ar net sa srl sas de del la el los las y en a al cuota cuotas caba bs as buenos aires argentina bill store pay transferencia transf trf qr qrs enviada enviado recibida recibido con para por ';
 function drvClave(det) {
   const ws = derivaNorm(det).trim().split(' ').filter(function (w) {
     return w.length >= 3 && !/\d/.test(w) && DRV_RUIDO.indexOf(' ' + w + ' ') < 0;
@@ -20002,7 +20005,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.71.000';
+const APP_VERSION = 'v005.71.001';
 let novEntradas = [];
 
 function novLeida(e) {
