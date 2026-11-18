@@ -2485,6 +2485,39 @@ html[data-tema="noche"] .qp-modo.qp-modo-texto { color:#8fb2ff; }
 .drv-chipt:hover { border-color: #FF8A5C; }
 .drv-chipt b { color: var(--muted); font-weight: 700; margin-left: 4px; }
 .drv-chipt.sin { border-style: dashed; }
+/* Deriva aprende (v005.71) */
+.drv-via-a { color: #7c6cf0; }
+.drv-ens-intro { margin: 12px 0 4px; padding: 10px 12px; border-radius: 10px; background: rgba(255,138,92,.10); font-size: 12.5px; line-height: 1.5; }
+.drv-grp { display: flex; gap: 10px; align-items: center; padding: 9px 0; border-top: 1px solid var(--border); font-size: 13px; }
+.drv-grp .d { flex: 1; min-width: 0; }
+.drv-grp .d b { font-weight: 800; }
+.drv-grp .d small { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drv-grp .i { white-space: nowrap; font-weight: 700; text-align: right; }
+.drv-grp .i small { display: block; font-weight: 500; font-size: 11px; color: var(--muted); }
+.drv-que { flex: none; border: 1px solid #FF8A5C; color: #FF8A5C; background: transparent; border-radius: 999px; padding: 5px 11px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.drv-que:hover { background: #FF8A5C; color: #10202c; }
+.drv-lapiz { border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 0 4px; font-size: 13px; }
+.drv-lapiz:hover { color: #FF8A5C; }
+.drv-ens-pie { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 20px 14px; border-top: 1px solid var(--border); font-size: 12.5px; }
+.drv-ens-pie a { color: #FF8A5C; font-weight: 700; cursor: pointer; }
+.drv-ok { color: #2f9e88; font-weight: 700; }
+#drvEnsOv { z-index: 10060; }
+.drv-ens { background: var(--card); color: var(--text); border-radius: 16px; width: 100%; max-width: 560px; max-height: 90vh; overflow: auto; padding: 18px 20px; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+.drv-ens h3 { margin: 0 0 4px; font-size: 16px; font-weight: 800; }
+.drv-ens label { display: block; font-size: 11.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 12px 0 5px; }
+.drv-ens input { width: 100%; box-sizing: border-box; padding: 9px 11px; border: 1px solid var(--border); border-radius: 9px; background: var(--bg); color: var(--text); font-size: 14px; font-family: inherit; }
+.drv-ens .alc { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.45; }
+.drv-ens .grupo { margin-top: 10px; }
+.drv-ens .grupo span { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+.drv-ens .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.drv-ens .chips button { border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 999px; padding: 6px 11px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
+.drv-ens .chips button:hover, .drv-ens .chips button.act { border-color: #FF8A5C; background: rgba(255,138,92,.14); }
+.drv-ens .chips button.fuera { border-style: dashed; }
+.drv-regla { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border); font-size: 13px; }
+.drv-regla .d { flex: 1; }
+.drv-regla small { color: var(--muted); }
+.drv-regla button { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 14px; }
+.drv-regla button:hover { color: var(--danger, #e5484d); }
 .drv-det { background: var(--card); color: var(--text); border-radius: 18px; width: 100%; max-width: 680px; max-height: 88vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
 .drv-det-cab { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 20px 10px; border-bottom: 1px solid var(--border); }
 .drv-det-cab h3 { margin: 0; font-size: 17px; font-weight: 800; }
@@ -11233,12 +11266,18 @@ const DERIVA_TEMAS = [
     'pedidosya','pedidos ya','rappi','glovo','ifood','delivery',
     'mcdonalds','burger','subway','mostaza','starbucks','havanna','freddo',
     'sushi','pizza','resto','restaurant','parrilla','rotiseria','cerveceria',
-    'cafeteria','cafe ','heladeria','bodegon','cantina','bar ' ] },
+    'cafeteria','cafe ','heladeria','bodegon','cantina','bar ',
+    'mc donalds','mcdonald','burger king','burgerking','kfc','wendys','tostado',
+    'cafe martinez','bonafide','tea connection','le pain quotidien','grido',
+    'lucciano','rapanui','persicco','chungo','almacen de pizzas','solo empanadas',
+    'club de la milanesa','kansas','siga la vaca','antares','la birra','green eat',
+    'pizzeria','empanadas','hamburgueseria','cerveza patagonia','dean dennys' ] },
 
   { con: 'Comer', tema: 'Súper', keys: [
     'supermercado','hipermercado','carrefour','coto','jumbo','walmart','disco',
     'vea ','changomas','chango mas','dia ','la anonima','makro','diarco',
-    'mayorista','autoservicio','market' ] },
+    'mayorista','autoservicio','market','supermercados','vital ','yaguar',
+    'la gallega','cooperativa obrera','maxiconsumo','carrefour express' ] },
 
   { con: 'Comer', tema: 'Del barrio', keys: [
     'panaderia','panificadora','verduleria','fiambreria','carniceria',
@@ -11249,7 +11288,8 @@ const DERIVA_TEMAS = [
   // ── EL AUTO ──────────────────────────────────────────────────────────────
   { con: 'El auto', tema: 'Nafta', keys: [
     'ypf','shell','axion','petrobras','puma energ','gulf','refinor',
-    'estacion de servicio','nafta','combustible' ] },
+    'estacion de servicio','nafta','combustible','shellbox','shell box',
+    'serviclub','full ypf','ypf full','axion on' ] },
 
   { con: 'El auto', tema: 'Mantenimiento', keys: [
     'taller','mecanico','lubricentro','lubri','gomeria','neumatico','cubierta',
@@ -11343,7 +11383,11 @@ const DERIVA_TEMAS = [
     'sancor seguros','allianz','federacion patronal','san cristobal','experta' ] },
 
   { con: '', tema: 'Impuestos', keys: [
-    'afip','arca','arba','agip','monotributo','ingresos brutos','iibb' ] }
+    'afip','arca','arba','agip','monotributo','ingresos brutos','iibb' ] },
+
+  // Lo que se paga para trabajar (publicidad, herramientas de un emprendimiento).
+  // No tiene palabras propias: se llena con lo que cada persona le enseña.
+  { con: 'Trabajo', tema: 'Gastos del trabajo', keys: [] }
 ];
 
 // Segunda capa: cuando el texto no dice nada pero el rubro que eligió la persona
@@ -11362,7 +11406,7 @@ const DERIVA_RUBRO_TEMA = {
 };
 
 function derivaNorm(s) {
-  s = String(s || '').toLowerCase();
+  s = String(s || '').toLowerCase().replace(/['’`´]/g, '');
   try { s = s.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (e) {}
   return ' ' + s.replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim() + ' ';
 }
@@ -11377,6 +11421,12 @@ function derivaNorm(s) {
 // que 'MERPAGO*RAPPI' y 'NETFLIX.COM' matcheen sin reglas especiales.
 function derivaTema(t) {
   const txt = derivaNorm((t.detalle || '') + ' ' + (t.cliente || ''));
+  // Lo que la persona me enseñó va antes que el diccionario: ella sabe qué es.
+  const ap = drvAprendeHit(txt);
+  if (ap) {
+    if (ap.tema === DRV_NO_CONTAR) return { ignorar: true, tema: ap.tema, via: 'aprendido', key: ap.key };
+    return { con: drvConDe(ap.tema), tema: ap.tema, via: 'aprendido', key: ap.key };
+  }
   for (const f of DERIVA_TEMAS) {
     for (const k of f.keys) {
       if (txt.indexOf(derivaNorm(k)) >= 0) {
@@ -11435,6 +11485,7 @@ function drvIniciar() {
   if (uid === _drvUid && _drvRef) return;
   if (_drvRef) { try { _drvRef.off(); } catch (e) {} _drvRef = null; }
   _drvUid = uid; _drvPiloto = false; _drvEnc = null; _drvEncSesion = false;
+  drvAprendeCargar(uid);
   // El último estado conocido en este aparato: el ítem aparece sin esperar a la red.
   try { _drvPiloto = localStorage.getItem('fin_drv_piloto_' + uid) === '1'; } catch (e) {}
   drvPintarMenu();
@@ -11479,7 +11530,7 @@ function drvCalcular() {
   const todos = Object.keys(cuenta).filter(function (m) { return m < hoy; }).sort();
   const completos = todos.filter(function (m) { return cuenta[m] >= minimo; }).slice(-8);
   const enCurso = cuenta[hoy] ? hoy : null;
-  const res = { hoy: hoy, completos: completos, enCurso: enCurso, totalMov: 0, leidos: 0, ritmos: [], subs: [], dinero: null, sin: [], temas: [],
+  const res = { hoy: hoy, completos: completos, enCurso: enCurso, totalMov: 0, leidos: 0, ignorados: 0, ritmos: [], subs: [], dinero: null, sin: [], temas: [],
                 flojos: todos.filter(function (m) { return cuenta[m] < minimo; }).length };
   if (completos.length < 3) { res.poca = true; return res; }
   const ventana = {}; completos.forEach(function (m) { ventana[m] = 1; }); if (enCurso) ventana[enCurso] = 1;
@@ -11489,8 +11540,9 @@ function drvCalcular() {
   const T = {};
   gastos.forEach(function (t) {
     if (!ventana[t.mes]) return;
-    res.totalMov++;
     const x = derivaTema(t);
+    if (x && x.ignorar) { res.ignorados++; return; }
+    res.totalMov++;
     const mov = { mes: t.mes, fecha: String(t.fecha || ''), det: String([t.detalle, t.cliente].filter(Boolean).join(' · ')).trim(),
                   rubro: String(t.rubro || ''), pesos: Number(t.impPesos) || 0, usd: Number(t.impUSD) || 0 };
     if (!x) { res.sin.push(mov); return; }
@@ -11625,6 +11677,8 @@ function drvFechaCorta(f, mes) {
 function drvDetalle(tipo, i, soloMes) {
   const R = _drvUltimo;
   if (!R) return;
+  _drvDetUlt = [tipo, i, soloMes];
+  if (tipo === 'n' && !soloMes) return drvDetalleSin();
   let tit = '', sub = '', items = [];
   if (tipo === 'r' && R.ritmos[i]) { tit = R.ritmos[i].tema; items = R.ritmos[i].items; }
   else if (tipo === 's' && R.subs[i]) { tit = R.subs[i].nom; items = R.subs[i].items; sub = 'Todos los cobros que encontré de este servicio.'; }
@@ -11643,12 +11697,14 @@ function drvDetalle(tipo, i, soloMes) {
     return '<div class="drv-det-mes"><span>' + drvMesTxt(m) + (m === R.enCurso ? ' · en curso' : '') + ' · ' + xs.length + (xs.length === 1 ? ' vez' : ' veces') + '</span><span>' + drvPlata(totP, totU) + '</span></div>' +
       xs.map(function (x) {
         const por = tipo === 'n' ? 'rubro: ' + esc(x.rubro || 'sin rubro')
+          : x.via === 'aprendido' ? '<span class="drv-via-a">porque me enseñaste «' + esc(x.key) + '»</span>'
           : x.via === 'rubro' ? '<span class="drv-via-r">por el rubro «' + esc(x.rubro) + '»</span>'
           : '<span class="drv-via-c">por «' + esc(x.key) + '» en el texto</span>' + (x.rubro ? ' · rubro: ' + esc(x.rubro) : '');
         const temaOtro = (tipo === 's' || tipo === 'd') && x.tema ? ' · tema: ' + esc(x.tema) : '';
         return '<div class="drv-det-fila"><span class="f">' + drvFechaCorta(x.fecha, x.mes) + '</span>' +
           '<span class="d">' + esc(x.det || '(sin detalle)') + '<small>' + por + temaOtro + '</small></span>' +
-          '<span class="i">' + drvPlata(x.pesos, x.usd) + '</span></div>';
+          '<span class="i">' + drvPlata(x.pesos, x.usd) + '</span>' +
+          '<button type="button" class="drv-lapiz" title="Corregir: decime qué es" aria-label="Corregir el tema" data-det="' + esc(x.det) + '" onclick="drvEnsenarAbrir(null, this.dataset.det)">✎</button></div>';
       }).join('');
   }).join('');
   drvDetalleCerrar();
@@ -11663,7 +11719,214 @@ function drvDetalle(tipo, i, soloMes) {
   document.body.appendChild(ov);
   document.addEventListener('keydown', drvDetalleEsc);
 }
-function drvDetalleEsc(e) { if (e.key === 'Escape') drvDetalleCerrar(); }
+function drvDetalleEsc(e) {
+  if (e.key !== 'Escape') return;
+  if (document.getElementById('drvEnsOv')) return drvEnsenarCerrar();
+  drvDetalleCerrar();
+}
+
+// ── Deriva aprende (v005.71) ────────────────────────────────────────────────
+// Lo que Deriva no reconoce, la persona se lo enseña una vez: «Angie's es comer
+// afuera». Se guarda como una palabra → un tema, y desde ahí todo lo que diga
+// esa palabra cae en ese tema, también lo que se cargue después. Las reglas
+// viven en norteSync/prefs/<uid>/derivaAprende y en este aparato (por si la
+// regla de la base todavía no se publicó, o no hay red).
+const DRV_NO_CONTAR = 'No contar';
+let _drvAprende = {}, _drvDetUlt = null, _drvEnsAviso = '';
+function drvConDe(tema) {
+  for (const f of DERIVA_TEMAS) if (f.tema === tema) return f.con;
+  return '';
+}
+function drvAprendeHit(txt) {
+  let mejor = null;
+  Object.keys(_drvAprende).forEach(function (k) {
+    if (k.charAt(0) === '_' || !_drvAprende[k]) return;
+    const n = derivaNorm(k);
+    if (n.trim().length < 2 || txt.indexOf(n) < 0) return;
+    // La palabra más larga gana: «apple tv» le gana a «apple».
+    if (!mejor || n.length > mejor.n) mejor = { key: k, tema: _drvAprende[k], n: n.length };
+  });
+  return mejor;
+}
+function drvAprendeLocalKey(uid) { return 'fin_drv_aprende_' + (uid || ''); }
+function drvAprendeCargar(uid) {
+  _drvAprende = {};
+  try { _drvAprende = JSON.parse(localStorage.getItem(drvAprendeLocalKey(uid)) || '{}') || {}; } catch (e) { _drvAprende = {}; }
+  drvAprendeSemilla(uid);
+  try {
+    if (!uid || uid === 'desconocido' || typeof firebase === 'undefined' || !firebase.database) return;
+    firebase.database().ref('norteSync/prefs/' + uid + '/derivaAprende').once('value').then(function (sn) {
+      const v = (sn && sn.val()) || {};
+      let cambio = false;
+      // Gana la nube; lo que sólo está en este aparato se sube.
+      Object.keys(v).forEach(function (k) { if (_drvAprende[k] !== v[k]) { _drvAprende[k] = v[k]; cambio = true; } });
+      const soloAca = Object.keys(_drvAprende).filter(function (k) { return !(k in v); });
+      if (soloAca.length) drvAprendeSubir();
+      drvAprendeLocal();
+      if (cambio && curPage === 'deriva') drvRender();
+    }).catch(function () {});
+  } catch (e) {}
+}
+// Lo que Jaime ya dijo en el piloto (18/11): Angie's es un restaurante y Apple
+// es publicidad de su consultoría. Se carga una sola vez; después puede
+// cambiarlo o borrarlo como cualquier otra regla.
+function drvAprendeSemilla(uid) {
+  if (uid !== DRV_SUPER || _drvAprende._semilla) return;
+  if (!_drvAprende.angies) _drvAprende.angies = 'Comer afuera';
+  if (!_drvAprende.apple) _drvAprende.apple = 'Gastos del trabajo';
+  _drvAprende._semilla = '1';
+  drvAprendeLocal(); drvAprendeSubir();
+}
+function drvAprendeLocal() { try { localStorage.setItem(drvAprendeLocalKey(_drvUid || curUserId()), JSON.stringify(_drvAprende)); } catch (e) {} }
+function drvAprendeSubir() {
+  try {
+    const u = firebase.auth().currentUser;
+    if (u) firebase.database().ref('norteSync/prefs/' + u.uid + '/derivaAprende').set(_drvAprende).catch(function () {});
+  } catch (e) {}
+}
+// La palabra que identifica al comercio: sale del detalle sin los prefijos de
+// la tarjeta o de Mercado Pago, sin números y sin palabras que no dicen nada.
+const DRV_RUIDO = ' merpago mercadopago mercpago mp dlo dlocal payu ebanx paypal pago pagos compra compras debito debit credito tarjeta visa master mastercard amex cabal www com ar net sa srl sas de del la el los las y en a al cuota cuotas caba bs as buenos aires argentina bill store pay transferencia transf trf qr qrs ';
+function drvClave(det) {
+  const ws = derivaNorm(det).trim().split(' ').filter(function (w) {
+    return w.length >= 3 && !/\d/.test(w) && DRV_RUIDO.indexOf(' ' + w + ' ') < 0;
+  });
+  return ws[0] || '';
+}
+function drvTodosLosGastos() {
+  return (getData() || []).filter(function (t) { return t && t.tipo === 'Gasto' && !t.transf; });
+}
+function drvCoinciden(clave) {
+  const n = derivaNorm(clave);
+  if (n.trim().length < 3) return [];
+  return drvTodosLosGastos().filter(function (t) { return derivaNorm((t.detalle || '') + ' ' + (t.cliente || '')).indexOf(n) >= 0; });
+}
+
+// «Sin reconocer»: agrupado por comercio, de lo que más se repite a lo que menos.
+function drvDetalleSin() {
+  const R = _drvUltimo;
+  const G = {};
+  R.sin.forEach(function (x) {
+    const k = drvClave(x.det) || '(sin nombre)';
+    const g = G[k] || (G[k] = { k: k, n: 0, p: 0, u: 0, ej: [] });
+    g.n++; g.p += x.pesos; g.u += x.usd;
+    if (g.ej.indexOf(x.det) < 0 && g.ej.length < 3) g.ej.push(x.det);
+  });
+  const gs = Object.keys(G).map(function (k) { return G[k]; }).sort(function (a, b) { return b.n - a.n || b.p - a.p; });
+  const reglas = Object.keys(_drvAprende).filter(function (k) { return k.charAt(0) !== '_' && _drvAprende[k]; }).length;
+  const filas = gs.map(function (g) {
+    const sinNom = g.k === '(sin nombre)';
+    return '<div class="drv-grp"><div class="d"><b>' + esc(sinNom ? 'Sin nombre de comercio' : g.k) + '</b><small>' + esc(g.ej.join(' · ') || '(sin detalle)') + '</small></div>' +
+      '<div class="i">' + drvPlata(g.p, g.u) + '<small>' + g.n + (g.n === 1 ? ' vez' : ' veces') + '</small></div>' +
+      (sinNom ? '<span style="width:76px"></span>' : '<button type="button" class="drv-que" data-k="' + esc(g.k) + '" data-ej="' + esc(g.ej[0] || '') + '" onclick="drvEnsenarAbrir(this.dataset.k, this.dataset.ej)">¿Qué es?</button>') + '</div>';
+  }).join('');
+  drvDetalleCerrar();
+  const ov = document.createElement('div');
+  ov.className = 'drv-encov'; ov.id = 'drvDetOv';
+  ov.onclick = function (e) { if (e.target === ov) drvDetalleCerrar(); };
+  ov.innerHTML = '<div class="drv-det" role="dialog" aria-modal="true" aria-labelledby="drvDetTit">' +
+    '<div class="drv-det-cab"><div><h3 id="drvDetTit">Sin reconocer</h3><small>' + R.sin.length + (R.sin.length === 1 ? ' movimiento' : ' movimientos') + ' en ' + gs.length + (gs.length === 1 ? ' comercio' : ' comercios') + '. No entran en ningún ritmo.</small></div>' +
+    '<button type="button" class="btn" style="border:1px solid var(--border);flex:none" onclick="drvDetalleCerrar()" aria-label="Cerrar">✕</button></div>' +
+    '<div class="drv-det-body">' +
+      (_drvEnsAviso ? '<div class="drv-ens-intro"><span class="drv-ok">✓ ' + _drvEnsAviso + '</span></div>' :
+        '<div class="drv-ens-intro">Decime qué es cada uno y lo aprendo: elegís el tema una vez y todo lo que diga esa palabra queda ahí, también lo que cargues después.</div>') +
+      (filas || '<div class="drv-peso" style="padding:14px 0">Ya no queda nada sin reconocer.</div>') + '</div>' +
+    '<div class="drv-ens-pie"><span>' + (reglas ? 'Me enseñaste ' + reglas + (reglas === 1 ? ' comercio.' : ' comercios.') : 'Todavía no me enseñaste nada.') + '</span>' +
+      (reglas ? '<a onclick="drvReglasAbrir()">Ver y corregir</a>' : '') + '</div></div>';
+  _drvEnsAviso = '';
+  document.body.appendChild(ov);
+  document.addEventListener('keydown', drvDetalleEsc);
+}
+
+// La ventanita «¿Qué es?»: la palabra (se puede cambiar) y los temas.
+let _drvEnsTema = '';
+function drvEnsenarAbrir(clave, ejemplo) {
+  if (clave == null) clave = drvClave(ejemplo);
+  drvEnsenarCerrar();
+  _drvEnsTema = _drvAprende[clave] || '';
+  const grupos = {}, orden = [];
+  DERIVA_TEMAS.forEach(function (f) {
+    const g = f.con || 'Otros';
+    if (!grupos[g]) { grupos[g] = []; orden.push(g); }
+    grupos[g].push(f.tema);
+  });
+  const chips = orden.map(function (g) {
+    return '<div class="grupo"><span>' + esc(g) + '</span><div class="chips">' + grupos[g].map(function (t) {
+      return '<button type="button" data-t="' + esc(t) + '" onclick="drvEnsenarElegir(this.dataset.t)">' + esc(t) + '</button>';
+    }).join('') + '</div></div>';
+  }).join('') +
+    '<div class="grupo"><span>Ninguno</span><div class="chips"><button type="button" class="fuera" data-t="' + DRV_NO_CONTAR + '" onclick="drvEnsenarElegir(this.dataset.t)">No contar: no es un gasto de la casa</button></div></div>';
+  const ov = document.createElement('div');
+  ov.className = 'drv-encov'; ov.id = 'drvEnsOv';
+  ov.onclick = function (e) { if (e.target === ov) drvEnsenarCerrar(); };
+  ov.innerHTML = '<div class="drv-ens" role="dialog" aria-modal="true" aria-labelledby="drvEnsTit">' +
+    '<h3 id="drvEnsTit">¿Qué es «' + esc(ejemplo || clave) + '»?</h3>' +
+    '<label for="drvEnsK">La palabra que lo identifica</label>' +
+    '<input id="drvEnsK" autocomplete="off" value="' + esc(clave) + '" oninput="drvEnsenarAlcance()">' +
+    '<div class="alc" id="drvEnsAlc"></div>' +
+    '<label>Es…</label>' + chips +
+    '<div style="display:flex;justify-content:flex-end;margin-top:14px"><button type="button" class="btn btn-secondary" onclick="drvEnsenarCerrar()">Cancelar</button></div></div>';
+  document.body.appendChild(ov);
+  drvEnsenarAlcance();
+}
+function drvEnsenarAlcance() {
+  const el = document.getElementById('drvEnsAlc'), inp = document.getElementById('drvEnsK');
+  if (!el || !inp) return;
+  const c = drvCoinciden(inp.value);
+  const k = derivaNorm(inp.value).trim();
+  const act = _drvAprende[k] || '';
+  document.querySelectorAll('#drvEnsOv .chips button').forEach(function (b) { b.classList.toggle('act', b.dataset.t === act); });
+  if (k.length < 3) { el.innerHTML = 'Escribí al menos tres letras.'; return; }
+  const ej = []; c.forEach(function (t) { const d = String(t.detalle || ''); if (ej.indexOf(d) < 0 && ej.length < 3) ej.push(d); });
+  el.innerHTML = 'Lo aplico a <b>' + c.length + (c.length === 1 ? ' movimiento' : ' movimientos') + '</b> que dicen «' + esc(k) + '»' +
+    (ej.length ? ': ' + esc(ej.join(' · ')) : '') + (act ? '. Hoy lo tengo como <b>' + esc(act) + '</b>.' : '.');
+}
+function drvEnsenarElegir(tema) {
+  const inp = document.getElementById('drvEnsK');
+  const k = derivaNorm(inp ? inp.value : '').trim();
+  if (k.length < 3) { drvEnsenarAlcance(); return; }
+  drvAprender(k, tema);
+}
+function drvAprender(k, tema) {
+  _drvAprende[k] = tema;
+  drvAprendeLocal(); drvAprendeSubir();
+  const n = drvCoinciden(k).length;
+  _drvEnsAviso = (tema === DRV_NO_CONTAR ? '«' + k + '» ya no se cuenta' : 'Aprendido: «' + k + '» es ' + tema) + ' (' + n + (n === 1 ? ' movimiento' : ' movimientos') + ').';
+  drvEnsenarCerrar();
+  drvRender();
+  const u = _drvDetUlt;
+  if (u) drvDetalle(u[0], u[1], u[2]);
+  else _drvEnsAviso = '';
+}
+function drvEnsenarCerrar() { const ov = document.getElementById('drvEnsOv'); if (ov) ov.remove(); }
+
+// «Lo que me enseñaste»: todas las reglas, para revisarlas o borrarlas.
+function drvReglasAbrir() {
+  const ks = Object.keys(_drvAprende).filter(function (k) { return k.charAt(0) !== '_' && _drvAprende[k]; }).sort();
+  drvDetalleCerrar();
+  _drvDetUlt = ['n'];
+  const ov = document.createElement('div');
+  ov.className = 'drv-encov'; ov.id = 'drvDetOv';
+  ov.onclick = function (e) { if (e.target === ov) drvDetalleCerrar(); };
+  ov.innerHTML = '<div class="drv-det" role="dialog" aria-modal="true" aria-labelledby="drvDetTit">' +
+    '<div class="drv-det-cab"><div><h3 id="drvDetTit">Lo que me enseñaste</h3><small>Cada palabra va siempre a su tema. Tocá ✎ para cambiarlo o ✕ para que vuelva a leerlo solo.</small></div>' +
+    '<button type="button" class="btn" style="border:1px solid var(--border);flex:none" onclick="drvDetalleCerrar()" aria-label="Cerrar">✕</button></div>' +
+    '<div class="drv-det-body">' + (ks.map(function (k) {
+      const n = drvCoinciden(k).length;
+      return '<div class="drv-regla"><div class="d"><b>' + esc(k) + '</b> → ' + esc(_drvAprende[k]) + ' <small>· ' + n + (n === 1 ? ' movimiento' : ' movimientos') + '</small></div>' +
+        '<button type="button" title="Cambiar" data-k="' + esc(k) + '" onclick="drvEnsenarAbrir(this.dataset.k, this.dataset.k)">✎</button>' +
+        '<button type="button" title="Borrar" data-k="' + esc(k) + '" onclick="drvOlvidar(this.dataset.k)">✕</button></div>';
+    }).join('') || '<div class="drv-peso" style="padding:14px 0">Todavía no me enseñaste nada.</div>') + '</div>' +
+    '<div class="drv-ens-pie"><a onclick="drvDetalle(\'n\')">← Volver a lo sin reconocer</a><span></span></div></div>';
+  document.body.appendChild(ov);
+  document.addEventListener('keydown', drvDetalleEsc);
+}
+function drvOlvidar(k) {
+  delete _drvAprende[k];
+  drvAprendeLocal(); drvAprendeSubir();
+  drvRender();
+  drvReglasAbrir();
+}
 function drvDetalleCerrar() {
   const ov = document.getElementById('drvDetOv'); if (ov) ov.remove();
   document.removeEventListener('keydown', drvDetalleEsc);
@@ -11876,7 +12139,9 @@ function drv2Lente(R) {
       '<circle cx="85" cy="85" r="74" fill="none" stroke="#FF8A5C" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + (C * pct / 100).toFixed(1) + ' ' + C.toFixed(1) + '"/></svg>' +
       '<div class="cc"><strong>' + pct + '%</strong><span>de tus gastos, leídos</span></div></div>' +
     '<ul><li><span>Meses con historia</span><b>' + meses + '</b></li><li><span>Gastos reconocidos</span><b>' + R.leidos + ' de ' + R.totalMov + '</b></li>' +
-      '<li><span>Sin reconocer</span>' + (R.sin.length ? '<button type="button" onclick="drvDetalle(\'n\')">' + R.sin.length + ', ver cuáles</button>' : '<b>0</b>') + '</li></ul>' +
+      '<li><span>Sin reconocer</span>' + (R.sin.length ? '<button type="button" onclick="drvDetalle(\'n\')">' + R.sin.length + ', enseñame qué son</button>' : '<b>0</b>') + '</li>' +
+      (Object.keys(_drvAprende).filter(function (k) { return k.charAt(0) !== '_' && _drvAprende[k]; }).length ? '<li><span>Lo que me enseñaste</span><button type="button" onclick="drvReglasAbrir()">' + Object.keys(_drvAprende).filter(function (k) { return k.charAt(0) !== '_' && _drvAprende[k]; }).length + ' comercios, ver</button></li>' : '') +
+      (R.ignorados ? '<li><span>Fuera de la cuenta</span><b>' + R.ignorados + '</b></li>' : '') + '</ul>' +
     (pct < 90 ? '<p class="empuje">Lo que más le falta: <strong>transferencias y pagos con QR</strong> sin el nombre del comercio. Completar el campo Cliente los ilumina.</p>' : '') +
     (R.flojos ? '<p class="empuje">Dejé afuera ' + (R.flojos === 1 ? 'un mes' : R.flojos + ' meses') + ' con muy pocos movimientos cargados.</p>' : '') +
     '</div><div><div class="esc">' + esc_ + '</div>' +
@@ -19737,7 +20002,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.70.000';
+const APP_VERSION = 'v005.71.000';
 let novEntradas = [];
 
 function novLeida(e) {
