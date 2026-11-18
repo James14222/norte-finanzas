@@ -2367,6 +2367,17 @@ html[data-tema="noche"] .qp-modo.qp-modo-texto { color:#8fb2ff; }
 .drv-enc .op.on { background: #FF8A5C; border-color: #FF8A5C; color: #fff; font-weight: 700; }
 .drv-enc textarea { width: 100%; margin-top: 8px; border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; font: inherit; font-size: 13.5px; background: var(--bg); color: var(--text); resize: vertical; box-sizing: border-box; }
 .drv-enc .pie { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+/* Encuestas dentro de la app (v005.72) */
+.enc-intro { font-size: 13.5px; color: var(--muted); line-height: 1.55; margin-top: 6px; }
+.enc-intro b { color: var(--text); }
+.enc-ej { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: rgba(255,138,92,.10); font-size: 12.5px; line-height: 1.5; color: var(--text); }
+.enc-esc { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 8px; }
+.enc-esc .op { padding: 10px 0; font-size: 15px; font-weight: 800; text-align: center; }
+.enc-ext { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); margin-top: 5px; }
+.enc-bar { display: flex; align-items: center; gap: 8px; font-size: 12.5px; margin: 3px 0; }
+.enc-bar span { width: 18px; text-align: right; color: var(--muted); }
+.enc-bar i { display: block; height: 10px; border-radius: 5px; background: #FF8A5C; min-width: 2px; }
+.enc-bar b { font-weight: 700; min-width: 18px; }
 .drv-card.clic, .drv-sub.clic { cursor: pointer; }
 /* ── Deriva v2 (v005.70). Fondo propio, siempre oscuro: es una carta náutica,
    no una pantalla más de la app. ── */
@@ -12268,6 +12279,127 @@ function drvEncEnviar() {
 }
 
 
+// ── Encuestas dentro de la app (v005.72) ─────────────────────────────────────
+// Una pregunta corta que aparece sola al entrar, para decidir qué construir.
+// Cada encuesta se lanza y se pausa desde Admin (norteSync/encuestasConfig/<id>):
+// subir la app no la muestra a nadie. A cada persona se le pregunta como mucho
+// tres veces, con al menos 20 horas entre una y otra, y nunca más si contestó.
+// Lo de cada persona vive en norteSync/encuestas/<id>/<uid>.
+const ENCUESTAS = [{
+  id: 'medeben',
+  nombre: 'Me deben',
+  titulo: '¿Te serviría ver lo que te deben?',
+  intro: 'Cuando dividís un gasto y marcás <b>Me lo devuelven</b>, Norte ya no lo cuenta como gasto tuyo. ' +
+    'Pero hoy no te dice <b>cuánto te deben en total</b> ni <b>si ya te lo pagaron</b>.',
+  ejemplo: 'La idea: una sección <b>Me deben</b> con cada devolución pendiente, de qué gasto viene, a quién se la pagaste y desde cuándo, ' +
+    'y un botón para marcar <b>«ya me lo devolvieron»</b>.',
+  preguntas: [
+    { k: 'util', q: '¿Qué tan útil te resultaría?', escala: 5, min: 'Nada útil', max: 'Muy útil', obligatoria: true },
+    { k: 'frec', q: '¿Cada cuánto pagás algo por otros?', ops: [['nunca', 'Casi nunca'], ['aveces', 'A veces'], ['mes', 'Todos los meses'], ['semana', 'Todas las semanas']] }
+  ],
+  abierta: '¿Qué te gustaría que tenga?'
+}];
+let _encCfg = {}, _encYo = {}, _encSesion = false, _encResp = {}, _encAbierta = null, _encUid = '';
+function encEsSuper() { try { return curUserId() === DRV_SUPER; } catch (e) { return false; } }
+function encIniciar() {
+  const uid = curUserId();
+  if (!uid || uid === 'desconocido' || uid === _encUid) return;
+  _encUid = uid; _encSesion = false; _encCfg = {}; _encYo = {};
+  if (encEsSuper() || typeof firebase === 'undefined' || !firebase.database) return;
+  try {
+    firebase.database().ref('norteSync/encuestasConfig').once('value').then(function (sn) {
+      _encCfg = (sn && sn.val()) || {};
+      const activas = ENCUESTAS.filter(function (e) { return _encCfg[e.id] && _encCfg[e.id].activa; });
+      if (!activas.length) return;
+      return Promise.all(activas.map(function (e) {
+        return firebase.database().ref('norteSync/encuestas/' + e.id + '/' + uid).once('value').then(function (s2) { _encYo[e.id] = (s2 && s2.val()) || {}; });
+      })).then(function () { encQuizas(9000); });
+    }).catch(function () {});
+  } catch (e) {}
+}
+function encPendiente() {
+  for (const e of ENCUESTAS) {
+    if (!_encCfg[e.id] || !_encCfg[e.id].activa) continue;
+    const yo = _encYo[e.id];
+    if (!yo || yo.resp || (Number(yo.preguntas) || 0) >= 3) continue;
+    if (Date.now() - (Number(yo.ultPregunta) || 0) < 20 * 3600000) continue;
+    return e;
+  }
+  return null;
+}
+// Nunca encima de otra ventana: el formulario de carga, la bienvenida, la guía,
+// la encuesta de Deriva. Si hay algo abierto, espera y vuelve a probar.
+function encOcupado() {
+  const vis = function (id) { const el = document.getElementById(id); return el && !el.classList.contains('hidden') && getComputedStyle(el).display !== 'none'; };
+  if (document.getElementById('drvEncOv') || document.getElementById('drvDetOv') || document.getElementById('encOv')) return true;
+  const mo = document.getElementById('modalOverlay'); if (mo && mo.classList.contains('show')) return true;
+  return vis('onboardingOverlay') || vis('pnLanzaOverlay') || vis('guiaCapa') || document.visibilityState === 'hidden';
+}
+function encQuizas(ms, intento) {
+  if (_encSesion || !encPendiente()) return;
+  setTimeout(function () {
+    if (_encSesion) return;
+    if (encOcupado()) { if ((intento || 0) < 20) encQuizas(30000, (intento || 0) + 1); return; }
+    const e = encPendiente(); if (!e) return;
+    _encSesion = true;
+    encAbrir(e.id, false);
+  }, ms || 0);
+}
+function encGuardar(id, patch) {
+  _encYo[id] = Object.assign(_encYo[id] || {}, patch);
+  try { firebase.database().ref('norteSync/encuestas/' + id + '/' + curUserId()).update(patch).catch(function () {}); } catch (e) {}
+}
+function encAbrir(id, manual) {
+  const e = ENCUESTAS.find(function (x) { return x.id === id; });
+  if (!e || document.getElementById('encOv')) return;
+  const prueba = manual || encEsSuper();
+  if (!prueba) encGuardar(id, { preguntas: (Number((_encYo[id] || {}).preguntas) || 0) + 1, ultPregunta: Date.now() });
+  _encResp = {}; _encAbierta = { id: id, prueba: prueba };
+  const ov = document.createElement('div');
+  ov.className = 'drv-encov'; ov.id = 'encOv';
+  ov.innerHTML = '<div class="drv-enc" role="dialog" aria-modal="true" aria-labelledby="encTit">' +
+    '<h3 id="encTit">' + esc(e.titulo) + '</h3>' +
+    '<div class="enc-intro">' + e.intro + (prueba ? ' <b>(Vista previa: no se guarda.)</b>' : '') + '</div>' +
+    (e.ejemplo ? '<div class="enc-ej">' + e.ejemplo + '</div>' : '') +
+    e.preguntas.map(function (p) {
+      if (p.escala) {
+        let b = '';
+        for (let i = 1; i <= p.escala; i++) b += '<button type="button" class="op" data-k="' + p.k + '" data-v="' + i + '" onclick="encElegir(this)" aria-label="' + i + ' de ' + p.escala + '">' + i + '</button>';
+        return '<div class="q">' + esc(p.q) + '</div><div class="enc-esc">' + b + '</div><div class="enc-ext"><span>' + esc(p.min) + '</span><span>' + esc(p.max) + '</span></div>';
+      }
+      return '<div class="q">' + esc(p.q) + ' <span style="font-weight:400;color:var(--muted)">(opcional)</span></div><div class="ops">' + p.ops.map(function (o) {
+        return '<button type="button" class="op" data-k="' + p.k + '" data-v="' + o[0] + '" onclick="encElegir(this)">' + esc(o[1]) + '</button>';
+      }).join('') + '</div>';
+    }).join('') +
+    (e.abierta ? '<div class="q">' + esc(e.abierta) + ' <span style="font-weight:400;color:var(--muted)">(opcional)</span></div>' +
+      '<textarea id="encTxt" rows="3" maxlength="600" placeholder="Lo que quieras contarnos"></textarea>' : '') +
+    '<div id="encErr" style="display:none;margin-top:8px;font-size:12.5px;color:#ef4444">Elegí un número del 1 al 5.</div>' +
+    '<div class="pie"><button type="button" class="btn" style="border:1px solid var(--border)" onclick="encCerrar()">Más tarde</button>' +
+    '<button type="button" class="btn btn-primary" onclick="encEnviar()">Enviar</button></div></div>';
+  document.body.appendChild(ov);
+}
+function encElegir(b) {
+  const k = b.getAttribute('data-k');
+  _encResp[k] = b.getAttribute('data-v');
+  document.querySelectorAll('#encOv .op[data-k="' + k + '"]').forEach(function (x) { x.classList.toggle('on', x === b); });
+  const er = document.getElementById('encErr'); if (er) er.style.display = 'none';
+}
+function encCerrar() { const ov = document.getElementById('encOv'); if (ov) ov.remove(); _encAbierta = null; }
+function encEnviar() {
+  const A = _encAbierta; if (!A) return;
+  const e = ENCUESTAS.find(function (x) { return x.id === A.id; });
+  const falta = e.preguntas.find(function (p) { return p.obligatoria && !_encResp[p.k]; });
+  if (falta) { document.getElementById('encErr').style.display = 'block'; return; }
+  const resp = { ts: Date.now(), hogar: curEmpresa(), v: (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''),
+    txt: String((document.getElementById('encTxt') || {}).value || '').trim().slice(0, 600) };
+  e.preguntas.forEach(function (p) { resp[p.k] = _encResp[p.k] ? (p.escala ? Number(_encResp[p.k]) : _encResp[p.k]) : ''; });
+  if (!A.prueba) encGuardar(A.id, { resp: resp });
+  const box = document.querySelector('#encOv .drv-enc');
+  if (box) box.innerHTML = '<h3>¡Gracias!</h3><div class="enc-intro">' + (A.prueba ? 'Así la ve la gente. Como es una vista previa, no se guardó.' : 'Lo vamos a leer uno por uno.') + '</div>';
+  setTimeout(encCerrar, 1700);
+}
+document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && document.getElementById('encOv')) encCerrar(); });
+
 // ── DÓLAR: cotización, modo de conteo y conversión (v005.1.069) ──────────
 // La cotización la escribe una Cloud Function programada en norteSync/fx/ARS.
 // Si no hay dato o no hay permiso de lectura, la pantalla se comporta como antes.
@@ -20005,7 +20137,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.71.001';
+const APP_VERSION = 'v005.72.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -23901,6 +24033,7 @@ function iniciarListenerPlan() {
   const empresaId = curEmpresa();
   try { iniciarLecturas(); iniciarListenerFX(); cargarGPSPioneros(); iniciarListenerNovedades(); iniciarListenerChatsAdmin(); } catch(e){}
   try { drvIniciar(); } catch (e) {}
+  try { encIniciar(); } catch (e) {}
   firebase.database().ref('norteSync/billing/' + empresaId).on('value', snap => {
     const v = snap.val();
     miPlanActual = (v && v.tier) || 'FOCO';
@@ -25877,7 +26010,9 @@ function subtituloRumbo() {
       '<div class="card admin-section" id="saCanjesCard" style="margin-bottom:8px"></div>' +
       '<div class="card admin-section" id="saRankCard" style="margin-bottom:8px"></div>' +
       '<div class="card admin-section" id="saAntigCard" style="margin-bottom:8px"></div>' +
-      '<div class="card admin-section" id="saDrvCard" style="margin-bottom:8px"></div>';
+      '<div class="card admin-section" id="saDrvCard" style="margin-bottom:8px"></div>' +
+      '<div class="admin-group-label">Encuestas</div>' +
+      '<div class="card admin-section" id="saEncCard" style="margin-bottom:8px"></div>';
     page.insertBefore(wrap, page.children[1] || null);
     return true;
   }
@@ -25910,6 +26045,9 @@ function subtituloRumbo() {
       _saDrv = {}; _saDrvEnc = {};
       try { _saDrv = (await firebase.database().ref('norteSync/derivaPiloto').once('value')).val() || {}; } catch (e) { _saDrv = {}; }
       try { _saDrvEnc = (await firebase.database().ref('norteSync/derivaEncuesta').once('value')).val() || {}; } catch (e) { _saDrvEnc = {}; }
+      _saEnc = {}; _saEncCfg = {};
+      try { _saEncCfg = (await firebase.database().ref('norteSync/encuestasConfig').once('value')).val() || {}; } catch (e) { _saEncCfg = {}; }
+      try { _saEnc = (await firebase.database().ref('norteSync/encuestas').once('value')).val() || {}; } catch (e) { _saEnc = {}; }
       _saCanjesVistoPrev = null;
       // Cuántas personas entraron de verdad en el último mes. Es el número que
       // la suma de cuentas no dice.
@@ -26080,6 +26218,7 @@ function subtituloRumbo() {
   var SA_DERIVA_MESES = 3;
   var _saDrv = {};
   var _saDrvEnc = {};
+  var _saEnc = {}, _saEncCfg = {};
 
   function saUsuarioPorUid(uid) {
     return _saUsuarios.filter(function (u) { return u.uid === uid; })[0] || null;
@@ -26122,6 +26261,7 @@ function subtituloRumbo() {
     try { saPintarRanking(); } catch (e) {}
     try { saPintarAntiguedad(); } catch (e) {}
     try { saPintarDrv(); } catch (e) {}
+    try { saPintarEnc(); } catch (e) {}
   }
 
   // ── Quién canjeó ──
@@ -26358,6 +26498,64 @@ function subtituloRumbo() {
         : '<div style="font-size:13px;color:var(--muted)">Todavía no activaste a nadie.</div>');
   }
   window.saAntigVerTodos = function () { _saAntigTodos = !_saAntigTodos; saPintarAntiguedad(); };
+
+  // ── Encuestas ──
+  var SA_ENC_FREC = { nunca: 'Casi nunca', aveces: 'A veces', mes: 'Todos los meses', semana: 'Todas las semanas' };
+  function saPintarEnc() {
+    var el = document.getElementById('saEncCard');
+    if (!el || typeof ENCUESTAS === 'undefined') return;
+    el.innerHTML = ENCUESTAS.map(function (e) {
+      var cfg = _saEncCfg[e.id] || {}, datos = _saEnc[e.id] || {};
+      var uids = Object.keys(datos);
+      var resp = uids.filter(function (k) { return datos[k] && datos[k].resp; });
+      var esc5 = e.preguntas.find(function (p) { return p.escala; });
+      var cuenta = {}, suma = 0, n = 0, frec = {};
+      resp.forEach(function (k) {
+        var r = datos[k].resp, v = Number(r[esc5 ? esc5.k : '']) || 0;
+        if (v) { cuenta[v] = (cuenta[v] || 0) + 1; suma += v; n++; }
+        if (r.frec) frec[r.frec] = (frec[r.frec] || 0) + 1;
+      });
+      var max = Math.max(1, Math.max.apply(null, [0].concat(Object.keys(cuenta).map(function (k) { return cuenta[k]; }))));
+      var barras = '';
+      if (esc5) for (var i = esc5.escala; i >= 1; i--) {
+        barras += '<div class="enc-bar"><span>' + i + '</span><i style="width:' + Math.round((cuenta[i] || 0) / max * 160) + 'px"></i><b>' + (cuenta[i] || 0) + '</b>' +
+          (i === esc5.escala ? '<small style="color:var(--muted)">' + esc(esc5.max) + '</small>' : i === 1 ? '<small style="color:var(--muted)">' + esc(esc5.min) + '</small>' : '') + '</div>';
+      }
+      var utiles = (cuenta[4] || 0) + (cuenta[5] || 0);
+      var frecTxt = Object.keys(SA_ENC_FREC).filter(function (k) { return frec[k]; }).map(function (k) { return SA_ENC_FREC[k] + ': <b>' + frec[k] + '</b>'; }).join(' · ');
+      var coment = resp.filter(function (k) { return datos[k].resp.txt; }).sort(function (a, b) { return (datos[b].resp.ts || 0) - (datos[a].resp.ts || 0); }).map(function (k) {
+        var r = datos[k].resp;
+        return '<div style="padding:8px 0;border-top:1px solid var(--border);font-size:12.5px">' + saPersona(saUsuarioPorUid(k)) +
+          '<div style="margin-top:3px"><b>' + (r[esc5.k] || '–') + '/5</b>' + (r.frec ? ' · ' + esc(SA_ENC_FREC[r.frec] || r.frec) : '') + '</div>' +
+          '<div style="margin-top:3px;font-style:italic">«' + esc(r.txt) + '»</div></div>';
+      }).join('');
+      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px">' +
+          '<div style="font-size:15px;font-weight:700;color:var(--text)">📋 ' + esc(e.nombre) + ' <span style="font-size:11px;font-weight:800;border-radius:6px;padding:2px 7px;margin-left:6px;' +
+            (cfg.activa ? 'color:#0f766e;background:rgba(111,191,168,.22)">EN CURSO' : 'color:var(--muted);background:var(--bg)">' + (cfg.desde ? 'PAUSADA' : 'SIN LANZAR')) + '</span></div>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" style="font-size:12px;padding:5px 12px;border:1px solid var(--border)" onclick="encAbrir(\'' + e.id + '\', true)">Verla como la ven</button>' +
+          '<button class="btn ' + (cfg.activa ? '' : 'btn-primary') + '" style="font-size:12px;padding:5px 12px;border:1px solid var(--border)" onclick="saEncToggle(\'' + e.id + '\')">' + (cfg.activa ? 'Pausar' : (cfg.desde ? 'Retomar' : 'Lanzar')) + '</button></div>' +
+        '</div>' +
+        '<div style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:10px">' +
+          (cfg.desde ? 'Lanzada el ' + fecha(new Date(Number(cfg.desde)).toISOString()) + '. ' : 'Nadie la ve hasta que la lances. ') +
+          uids.length + (uids.length === 1 ? ' persona la vio' : ' personas la vieron') + ' · ' + resp.length + ' contestaron' +
+          (n ? ' · promedio <b style="color:var(--text)">' + (suma / n).toFixed(1).replace('.', ',') + '/5</b> · ' + utiles + ' de ' + n + ' la ven útil (4 o 5)' : '') + '. ' +
+          'Aparece sola al entrar, como mucho tres veces por persona y una por día. A vos no te aparece.</div>' +
+        (n ? '<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start"><div>' + barras + '</div>' +
+          '<div style="font-size:12.5px;line-height:1.6"><div style="font-weight:700;margin-bottom:3px">¿Cada cuánto paga por otros?</div>' + (frecTxt || '<span style="color:var(--muted)">sin datos</span>') + '</div></div>' : '') +
+        (coment ? '<div style="margin-top:12px;font-weight:700;font-size:13px">Comentarios</div>' + coment : '');
+    }).join('<hr style="border:0;border-top:1px solid var(--border);margin:16px 0">');
+  }
+  window.saEncToggle = async function (id) {
+    if (!esSuper()) return;
+    var cfg = _saEncCfg[id] || {};
+    var e = ENCUESTAS.find(function (x) { return x.id === id; });
+    if (!cfg.activa && !confirm('¿Lanzar la encuesta «' + e.nombre + '»?\n\nLe va a aparecer sola a cada persona al entrar a Norte.')) return;
+    try {
+      var v = { activa: !cfg.activa, desde: cfg.desde || Date.now(), ts: Date.now() };
+      await firebase.database().ref('norteSync/encuestasConfig/' + id).set(v);
+      _saEncCfg[id] = v; saPintarEnc();
+    } catch (er) { alert('No se pudo: ' + (er && er.message || er)); }
+  };
 
 
   // ── LA VENTANA DE DETALLE DEL USO ──────────────────────────────
