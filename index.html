@@ -2503,6 +2503,100 @@ html[data-tema="noche"] .qp-modo.qp-modo-texto { color:#8fb2ff; }
   .drv2 .pel .est { grid-column:2; }
   .drv2 .barrita { grid-column:1/3; }
 }
+.drv2 .tema .pt { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:8px; vertical-align:1px; }
+.drv2 .lect b { font-size:11px; }
+.drv2 .carta .eti .fl { font-size:11px; }
+.drv-tabs { display:flex; gap:6px; margin:16px 0 4px; padding:4px; background:var(--casco); border-radius:14px; width:max-content; max-width:100%; }
+.drv-tabs button { all:unset; cursor:pointer; padding:9px 18px; border-radius:10px; font-weight:700; font-size:14.5px; color:var(--niebla); line-height:1.15; }
+.drv-tabs button small { display:block; font-weight:500; font-size:11.5px; margin-top:1px; }
+.drv-tabs button.on { background:var(--casco2); color:#fff; box-shadow:inset 0 -2px 0 var(--coral); }
+.drv-tabs button:focus-visible { outline:2px solid var(--coral); }
+.drv-vp { background:var(--casco); border-radius:22px; padding:22px; }
+.drv-vp .vp-fila { display:grid; grid-template-columns:150px 1fr; gap:14px; align-items:center; margin-bottom:10px; }
+.drv-vp .vp-lbl { font-family:var(--disp); font-weight:700; font-size:20px; color:#fff; }
+.drv-vp .vp-lbl small { display:block; font-family:Inter,system-ui,sans-serif; font-weight:500; font-size:12px; color:var(--niebla); }
+.drv-vp .vp-bar { display:flex; gap:3px; height:44px; border-radius:12px; overflow:hidden; }
+.drv-vp .vp-bar div { display:flex; align-items:center; justify-content:center; cursor:pointer; min-width:3px; transition:filter .15s; }
+.drv-vp .vp-bar div:hover { filter:brightness(1.12); }
+.drv-vp .vp-bar span { font-weight:800; font-size:13px; color:#0A1B2A; }
+.drv-vp .vp-ley { display:flex; flex-wrap:wrap; gap:6px 18px; margin-top:12px; }
+.drv-vp .vp-ley button { all:unset; cursor:pointer; font-size:13px; color:var(--espuma); display:inline-flex; align-items:center; gap:7px; }
+.drv-vp .vp-ley i { width:10px; height:10px; border-radius:3px; }
+.drv-vp .vp-ley b { color:var(--niebla); font-weight:600; }
+.drv-hab { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; }
+.drv-hab .hab { all:unset; box-sizing:border-box; cursor:pointer; background:var(--casco); border-radius:18px; padding:16px 18px 14px; border-top:4px solid var(--gc); display:flex; flex-direction:column; gap:4px; transition:transform .15s, box-shadow .15s; }
+.drv-hab .hab:hover { transform:translateY(-2px); }
+.drv-hab .hab.on { box-shadow:0 0 0 2px var(--gc); background:var(--casco2); }
+.drv-hab .hab:focus-visible { outline:2px solid var(--coral); }
+.drv-hab .hab-t { display:flex; justify-content:space-between; align-items:center; gap:8px; font-weight:800; font-size:15px; color:#fff; }
+.drv-hab .hab-n { font-family:var(--disp); font-weight:800; font-size:38px; line-height:1; color:var(--gc); margin-top:4px; }
+.drv-hab .hab-n small { font-family:Inter,system-ui,sans-serif; font-size:13px; font-weight:600; color:var(--niebla); }
+.drv-hab .hab-l { font-size:13px; color:var(--espuma); }
+.drv-hab .hab-mix { display:flex; gap:2px; height:8px; border-radius:4px; overflow:hidden; margin:8px 0 4px; }
+.drv-hab .hab-mix b { display:block; height:100%; }
+.drv-hab .hab-f { font-size:12px; color:var(--niebla); line-height:1.4; }
+.drv2 .tr { font-size:12px; font-weight:800; border-radius:8px; padding:3px 8px; white-space:nowrap; }
+.drv2 .tr.sube { background:rgba(255,138,92,.16); color:var(--coral); }
+.drv2 .tr.baja { background:rgba(95,211,188,.14); color:var(--vidrio); }
+.drv2 .tr.parejo { background:rgba(141,163,181,.12); color:var(--niebla); font-weight:600; }
+.drv-dentro { margin-top:16px; background:var(--casco); border-radius:22px; padding:20px 22px; border-left:4px solid var(--gc); scroll-margin-top:16px; }
+.drv-dentro .dt-cab { display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-bottom:8px; }
+.drv-dentro h3 { margin:0; font-family:var(--disp); font-size:22px; color:#fff; }
+.drv-dentro .dt-cab small { color:var(--niebla); font-size:13px; }
+.drv-dentro .dt-todo { all:unset; cursor:pointer; color:var(--coral2); font-weight:700; font-size:13.5px; }
+.drv-dentro .dt-fila { display:grid; grid-template-columns:minmax(170px,1.6fr) minmax(120px,1fr) 80px 120px 90px; gap:14px; align-items:center; padding:12px 4px; border-top:1px solid var(--linea); cursor:pointer; }
+.drv-dentro .dt-fila:hover { background:rgba(255,255,255,.03); }
+.drv-dentro .dt-n { font-weight:700; font-size:15px; color:var(--espuma); }
+.drv-dentro .dt-n i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:8px; }
+.drv-dentro .dt-n small { display:block; font-weight:500; font-size:12px; color:var(--niebla); margin:2px 0 0 18px; }
+.drv-dentro .dt-sp { display:flex; align-items:flex-end; gap:4px; height:32px; }
+.drv-dentro .dt-sp b { flex:1; max-width:16px; border-radius:3px; min-height:2px; }
+.drv-dentro .dt-p { font-family:var(--disp); font-weight:700; font-size:18px; color:#fff; text-align:right; }
+.drv-dentro .dt-p small { display:block; font-family:Inter,system-ui,sans-serif; font-size:11px; font-weight:500; color:var(--niebla); }
+.drv-dentro .dt-tr { text-align:right; }
+.drv-dentro .dt-dia { margin:12px 0 0; padding-top:12px; border-top:1px solid var(--linea); font-size:13.5px; color:var(--espuma); }
+.drv-dentro .dt-donde { margin-top:12px; padding-top:12px; border-top:1px solid var(--linea); display:grid; grid-template-columns:70px 1fr; gap:10px; align-items:start; }
+.drv-dentro .dt-donde > span { font-size:12px; font-weight:700; color:var(--niebla); text-transform:uppercase; letter-spacing:.05em; padding-top:7px; }
+.drv-dentro .dt-donde > div { display:flex; flex-wrap:wrap; gap:6px; }
+.drv-dentro .dt-donde button { all:unset; cursor:pointer; border:1px solid var(--linea); border-radius:999px; padding:6px 12px; font-size:13px; color:var(--espuma); display:inline-flex; align-items:center; gap:7px; }
+.drv-dentro .dt-donde button:hover { border-color:var(--gc); }
+.drv-dentro .dt-donde i { width:8px; height:8px; border-radius:50%; }
+.drv-dentro .dt-donde b { color:var(--niebla); font-weight:600; }
+.drv-dias { background:var(--casco); border-radius:22px; padding:20px 22px; overflow-x:auto; }
+.drv-dias .dd-fila { display:grid; grid-template-columns:130px repeat(7,minmax(34px,1fr)); gap:5px; align-items:center; margin-bottom:5px; min-width:420px; }
+.drv-dias .dd-g { font-size:13px; font-weight:600; color:var(--espuma); display:flex; align-items:center; gap:7px; }
+.drv-dias .dd-g i { width:9px; height:9px; border-radius:3px; flex:none; }
+.drv-dias .dd-c { height:28px; border-radius:7px; }
+.drv-dias .dd-cab .dd-c { height:auto; text-align:center; font-size:12px; font-weight:700; color:var(--niebla); }
+.drv-dias .dd-res { margin:12px 0 0; font-size:13.5px; color:var(--espuma); }
+.drv-fn { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.drv-fn > div { background:var(--casco); border-radius:22px; padding:18px 20px; }
+.drv-fn h3 { margin:0 0 6px; font-size:15px; color:#fff; }
+.drv-fn .fc { display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--linea); cursor:pointer; font-size:14px; }
+.drv-fn .fc:hover span { color:#fff; }
+.drv-fn .fc i { width:10px; height:10px; border-radius:3px; flex:none; }
+.drv-fn .fc span { flex:1; min-width:0; color:var(--espuma); font-weight:600; }
+.drv-fn .fc span small { display:block; font-weight:500; font-size:11.5px; color:var(--niebla); }
+.drv-fn .fc b { font-weight:600; font-size:13px; color:var(--niebla); white-space:nowrap; }
+@media (max-width:760px) {
+  .drv-tabs { width:auto; }
+  .drv-tabs button { flex:1; text-align:center; padding:8px 10px; }
+  .drv-vp { padding:16px; }
+  .drv-vp .vp-fila { grid-template-columns:1fr; gap:6px; }
+  .drv-vp .vp-lbl { font-size:16px; }
+  .drv-vp .vp-lbl small { display:inline; margin-left:6px; }
+  .drv-dentro { padding:16px; }
+  .drv-dentro .dt-fila { grid-template-columns:1fr auto; gap:6px 12px; }
+  .drv-dentro .dt-sp { grid-column:1/3; order:3; height:24px; }
+  .drv-dentro .dt-p:nth-of-type(4) { display:none; }
+  .drv-dentro .dt-tr { grid-column:1/3; order:4; text-align:left; }
+  .drv-dentro .dt-donde { grid-template-columns:1fr; }
+  .drv-fn { grid-template-columns:1fr; }
+  .drv-dias { padding:16px 14px; }
+  .drv-dias .dd-fila { grid-template-columns:84px repeat(7,1fr); gap:4px; min-width:0; }
+  .drv-dias .dd-g { font-size:12px; gap:5px; }
+  .drv-dias .dd-c { height:24px; border-radius:6px; }
+}
 @media (prefers-reduced-motion:no-preference) {
   .drv2 .franja { animation:drv2sube .8s cubic-bezier(.2,.7,.2,1) both; }
   @keyframes drv2sube { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
@@ -11777,6 +11871,7 @@ function drvDetalle(tipo, i, soloMes) {
   else if (tipo === 's' && R.subs[i]) { tit = R.subs[i].nom; items = R.subs[i].items; sub = 'Todos los cobros que encontré de este servicio.'; }
   else if (tipo === 'd' && R.dinero) { tit = 'Lo que pagás por la plata'; items = R.dinero.items; sub = 'Comisiones, intereses, percepciones y deudas de los últimos tres meses.'; }
   else if (tipo === 't' && R.temas[i]) { tit = R.temas[i].tema; items = R.temas[i].items; }
+  else if (tipo === 'x' && _drvDetX[i]) { tit = _drvDetX[i].tit; items = _drvDetX[i].items; sub = _drvDetX[i].sub || ''; }
   else if (tipo === 'n') { tit = 'Sin reconocer'; items = R.sin; sub = 'Gastos que no pude asignar a ningún tema: ni el texto ni el rubro dicen qué son. No entran en ningún ritmo.'; }
   else return;
   if (soloMes) items = items.filter(function (x) { return x.mes === soloMes; });
@@ -12361,14 +12456,17 @@ function drv2Carta(R) {
     const r = R.ritmos[i], y0 = base.slice();
     const y1 = base.map(function (b, j) { return b + drv2Veces(r, cols[j]) * u; });
     base = y1;
-    return { r: r, i: i, y0: y0, y1: y1, t: drv2Tipo(r, R), c: drv2Color(drv2Tipo(r, R), k) };
+    return { r: r, i: i, y0: y0, y1: y1, t: drv2Tipo(r, R), c: drvColorTema(r.tema) };
   });
   const ida = function (ys) { let d = ''; for (let i = 0; i < n; i++) { if (!i) { d += 'M' + xs[0] + ' ' + ys[0]; continue; } const cx = (xs[i - 1] + xs[i]) / 2; d += ' C' + cx + ' ' + ys[i - 1] + ' ' + cx + ' ' + ys[i] + ' ' + xs[i] + ' ' + ys[i]; } return d; };
   const vuelta = function (ys) { let d = ' L' + xs[n - 1] + ' ' + ys[n - 1]; for (let i = n - 2; i >= 0; i--) { const cx = (xs[i + 1] + xs[i]) / 2; d += ' C' + cx + ' ' + ys[i + 1] + ' ' + cx + ' ' + ys[i] + ' ' + xs[i] + ' ' + ys[i]; } return d + 'Z'; };
   let s = '<defs><pattern id="drv2Ray" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#0A1B2A" opacity=".55"/><line x1="0" y1="0" x2="0" y2="7" stroke="#183449" stroke-width="3"/></pattern></defs>';
   s += '<g class="ret">' + xs.map(function (x) { return '<line x1="' + x + '" x2="' + x + '" y1="' + (top - 8) + '" y2="' + (H - bot + 6) + '"/>'; }).join('') + '</g>';
+  // Lo que cambió va pleno; lo parejo, más apagado, para que el cambio se vea.
+  const hayCambio = capas.some(function (c) { return c.t === 'sube' || c.t === 'baja'; });
   capas.forEach(function (c, k) {
-    s += '<path class="franja" tabindex="0" role="button" aria-label="Ver los movimientos de ' + esc(c.r.tema) + '" style="animation-delay:' + (k * 80) + 'ms" onclick="drvDetalle(\'r\',' + c.i + ')" onkeydown="if(event.key===\'Enter\')drvDetalle(\'r\',' + c.i + ')" d="' + ida(c.y1) + vuelta(c.y0) + '" fill="' + c.c + '"><title>' + esc(c.r.tema) + '</title></path>';
+    c.op = !hayCambio || c.t === 'sube' || c.t === 'baja' ? 1 : 0.55;
+    s += '<path class="franja" fill-opacity="' + c.op + '" tabindex="0" role="button" aria-label="Ver los movimientos de ' + esc(c.r.tema) + '" style="animation-delay:' + (k * 80) + 'ms" onclick="drvDetalle(\'r\',' + c.i + ')" onkeydown="if(event.key===\'Enter\')drvDetalle(\'r\',' + c.i + ')" d="' + ida(c.y1) + vuelta(c.y0) + '" fill="' + c.c + '"><title>' + esc(c.r.tema) + '</title></path>';
   });
   if (R.enCurso && n > 1) {
     const xa = (xs[n - 2] + xs[n - 1]) / 2 + 4;
@@ -12382,8 +12480,8 @@ function drv2Carta(R) {
     .sort(function (a, b) { return a.y - b.y; })
     .forEach(function (o) {
       const yy = Math.max(o.y, ult + 19); ult = yy;
-      const col = o.c.t === 'sube' ? '#FF8A5C' : o.c.t === 'baja' ? '#5FD3BC' : '#B9CAD7';
-      s += '<text class="eti" x="' + (xs[n - 1] + 16) + '" y="' + (yy + 4) + '" fill="' + col + '">' + esc(o.c.r.tema) + ' <tspan>' + drv2Veces(o.c.r, mUlt) + ' en ' + drvMesTxt(mUlt) + '</tspan></text>';
+      const fl = o.c.t === 'sube' ? '<tspan class="fl" fill="#FF8A5C">▲</tspan> ' : o.c.t === 'baja' ? '<tspan class="fl" fill="#5FD3BC">▼</tspan> ' : '';
+      s += '<text class="eti" x="' + (xs[n - 1] + 16) + '" y="' + (yy + 4) + '" fill="' + o.c.c + '">' + esc(o.c.r.tema) + ' ' + fl + '<tspan>' + drv2Veces(o.c.r, mUlt) + ' en ' + drvMesTxt(mUlt) + '</tspan></text>';
     });
   // La marca sobre el pico de lo que más subió.
   const cs = capas.filter(function (c) { return c.t === 'sube'; })[0];
@@ -12396,7 +12494,8 @@ function drv2Carta(R) {
       v + (v === 1 ? ' vez' : ' veces') + ' en ' + drv2MesLargo(R.completos[jm]) + '</text>';
   }
   return '<div class="carta"><div class="desliza"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Carta de los ritmos de tu casa mes a mes">' + s + '</svg></div>' +
-    '<div class="lect"><span><i style="background:#FF8A5C"></i>Se aceleró</span><span><i style="background:#5FD3BC"></i>Se frenó</span><span><i style="background:#4D6B84"></i>Parejo</span>' +
+    '<div class="lect"><span><b style="color:#FF8A5C">▲</b> Se aceleró</span><span><b style="color:#5FD3BC">▼</b> Se frenó</span><span>Sin flecha: parejo</span>' +
+    '<span>Cada hábito tiene su color; los de un mismo grupo, la misma familia.</span>' +
     '<span>El ancho de cada franja es cuántas veces pasó ese mes.' + (R.enCurso ? ' ' + drv2MesLargo(R.enCurso).replace(/^./, function (c) { return c.toUpperCase(); }) + ' todavía está en curso.' : '') + ' Tocá una franja para ver sus movimientos.</span></div></div>';
 }
 
@@ -12418,7 +12517,7 @@ function drv2Filas(R) {
     const d = t === 'va' ? 'puntual' : t === 'parejo' ? 'parejo'
       : (r.viejo > 0 ? (r.nuevo >= r.viejo ? '+' : '−') + Math.round(Math.abs(r.nuevo - r.viejo) / r.viejo * 100) + '%' : 'nuevo');
     return '<div class="fila" tabindex="0" role="button" aria-label="Ver los movimientos de ' + esc(r.tema) + '" onclick="drvDetalle(\'r\',' + i + ')" onkeydown="if(event.key===\'Enter\')drvDetalle(\'r\',' + i + ')">' +
-      '<div class="tema">' + esc(r.tema) + '<small>' + sub + '</small></div>' +
+      '<div class="tema"><i class="pt" style="background:' + drvColorTema(r.tema) + '"></i>' + esc(r.tema) + '<small>' + sub + '</small></div>' +
       '<div class="barras" style="--cb:' + cb + '">' + barras + '</div>' +
       '<div class="antes">' + antes + '</div><div class="delta ' + t + '">' + d + '</div></div>';
   }).join('') + '</div>';
@@ -12500,6 +12599,241 @@ function drv2Pie() {
     '<a onclick="drvEncAbrir(true)">Contanos qué te pareció</a></p>';
 }
 
+// ══════════ DERIVA · Tu perfil (v005.76) ═══════════════════════════════════
+// La vista macro: no qué cambió, sino cómo es la casa. Junta los temas en los
+// grupos de hábitos y mira cuántas veces, cuánta plata, cada cuánto, qué días
+// y en qué comercios de siempre. Todo sale de drvCalcular: no cuenta aparte.
+// Colores: una familia por grupo y un tono por tema, iguales en las dos solapas.
+const DRV_PAL = {
+  'Comer': ['#FF8A5C', '#FFB088', '#E0663A', '#FFCDB4', '#C2502A'],
+  'El auto': ['#5B9BF0', '#93BEF6', '#3C79D1', '#BFD7FA'],
+  'El techo': ['#A98BF0', '#C9B5F7', '#8565D8', '#DCD0FA', '#6E50BC'],
+  'Estar bien': ['#5FD3BC', '#97E5D5', '#36B096', '#C1F0E6'],
+  'Moverse': ['#F2C14E', '#F7D98F', '#D7A12A'],
+  'Vida social': ['#F07AB0', '#F7AACC', '#D2558F', '#FBCDE1'],
+  'Inercia': ['#8DA3B5', '#B9CAD7', '#6C8396', '#A3B7C7'],
+  '': ['#C9A766', '#E2C690', '#A68650', '#EAD9B4', '#8E7444'],
+  'Trabajo': ['#4FC3E8', '#8AD8F1', '#2FA3C9']
+};
+const DRV_GRUPO_FRASE = { 'Comer': 'comer', 'El auto': 'el auto', 'El techo': 'la casa', 'Estar bien': 'estar bien',
+  'Moverse': 'moverse', 'Vida social': 'la vida social', 'Inercia': 'lo que se cobra solo', '': 'cosas sueltas', 'Trabajo': 'el trabajo' };
+// No es consumo: queda afuera del perfil (se avisa abajo).
+const DRV_FUERA_PERFIL = { 'Inversiones': 1 };
+const DRV_DIAS = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá'];
+const DRV_DIA_SING = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const DRV_DIAS_LARGO = ['los domingos', 'los lunes', 'los martes', 'los miércoles', 'los jueves', 'los viernes', 'los sábados'];
+let _drvVista = null, _drvGrupoSel = null, _drvDetX = [];
+function drvGrupoDe(tema) { const c = drvConDe(tema); return DRV_PAL[c] ? c : ''; }
+function drvColorGrupo(g) { return (DRV_PAL[g] || DRV_PAL[''])[0]; }
+function drvColorTema(tema) {
+  const g = drvGrupoDe(tema), fam = DRV_PAL[g];
+  const hs = drvTemasTodos().filter(function (f) { return (DRV_PAL[f.con] ? f.con : '') === g; }).map(function (f) { return f.tema; });
+  return fam[Math.max(0, hs.indexOf(tema)) % fam.length];
+}
+function drvCada(v) {
+  if (v >= 22) return 'casi todos los días';
+  if (v >= 4.5) return 'cada ' + Math.round(30 / v) + ' días';
+  if (v >= 3.5) return 'una vez por semana';
+  if (v >= 1.6) return 'cada ' + Math.round(30 / v) + ' días';
+  if (v >= 0.8) return 'una vez por mes';
+  return 'de vez en cuando';
+}
+// Tendencia de veces: los dos últimos meses contra los anteriores.
+function drvTendencia(nuevo, viejo) {
+  if (viejo === null) return null;
+  // Lo que pasa menos de una vez y media por mes no tiene ritmo que comparar.
+  if (Math.max(nuevo, viejo) < 1.5) return null;
+  if (viejo === 0) return nuevo >= 2 ? { tipo: 'sube', txt: 'nuevo' } : null;
+  const p = Math.round((nuevo - viejo) / viejo * 100);
+  if (nuevo >= viejo * 1.25 && nuevo - viejo >= 1) return { tipo: 'sube', txt: '▲ ' + p + '%' };
+  if (nuevo <= viejo * 0.8 && viejo - nuevo >= 1) return { tipo: 'baja', txt: '▼ ' + Math.abs(p) + '%' };
+  return { tipo: 'parejo', txt: 'parejo' };
+}
+function drvPerfil(R) {
+  const fx = (typeof fxRate === 'function' && fxRate() > 0) ? fxRate() : 0;
+  const C = R.completos, ult3 = C.slice(-3), ult2 = C.slice(-2), antes = C.slice(0, -2);
+  const en = function (arr) { const o = {}; arr.forEach(function (m) { o[m] = 1; }); return o; };
+  const e3 = en(ult3), e2 = en(ult2), eA = en(antes), eC = en(C);
+  const plata = function (it) { return (it.pesos || 0) + (it.usd || 0) * fx; };
+  const P = { grupos: [], totV: 0, totP: 0, fuera: 0, dias: [0, 0, 0, 0, 0, 0, 0], conFecha: 0, conTodo: 0, fieles: [], nuevos: [], ult3: ult3, C: C };
+  const G = {}, com = {};
+  (R.temas || []).forEach(function (t, ti) {
+    if (DRV_FUERA_PERFIL[t.tema]) { P.fuera += t.items.length; return; }
+    const g = drvGrupoDe(t.tema);
+    const o = G[g] || (G[g] = { g: g, color: drvColorGrupo(g), temas: [], items: [], v3: 0, p3: 0, v2: 0, vA: 0, meses: {}, dias: [0, 0, 0, 0, 0, 0, 0], conFecha: 0, com: {} });
+    const T = { tema: t.tema, idx: ti, color: drvColorTema(t.tema), v3: 0, p3: 0, v2: 0, vA: 0, meses: {}, porMes: {} };
+    t.items.forEach(function (it) {
+      if (!eC[it.mes]) return;   // el mes en curso no entra: está a medias
+      P.conTodo++;
+      o.items.push(it);
+      T.meses[it.mes] = 1; o.meses[it.mes] = 1;
+      T.porMes[it.mes] = (T.porMes[it.mes] || 0) + 1;
+      if (e3[it.mes]) { T.v3++; T.p3 += plata(it); }
+      if (e2[it.mes]) T.v2++;
+      if (eA[it.mes]) T.vA++;
+      const f = String(it.fecha || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (f) { const d = new Date(+f[1], +f[2] - 1, +f[3]).getDay(); o.dias[d]++; o.conFecha++; P.dias[d]++; P.conFecha++; }
+      const k = (it.via === 'aprendido' && it.key) ? it.key : drvClave(it.det);
+      if (k) {
+        const c = com[k] || (com[k] = { k: k, nom: drvNomServicio(k), g: g, color: T.color, v3: 0, n: 0, meses: {}, prim: it.mes, items: [] });
+        c.n++; c.meses[it.mes] = 1; c.items.push(it); if (e3[it.mes]) c.v3++; if (it.mes < c.prim) c.prim = it.mes;
+        o.com[k] = c;
+      }
+    });
+    const n3 = ult3.length || 1;
+    T.vMes = T.v3 / n3; T.pMes = T.p3 / n3; T.ticket = T.v3 ? T.p3 / T.v3 : 0;
+    T.rec = Object.keys(T.meses).length;
+    T.trend = drvTendencia(T.v2 / (ult2.length || 1), antes.length ? T.vA / antes.length : null);
+    if (T.rec) o.temas.push(T);
+    o.v3 += T.v3; o.p3 += T.p3; o.v2 += T.v2; o.vA += T.vA;
+  });
+  const n3 = ult3.length || 1;
+  P.grupos = Object.keys(G).map(function (k) {
+    const o = G[k];
+    o.vMes = o.v3 / n3; o.pMes = o.p3 / n3; o.ticket = o.v3 ? o.p3 / o.v3 : 0;
+    o.rec = Object.keys(o.meses).length;
+    o.trend = drvTendencia(o.v2 / (ult2.length || 1), antes.length ? o.vA / antes.length : null);
+    o.temas.sort(function (a, b) { return (b.v3 - a.v3) || (b.rec - a.rec); });
+    o.comercios = Object.keys(o.com).map(function (c) { return o.com[c]; }).sort(function (a, b) { return (b.v3 - a.v3) || (b.n - a.n); });
+    return o;
+  }).filter(function (o) { return o.rec; }).sort(function (a, b) { return (b.v3 - a.v3) || (b.p3 - a.p3); });
+  P.grupos.forEach(function (o) { P.totV += o.v3; P.totP += o.p3; });
+  const cs = Object.keys(com).map(function (k) { return com[k]; });
+  P.fieles = cs.filter(function (c) { return C.length >= 3 && Object.keys(c.meses).length === C.length; })
+    .sort(function (a, b) { return (b.v3 - a.v3) || (b.n - a.n); }).slice(0, 8);
+  P.nuevos = cs.filter(function (c) { return antes.length && e2[c.prim] && c.n >= 2; })
+    .sort(function (a, b) { return b.n - a.n; }).slice(0, 6);
+  return P;
+}
+function drvVista() {
+  if (_drvVista === null) { try { _drvVista = localStorage.getItem('fin_drv_vista') || 'ritmo'; } catch (e) { _drvVista = 'ritmo'; } }
+  return _drvVista === 'perfil' ? 'perfil' : 'ritmo';
+}
+function drvVistaIr(v) {
+  _drvVista = v;
+  try { localStorage.setItem('fin_drv_vista', v); } catch (e) {}
+  drvRender();
+}
+function drvTabs() {
+  const v = drvVista();
+  const b = function (id, txt, sub) {
+    return '<button type="button" role="tab" aria-selected="' + (v === id) + '" class="' + (v === id ? 'on' : '') + '" onclick="drvVistaIr(\'' + id + '\')">' + txt + '<small>' + sub + '</small></button>';
+  };
+  return '<div class="drv-tabs" role="tablist" aria-label="Vistas de Deriva">' + b('ritmo', 'Ritmos', 'qué cambió') + b('perfil', 'Tu perfil', 'cómo es tu casa') + '</div>';
+}
+function drvGrupoIr(g) {
+  _drvGrupoSel = g;
+  drvRender();
+  const el = document.getElementById('drvDentro');
+  if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function drvPct(x) { return Math.round(x * 100); }
+function drvPerfilHtml(R) {
+  const P = drvPerfil(R);
+  _drvDetX = [];
+  const verX = function (tit, items, sub) { _drvDetX.push({ tit: tit, items: items, sub: sub }); return 'drvDetalle(\'x\',' + (_drvDetX.length - 1) + ')'; };
+  if (!P.grupos.length || !P.totV) {
+    return '<h1 class="tit">Todavía no veo cómo es tu casa.</h1><div class="vacio">Necesito gastos reconocidos en los últimos meses. Enseñame qué son los que no reconozco y aparece tu perfil.</div>';
+  }
+  const gs = P.grupos, g1 = gs[0];
+  const gp = gs.slice().sort(function (a, b) { return b.p3 - a.p3; })[0];
+  const de10 = Math.max(1, Math.round(g1.v3 / P.totV * 10));
+  const fr = function (g) { return DRV_GRUPO_FRASE[g] || 'cosas sueltas'; };
+  const h = 'En tu casa, <span class="n">' + de10 + ' de cada 10</span> compras son para ' + esc(fr(g1.g)) + '.';
+  const b = (P.totP > 0 && gp.g !== g1.g ? 'Pero la plata va a otro lado: ' + esc(fr(gp.g)) + ' se lleva el ' + drvPct(gp.p3 / P.totP) + '% de lo que gastás. '
+      : P.totP > 0 ? 'Y también es donde más plata va: el ' + drvPct(gp.p3 / P.totP) + '% de lo que gastás. ' : '') +
+    'Así es tu casa en los últimos ' + P.ult3.length + ' meses: qué hace seguido, cuánto pesa cada cosa y cada cuánto vuelve.';
+  // Veces contra plata
+  const barra = function (campo, tot) {
+    return '<div class="vp-bar">' + gs.map(function (o) {
+      const p = tot ? o[campo] / tot : 0;
+      if (p <= 0) return '';
+      return '<div role="button" tabindex="0" title="' + esc(drvGrupoTxt(o.g)) + ': ' + drvPct(p) + '%" data-g="' + esc(o.g) + '" onclick="drvGrupoIr(this.dataset.g)" style="flex:' + p + ';background:' + o.color + '">' +
+        (p >= 0.08 ? '<span>' + drvPct(p) + '%</span>' : '') + '</div>';
+    }).join('') + '</div>';
+  };
+  const vp = '<div class="drv-vp">' +
+    '<div class="vp-fila"><div class="vp-lbl">Veces<small>' + Math.round(P.totV / P.ult3.length) + ' compras por mes</small></div>' + barra('v3', P.totV) + '</div>' +
+    '<div class="vp-fila"><div class="vp-lbl">Plata<small>' + drvPesos(P.totP / P.ult3.length) + ' por mes</small></div>' + barra('p3', P.totP) + '</div>' +
+    '<div class="vp-ley">' + gs.map(function (o) {
+      return '<button type="button" data-g="' + esc(o.g) + '" onclick="drvGrupoIr(this.dataset.g)"><i style="background:' + o.color + '"></i>' + esc(drvGrupoTxt(o.g)) +
+        '<b>' + drvPct(o.v3 / P.totV) + '% · ' + (P.totP ? drvPct(o.p3 / P.totP) : 0) + '%</b></button>';
+    }).join('') + '</div></div>';
+  // Tarjetas de hábitos
+  const sel = gs.filter(function (o) { return o.g === _drvGrupoSel; })[0] || g1;
+  const tr = function (t) { return t ? '<span class="tr ' + t.tipo + '">' + t.txt + '</span>' : ''; };
+  const cards = '<div class="drv-hab">' + gs.map(function (o) {
+    const mix = o.temas.filter(function (t) { return t.v3; }).map(function (t) { return '<b style="flex:' + t.v3 + ';background:' + t.color + '" title="' + esc(t.tema) + '"></b>'; }).join('');
+    return '<button type="button" class="hab' + (o === sel ? ' on' : '') + '" style="--gc:' + o.color + '" data-g="' + esc(o.g) + '" onclick="drvGrupoIr(this.dataset.g)">' +
+      '<div class="hab-t">' + esc(drvGrupoTxt(o.g)) + tr(o.trend) + '</div>' +
+      '<div class="hab-n">' + drvNum(o.vMes) + '<small>' + (o.vMes === 1 ? ' vez' : ' veces') + ' por mes</small></div>' +
+      '<div class="hab-l">' + drvCada(o.vMes) + ' · ' + drvPesos(o.pMes) + ' por mes</div>' +
+      '<div class="hab-mix">' + (mix || '<b style="flex:1;background:var(--linea)"></b>') + '</div>' +
+      '<div class="hab-f">' + o.temas.slice(0, 3).map(function (t) { return esc(t.tema); }).join(' · ') + '</div>' +
+      '<div class="hab-f">Ticket promedio ' + drvPesos(o.ticket) + ' · en ' + o.rec + ' de ' + P.C.length + ' meses</div></button>';
+  }).join('') + '</div>';
+  // El grupo elegido, por dentro
+  const cols = P.C;
+  const mxT = Math.max.apply(null, sel.temas.map(function (t) { return Math.max.apply(null, cols.map(function (m) { return t.porMes[m] || 0; })); }).concat([1]));
+  const temasH = sel.temas.map(function (t) {
+    const sp = cols.map(function (m) { return '<b style="height:' + Math.max(2, Math.round((t.porMes[m] || 0) / mxT * 30)) + 'px;background:' + t.color + '" title="' + drvMesTxt(m) + ': ' + (t.porMes[m] || 0) + '"></b>'; }).join('');
+    return '<div class="dt-fila" role="button" tabindex="0" onclick="drvDetalle(\'t\',' + t.idx + ')" onkeydown="if(event.key===\'Enter\')drvDetalle(\'t\',' + t.idx + ')">' +
+      '<div class="dt-n"><i style="background:' + t.color + '"></i>' + esc(t.tema) + '<small>' + (t.v3 ? drvCada(t.vMes) + ' · ticket ' + drvPesos(t.ticket) : 'no pasó en los últimos meses') + ' · en ' + t.rec + ' de ' + cols.length + ' meses</small></div>' +
+      '<div class="dt-sp">' + sp + '</div>' +
+      '<div class="dt-p">' + drvNum(t.vMes) + '<small>por mes</small></div>' +
+      '<div class="dt-p">' + drvPesos(t.pMes) + '<small>por mes</small></div>' +
+      '<div class="dt-tr">' + tr(t.trend) + '</div></div>';
+  }).join('');
+  const dondeH = sel.comercios.slice(0, 8).map(function (c) {
+    const todos = Object.keys(c.meses).length === cols.length && cols.length >= 3;
+    return '<button type="button" onclick="' + verX(c.nom, c.items, 'Todos los movimientos de este comercio en los meses que mira el perfil.') + '"><i style="background:' + c.color + '"></i>' + esc(c.nom) +
+      '<b>' + (c.v3 ? drvNum(c.v3 / P.ult3.length) + ' por mes' : c.n + (c.n === 1 ? ' vez' : ' veces')) + (todos ? ' · todos los meses' : '') + '</b></button>';
+  }).join('');
+  const sDias = function (o) {
+    if (o.conFecha < 12) return '';
+    const mx = o.dias.indexOf(Math.max.apply(null, o.dias));
+    const fin = (o.dias[0] + o.dias[6] + o.dias[5]) / o.conFecha;
+    return '<p class="dt-dia">Pasa más ' + DRV_DIAS_LARGO[mx] + '. De viernes a domingo, el ' + drvPct(fin) + '%.</p>';
+  };
+  const dentro = '<div class="drv-dentro" id="drvDentro" style="--gc:' + sel.color + '">' +
+    '<div class="dt-cab"><div><h3>' + esc(drvGrupoTxt(sel.g)) + ', por dentro</h3><small>' + drvNum(sel.vMes) + ' veces y ' + drvPesos(sel.pMes) + ' por mes, repartidos así. Tocá un tema para ver sus movimientos.</small></div>' +
+      '<button type="button" class="dt-todo" onclick="' + verX(drvGrupoTxt(sel.g), sel.items, 'Todos los movimientos del grupo en los meses que mira el perfil.') + '">Ver los ' + sel.items.length + ' movimientos</button></div>' +
+    temasH + sDias(sel) +
+    (dondeH ? '<div class="dt-donde"><span>Dónde</span><div>' + dondeH + '</div></div>' : '') + '</div>';
+  // Qué días
+  let dias = '';
+  const ordenD = [1, 2, 3, 4, 5, 6, 0];
+  if (P.conFecha >= 30) {
+    const filasD = gs.filter(function (o) { return o.conFecha >= 6; }).map(function (o) {
+      const mx = Math.max.apply(null, o.dias) || 1;
+      return '<div class="dd-fila"><span class="dd-g"><i style="background:' + o.color + '"></i>' + esc(drvGrupoTxt(o.g)) + '</span>' + ordenD.map(function (d) {
+        const p = o.dias[d] / mx;
+        return '<span class="dd-c" title="' + DRV_DIAS[d] + ': ' + o.dias[d] + '" style="background:' + o.color + ';opacity:' + (0.1 + p * 0.9).toFixed(2) + '"></span>';
+      }).join('') + '</div>';
+    }).join('');
+    const fin = (P.dias[5] + P.dias[6] + P.dias[0]) / P.conFecha;
+    const mx = P.dias.indexOf(Math.max.apply(null, P.dias));
+    dias = '<h2>Qué días</h2><p class="sub">De lunes a domingo, cuándo pasa cada hábito: cuanto más fuerte el color, más compras ese día. Sale de la fecha de cada compra (' + P.conFecha + ' de ' + P.conTodo + ' la tienen).</p>' +
+      '<div class="drv-dias"><div class="dd-fila dd-cab"><span class="dd-g"></span>' + ordenD.map(function (d) { return '<span class="dd-c">' + DRV_DIAS[d] + '</span>'; }).join('') + '</div>' + filasD +
+      '<p class="dd-res">El día que más compra tu casa es <b>' + DRV_DIA_SING[mx] + '</b>. De viernes a domingo junta el <b>' + drvPct(fin) + '%</b> de las compras.</p></div>';
+  }
+  // Los de siempre y los nuevos
+  const filaC = function (c, txt) {
+    return '<div class="fc" role="button" tabindex="0" onclick="' + verX(c.nom, c.items, 'Todos los movimientos de este comercio en los meses que mira el perfil.') + '"><i style="background:' + c.color + '"></i><span>' + esc(c.nom) + '<small>' + esc(drvGrupoTxt(c.g)) + '</small></span><b>' + txt + '</b></div>';
+  };
+  const fieles = P.fieles.map(function (c) { return filaC(c, c.v3 ? drvNum(c.v3 / P.ult3.length) + ' por mes' : 'todos los meses'); }).join('');
+  const nuevos = P.nuevos.map(function (c) { return filaC(c, 'desde ' + drvMesTxt(c.prim) + ' · ' + c.n + (c.n === 1 ? ' vez' : ' veces')); }).join('');
+  const fn = (fieles || nuevos) ? '<h2>Los de siempre y los nuevos</h2><p class="sub">Los comercios que aparecen todos los meses son la rutina de tu casa. Los nuevos, lo que está empezando a ser costumbre.</p>' +
+    '<div class="drv-fn"><div><h3>Todos los meses</h3>' + (fieles || '<p class="sub">Ninguno aparece en todos los meses todavía.</p>') + '</div>' +
+    '<div><h3>Nuevos</h3>' + (nuevos || '<p class="sub">Nada nuevo en los últimos dos meses.</p>') + '</div></div>' : '';
+  return '<h1 class="tit">' + h + '</h1><p class="baj">' + b + '</p>' +
+    '<h2>Lo que hacés seguido y lo que pesa</h2><p class="sub">Arriba, cuántas veces; abajo, cuánta plata, de los últimos ' + P.ult3.length + ' meses. Un hábito puede ser chico en veces y grande en plata, o al revés. Tocá un color para abrirlo.</p>' + vp +
+    '<h2>Tus hábitos</h2><p class="sub">Cada grupo junta temas que responden a lo mismo, aunque estén en rubros distintos. La flecha compara los dos últimos meses con los anteriores.</p>' + cards + dentro +
+    dias + fn +
+    (P.fuera ? '<p class="pie" style="margin-top:22px">Las inversiones (' + P.fuera + (P.fuera === 1 ? ' movimiento' : ' movimientos') + ') quedan afuera del perfil: no son consumo.</p>' : '') +
+    '<p class="pie" style="margin-top:10px">La plata es en pesos de cada mes (los dólares, al oficial de hoy): sirve para comparar entre hábitos, no para ver cuánto subió con la inflación.</p>';
+}
+
 function drvRender() {
   const cont = document.getElementById('drvCont');
   if (!cont) return;
@@ -12521,8 +12855,9 @@ function drvRender() {
       ' Lo más rápido: subí resúmenes de tarjeta de meses anteriores. Cada uno es un mes entero de historia.</p>');
     return;
   }
+  if (drvVista() === 'perfil') { cont.innerHTML = marco(drvTabs() + drvPerfilHtml(R)); return; }
   const T = drv2Titular(R);
-  cont.innerHTML = marco(
+  cont.innerHTML = marco(drvTabs() +
     '<h1 class="tit">' + T.h + '</h1><p class="baj">' + T.b + '</p>' +
     (R.ritmos.length ? drv2Carta(R) : '<div class="vacio">Ningún hábito llega todavía a una vez por mes. Con más movimientos con el nombre del comercio, aparecen.</div>') +
     (R.ritmos.length ? '<h2>Qué cambió</h2><p class="sub">Los últimos dos meses contra los anteriores. Tocá un hábito para ver uno por uno los movimientos y por qué los puse ahí.</p>' + drv2Filas(R) : '') +
@@ -20516,7 +20851,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.75.001';
+const APP_VERSION = 'v005.76.000';
 let novEntradas = [];
 
 function novLeida(e) {
