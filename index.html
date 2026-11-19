@@ -2545,6 +2545,19 @@ html[data-tema="noche"] .qp-modo.qp-modo-texto { color:#8fb2ff; }
 .drv-ens .chips button { border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 999px; padding: 6px 11px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
 .drv-ens .chips button:hover, .drv-ens .chips button.act { border-color: #FF8A5C; background: rgba(255,138,92,.14); }
 .drv-ens .chips button.fuera { border-style: dashed; }
+.drv-ens .chips button.nuevo { border-style: dashed; color: #FF8A5C; background: transparent; }
+.drv-nuevo { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.drv-ens .drv-nuevo input { width: 170px !important; padding: 6px 10px !important; font-size: 12.5px !important; border-radius: 999px !important; }
+.drv-ens .chips .drv-nuevo button { background: #FF8A5C; border-color: #FF8A5C; color: #fff; font-weight: 700; }
+.drv-nuevo small { color: var(--danger, #e5484d); font-size: 11.5px; }
+.drv-mios { margin-top: 18px; padding-top: 12px; border-top: 2px solid var(--border); }
+.drv-mios-tit { font-weight: 800; font-size: 14px; margin-bottom: 2px; }
+.drv-mios > small { display: block; color: var(--muted); font-size: 12px; line-height: 1.45; margin-bottom: 8px; }
+.drv-mios-add { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.drv-mios-add select, .drv-mios-add input { padding: 8px 10px; border: 1px solid var(--border); border-radius: 9px; background: var(--bg); color: var(--text); font-size: 13px; font-family: inherit; }
+.drv-mios-add input { flex: 1; min-width: 140px; }
+.drv-mios-err { color: var(--danger, #e5484d); font-size: 12px; margin-top: 6px; min-height: 1em; }
+.drv-regla button.seguro { color: var(--danger, #e5484d); font-size: 12px; font-weight: 700; }
 .drv-imp { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 12px; font-size: 13px; }
 .drv-imp-chk { display: inline-flex !important; align-items: center; gap: 6px; margin: 0 !important; text-transform: none !important; letter-spacing: 0 !important; font-size: 13px !important; color: var(--text) !important; font-weight: 700 !important; }
 .drv-imp-chk input { width: auto !important; }
@@ -11340,8 +11353,12 @@ const DERIVA_TEMAS = [
     'taller','mecanico','lubricentro','lubri','gomeria','neumatico','cubierta',
     'autopartes','lava auto','vtv','verificacion tecnica' ] },
 
+  { con: 'El auto', tema: 'Estacionamiento', keys: [
+    'estacionamiento','parking','parkimetro','estacionar','playa de estacionamiento',
+    'estacionamiento medido' ] },
+
   { con: 'El auto', tema: 'Tenerlo parado', keys: [
-    'cochera','estacionamiento','parking','peaje','autopista','patente',
+    'cochera','peaje','autopista','patente',
     'peajes','autopistas','telepeaje','aubasa','ausol','camino pque','camino del parque' ] },
 
   // ── EL TECHO ─────────────────────────────────────────────────────────────
@@ -11359,6 +11376,11 @@ const DERIVA_TEMAS = [
 
   { con: 'El techo', tema: 'Impuestos del inmueble', keys: [
     'abl','inmobiliario','municipalidad','rentas' ] },
+
+  { con: 'El techo', tema: 'Hogar', keys: [
+    'easy','sodimac','ferreteria','pintureria','bazar','blanqueria','muebleria',
+    'colchoneria','fravega','garbarino','musimundo','cetrogar','megatone',
+    'on city','ikea','corralon','vivero' ] },
 
   // ── ESTAR BIEN ───────────────────────────────────────────────────────────
   { con: 'Estar bien', tema: 'Prepaga', keys: [
@@ -11387,6 +11409,21 @@ const DERIVA_TEMAS = [
     'aerolinea','aeroline','iberia','latam','american air','avianca','gol ',
     'vuelo','despegar','booking','airbnb','hotel','civitatis','duty free' ] },
 
+  // ── VIDA SOCIAL (v005.75.001) ────────────────────────────────────────────
+  { con: 'Vida social', tema: 'Eventos', keys: [
+    'ticketek','plateanet','teatro','all access','alltickets','passline',
+    'ticketportal','eventbrite','entradas','recital','estadio','tuentrada' ] },
+
+  { con: 'Vida social', tema: 'Fiestas', keys: [
+    'salon de fiestas','salon de eventos','fiesta','fiestas','catering',
+    'cotillon','pelotero','casamiento','cumpleanos' ] },
+
+  { con: 'Vida social', tema: 'Regalos', keys: [
+    'regalo','regalos','regaleria','jugueteria','juguetes','floreria' ] },
+
+  { con: 'Vida social', tema: 'Salidas', keys: [
+    'cinemark','hoyts','showcase','village','cinema','boliche','museo' ] },
+
   // ── INERCIA ──────────────────────────────────────────────────────────────
   { con: 'Inercia', tema: 'Suscripciones de ocio', keys: [
     'netflix','spotify','hbo','disney','prime video','amazon prime','youtube',
@@ -11408,10 +11445,6 @@ const DERIVA_TEMAS = [
 
   // ── TEMAS SUELTOS ────────────────────────────────────────────────────────
   // Se pueden contar, pero todavía no contestan una pregunta más grande.
-  { con: '', tema: 'Salidas', keys: [
-    'cinemark','hoyts','showcase','village','cinema','teatro','ticketek',
-    'plateanet','boliche','museo' ] },
-
   { con: '', tema: 'Ropa', keys: [
     'zara','h&m','falabella','forever','adidas','nike','puma ','rapsodia',
     'kosiuko','wanama','paula cahen','ayres','lacoste','tommy','levi','gap ',
@@ -11431,6 +11464,12 @@ const DERIVA_TEMAS = [
   { con: '', tema: 'Impuestos', keys: [
     'afip','arca','arba','agip','monotributo','ingresos brutos','iibb' ] },
 
+  // No es consumo: está para poder separarlo. No entra en los ritmos.
+  { con: '', tema: 'Inversiones', keys: [
+    'plazo fijo','fci','fondo comun','suscripcion fci','inversion','inversiones',
+    'iol','invertir online','balanz','cocos capital','bull market','ppi',
+    'compra dolar' ] },
+
   // Lo que se paga para trabajar (publicidad, herramientas de un emprendimiento).
   // No tiene palabras propias: se llena con lo que cada persona le enseña.
   { con: 'Trabajo', tema: 'Gastos del trabajo', keys: [] }
@@ -11448,7 +11487,10 @@ const DERIVA_RUBRO_TEMA = {
   'Seguros':                     ['', 'Seguros'],
   'Deudas / Cuotas':             ['Inercia', 'Deudas'],
   'Educación':                   ['', 'Estudiar'],
-  'Indumentaria':                ['', 'Ropa']
+  'Indumentaria':                ['', 'Ropa'],
+  'Ahorro / Inversión':          ['', 'Inversiones'],
+  'Regalos':                     ['Vida social', 'Regalos'],
+  'Hogar':                       ['El techo', 'Hogar']
 };
 
 function derivaNorm(s) {
@@ -11495,7 +11537,7 @@ const DRV_TEMA_VIEJO = { 'Comer afuera': 'Restaurante · comer afuera', 'Súper'
 const DRV_RITMO = { 'Restaurante · comer afuera': 1, 'Delivery · comer en casa': 1, 'Cafés': 1,
   'Supermercados': 1, 'Mercados de barrio': 1, 'Nafta': 1, 'Mantenimiento': 1,
   'Farmacia': 1, 'Consultas y estudios': 1, 'Moverse el cuerpo': 1, 'Apps de viaje': 1, 'Transporte público': 1,
-  'Viajes': 1, 'Salidas': 1, 'Ropa': 1 };
+  'Viajes': 1, 'Salidas': 1, 'Ropa': 1, 'Estacionamiento': 1, 'Hogar': 1, 'Regalos': 1, 'Eventos': 1, 'Fiestas': 1 };
 const DRV_MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const DRV_NOMBRES = { openai: 'OpenAI', chatgpt: 'ChatGPT', hbo: 'HBO', aws: 'AWS', 'prime video': 'Prime Video',
   'amazon prime': 'Amazon Prime', 'apple tv': 'Apple TV', 'google cloud': 'Google Cloud', 'google *cloud': 'Google Cloud',
@@ -11612,7 +11654,7 @@ function drvCalcular() {
   // Ritmos: los dos últimos meses completos contra los anteriores.
   const ult2 = completos.slice(-2), antes = completos.slice(0, -2);
   Object.keys(T).forEach(function (k) {
-    if (!DRV_RITMO[k]) return;
+    if (!drvEsRitmo(k)) return;
     const o = T[k];
     const veces = completos.map(function (m) { return o.veces[m] || 0; });
     const total = veces.reduce(function (a, b) { return a + b; }, 0);
@@ -11785,8 +11827,74 @@ function drvDetalleEsc(e) {
 const DRV_NO_CONTAR = 'No contar';
 let _drvAprende = {}, _drvDetUlt = null, _drvEnsAviso = '';
 function drvConDe(tema) {
-  for (const f of DERIVA_TEMAS) if (f.tema === tema) return f.con;
+  for (const f of drvTemasTodos()) if (f.tema === tema) return f.con;
   return '';
+}
+// Temas propios (v005.75): cada persona abre los suyos dentro de los grupos de
+// siempre. Viven con las reglas: «_t_<id>» → «Grupo|Nombre» (grupo vacío = Otros).
+const DRV_GRUPOS = ['Comer', 'El auto', 'El techo', 'Estar bien', 'Moverse', 'Vida social', 'Inercia', '', 'Trabajo'];
+function drvGrupoTxt(g) { return g || 'Otros'; }
+function drvTemasMios() {
+  const out = [];
+  Object.keys(_drvAprende).forEach(function (k) {
+    if (k.indexOf('_t_') !== 0 || !_drvAprende[k]) return;
+    const v = String(_drvAprende[k]), i = v.indexOf('|');
+    if (i < 0 || !v.slice(i + 1)) return;
+    out.push({ con: v.slice(0, i), tema: v.slice(i + 1), keys: [], mio: k });
+  });
+  return out.sort(function (a, b) { return a.tema.localeCompare(b.tema, 'es'); });
+}
+function drvTemasTodos() { return DERIVA_TEMAS.concat(drvTemasMios()); }
+function drvEsRitmo(tema) {
+  return !!DRV_RITMO[tema] || drvTemasMios().some(function (f) { return f.tema === tema; });
+}
+// Devuelve el nombre limpio, o {err} si no sirve.
+function drvTemaNombre(nombre, menosId) {
+  const n = String(nombre || '').replace(/[|<]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (n.length < 2) return { err: 'Poné un nombre de al menos dos letras.' };
+  if (n.length > 40) return { err: 'Hasta 40 letras.' };
+  const nn = n.toLowerCase();
+  if (nn === DRV_NO_CONTAR.toLowerCase()) return { err: 'Ese nombre está reservado.' };
+  const ya = drvTemasTodos().some(function (f) { return f.tema.toLowerCase() === nn && (!menosId || f.mio !== menosId); });
+  if (ya) return { err: 'Ya hay un tema que se llama así.' };
+  return { n: n };
+}
+function drvReglaUsa(v, tema) {
+  const p = drvReglaParse(v);
+  return p ? (p.a === tema || p.b === tema) : drvTemaActual(v) === tema;
+}
+function drvReglasDe(tema) {
+  return Object.keys(_drvAprende).filter(function (k) { return k.charAt(0) !== '_' && _drvAprende[k] && drvReglaUsa(_drvAprende[k], tema); });
+}
+function drvTemaCrear(grupo, nombre) {
+  const r = drvTemaNombre(nombre);
+  if (r.err) return r;
+  if (DRV_GRUPOS.indexOf(grupo) < 0) grupo = '';
+  _drvAprende['_t_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5)] = grupo + '|' + r.n;
+  drvAprendeLocal(); drvAprendeSubir();
+  return { n: r.n };
+}
+function drvTemaCambiar(id, grupo, nombre) {
+  const v = String(_drvAprende[id] || ''), i = v.indexOf('|');
+  if (i < 0) return { err: 'No encontré ese tema.' };
+  const viejo = v.slice(i + 1);
+  const r = drvTemaNombre(nombre, id);
+  if (r.err) return r;
+  if (DRV_GRUPOS.indexOf(grupo) < 0) grupo = '';
+  _drvAprende[id] = grupo + '|' + r.n;
+  // Las reglas que apuntaban al nombre viejo siguen al tema.
+  if (r.n !== viejo) drvReglasDe(viejo).forEach(function (k) {
+    const p = drvReglaParse(_drvAprende[k]);
+    _drvAprende[k] = p ? '<' + p.lim + '|' + (p.a === viejo ? r.n : p.a) + '|' + (p.b === viejo ? r.n : p.b) : r.n;
+  });
+  drvAprendeLocal(); drvAprendeSubir();
+  return { n: r.n };
+}
+function drvTemaBorrar(id) {
+  const v = String(_drvAprende[id] || ''), i = v.indexOf('|');
+  if (i >= 0) drvReglasDe(v.slice(i + 1)).forEach(function (k) { delete _drvAprende[k]; });
+  delete _drvAprende[id];
+  drvAprendeLocal(); drvAprendeSubir();
 }
 function drvAprendeHit(txt) {
   let mejor = null;
@@ -11944,21 +12052,23 @@ let _drvEnsTema = '';
 function drvEnsenarAbrir(clave, ejemplo) {
   if (clave == null) clave = drvClave(ejemplo);
   drvEnsenarCerrar();
+  _drvEnsArgs = [clave, ejemplo];
   _drvEnsTema = _drvAprende[clave] || '';
   const regla0 = drvReglaParse(_drvEnsTema);
   _drvEnsSel = regla0 ? { a: regla0.a, b: regla0.b } : { a: '', b: '' };
   const grupos = {}, orden = [];
-  DERIVA_TEMAS.forEach(function (f) {
-    const g = f.con || 'Otros';
-    if (!grupos[g]) { grupos[g] = []; orden.push(g); }
+  DRV_GRUPOS.forEach(function (g) { grupos[g] = []; orden.push(g); });
+  drvTemasTodos().forEach(function (f) {
+    const g = DRV_GRUPOS.indexOf(f.con) >= 0 ? f.con : '';
     grupos[g].push(f.tema);
   });
   const chipsDe = function (lado) {
     const fn = lado ? 'drvEnsenarLado(\'' + lado + '\', this.dataset.t)' : 'drvEnsenarElegir(this.dataset.t)';
     return orden.map(function (g) {
-      return '<div class="grupo"><span>' + esc(g) + '</span><div class="chips" data-lado="' + lado + '">' + grupos[g].map(function (t) {
+      return '<div class="grupo"><span>' + esc(drvGrupoTxt(g)) + '</span><div class="chips" data-lado="' + lado + '">' + grupos[g].map(function (t) {
         return '<button type="button" data-t="' + esc(t) + '" onclick="' + fn + '">' + esc(t) + '</button>';
-      }).join('') + '</div></div>';
+      }).join('') + '<button type="button" class="nuevo" data-g="' + esc(g) + '" onclick="drvEnsNuevo(this, \'' + lado + '\')">+ Tema nuevo</button>' +
+      '</div></div>';
     }).join('') +
       '<div class="grupo"><span>Ninguno</span><div class="chips" data-lado="' + lado + '"><button type="button" class="fuera" data-t="' + DRV_NO_CONTAR + '" onclick="' + fn + '">No contar: no es un gasto de la casa</button></div></div>';
   };
@@ -12010,7 +12120,34 @@ function drvEnsenarAlcance() {
   }
   el.innerHTML = txt;
 }
-let _drvEnsSel = { a: '', b: '' };
+let _drvEnsSel = { a: '', b: '' }, _drvEnsArgs = [null, ''];
+// «+ Tema nuevo»: el botón se vuelve un campito para escribir el nombre.
+function drvEnsNuevo(btn, lado) {
+  const w = document.createElement('span');
+  w.className = 'drv-nuevo';
+  w.innerHTML = '<input maxlength="40" placeholder="Nombre del tema" aria-label="Nombre del tema nuevo">' +
+    '<button type="button" class="btn btn-primary">Crear</button><small></small>';
+  const inp = w.querySelector('input'), ok = w.querySelector('button');
+  const crear = function () { drvEnsNuevoCrear(btn.dataset.g, inp.value, lado, w); };
+  ok.onclick = crear;
+  inp.onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); crear(); } else if (e.key === 'Escape') { e.stopPropagation(); w.replaceWith(btn); } };
+  btn.replaceWith(w);
+  inp.focus();
+}
+function drvEnsNuevoCrear(grupo, nombre, lado, w) {
+  const r = drvTemaCrear(grupo, nombre);
+  if (r.err) { const m = w.querySelector('small'); if (m) m.textContent = r.err; return; }
+  if (!lado) { drvEnsenarElegir(r.n); return; }
+  // Con importe: se rearma la ventanita sin perder lo que ya estaba elegido.
+  const kv = document.getElementById('drvEnsK').value, lv = document.getElementById('drvEnsLim').value;
+  const sel = { a: _drvEnsSel.a, b: _drvEnsSel.b }; sel[lado] = r.n;
+  drvEnsenarAbrir(_drvEnsArgs[0], _drvEnsArgs[1]);
+  document.getElementById('drvEnsK').value = kv;
+  document.getElementById('drvEnsImp').checked = true;
+  document.getElementById('drvEnsLim').value = lv;
+  _drvEnsSel = sel;
+  drvEnsenarModo();
+}
 function drvEnsLimVal() {
   const i = document.getElementById('drvEnsLim');
   return Number(String(i ? i.value : '').replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, '')) || 0;
@@ -12067,10 +12204,63 @@ function drvReglasAbrir() {
       return '<div class="drv-regla"><div class="d"><b>' + esc(k) + '</b> → ' + esc(drvReglaTxt(_drvAprende[k])) + ' <small>· ' + n + (n === 1 ? ' movimiento' : ' movimientos') + '</small></div>' +
         '<button type="button" title="Cambiar" data-k="' + esc(k) + '" onclick="drvEnsenarAbrir(this.dataset.k, this.dataset.k)">✎</button>' +
         '<button type="button" title="Borrar" data-k="' + esc(k) + '" onclick="drvOlvidar(this.dataset.k)">✕</button></div>';
-    }).join('') || '<div class="drv-peso" style="padding:14px 0">Todavía no me enseñaste nada.</div>') + '</div>' +
+    }).join('') || '<div class="drv-peso" style="padding:14px 0">Todavía no me enseñaste nada.</div>') + drvTemasMiosHtml() + '</div>' +
     '<div class="drv-ens-pie"><a onclick="drvDetalle(\'n\')">← Volver a lo sin reconocer</a><span></span></div></div>';
   document.body.appendChild(ov);
   document.addEventListener('keydown', drvDetalleEsc);
+}
+function drvGrupoOpts(sel) {
+  return DRV_GRUPOS.map(function (g) { return '<option value="' + esc(g) + '"' + (g === sel ? ' selected' : '') + '>' + esc(drvGrupoTxt(g)) + '</option>'; }).join('');
+}
+function drvTemasMiosHtml() {
+  const ms = drvTemasMios();
+  return '<div class="drv-mios"><div class="drv-mios-tit">Tus temas</div>' +
+    '<small>Abrí tus propios temas dentro de cada grupo. Después, en «¿Qué es?», mandás cada comercio al que corresponda. Tus temas cuentan como hábito.</small>' +
+    ms.map(function (f) {
+      const n = drvReglasDe(f.tema).length;
+      return '<div class="drv-regla" data-id="' + esc(f.mio) + '"><div class="d"><b>' + esc(f.tema) + '</b> <small>· ' + esc(drvGrupoTxt(f.con)) + ' · ' +
+        n + (n === 1 ? ' regla' : ' reglas') + '</small></div>' +
+        '<button type="button" title="Cambiar" data-id="' + esc(f.mio) + '" onclick="drvTemaEditar(this.dataset.id)">✎</button>' +
+        '<button type="button" title="Borrar" data-id="' + esc(f.mio) + '" data-n="' + n + '" onclick="drvTemaBorrarClic(this)">✕</button></div>';
+    }).join('') +
+    '<div class="drv-mios-add"><select id="drvTemaG" aria-label="Grupo">' + drvGrupoOpts('Comer') + '</select>' +
+    '<input id="drvTemaN" maxlength="40" placeholder="Nombre del tema nuevo" onkeydown="if(event.key===\'Enter\')drvTemaAgregar()">' +
+    '<button type="button" class="btn btn-primary" onclick="drvTemaAgregar()">Agregar</button></div>' +
+    '<div class="drv-mios-err" id="drvTemaErr"></div></div>';
+}
+function drvTemaAgregar() {
+  const r = drvTemaCrear(document.getElementById('drvTemaG').value, document.getElementById('drvTemaN').value);
+  if (r.err) { document.getElementById('drvTemaErr').textContent = r.err; return; }
+  drvRender(); drvReglasAbrir();
+}
+function drvTemaEditar(id) {
+  const row = document.querySelector('#drvDetOv .drv-regla[data-id="' + id + '"]');
+  const f = drvTemasMios().filter(function (x) { return x.mio === id; })[0];
+  if (!row || !f) return;
+  row.innerHTML = '<div class="drv-mios-add" style="flex:1;margin:0"><select aria-label="Grupo">' + drvGrupoOpts(f.con) + '</select>' +
+    '<input maxlength="40" aria-label="Nombre" value="' + esc(f.tema) + '">' +
+    '<button type="button" class="btn btn-primary">Guardar</button><button type="button" class="btn btn-secondary">Cancelar</button></div>';
+  const b = row.querySelectorAll('button');
+  b[0].onclick = function () {
+    const r = drvTemaCambiar(id, row.querySelector('select').value, row.querySelector('input').value);
+    if (r.err) { document.getElementById('drvTemaErr').textContent = r.err; return; }
+    drvRender(); drvReglasAbrir();
+  };
+  b[1].onclick = function () { drvReglasAbrir(); };
+  row.querySelector('input').focus();
+}
+function drvTemaBorrarClic(btn) {
+  if (!btn.dataset.seguro) {
+    // Primer toque: avisa qué se va; el segundo borra.
+    btn.dataset.seguro = '1';
+    btn.textContent = '¿Borrar?';
+    btn.classList.add('seguro');
+    const n = Number(btn.dataset.n) || 0;
+    if (n) document.getElementById('drvTemaErr').textContent = 'Si lo borrás, se borran también sus ' + n + (n === 1 ? ' regla' : ' reglas') + ' y esos gastos vuelven a como los lee Deriva sola.';
+    return;
+  }
+  drvTemaBorrar(btn.dataset.id);
+  drvRender(); drvReglasAbrir();
 }
 function drvOlvidar(k) {
   delete _drvAprende[k];
@@ -12120,7 +12310,9 @@ function drvTarjetaInercia(R) {
 const DRV_VERBO = { 'Restaurante · comer afuera': 'sale a comer afuera', 'Delivery · comer en casa': 'pide delivery',
   'Cafés': 'sale a tomar un café', 'Supermercados': 'va al súper', 'Mercados de barrio': 'compra en el barrio', 'Nafta': 'carga nafta', 'Mantenimiento': 'lleva el auto al taller', 'Farmacia': 'va a la farmacia',
   'Consultas y estudios': 'va al médico', 'Moverse el cuerpo': 'va a entrenar', 'Apps de viaje': 'pide un auto',
-  'Transporte público': 'viaja en transporte público', 'Viajes': 'viaja', 'Salidas': 'sale', 'Ropa': 'compra ropa' };
+  'Transporte público': 'viaja en transporte público', 'Viajes': 'viaja', 'Salidas': 'sale', 'Ropa': 'compra ropa',
+  'Estacionamiento': 'paga estacionamiento', 'Hogar': 'compra cosas para la casa', 'Regalos': 'hace un regalo',
+  'Eventos': 'va a un show o evento', 'Fiestas': 'gasta en fiestas' };
 const DRV_MES_LARGO = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 function drv2MesLargo(ym) { return DRV_MES_LARGO[Number(String(ym).split('-')[1]) - 1] || ym; }
 function drv2Fuente() {
@@ -12140,7 +12332,7 @@ function drv2Color(t, i) { return t === 'sube' ? '#FF8A5C' : t === 'baja' ? '#5F
 function drv2Titular(R) {
   const r = R.ritmos.filter(function (x) { return x.tipo === 'sube'; })[0] || R.ritmos.filter(function (x) { return x.tipo === 'baja'; })[0];
   if (!r) return { h: 'El ritmo de tu casa viene parejo.', b: 'Ningún hábito cambió de ritmo en los últimos dos meses. Deriva no mira cuánta plata, mira cuántas veces: con la inflación, eso es lo único que no miente.' };
-  const verbo = DRV_VERBO[r.tema] || ('tiene «' + r.tema + '»');
+  const verbo = DRV_VERBO[r.tema] || ('gasta en «' + r.tema + '»');
   const ahora = Math.round(r.nuevo), m0 = R.completos[0], antes = drv2Veces(r, m0);
   const vez = function (n) { return n === 1 ? 'vez' : 'veces'; };
   return {
@@ -20324,7 +20516,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.74.000';
+const APP_VERSION = 'v005.75.001';
 let novEntradas = [];
 
 function novLeida(e) {
