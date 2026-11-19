@@ -1325,6 +1325,8 @@ tr:hover td { background: #fafbfc; }
 .tgl-btn.active { background:var(--primary); color:#fff; }
 .tgl-btn:hover:not(.active) { background:var(--card); color:var(--text); }
 .graf-hint { display:none; }
+/* Link dentro de la ayuda del gráfico anual (v005.73): área de toque de 40 px sin agrandar el renglón. */
+.graf-link { display:inline-block; background:none; border:0; padding:13px 6px; margin:-13px 0; font:inherit; font-weight:700; color:var(--primary); text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
 .tc-summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; }
 .tc-bank-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
 .tc-bank-title { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px; }
@@ -2272,6 +2274,25 @@ html[data-tema="noche"] .qp-modo.qp-modo-texto { color:#8fb2ff; }
      su columna en el grid, quedando cortados contra el borde de la pantalla. */
   .cards-grid .card { min-width: 0; }
   .cards-grid .card-value { overflow-wrap: anywhere; }
+  /* Brújula fina (v005.73) · 1) Montos de Mi Rumbo en un renglón. Con dos
+     tarjetas por fila, el ícono al lado del número le comía el lugar y el
+     monto se partía ($2.650.0 / 00). El ícono va chiquito a la esquina y el
+     número no se corta: ajustarMontosTarjetas() le baja la letra si no entra. */
+  #page-dashboard .cards-grid .card { position: relative; }
+  #page-dashboard .cards-grid .card-vrow { display: block; }
+  #page-dashboard .cards-grid .card-value { overflow-wrap: normal; white-space: nowrap; }
+  #page-dashboard .cards-grid .card-vrow .card-icon { position: absolute; top: 11px; right: 10px; font-size: 13px; line-height: 1; }
+  #page-dashboard .cards-grid .card-label { padding-right: 18px; }
+  /* 2) El + mide 58 px y flota a 18 px del borde: sin margen abajo, lo último
+     de la pantalla (el importe y los botones del último movimiento) quedaba
+     debajo de él. Donde el + no aparece (NortIA, Reserva, Puntos) queda igual. */
+  .content { padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px)); }
+  .main:has(#page-consultas.active) .content,
+  .main:has(#page-reserva.active) .content,
+  .main:has(#page-puntos.active) .content { padding-bottom: 16px; }
+  #page-tugps .gps-wrap { padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px)) !important; }
+  /* 3) Gráfico anual de Reportes con 6 meses: entra en el ancho, sin deslizar. */
+  .graf-scroll.graf-corto > .graf-ancho { min-width: 0; }
 
   /* 2) El grafico de "Composicion de gastos" estaba centrado, lo que obligaba a
      scrollear a la derecha para ver el resto de la info. Se alinea a la izquierda,
@@ -2524,6 +2545,12 @@ html[data-tema="noche"] .qp-modo.qp-modo-texto { color:#8fb2ff; }
 .drv-ens .chips button { border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 999px; padding: 6px 11px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
 .drv-ens .chips button:hover, .drv-ens .chips button.act { border-color: #FF8A5C; background: rgba(255,138,92,.14); }
 .drv-ens .chips button.fuera { border-style: dashed; }
+.drv-imp { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 12px; font-size: 13px; }
+.drv-imp-chk { display: inline-flex !important; align-items: center; gap: 6px; margin: 0 !important; text-transform: none !important; letter-spacing: 0 !important; font-size: 13px !important; color: var(--text) !important; font-weight: 700 !important; }
+.drv-imp-chk input { width: auto !important; }
+#drvEnsLim { width: 110px !important; display: inline-block; padding: 6px 9px !important; }
+#drvEnsGuardar:disabled { opacity: .45; cursor: not-allowed; }
+.drv-ens-guardar { position: sticky; bottom: -18px; display: flex; justify-content: flex-end; margin: 12px -20px -18px; padding: 12px 20px; background: var(--card); border-top: 1px solid var(--border); }
 .drv-regla { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border); font-size: 13px; }
 .drv-regla .d { flex: 1; }
 .drv-regla small { color: var(--muted); }
@@ -11273,29 +11300,35 @@ const DRV_SUPER = 'RUO9uxaH26QZDC1eMVuA0kjMYkw2';
 const DERIVA_TEMAS = [
 
   // ── COMER ────────────────────────────────────────────────────────────────
-  { con: 'Comer', tema: 'Comer afuera', keys: [
-    'pedidosya','pedidos ya','rappi','glovo','ifood','delivery',
-    'mcdonalds','burger','subway','mostaza','starbucks','havanna','freddo',
-    'sushi','pizza','resto','restaurant','parrilla','rotiseria','cerveceria',
-    'cafeteria','cafe ','heladeria','bodegon','cantina','bar ',
-    'mc donalds','mcdonald','burger king','burgerking','kfc','wendys','tostado',
-    'cafe martinez','bonafide','tea connection','le pain quotidien','grido',
-    'lucciano','rapanui','persicco','chungo','almacen de pizzas','solo empanadas',
-    'club de la milanesa','kansas','siga la vaca','antares','la birra','green eat',
-    'pizzeria','empanadas','hamburgueseria','cerveza patagonia','dean dennys' ] },
+  // Supermercado / Alimentación, abierto en 5 (v005.74). No son rubros: son
+  // aperturas sólo para Deriva. El orden importa (gana la primera que pega):
+  // cafés y delivery van antes que restaurantes.
+  { con: 'Comer', tema: 'Cafés', keys: [
+    'starbucks','havanna','cafe martinez','bonafide','tea connection',
+    'le pain quotidien','cafeteria','cafe ','coffee','confiteria','freddo','grido',
+    'persicco','chungo','lucciano','rapanui','heladeria' ] },
 
-  { con: 'Comer', tema: 'Súper', keys: [
+  { con: 'Comer', tema: 'Delivery · comer en casa', keys: [
+    'pedidosya','pedidos ya','rappi','glovo','ifood','delivery','rotiseria' ] },
+
+  { con: 'Comer', tema: 'Restaurante · comer afuera', keys: [
+    'mcdonalds','burger','subway','mostaza','sushi','pizza','resto','restaurant',
+    'parrilla','cerveceria','bodegon','cantina','bar ','mc donalds','mcdonald',
+    'burger king','burgerking','kfc','wendys','tostado','almacen de pizzas',
+    'solo empanadas','club de la milanesa','kansas','siga la vaca','antares',
+    'la birra','green eat','pizzeria','empanadas','hamburgueseria',
+    'cerveza patagonia','dean dennys' ] },
+
+  { con: 'Comer', tema: 'Supermercados', keys: [
     'supermercado','hipermercado','carrefour','coto','jumbo','walmart','disco',
     'vea ','changomas','chango mas','dia ','la anonima','makro','diarco',
     'mayorista','autoservicio','market','supermercados','vital ','yaguar',
     'la gallega','cooperativa obrera','maxiconsumo','carrefour express','supermarket',
     'unimarket' ] },
 
-  { con: 'Comer', tema: 'Del barrio', keys: [
+  { con: 'Comer', tema: 'Mercados de barrio', keys: [
     'panaderia','panificadora','verduleria','fiambreria','carniceria',
-    'pescaderia','dietetica','almacen','frutas','verduras' ] },
-
-  { con: 'Comer', tema: 'Kiosco', keys: ['kiosco','maxikiosco'] },
+    'pescaderia','dietetica','almacen','frutas','verduras','kiosco','maxikiosco' ] },
 
   // ── EL AUTO ──────────────────────────────────────────────────────────────
   { con: 'El auto', tema: 'Nafta', keys: [
@@ -11437,8 +11470,9 @@ function derivaTema(t) {
   // Lo que la persona me enseñó va antes que el diccionario: ella sabe qué es.
   const ap = drvAprendeHit(txt);
   if (ap) {
-    if (ap.tema === DRV_NO_CONTAR) return { ignorar: true, tema: ap.tema, via: 'aprendido', key: ap.key };
-    return { con: drvConDe(ap.tema), tema: ap.tema, via: 'aprendido', key: ap.key };
+    const R = drvReglaTema(ap.tema, t);
+    if (R.tema === DRV_NO_CONTAR) return { ignorar: true, tema: R.tema, via: 'aprendido', key: ap.key, cond: R.cond };
+    return { con: drvConDe(R.tema), tema: R.tema, via: 'aprendido', key: ap.key, cond: R.cond };
   }
   for (const f of DERIVA_TEMAS) {
     for (const k of f.keys) {
@@ -11456,7 +11490,10 @@ function derivaTema(t) {
 // Los temas que son conducta: pasan varias veces por mes y el ritmo dice algo.
 // Alquiler, servicios, prepaga, impuestos o seguros se pagan una vez por mes y
 // no tienen ritmo que mirar: quedan afuera a propósito.
-const DRV_RITMO = { 'Comer afuera': 1, 'Súper': 1, 'Del barrio': 1, 'Kiosco': 1, 'Nafta': 1, 'Mantenimiento': 1,
+const DRV_TEMA_VIEJO = { 'Comer afuera': 'Restaurante · comer afuera', 'Súper': 'Supermercados',
+  'Del barrio': 'Mercados de barrio', 'Kiosco': 'Mercados de barrio' };
+const DRV_RITMO = { 'Restaurante · comer afuera': 1, 'Delivery · comer en casa': 1, 'Cafés': 1,
+  'Supermercados': 1, 'Mercados de barrio': 1, 'Nafta': 1, 'Mantenimiento': 1,
   'Farmacia': 1, 'Consultas y estudios': 1, 'Moverse el cuerpo': 1, 'Apps de viaje': 1, 'Transporte público': 1,
   'Viajes': 1, 'Salidas': 1, 'Ropa': 1 };
 const DRV_MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
@@ -11561,7 +11598,7 @@ function drvCalcular() {
                   rubro: String(t.rubro || ''), pesos: Number(t.impPesos) || 0, usd: Number(t.impUSD) || 0 };
     if (!x) { res.sin.push(mov); return; }
     res.leidos++;
-    mov.via = x.via; mov.key = x.key; mov.tema = x.tema;
+    mov.via = x.via; mov.key = x.key; mov.tema = x.tema; mov.cond = x.cond || '';
     const o = T[x.tema] || (T[x.tema] = { tema: x.tema, con: x.con, veces: {}, pesos: {}, usd: {}, comercio: 0, rubro: 0, items: [] });
     o.veces[t.mes] = (o.veces[t.mes] || 0) + 1;
     o.pesos[t.mes] = (o.pesos[t.mes] || 0) + (Number(t.impPesos) || 0);
@@ -11660,7 +11697,7 @@ function drvTira(r, R, idx) {
   return filas.join('');
 }
 function drvPregunta(r) {
-  if (r.tipo === 'sube') return r.tema === 'Comer afuera' ? '¿Fue a propósito o se fue dando?' : '¿Qué cambió en tu casa estos dos meses?';
+  if (r.tipo === 'sube') return /^(Restaurante|Delivery|Cafés)/.test(r.tema) ? '¿Fue a propósito o se fue dando?' : '¿Qué cambió en tu casa estos dos meses?';
   if (r.tipo === 'baja') return '¿Lo dejaste a propósito, o se está pagando por otro lado que no llega a Norte?';
   return 'Es de lo más parejo de tu casa. ¿Te cierra este ritmo?';
 }
@@ -11691,7 +11728,7 @@ function drvFechaCorta(f, mes) {
 function drvDetalle(tipo, i, soloMes) {
   const R = _drvUltimo;
   if (!R) return;
-  _drvDetUlt = [tipo, i, soloMes];
+  _drvDetUlt = [tipo, i, soloMes, tipo === 't' && R.temas[i] ? R.temas[i].tema : tipo === 'r' && R.ritmos[i] ? R.ritmos[i].tema : ''];
   if (tipo === 'n' && !soloMes) return drvDetalleSin();
   let tit = '', sub = '', items = [];
   if (tipo === 'r' && R.ritmos[i]) { tit = R.ritmos[i].tema; items = R.ritmos[i].items; }
@@ -11711,7 +11748,7 @@ function drvDetalle(tipo, i, soloMes) {
     return '<div class="drv-det-mes"><span>' + drvMesTxt(m) + (m === R.enCurso ? ' · en curso' : '') + ' · ' + xs.length + (xs.length === 1 ? ' vez' : ' veces') + '</span><span>' + drvPlata(totP, totU) + '</span></div>' +
       xs.map(function (x) {
         const por = tipo === 'n' ? 'rubro: ' + esc(x.rubro || 'sin rubro')
-          : x.via === 'aprendido' ? '<span class="drv-via-a">porque me enseñaste «' + esc(x.key) + '»</span>'
+          : x.via === 'aprendido' ? '<span class="drv-via-a">porque me enseñaste «' + esc(x.key) + '»' + (x.cond ? ' (' + esc(x.cond) + ')' : '') + '</span>'
           : x.via === 'rubro' ? '<span class="drv-via-r">por el rubro «' + esc(x.rubro) + '»</span>'
           : '<span class="drv-via-c">por «' + esc(x.key) + '» en el texto</span>' + (x.rubro ? ' · rubro: ' + esc(x.rubro) : '');
         const temaOtro = (tipo === 's' || tipo === 'd') && x.tema ? ' · tema: ' + esc(x.tema) : '';
@@ -11762,10 +11799,45 @@ function drvAprendeHit(txt) {
   });
   return mejor;
 }
+// Una regla es un tema («Cafés») o depende del importe: «<20000|Cafés|Nafta»
+// = menos de $20.000 es Cafés, desde $20.000 es Nafta. El importe es en pesos;
+// lo que está en dólares se pasa a pesos con el oficial del día.
+function drvReglaParse(v) {
+  const m = String(v || '').match(/^<(\d+(?:\.\d+)?)\|([^|]+)\|([^|]+)$/);
+  return m ? { lim: Number(m[1]), a: drvTemaActual(m[2]), b: drvTemaActual(m[3]) } : null;
+}
+function drvTemaActual(t) { return DRV_TEMA_VIEJO[t] || t; }
+function drvMonto(t) {
+  const fx = (typeof fxRate === 'function') ? fxRate() : 0;
+  return Math.abs(Number(t.impPesos) || 0) + Math.abs(Number(t.impUSD) || 0) * (fx || 0);
+}
+function drvReglaTema(v, t) {
+  const p = drvReglaParse(v);
+  if (!p) return { tema: drvTemaActual(v), cond: '' };
+  const menos = drvMonto(t) < p.lim;
+  return { tema: menos ? p.a : p.b, cond: (menos ? 'menos de ' : 'desde ') + drvPesos(p.lim) };
+}
+function drvReglaTxt(v) {
+  const p = drvReglaParse(v);
+  if (!p) return drvTemaActual(v);
+  return 'menos de ' + drvPesos(p.lim) + ': ' + p.a + ' · desde ' + drvPesos(p.lim) + ': ' + p.b;
+}
+// Reglas guardadas con nombres de temas viejos: se pasan a los nuevos.
+function drvAprendeMigrar() {
+  let cambio = false;
+  Object.keys(_drvAprende).forEach(function (k) {
+    if (k.charAt(0) === '_') return;
+    const v = _drvAprende[k], p = drvReglaParse(v);
+    const nv = p ? '<' + p.lim + '|' + p.a + '|' + p.b : drvTemaActual(v);
+    if (nv !== v) { _drvAprende[k] = nv; cambio = true; }
+  });
+  return cambio;
+}
 function drvAprendeLocalKey(uid) { return 'fin_drv_aprende_' + (uid || ''); }
 function drvAprendeCargar(uid) {
   _drvAprende = {};
   try { _drvAprende = JSON.parse(localStorage.getItem(drvAprendeLocalKey(uid)) || '{}') || {}; } catch (e) { _drvAprende = {}; }
+  drvAprendeMigrar();
   drvAprendeSemilla(uid);
   try {
     if (!uid || uid === 'desconocido' || typeof firebase === 'undefined' || !firebase.database) return;
@@ -11775,7 +11847,11 @@ function drvAprendeCargar(uid) {
       // Gana la nube; lo que sólo está en este aparato se sube.
       Object.keys(v).forEach(function (k) { if (_drvAprende[k] !== v[k]) { _drvAprende[k] = v[k]; cambio = true; } });
       const soloAca = Object.keys(_drvAprende).filter(function (k) { return !(k in v); });
-      if (soloAca.length) drvAprendeSubir();
+      // Nombres de temas viejos o la semilla nueva: se arreglan y se suben.
+      let subir = drvAprendeMigrar();
+      if (drvAprendeSemilla(uid)) subir = true;
+      if (subir) cambio = true;
+      if (subir || soloAca.length) drvAprendeSubir();
       drvAprendeLocal();
       if (cambio && curPage === 'deriva') drvRender();
     }).catch(function () {});
@@ -11785,11 +11861,22 @@ function drvAprendeCargar(uid) {
 // es publicidad de su consultoría. Se carga una sola vez; después puede
 // cambiarlo o borrarlo como cualquier otra regla.
 function drvAprendeSemilla(uid) {
-  if (uid !== DRV_SUPER || _drvAprende._semilla) return;
-  if (!_drvAprende.angies) _drvAprende.angies = 'Comer afuera';
-  if (!_drvAprende.apple) _drvAprende.apple = 'Gastos del trabajo';
-  _drvAprende._semilla = '1';
-  drvAprendeLocal(); drvAprendeSubir();
+  if (uid !== DRV_SUPER) return false;
+  let hubo = false;
+  if (!_drvAprende._semilla) {
+    if (!_drvAprende.angies) _drvAprende.angies = 'Restaurante · comer afuera';
+    if (!_drvAprende.apple) _drvAprende.apple = 'Gastos del trabajo';
+    _drvAprende._semilla = '1'; hubo = true;
+  }
+  // 19/11: en Shellbox, lo de menos de $20.000 es café; lo demás, nafta.
+  if (!_drvAprende._semilla2) {
+    _drvAprende.shellbox = '<20000|Cafés|Nafta';
+    _drvAprende._semilla2 = '1'; hubo = true;
+  }
+  // Sólo se guarda acá; se sube después de mezclar con la nube, así no pisa
+  // reglas enseñadas en otro aparato.
+  if (hubo) drvAprendeLocal();
+  return hubo;
 }
 function drvAprendeLocal() { try { localStorage.setItem(drvAprendeLocalKey(_drvUid || curUserId()), JSON.stringify(_drvAprende)); } catch (e) {} }
 function drvAprendeSubir() {
@@ -11858,18 +11945,29 @@ function drvEnsenarAbrir(clave, ejemplo) {
   if (clave == null) clave = drvClave(ejemplo);
   drvEnsenarCerrar();
   _drvEnsTema = _drvAprende[clave] || '';
+  const regla0 = drvReglaParse(_drvEnsTema);
+  _drvEnsSel = regla0 ? { a: regla0.a, b: regla0.b } : { a: '', b: '' };
   const grupos = {}, orden = [];
   DERIVA_TEMAS.forEach(function (f) {
     const g = f.con || 'Otros';
     if (!grupos[g]) { grupos[g] = []; orden.push(g); }
     grupos[g].push(f.tema);
   });
-  const chips = orden.map(function (g) {
-    return '<div class="grupo"><span>' + esc(g) + '</span><div class="chips">' + grupos[g].map(function (t) {
-      return '<button type="button" data-t="' + esc(t) + '" onclick="drvEnsenarElegir(this.dataset.t)">' + esc(t) + '</button>';
-    }).join('') + '</div></div>';
-  }).join('') +
-    '<div class="grupo"><span>Ninguno</span><div class="chips"><button type="button" class="fuera" data-t="' + DRV_NO_CONTAR + '" onclick="drvEnsenarElegir(this.dataset.t)">No contar: no es un gasto de la casa</button></div></div>';
+  const chipsDe = function (lado) {
+    const fn = lado ? 'drvEnsenarLado(\'' + lado + '\', this.dataset.t)' : 'drvEnsenarElegir(this.dataset.t)';
+    return orden.map(function (g) {
+      return '<div class="grupo"><span>' + esc(g) + '</span><div class="chips" data-lado="' + lado + '">' + grupos[g].map(function (t) {
+        return '<button type="button" data-t="' + esc(t) + '" onclick="' + fn + '">' + esc(t) + '</button>';
+      }).join('') + '</div></div>';
+    }).join('') +
+      '<div class="grupo"><span>Ninguno</span><div class="chips" data-lado="' + lado + '"><button type="button" class="fuera" data-t="' + DRV_NO_CONTAR + '" onclick="' + fn + '">No contar: no es un gasto de la casa</button></div></div>';
+  };
+  const chips = '<div id="drvEnsSimple"' + (regla0 ? ' style="display:none"' : '') + '><label>Es…</label>' + chipsDe('') + '</div>' +
+    '<div id="drvEnsDoble"' + (regla0 ? '' : ' style="display:none"') + '>' +
+      '<label>Si es menos de <span class="drv-lim-txt"></span>, es…</label>' + chipsDe('a') +
+      '<label>Si es <span class="drv-lim-txt"></span> o más, es…</label>' + chipsDe('b') +
+      '<div class="drv-ens-guardar"><button type="button" class="btn btn-primary" id="drvEnsGuardar" onclick="drvEnsenarGuardarDoble()">Guardar regla</button></div>' +
+    '</div>';
   const ov = document.createElement('div');
   ov.className = 'drv-encov'; ov.id = 'drvEnsOv';
   ov.onclick = function (e) { if (e.target === ov) drvEnsenarCerrar(); };
@@ -11878,7 +11976,9 @@ function drvEnsenarAbrir(clave, ejemplo) {
     '<label for="drvEnsK">La palabra que lo identifica</label>' +
     '<input id="drvEnsK" autocomplete="off" value="' + esc(clave) + '" oninput="drvEnsenarAlcance()">' +
     '<div class="alc" id="drvEnsAlc"></div>' +
-    '<label>Es…</label>' + chips +
+    '<div class="drv-imp"><label class="drv-imp-chk"><input type="checkbox" id="drvEnsImp"' + (regla0 ? ' checked' : '') + ' onchange="drvEnsenarModo()"> Depende del importe</label>' +
+      '<span id="drvEnsLimW"' + (regla0 ? '' : ' style="display:none"') + '>Corte en $ <input id="drvEnsLim" inputmode="numeric" value="' + (regla0 ? Math.round(regla0.lim).toLocaleString('es-AR') : '20.000') + '" oninput="drvEnsenarAlcance()"></span></div>' +
+    chips +
     '<div style="display:flex;justify-content:flex-end;margin-top:14px"><button type="button" class="btn btn-secondary" onclick="drvEnsenarCerrar()">Cancelar</button></div></div>';
   document.body.appendChild(ov);
   drvEnsenarAlcance();
@@ -11889,11 +11989,46 @@ function drvEnsenarAlcance() {
   const c = drvCoinciden(inp.value);
   const k = derivaNorm(inp.value).trim();
   const act = _drvAprende[k] || '';
-  document.querySelectorAll('#drvEnsOv .chips button').forEach(function (b) { b.classList.toggle('act', b.dataset.t === act); });
+  const doble = !!(document.getElementById('drvEnsImp') || {}).checked;
+  const lim = drvEnsLimVal();
+  document.querySelectorAll('#drvEnsOv .drv-lim-txt').forEach(function (e) { e.textContent = drvPesos(lim); });
+  document.querySelectorAll('#drvEnsOv .chips').forEach(function (ch) {
+    const lado = ch.dataset.lado;
+    ch.querySelectorAll('button').forEach(function (b) {
+      b.classList.toggle('act', lado ? b.dataset.t === _drvEnsSel[lado] : b.dataset.t === act);
+    });
+  });
+  const g = document.getElementById('drvEnsGuardar');
+  if (g) g.disabled = !(_drvEnsSel.a && _drvEnsSel.b && lim > 0);
   if (k.length < 3) { el.innerHTML = 'Escribí al menos tres letras.'; return; }
   const ej = []; c.forEach(function (t) { const d = String(t.detalle || ''); if (ej.indexOf(d) < 0 && ej.length < 3) ej.push(d); });
-  el.innerHTML = 'Lo aplico a <b>' + c.length + (c.length === 1 ? ' movimiento' : ' movimientos') + '</b> que dicen «' + esc(k) + '»' +
-    (ej.length ? ': ' + esc(ej.join(' · ')) : '') + (act ? '. Hoy lo tengo como <b>' + esc(act) + '</b>.' : '.');
+  let txt = 'Lo aplico a <b>' + c.length + (c.length === 1 ? ' movimiento' : ' movimientos') + '</b> que dicen «' + esc(k) + '»' +
+    (ej.length ? ': ' + esc(ej.join(' · ')) : '') + (act ? '. Hoy lo tengo como <b>' + esc(drvReglaTxt(act)) + '</b>.' : '.');
+  if (doble && lim > 0) {
+    const menos = c.filter(function (t) { return drvMonto(t) < lim; }).length;
+    txt += '<br><b>' + menos + '</b> son de menos de ' + drvPesos(lim) + ' y <b>' + (c.length - menos) + '</b> de ' + drvPesos(lim) + ' o más.';
+  }
+  el.innerHTML = txt;
+}
+let _drvEnsSel = { a: '', b: '' };
+function drvEnsLimVal() {
+  const i = document.getElementById('drvEnsLim');
+  return Number(String(i ? i.value : '').replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, '')) || 0;
+}
+function drvEnsenarModo() {
+  const doble = !!(document.getElementById('drvEnsImp') || {}).checked;
+  document.getElementById('drvEnsSimple').style.display = doble ? 'none' : '';
+  document.getElementById('drvEnsDoble').style.display = doble ? '' : 'none';
+  document.getElementById('drvEnsLimW').style.display = doble ? '' : 'none';
+  drvEnsenarAlcance();
+}
+function drvEnsenarLado(lado, tema) { _drvEnsSel[lado] = tema; drvEnsenarAlcance(); }
+function drvEnsenarGuardarDoble() {
+  const inp = document.getElementById('drvEnsK');
+  const k = derivaNorm(inp ? inp.value : '').trim();
+  const lim = drvEnsLimVal();
+  if (k.length < 3 || !(lim > 0) || !_drvEnsSel.a || !_drvEnsSel.b) { drvEnsenarAlcance(); return; }
+  drvAprender(k, '<' + lim + '|' + _drvEnsSel.a + '|' + _drvEnsSel.b);
 }
 function drvEnsenarElegir(tema) {
   const inp = document.getElementById('drvEnsK');
@@ -11905,12 +12040,14 @@ function drvAprender(k, tema) {
   _drvAprende[k] = tema;
   drvAprendeLocal(); drvAprendeSubir();
   const n = drvCoinciden(k).length;
-  _drvEnsAviso = (tema === DRV_NO_CONTAR ? '«' + k + '» ya no se cuenta' : 'Aprendido: «' + k + '» es ' + tema) + ' (' + n + (n === 1 ? ' movimiento' : ' movimientos') + ').';
+  _drvEnsAviso = (tema === DRV_NO_CONTAR ? '«' + k + '» ya no se cuenta' : 'Aprendido: «' + k + '» es ' + drvReglaTxt(tema)) + ' (' + n + (n === 1 ? ' movimiento' : ' movimientos') + ').';
   drvEnsenarCerrar();
   drvRender();
-  const u = _drvDetUlt;
-  if (u) drvDetalle(u[0], u[1], u[2]);
-  else _drvEnsAviso = '';
+  const u = _drvDetUlt, R = _drvUltimo;
+  let i = u ? u[1] : -1;
+  if (u && u[3] && R) i = (u[0] === 't' ? R.temas : R.ritmos).findIndex(function (x) { return x.tema === u[3]; });
+  if (u && i !== -1) drvDetalle(u[0], i, u[2]);
+  _drvEnsAviso = '';
 }
 function drvEnsenarCerrar() { const ov = document.getElementById('drvEnsOv'); if (ov) ov.remove(); }
 
@@ -11923,11 +12060,11 @@ function drvReglasAbrir() {
   ov.className = 'drv-encov'; ov.id = 'drvDetOv';
   ov.onclick = function (e) { if (e.target === ov) drvDetalleCerrar(); };
   ov.innerHTML = '<div class="drv-det" role="dialog" aria-modal="true" aria-labelledby="drvDetTit">' +
-    '<div class="drv-det-cab"><div><h3 id="drvDetTit">Lo que me enseñaste</h3><small>Cada palabra va siempre a su tema. Tocá ✎ para cambiarlo o ✕ para que vuelva a leerlo solo.</small></div>' +
+    '<div class="drv-det-cab"><div><h3 id="drvDetTit">Lo que me enseñaste</h3><small>Cada palabra va siempre a su tema (o a dos, según el importe). Tocá ✎ para cambiarlo o ✕ para que vuelva a leerlo solo.</small></div>' +
     '<button type="button" class="btn" style="border:1px solid var(--border);flex:none" onclick="drvDetalleCerrar()" aria-label="Cerrar">✕</button></div>' +
     '<div class="drv-det-body">' + (ks.map(function (k) {
       const n = drvCoinciden(k).length;
-      return '<div class="drv-regla"><div class="d"><b>' + esc(k) + '</b> → ' + esc(_drvAprende[k]) + ' <small>· ' + n + (n === 1 ? ' movimiento' : ' movimientos') + '</small></div>' +
+      return '<div class="drv-regla"><div class="d"><b>' + esc(k) + '</b> → ' + esc(drvReglaTxt(_drvAprende[k])) + ' <small>· ' + n + (n === 1 ? ' movimiento' : ' movimientos') + '</small></div>' +
         '<button type="button" title="Cambiar" data-k="' + esc(k) + '" onclick="drvEnsenarAbrir(this.dataset.k, this.dataset.k)">✎</button>' +
         '<button type="button" title="Borrar" data-k="' + esc(k) + '" onclick="drvOlvidar(this.dataset.k)">✕</button></div>';
     }).join('') || '<div class="drv-peso" style="padding:14px 0">Todavía no me enseñaste nada.</div>') + '</div>' +
@@ -11980,8 +12117,8 @@ function drvTarjetaInercia(R) {
 // hábito es una franja y su ancho es cuántas veces pasó ese mes), qué cambió,
 // lo que se cobra solo y cuánto ve Deriva de la casa. Todos los números salen
 // de drvCalcular: la pantalla no cuenta nada por su cuenta.
-const DRV_VERBO = { 'Comer afuera': 'sale a comer afuera', 'Súper': 'va al súper', 'Del barrio': 'compra en el barrio',
-  'Kiosco': 'pasa por el kiosco', 'Nafta': 'carga nafta', 'Mantenimiento': 'lleva el auto al taller', 'Farmacia': 'va a la farmacia',
+const DRV_VERBO = { 'Restaurante · comer afuera': 'sale a comer afuera', 'Delivery · comer en casa': 'pide delivery',
+  'Cafés': 'sale a tomar un café', 'Supermercados': 'va al súper', 'Mercados de barrio': 'compra en el barrio', 'Nafta': 'carga nafta', 'Mantenimiento': 'lleva el auto al taller', 'Farmacia': 'va a la farmacia',
   'Consultas y estudios': 'va al médico', 'Moverse el cuerpo': 'va a entrenar', 'Apps de viaje': 'pide un auto',
   'Transporte público': 'viaja en transporte público', 'Viajes': 'viaja', 'Salidas': 'sale', 'Ropa': 'compra ropa' };
 const DRV_MES_LARGO = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -12810,6 +12947,7 @@ function renderDash() {
       : 'Ingresos − Gastos';
   const balEl = document.getElementById('d-bal');
   balEl.className = 'card-value ' + (balT >= 0 ? 'positive' : 'negative');
+  try { ajustarMontosTarjetas(); } catch (e) {}
   renderFXStrip();
   try { renderAcctBox(); } catch(e){}
 
@@ -13096,6 +13234,32 @@ function detectAusentes(allData, key) {
 }
 
 // 880px es el mismo corte que usa el resto de la app para pasar a una columna.
+// Montos de Mi Rumbo en un renglón (v005.73). En el celular el número no se
+// parte: si no entra, la letra baja de a medio punto hasta 14 px, y recién si
+// ni así entra vuelve a partirse (mejor partido que cortado). En la compu no
+// hace nada: ahí el CSS deja el número como estaba. Se vuelve a medir cuando
+// cambia el ancho de las tarjetas (girar el teléfono, abrir la pantalla).
+let _amtObs = null, _amtAncho = -1;
+function ajustarMontosTarjetas() {
+  const grid = document.querySelector('#page-dashboard .cards-grid');
+  if (!grid) return;
+  if (!_amtObs && typeof ResizeObserver === 'function') {
+    _amtObs = new ResizeObserver(function () {
+      const w = grid.clientWidth;
+      if (w === _amtAncho) return;
+      _amtAncho = w;
+      ajustarMontosTarjetas();
+    });
+    _amtObs.observe(grid);
+  }
+  grid.querySelectorAll('.card-value').forEach(function (e) {
+    e.style.fontSize = ''; e.style.whiteSpace = '';
+    if (!e.clientWidth || getComputedStyle(e).whiteSpace !== 'nowrap') return;
+    let fs = parseFloat(getComputedStyle(e).fontSize) || 21;
+    while (e.scrollWidth > e.clientWidth + 0.5 && fs > 14) { fs -= 0.5; e.style.fontSize = fs + 'px'; }
+    if (e.scrollWidth > e.clientWidth + 0.5) e.style.whiteSpace = 'normal';
+  });
+}
 function evolEsAngosto() {
   try { return window.matchMedia('(max-width: 880px)').matches; } catch (e) { return false; }
 }
@@ -18513,6 +18677,10 @@ function renderRepHogares() {
   });
 }
 
+// En el celular el gráfico anual muestra 6 meses o el año entero (v005.73).
+// Arranca en 6; la elección dura mientras la app está abierta.
+let _evolAnioEntero = false;
+function evolVerAnio(entero) { _evolAnioEntero = !!entero; renderRepEvol(); }
 function renderRepEvol() {
   const all = getDataReportes();
   document.getElementById('evolYear').textContent = curYear;
@@ -18590,9 +18758,28 @@ function renderRepEvol() {
   } : {
     y: { ticks:{ callback: v => fmtMShort(v) } }
   };
+  // En el celular el año entero no entra: había que deslizar y, como arrancaba
+  // en enero, a partir de agosto se abría un gráfico vacío. Ahora muestra de
+  // entrada los 6 meses que terminan en el último con datos (como mínimo
+  // enero a junio), sin deslizar. «Ver todo el año» vuelve al año completo.
+  let evolLabels = MESES;
+  const evolCorto = evolAngosto && !_evolAnioEntero;
+  if (evolCorto) {
+    let ult = -1;
+    for (let m = 11; m >= 0 && ult < 0; m--) if ([ings, gas, ingsUSD, gasUSD].some(a => a[m])) ult = m;
+    const fin = Math.max(5, ult), ini = fin - 5;
+    evolLabels = MESES.slice(ini, fin + 1).map(x => x.slice(0, 3));
+    evolDatasets.forEach(d => { d.data = d.data.slice(ini, fin + 1); });
+  }
+  const evolScroll = document.querySelector('#rep-evol .graf-scroll');
+  if (evolScroll) { evolScroll.classList.toggle('graf-corto', evolCorto); evolScroll.scrollLeft = 0; }
+  const evolHint = document.querySelector('#rep-evol .graf-hint');
+  if (evolHint) evolHint.innerHTML = evolCorto
+    ? 'Últimos 6 meses · <button type="button" class="graf-link" onclick="evolVerAnio(true)">Ver todo el año</button>'
+    : 'Deslizá el gráfico para recorrer el año → · <button type="button" class="graf-link" onclick="evolVerAnio(false)">Ver últimos 6 meses</button>';
   charts.evol = new Chart(document.getElementById('evolChart').getContext('2d'), {
     type: evolAngosto ? 'line' : 'bar',
-    data: { labels: MESES, datasets: evolDatasets },
+    data: { labels: evolLabels, datasets: evolDatasets },
     options: {
       responsive:true,
       // En el celular el alto lo fija `.graf-ancho`; en la computadora se
@@ -20137,7 +20324,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.72.000';
+const APP_VERSION = 'v005.74.000';
 let novEntradas = [];
 
 function novLeida(e) {
