@@ -647,6 +647,12 @@ html[data-tema="noche"] .pd-cuenta .pd-r .pd-tot { color: #6FE0CC; }
 .tx-pend-lbl { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .tx-pend-val { font-size: 21px; font-weight: 800; line-height: 1; }
 .tx-pend-ico { font-size: 15px; opacity: .75; }
+/* v005.77.001 · Celular: el saldo pendiente no se corta contra el borde (rótulo largo + monto grande). */
+@media (max-width: 880px) {
+  #txPend.tx-pend { flex-wrap: wrap; white-space: normal; column-gap: 8px; row-gap: 4px; }
+  #txPend .tx-pend-lbl { flex: 1 1 140px; min-width: 0; line-height: 1.3; }
+  #txPend .tx-pend-val { white-space: nowrap; }
+}
 .tgl-group { display: flex; background: var(--bg); border-radius: 8px; padding: 3px; }
 .tgl-btn { padding: 5px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; background: transparent; color: var(--muted); transition: all 0.15s; white-space: nowrap; }
 .tgl-btn.active { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
@@ -20870,7 +20876,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.77.000';
+const APP_VERSION = 'v005.77.001';
 let novEntradas = [];
 
 function novLeida(e) {
