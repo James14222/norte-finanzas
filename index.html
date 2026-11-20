@@ -20053,8 +20053,10 @@ function rbEsTactil() {
 // Total en el centro del anillo: dos anillos del mismo tamaño no tienen que
 // parecer dos montos parecidos.
 function rbPluginCentro(c) {
-  return { id: 'rbCentro', afterDraw(ch) {
+  return { id: 'rbCentro', afterDatasetsDraw(ch) {
     const m = ch.getDatasetMeta(0); if (!m || !m.data || !m.data.length) return;
+    // Con el cartel del rubro a la vista, el total no se pinta: no se pisan.
+    try { const tt = ch.tooltip; if (tt && tt.opacity > 0 && tt.getActiveElements && tt.getActiveElements().length) return; } catch (e) {}
     const a = m.data[0], x = a.x, y = a.y, r = a.innerRadius || 0;
     if (r < 28) return;
     const cs = getComputedStyle(document.body);
@@ -20876,7 +20878,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.77.001';
+const APP_VERSION = 'v005.77.002';
 let novEntradas = [];
 
 function novLeida(e) {
