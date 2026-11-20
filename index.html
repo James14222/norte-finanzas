@@ -11,11 +11,11 @@
      borde, no sólo el tablero. -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Norte — La brújula de tus finanzas</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Ccircle cx='28' cy='28' r='26' fill='%231B3A4B'/%3E%3Cpath d='M28 12 L34 28 L28 44 L22 28 Z' fill='%23FF8A5C'/%3E%3Cpath d='M28 12 L34 28 L28 28 Z' fill='%23FFB199'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23071420'/%3E%3Crect x='14' y='13' width='6.5' height='38' rx='2' fill='%23E6F1EF'/%3E%3Crect x='43.5' y='13' width='6.5' height='38' rx='2' fill='%23E6F1EF'/%3E%3Cpolygon points='15,9 36,29 28,35' fill='%23FF8A5C'/%3E%3Cpolygon points='49,55 28,35 36,29' fill='%233D7194'/%3E%3C/svg%3E">
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0c1c2b">
+<meta name="theme-color" content="#071420">
 <!-- iOS -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -3346,6 +3346,40 @@ html[data-tema="noche"] .rb-c-fila.error .rb-c-mot{color:#f09999}
 html[data-tema="noche"] .rb-c-ok{color:#a5f3c2}
 html[data-tema="noche"] .rb-c-err{color:#eb8585}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Inter:wght@400..800&display=swap">
+<style id="marcaA">
+/* Marca A «Carta náutica» (v005.77.000). Sólo aspecto. Sin internet, cae a la letra del sistema. */
+:root { --brand-navy: #071420; --brand-navy-light: #12304A; --disp: 'Bricolage Grotesque', Inter, system-ui, sans-serif; }
+body { font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+.card-value, .sidebar-logo h1, #pageTitle, .report-title, .lsc-brand-name, #rumboHeader > div > span:nth-of-type(1) {
+  font-family: var(--disp); letter-spacing: -0.02em; }
+.card-value { font-variant-numeric: tabular-nums; }
+#rumboHeader { background: #071420 !important; }
+html[data-tema="noche"] { --bg: #071420; --card: #0E2436; --text: #E6F1EF; --muted: #A9C4CF; --border: #1D4560;
+  --brand-navy: #071420; --brand-navy-light: #12304A; --n-titulo: #E6F1EF; }
+html[data-tema="noche"] body { background: #071420 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='420' viewBox='0 0 600 420'%3E%3Cg fill='none' stroke='%23102A3E' stroke-width='1.2'%3E%3Cpath d='M-10 300 C 120 250 220 350 330 300 S 520 240 610 280'/%3E%3Cpath d='M-10 330 C 125 280 225 380 335 330 S 525 270 610 310'/%3E%3Cpath d='M-10 80 C 110 40 260 120 380 70 S 560 30 610 50'/%3E%3C/g%3E%3C/svg%3E") repeat-y; background-size: 600px auto; }
+html[data-tema="noche"] .cards-grid .card { background: rgba(14, 36, 54, 0.9); border-color: #1D4560; }
+html[data-tema="noche"] #rumboHeader { background: #0E2436 !important; box-shadow: inset 0 0 0 1px #1D4560; }
+html[data-tema="noche"] option { background: #0E2436; color: #E6F1EF; }
+/* Rosa de los vientos de Mi Rumbo */
+#rumboDeco { display: none !important; }
+#page-dashboard > #rosaA { position: fixed !important; inset: 0; overflow: hidden; z-index: 0 !important; pointer-events: none; color: rgba(7, 20, 32, 0.09); }
+html[data-tema="noche"] #page-dashboard > #rosaA { color: #1A4360; }
+#rosaA svg { position: absolute; width: 820px; height: 820px; right: -260px; top: 110px; display: block; will-change: transform; }
+@media (max-width: 880px) { #rosaA svg { width: 620px; height: 620px; right: auto; left: calc(50% - 310px); top: 36vh; } }
+/* Gesto de marca: la aguja busca el norte y vuelve a formar la N */
+.n-marca .n-aguja { transform-origin: 32px 32px; }
+.n-gesto .n-aguja, .n-aviso .n-aguja { animation: nAlNorte 2.4s cubic-bezier(.3,.7,.4,1) .35s 1 both; }
+@keyframes nAlNorte { 0% { transform: rotate(0) } 22% { transform: rotate(43deg) } 31% { transform: rotate(33deg) } 39% { transform: rotate(38deg) }
+  46%, 58% { transform: rotate(36.5deg) } 72% { transform: rotate(-7deg) } 81% { transform: rotate(3deg) } 89% { transform: rotate(-1deg) } 100% { transform: rotate(0) } }
+.n-aviso { position: fixed; left: 50%; bottom: calc(104px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 400;
+  display: flex; align-items: center; gap: 10px; padding: 10px 18px 10px 12px; border-radius: 999px; background: #0E2436; color: #E6F1EF;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .35), inset 0 0 0 1px #1D4560; font: 600 15px Inter, system-ui, sans-serif; pointer-events: none;
+  opacity: 0; transition: opacity .25s; }
+.n-aviso.ver { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .n-gesto .n-aguja, .n-aviso .n-aguja { animation: none; } .n-aviso { transition: none; } }
+</style>
 </head>
 <body>
 
@@ -3516,13 +3550,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
   <!-- ══════ TEXTO DE MARCA — esquina inferior izquierda ══════ -->
   <div class="lsc-brand">
     <span style="display:block;margin-bottom:16px">
-      <svg width="46" height="46" viewBox="0 0 56 56" aria-hidden="true">
-        <circle cx="28" cy="28" r="25" fill="rgba(255,255,255,0.07)"/>
-        <path d="M28 6 L36 27 L28 48 L20 27 Z"  fill="rgba(255,138,92,0.68)"/>
-        <path d="M28 6 L36 27 L28 27 Z"           fill="rgba(255,185,155,0.48)"/>
-        <circle cx="28" cy="28" r="4.5" fill="rgba(255,255,255,0.20)"/>
-        <circle cx="28" cy="28" r="1.8" fill="rgba(255,255,255,0.60)"/>
-      </svg>
+      <svg class="n-marca n-gesto" width="46" height="46" viewBox="0 0 64 64" aria-hidden="true"><rect x="14" y="13" width="6.5" height="38" rx="2" fill="#E6F1EF"/><rect x="43.5" y="13" width="6.5" height="38" rx="2" fill="#E6F1EF"/><g class="n-aguja"><polygon points="15,9 36,29 28,35" fill="#FF8A5C"/><polygon points="49,55 28,35 36,29" fill="#3D7194"/></g></svg>
     </span>
     <div class="lsc-brand-name">Norte</div>
     <div id="verLogin" style="font-size:11px;color:rgba(255,255,255,0.35);font-weight:500;letter-spacing:.04em;margin-bottom:6px"></div>
@@ -3533,12 +3561,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
   <!-- ══════ CARD DE LOGIN ══════ -->
   <div class="lsc-form-card">
     <div class="lsc-form-header">
-      <svg width="30" height="30" viewBox="0 0 56 56" aria-hidden="true">
-        <circle cx="28" cy="28" r="25" fill="rgba(27,58,75,0.07)"/>
-        <path d="M28 10 L34 27 L28 44 L22 27 Z" fill="var(--brand-accent)"/>
-        <path d="M28 10 L34 27 L28 27 Z"        fill="var(--brand-accent-soft)"/>
-        <circle cx="28" cy="28" r="3.5" fill="rgba(255,255,255,0.85)"/>
-      </svg>
+      <svg class="n-marca n-gesto" width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><rect x="14" y="13" width="6.5" height="38" rx="2" fill="#071420"/><rect x="43.5" y="13" width="6.5" height="38" rx="2" fill="#071420"/><g class="n-aguja"><polygon points="15,9 36,29 28,35" fill="#E2602E"/><polygon points="49,55 28,35 36,29" fill="#7FA3BB"/></g></svg>
       <div>
         <div class="lsc-form-name">Norte</div>
         <div class="lsc-form-sub" id="lscFormSub">Iniciá sesión para continuar</div>
@@ -3612,11 +3635,7 @@ html[data-tema="noche"] .rb-c-err{color:#eb8585}
 
 <nav class="sidebar">
   <div class="sidebar-logo">
-    <svg class="logo-mark" width="34" height="34" viewBox="0 0 56 56" aria-hidden="true">
-      <circle cx="28" cy="28" r="26" fill="rgba(255,255,255,0.08)"/>
-      <path d="M28 12 L34 28 L28 44 L22 28 Z" fill="var(--brand-accent)"/>
-      <path d="M28 12 L34 28 L28 28 Z" fill="var(--brand-accent-soft)"/>
-    </svg>
+    <svg data-logo="menu" class="logo-mark n-marca" width="34" height="34" viewBox="0 0 64 64" aria-hidden="true"><rect x="14" y="13" width="6.5" height="38" rx="2" fill="#E6F1EF"/><rect x="43.5" y="13" width="6.5" height="38" rx="2" fill="#E6F1EF"/><g class="n-aguja"><polygon points="15,9 36,29 28,35" fill="#FF8A5C"/><polygon points="49,55 28,35 36,29" fill="#3D7194"/></g></svg>
     <div>
       <h1>Norte</h1>
       <span id="verSidebar" style="font-size:10px;opacity:0.35;font-weight:500;letter-spacing:.04em;display:block;margin-top:-2px;margin-bottom:1px"></span>
@@ -20851,7 +20870,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.76.000';
+const APP_VERSION = 'v005.77.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -23633,6 +23652,7 @@ function saveQuickTx() {
   try { pushNow(); } catch (e) {}
   closeQuickPanel();
   render();
+  try { if (window.marcaAvisoGuardado) window.marcaAvisoGuardado(); } catch (e) {}
 }
 
 // Cerrar dropdown si click fuera
@@ -29181,6 +29201,41 @@ if ('serviceWorker' in navigator) {
   } catch (e) {}
   window.norteTemaAplicar(false);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { window.norteTemaAplicar(false); });
+})();
+</script>
+<script id="marcaA-js">
+// Marca A: la rosa de Mi Rumbo gira con el scroll y el aviso «Guardado» hace el gesto de la aguja.
+// Sólo mueven dibujos: no leen ni escriben datos.
+(function () {
+  var quieto = false, pend = false, svg = null;
+  try { quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  function poner() {
+    var pag = document.getElementById('page-dashboard');
+    if (!pag || document.getElementById('rosaA')) return;
+    var d = document.createElement('div'); d.id = 'rosaA'; d.setAttribute('aria-hidden', 'true');
+    d.innerHTML = '<svg viewBox="-100 -100 200 200" fill="none" stroke="currentColor"><circle r="96" stroke-width="0.8"/><circle r="88" stroke-width="0.5" stroke-dasharray="1 3"/><circle r="60" stroke-width="0.5"/><g stroke-width="0.6" fill="currentColor" fill-opacity="0.35"><path d="M0 -92 L8 -8 L0 0 L-8 -8 Z"/><path d="M0 92 L8 8 L0 0 L-8 8 Z"/><path d="M92 0 L8 8 L0 0 L8 -8 Z"/><path d="M-92 0 L-8 8 L0 0 L-8 -8 Z"/><g transform="rotate(45)"><path d="M0 -66 L6 -6 L0 0 L-6 -6 Z"/><path d="M0 66 L6 6 L0 0 L-6 6 Z"/><path d="M66 0 L6 6 L0 0 L6 -6 Z"/><path d="M-66 0 L-6 6 L0 0 L-6 -6 Z"/></g></g><path d="M0 -92 L8 -8 L0 0 L-8 -8 Z" fill="currentColor" fill-opacity="0.8" stroke="none"/></svg>'; pag.insertBefore(d, pag.firstChild); svg = d.firstChild;
+  }
+  function girar() {
+    pend = false; if (!svg) return;
+    var m = document.querySelector('.main');
+    var y = Math.max(window.scrollY || 0, document.documentElement.scrollTop || 0, m ? m.scrollTop : 0);
+    svg.style.transform = 'rotate(' + (y * 0.18).toFixed(1) + 'deg)';
+  }
+  poner();
+  if (!quieto) document.addEventListener('scroll', function () { if (!pend) { pend = true; requestAnimationFrame(girar); } }, { passive: true, capture: true });
+  var tAviso = null;
+  window.marcaAvisoGuardado = function () {
+    try {
+      var a = document.getElementById('nAviso');
+      if (a) a.remove();
+      a = document.createElement('div'); a.id = 'nAviso'; a.className = 'n-aviso'; a.setAttribute('role', 'status');
+      a.innerHTML = '<svg class="n-marca" width="26" height="26" viewBox="0 0 64 64" aria-hidden="true"><rect x="14" y="13" width="6.5" height="38" rx="2" fill="#E6F1EF"/><rect x="43.5" y="13" width="6.5" height="38" rx="2" fill="#E6F1EF"/><g class="n-aguja"><polygon points="15,9 36,29 28,35" fill="#FF8A5C"/><polygon points="49,55 28,35 36,29" fill="#3D7194"/></g></svg><span>Guardado</span>';
+      document.body.appendChild(a);
+      requestAnimationFrame(function () { a.classList.add('ver'); });
+      clearTimeout(tAviso);
+      tAviso = setTimeout(function () { a.classList.remove('ver'); setTimeout(function () { a.remove(); }, 300); }, 2600);
+    } catch (e) {}
+  };
 })();
 </script>
 </body>
