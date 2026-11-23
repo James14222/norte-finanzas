@@ -3386,6 +3386,45 @@ html[data-tema="noche"] #page-dashboard > #rosaA { color: #1A4360; }
 .n-aviso.ver { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .n-gesto .n-aguja, .n-aviso .n-aguja { animation: none; } .n-aviso { transition: none; } }
 </style>
+<style id="brujula-v078">
+/* v005.78.000 · Brújula fina 23/11 (aprobado por Jaime). Sólo celular. */
+@media (max-width: 880px) {
+  /* 1 · Transacciones: lápiz y tacho de 40x40; el margen negativo evita que la tarjeta crezca de más */
+  #page-transacciones tbody tr td[data-col="acc"] { gap: 2px !important; margin: -8px -6px -8px 0 !important; }
+  #page-transacciones tbody tr td[data-col="acc"] button.act-btn { min-width: 40px !important; min-height: 40px !important;
+    padding: 0 !important; font-size: 17px !important; display: inline-flex !important; align-items: center !important;
+    justify-content: center !important; border-radius: 10px !important; }
+  /* 5 · Filtros de 34 px con zona de toque de 40; flechas del mes y pestañas de Reportes con zona de 40 */
+  .tgl-btn { min-height: 34px !important; position: relative; }
+  .tgl-btn::after { content: ''; position: absolute; left: 0; right: 0; top: -3px; bottom: -3px; }
+  .month-nav button { position: relative; }
+  .month-nav button::after { content: ''; position: absolute; inset: -4px; }
+  .rep-tab { min-height: 36px !important; position: relative; }
+  .rep-tab::after { content: ''; position: absolute; left: 0; right: 0; top: -2px; bottom: -2px; }
+  /* 2 · Reportes: «Detalle mes a mes» en tarjetas */
+  #evolTablaAnual { display: block !important; width: 100% !important; }
+  #evolTablaAnual thead { display: none !important; }
+  #evolTablaAnual tbody { display: flex !important; flex-direction: column; gap: 8px; }
+  #evolTablaAnual tbody tr { display: flex !important; flex-wrap: wrap; align-items: baseline; gap: 3px 12px;
+    border: 1px solid var(--border) !important; border-radius: 12px; padding: 10px 12px !important; }
+  #evolTablaAnual tbody tr::after { content: ''; order: 1; flex-basis: 100%; height: 0; }
+  #evolTablaAnual tbody tr[style*="fff5f5"] { background: rgba(239,68,68,.08) !important; }
+  #evolTablaAnual td { display: block !important; padding: 0 !important; border: none !important; text-align: left !important; }
+  #evolTablaAnual td:nth-child(1) { order: 0; flex: 1 1 auto; font-size: 14.5px !important; font-weight: 700 !important; }
+  #evolTablaAnual td:nth-child(4) { order: 0; font-size: 16px !important; font-weight: 800 !important; }
+  #evolTablaAnual td:nth-child(5) { order: 0; margin-left: auto; font-size: 12.5px !important; font-weight: 600 !important; }
+  #evolTablaAnual td:nth-child(5)::before { content: 'ahorro '; font-weight: 500; }
+  #evolTablaAnual td:nth-child(2), #evolTablaAnual td:nth-child(3) { order: 2; font-size: 12.5px !important; font-weight: 700 !important; }
+  #evolTablaAnual td:nth-child(2)::before { content: 'Entró '; color: var(--muted); font-weight: 500; }
+  #evolTablaAnual td:nth-child(3)::before { content: 'Salió '; color: var(--muted); font-weight: 500; }
+}
+@media (max-width: 600px) {
+  /* 3 · NortIA: el botón baja a su renglón y la bajada usa todo el ancho */
+  .nortia-head { flex-wrap: wrap; row-gap: 10px; }
+  .nortia-head > div:not(.nortia-head-icon) { flex: 1 1 0; min-width: 0; }
+  .nortia-head .nortia-toggle-btn { flex: 1 1 100%; order: 3; min-height: 40px; }
+}
+</style>
 </head>
 <body>
 
@@ -19427,7 +19466,7 @@ function renderRepEvol() {
       </div>
       <div style="${cardStyle('#6366f1')}">
         <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Tasa de ahorro</div>
-        <div style="font-weight:700;font-size:17px;color:#6366f1">${pctAhorro}%</div>
+        <div style="font-weight:700;font-size:17px;color:#6366f1">${String(pctAhorro).replace('.', ',')}%</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px">de los ingresos ARS</div>
       </div>
     </div>`;
@@ -19448,7 +19487,8 @@ function renderRepEvol() {
     const iUSD = mt.filter(t=>t.tipo==='Ingreso').reduce((s,t)=>s+(Number(t.impUSD)||0),0);
     const gUSD = mt.filter(t=>t.tipo==='Gasto').reduce((s,t)=>s+(Number(t.impUSD)||0),0);
     const bARS = iARS - gARS, bUSD = iUSD - gUSD;
-    const pct  = iARS > 0 ? ((bARS/iARS)*100).toFixed(1)+'%' : '—';
+    const pctN = iARS > 0 ? (bARS/iARS)*100 : null;
+    const pct  = pctN === null ? '—' : pctN.toFixed(1).replace('.', ',')+'%';
     totFilaARS.ing += iARS; totFilaARS.gas += gARS;
     totFilaUSD.ing += iUSD; totFilaUSD.gas += gUSD;
     const rowColor = bARS < 0 ? 'background:#fff5f5' : '';
@@ -19457,13 +19497,13 @@ function renderRepEvol() {
       <td style="text-align:right;color:#10b981;white-space:nowrap">${fmtP(iARS)}${iUSD>0?`<br><span style="font-size:11px;color:#3b82f6">${fmtUSD2(iUSD)}</span>`:''}</td>
       <td style="text-align:right;color:#ef4444;white-space:nowrap">${fmtP(gARS)}${gUSD>0?`<br><span style="font-size:11px;color:#f97b22">${fmtUSD2(gUSD)}</span>`:''}</td>
       <td style="text-align:right;font-weight:600;color:${bARS>=0?'#10b981':'#ef4444'};white-space:nowrap">${fmtP(bARS)}${(iUSD||gUSD)?`<br><span style="font-size:11px;color:${bUSD>=0?'#3b82f6':'#f97b22'}">${fmtUSD2(bUSD)}</span>`:''}</td>
-      <td style="text-align:right;color:${parseFloat(pct)<0?'#ef4444':'#6366f1'}">${pct}</td>
+      <td style="text-align:right;color:${pctN!==null&&pctN<0?'#ef4444':'#6366f1'}">${pct}</td>
     </tr>`;
   });
 
   const totBalARS = totFilaARS.ing - totFilaARS.gas;
   const totBalUSD = totFilaUSD.ing - totFilaUSD.gas;
-  const totPct    = totFilaARS.ing > 0 ? ((totBalARS/totFilaARS.ing)*100).toFixed(1)+'%' : '—';
+  const totPct    = totFilaARS.ing > 0 ? ((totBalARS/totFilaARS.ing)*100).toFixed(1).replace('.', ',')+'%' : '—';
   const usdTot    = totFilaUSD.ing > 0 || totFilaUSD.gas > 0;
 
   document.getElementById('evolTablaAnual').innerHTML = `
@@ -20878,7 +20918,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.77.003';
+const APP_VERSION = 'v005.78.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -28531,7 +28571,13 @@ function subtituloRumbo() {
       try { guiaActualizar(); } catch (e) {}
       gpsPintar(d);
     } catch (e) {
-      body.innerHTML = '<div style="font-size:13px;color:#ef4444;padding:12px 0">No pudimos cargar tu progreso: ' + esc(e.message) + '</div>';
+      // Brújula fina 23/11: mensaje claro y una acción, en vez del error técnico («Failed to fetch»).
+      var sinRed = (typeof navigator !== 'undefined' && navigator.onLine === false);
+      body.innerHTML = '<div class="gps-error" title="' + esc(e.message || '') + '" style="border:1px solid var(--border);border-radius:14px;padding:22px 18px;text-align:center;background:var(--card)">'
+        + '<div style="font-size:30px;line-height:1">📡</div>'
+        + '<div style="font-weight:700;font-size:16px;margin-top:8px;color:var(--text)">No pudimos traer las novedades</div>'
+        + '<div style="font-size:13.5px;color:var(--muted);margin:6px 0 14px">' + (sinRed ? 'Parece que no hay conexión.' : 'Puede ser la conexión.') + ' Tus datos están a salvo; probá de nuevo en un rato.</div>'
+        + '<button class="btn btn-primary" style="min-height:42px;padding:0 22px" onclick="gpsRender()">Reintentar</button></div>';
     }
   };
 
