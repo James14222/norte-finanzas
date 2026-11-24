@@ -309,6 +309,26 @@ html[data-tema="noche"] .rd-banda { border: 1px solid rgba(255,255,255,.08); box
   .bulk-tot { margin-left:0; padding-left:0; border-left:none; width:100%; }
 }
 .bulk-bar.show { display: flex; }
+.md-chip{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:700;color:#075985;background:#e0f2fe;border-radius:999px;padding:1px 8px;white-space:normal;max-width:100%;vertical-align:1px}
+.md-chip.ok{color:#166534;background:#dcfce7}
+html[data-tema="noche"] .md-chip{color:#bae6fd;background:#0c3a52}
+html[data-tema="noche"] .md-chip.ok{color:#bbf7d0;background:#14532d}
+#mdPanel{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:0 0 10px;padding:10px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card);font-size:13px;color:var(--text)}
+#mdPanel .md-t{font-weight:800}
+#mdPanel .md-falta{color:var(--danger);font-weight:800}
+#mdPanel .md-mas{color:var(--success);font-weight:700}
+#mdPanel .md-ver{margin-left:auto}
+.md-q{margin:14px 0 6px;padding-top:12px;border-top:1px solid var(--border)}
+.md-q:first-of-type{border-top:none;padding-top:0}
+.md-q h4{margin:0 0 4px;font-size:15px}
+.md-res{font-size:12.5px;color:var(--muted);margin-bottom:8px;line-height:1.5}
+.md-res b{color:var(--text)}
+.md-fila{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed var(--border);font-size:13px}
+.md-fila .md-d{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.md-fila .md-f{color:var(--muted);font-size:12px;white-space:nowrap}
+.md-fila .md-i{font-weight:700;white-space:nowrap}
+.md-fila button{font-size:11.5px;padding:4px 9px;white-space:nowrap}
+.md-sub{font-size:12px;font-weight:700;color:var(--muted);margin:10px 0 2px;text-transform:uppercase;letter-spacing:.03em}
 /* Copia congelada de la barra de selección. Aparece pegada abajo de la barra
    superior sólo cuando la original ya se fue con el scroll. z-index 45: por
    encima de las cabeceras pegajosas (5) y por debajo de la barra superior (50),
@@ -3958,7 +3978,7 @@ html[data-tema="noche"] #page-dashboard > #rosaA { color: #1A4360; }
             <div class="bulk-bar" id="bulkBar">
               <span id="bulkCount">0 seleccionados</span>
               <button class="btn btn-secondary" onclick="clearSelectionTx()">Cancelar</button>
-              <button class="btn btn-secondary" onclick="openRubroMasivo()">🏷️ Cambiar rubro</button>
+              <button class="btn btn-secondary" onclick="openRubroMasivo()">🏷️ Cambiar rubro</button><button class="btn btn-secondary" onclick="mdAbrirMarcar()">↩ Me lo devuelven</button>
               <button class="btn btn-secondary" onclick="txPedirExportar()">📥 Exportar XLS</button>
               <button class="btn btn-secondary" onclick="openCopiarMes()">📅 Copiar a otro mes</button>
               <button class="btn btn-danger" onclick="askDeleteBulk()">🗑️ Eliminar</button>
@@ -4962,6 +4982,16 @@ html[data-tema="noche"] #page-dashboard > #rosaA { color: #1A4360; }
             <p>La línea sigue mostrando el importe completo, porque es lo que vas a pagar: el saldo pendiente, el pago de la tarjeta y Deuda en cuotas no cambian. Lo que cambia es en qué se fue la plata: Mi Rumbo, los rubros, el presupuesto, los reportes y NortIA ven cada parte en su rubro, y lo que te devuelven no cuenta como gasto tuyo.</p>
             <p><strong>Cuotas:</strong> si dividís una cuota, Norte te ofrece aplicar el mismo reparto a las otras cuotas ya cargadas de esa compra, y cuando importes el resumen del mes que viene la cuota nueva llega dividida igual. Si en el resumen hay dos compras idénticas y Norte no puede saber cuál es cuál, no divide ninguna: la dividís vos.</p>
             <div class="ayuda-tip"><strong>Si te devuelven la plata por transferencia, no la cargues como ingreso.</strong> Esa parte ya quedó descontada de tu gasto al dividir: si además la cargás como ingreso, se cuenta dos veces y tu mes parece mejor de lo que fue. Si la transferencia entra en un resumen que importás (por ejemplo, el de Mercado Pago), destildala en la vista previa.</div>
+          </div>
+          <div class="ayuda-bloque">
+            <h4>↩ Me lo devuelven: gastos que no son tuyos</h4>
+            <p>Hay gastos que pagás vos pero no son tuyos: la nafta del trabajo que después te reintegra la empresa, algo que compraste para otro. Marcalos y dejan de contar como gasto tuyo en Mi Rumbo, los rubros, el presupuesto, los reportes, NortIA y Deriva. El saldo pendiente y el pago de la tarjeta no cambian, porque esa plata igual salió de tu bolsillo.</p>
+            <div class="ayuda-ejemplo">
+              En Transacciones tildá los movimientos y tocá <strong>↩ Me lo devuelven</strong>. Escribí quién te los devuelve (por ejemplo, la empresa).<br>
+              • <strong>Los gastos</strong> quedan con el rótulo «Me lo devuelve …».<br>
+              • <strong>La plata que vuelve</strong>, si la cargaste como ingreso, marcala igual: deja de contar como ingreso y se descuenta de lo que te deben.
+            </div>
+            <p>Arriba de la lista aparece <strong>↩ Me deben</strong>: cuánto pagaste por cada uno, cuánto te devolvió y cuánto falta. Si te lo devolvieron en efectivo y no lo vas a cargar, tocá <strong>Ya me lo devolvió</strong> en el detalle. Para sacar la marca, tildá los movimientos y elegí <strong>Quitar la marca</strong>.</p>
           </div>
           <div class="ayuda-bloque">
             <h4>Vista en computadora y en celular</h4>
@@ -7712,6 +7742,7 @@ function dvReparto(t) {
 function dvEsDividida(t) { return !!dvPartesValidas(t); }
 function expandirPartes(rows) {
   if (!Array.isArray(rows)) return rows;
+  rows = mdSinAjenos(rows);   // lo que te devuelven entero no es tuyo (v005.79)
   var hay = false;
   for (var i = 0; i < rows.length; i++) { if (rows[i] && rows[i].partes) { hay = true; break; } }
   if (!hay) return rows;
@@ -7738,6 +7769,189 @@ function expandirPartes(rows) {
   return out;
 }
 const getDataAnalisis = () => expandirPartes(getData());
+/* ══════════════════════════════════════════════════════════════════════
+   ME LO DEVUELVEN, LA LÍNEA ENTERA (v005.79)
+   ══════════════════════════════════════════════════════════════════════
+   Hay gastos que pagás vos pero no son tuyos: la nafta del trabajo que después
+   te reintegra la empresa. Dividir sólo podía separar una PARTE («Me lo
+   devuelven»), nunca la línea entera, y Deriva no lo leía.
+     Gasto:   t.devuelve   = { quien: 'El Juncal', ya: 0 }   ya = ms en que te lo
+              devolvieron por otro lado (efectivo), sin un ingreso cargado.
+     Ingreso: t.devolucion = { quien: 'El Juncal' }          la plata que vuelve.
+   Los dos quedan afuera de la lectura de análisis (Mi Rumbo, rubros, presupuesto,
+   reportes, NortIA) y de Deriva, y adentro de la del banco (saldo pendiente,
+   tarjetas, cuotas, pagar la tarjeta): esa plata salió igual de tu bolsillo. */
+function mdQuien(v) { return String((v && v.quien) || '').trim().slice(0, 40) || 'Sin indicar'; }
+function mdEsAjeno(t) {
+  if (!t) return false;
+  if (t.tipo === 'Gasto') return !!t.devuelve && !((Number(t.impPesos) || 0) < 0 || (Number(t.impUSD) || 0) < 0);
+  if (t.tipo === 'Ingreso') return !!t.devolucion;
+  return false;
+}
+function mdSinAjenos(rows) {
+  if (!Array.isArray(rows)) return rows;
+  for (var i = 0; i < rows.length; i++) if (mdEsAjeno(rows[i])) return rows.filter(function (t) { return !mdEsAjeno(t); });
+  return rows;
+}
+/* Qué parte de la línea es tuya: 0 si te la devuelven entera; si está dividida,
+   lo que queda después de las partes «Me lo devuelven». Para Deriva, que cuenta
+   movimientos y no abre la línea en partes. */
+function mdPropio(t) {
+  if (mdEsAjeno(t)) return 0;
+  var ps = dvPartesValidas(t);
+  if (!ps) return 1;
+  var dev = ps.reduce(function (s, p) { return s + (p.devuelven ? (Number(p.pct) || 0) : 0); }, 0);
+  return Math.max(0, 1 - dev / 100);
+}
+function mdChip(t) {
+  if (!mdEsAjeno(t)) return '';
+  var q = esc(mdQuien(t.tipo === 'Gasto' ? t.devuelve : t.devolucion));
+  if (t.tipo === 'Ingreso') return ' <span class="md-chip" title="Es plata que te devolvieron: no cuenta como ingreso tuyo y se descuenta de lo que te deben.">↩ Devolución · ' + q + '</span>';
+  if (t.devuelve.ya) return ' <span class="md-chip ok" title="Ya te lo devolvieron. No cuenta como gasto tuyo.">✓ Te lo devolvió ' + q + '</span>';
+  return ' <span class="md-chip" title="No es gasto tuyo: no cuenta en Mi Rumbo, rubros, reportes, NortIA ni Deriva. Sí cuenta en el saldo y en el pago de la tarjeta.">↩ Me lo devuelve ' + q + '</span>';
+}
+/* Cuánto te debe cada uno, sumando toda la historia: lo que pagaste por él
+   menos lo que te devolvió (ingresos marcados como devolución, o gastos con
+   «Ya me lo devolvió»). */
+function mdCuentas() {
+  var Q = {};
+  (getData() || []).forEach(function (t) {
+    if (!mdEsAjeno(t)) return;
+    var q = mdQuien(t.tipo === 'Gasto' ? t.devuelve : t.devolucion);
+    var o = Q[q] || (Q[q] = { quien: q, pagaste: 0, pagasteU: 0, volvio: 0, volvioU: 0, gastos: [], ingresos: [] });
+    var p = Number(t.impPesos) || 0, u = Number(t.impUSD) || 0;
+    if (t.tipo === 'Gasto') {
+      o.pagaste += p; o.pagasteU += u; o.gastos.push(t);
+      if (t.devuelve.ya) { o.volvio += p; o.volvioU += u; }
+    } else { o.volvio += p; o.volvioU += u; o.ingresos.push(t); }
+  });
+  return Object.keys(Q).map(function (k) {
+    var o = Q[k]; o.falta = dvR2(o.pagaste - o.volvio); o.faltaU = dvR2(o.pagasteU - o.volvioU); return o;
+  }).sort(function (a, b) { return b.falta - a.falta; });
+}
+function mdMonto(p, u) {
+  var s = [];
+  if (Math.abs(p) >= 0.005 || !Math.abs(u)) s.push(fmtP(Math.abs(p)));
+  if (Math.abs(u) >= 0.005) s.push(fmtU(Math.abs(u)));
+  return s.join(' + ');
+}
+function mdEstado(o) {
+  if (o.falta > 0.5 || o.faltaU > 0.005) return '<b>' + esc(o.quien) + '</b> te debe <span class="md-falta">' + esc(mdMonto(Math.max(0, o.falta), Math.max(0, o.faltaU))) + '</span>';
+  if (o.falta < -0.5 || o.faltaU < -0.005) return '<b>' + esc(o.quien) + '</b> te devolvió <span class="md-mas">' + esc(mdMonto(Math.min(0, o.falta), Math.min(0, o.faltaU))) + ' más</span> de lo que marcaste';
+  return '<b>' + esc(o.quien) + '</b> está al día';
+}
+function mdPintarPanel() {
+  var sc = document.querySelector('#page-transacciones .tx-scroll');
+  if (!sc) return;
+  var el = document.getElementById('mdPanel');
+  var C = mdCuentas();
+  if (!C.length) { if (el) el.remove(); return; }
+  if (!el) { el = document.createElement('div'); el.id = 'mdPanel'; sc.parentNode.insertBefore(el, sc); }
+  el.innerHTML = '<span class="md-t">↩ Me deben</span>' +
+    C.map(function (o) { return '<span class="md-q1">' + mdEstado(o) + '</span>'; }).join('') +
+    '<button class="btn btn-secondary md-ver" onclick="mdAbrirDetalle()">Ver detalle</button>';
+}
+function mdOverlay(id, cerrar) {
+  var ov = document.getElementById(id);
+  if (!ov) {
+    ov = document.createElement('div'); ov.id = id; ov.className = 'overlay';
+    ov.addEventListener('click', function (e) { if (e.target === ov) cerrar(); });
+    document.body.appendChild(ov);
+  }
+  return ov;
+}
+function mdAbrirMarcar() {
+  var sel = getData().filter(function (t) { return selectedTx.has(t.id); });
+  if (!sel.length) return;
+  var gas = sel.filter(function (t) { return t.tipo === 'Gasto' && !esReintegro(t); });
+  var ing = sel.filter(function (t) { return t.tipo === 'Ingreso'; });
+  var marcados = sel.filter(mdEsAjeno);
+  var quienes = mdCuentas().map(function (o) { return o.quien; }).filter(function (q) { return q !== 'Sin indicar'; });
+  var sug = marcados.length ? mdQuien(marcados[0].tipo === 'Gasto' ? marcados[0].devuelve : marcados[0].devolucion) : (quienes[0] || '');
+  if (sug === 'Sin indicar') sug = '';
+  var pl = function (n, a, b) { return n + ' ' + (n === 1 ? a : b); };
+  var txt = '';
+  if (gas.length) txt += '<p style="margin:0 0 8px"><b>' + pl(gas.length, 'gasto', 'gastos') + '</b> que pagaste vos pero no ' + (gas.length === 1 ? 'es tuyo' : 'son tuyos') +
+    ': deja' + (gas.length === 1 ? '' : 'n') + ' de contar en Mi Rumbo, los rubros, los reportes, NortIA y Deriva. El saldo y el pago de la tarjeta no cambian.</p>';
+  if (ing.length) txt += '<p style="margin:0 0 8px"><b>' + pl(ing.length, 'ingreso', 'ingresos') + '</b> que ' + (ing.length === 1 ? 'es' : 'son') +
+    ' esa plata que vuelve: deja' + (ing.length === 1 ? '' : 'n') + ' de contar como ingreso y se descuenta' + (ing.length === 1 ? '' : 'n') + ' de lo que te deben.</p>';
+  if (!gas.length && !ing.length) txt = '<p style="margin:0 0 8px">Lo que marcaste son reintegros del banco: ya restan solos, no hace falta marcarlos.</p>';
+  var ov = mdOverlay('mdMarcarOv', mdCerrarMarcar);
+  ov.innerHTML = '<div class="modal" style="max-width:460px;height:auto">' +
+    '<div class="modal-title">↩ Me lo devuelven</div>' +
+    '<div style="font-size:13px;color:var(--muted);line-height:1.5">' + txt + '</div>' +
+    ((gas.length || ing.length) ? '<div class="form-group" style="margin-top:6px"><label>¿Quién te lo devuelve?</label>' +
+      '<input id="mdQuienIn" class="form-input" list="mdQuienes" maxlength="40" placeholder="Por ejemplo: la empresa" value="' + esc(sug) + '">' +
+      '<datalist id="mdQuienes">' + quienes.map(function (q) { return '<option value="' + esc(q) + '">'; }).join('') + '</datalist></div>' : '') +
+    '<div id="mdErr" style="color:var(--danger);font-size:12px;min-height:16px;margin-bottom:6px"></div>' +
+    '<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="mdCerrarMarcar()">Cancelar</button>' +
+    (marcados.length ? '<button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="mdAplicar(true)">Quitar la marca</button>' : '') +
+    ((gas.length || ing.length) ? '<button class="btn btn-primary" style="flex:2;justify-content:center" onclick="mdAplicar(false)">Marcar</button>' : '') + '</div></div>';
+  ov.classList.add('show');
+  var inp = document.getElementById('mdQuienIn'); if (inp) { try { inp.focus(); inp.select(); } catch (e) {} }
+}
+function mdCerrarMarcar() { var ov = document.getElementById('mdMarcarOv'); if (ov) ov.classList.remove('show'); }
+function mdAplicar(quitar) {
+  var quien = '';
+  if (!quitar) {
+    quien = String((document.getElementById('mdQuienIn') || {}).value || '').trim().slice(0, 40);
+    if (!quien) { document.getElementById('mdErr').textContent = 'Escribí quién te lo devuelve (por ejemplo, la empresa).'; return; }
+  }
+  var data = getData(), n = 0;
+  data.forEach(function (t) {
+    if (!t || !selectedTx.has(t.id)) return;
+    if (quitar) { if (t.devuelve || t.devolucion) { delete t.devuelve; delete t.devolucion; n++; } return; }
+    if (t.tipo === 'Gasto' && !esReintegro(t)) {
+      var ya = (t.devuelve && mdQuien(t.devuelve) === quien) ? (Number(t.devuelve.ya) || 0) : 0;
+      t.devuelve = { quien: quien, ya: ya }; n++;
+    } else if (t.tipo === 'Ingreso') { t.devolucion = { quien: quien }; n++; }
+  });
+  saveData(data);
+  try { pushNow(); } catch (e) {}
+  mdCerrarMarcar();
+  clearSelectionTx();
+  render();
+  txAviso(quitar ? '✓ Se quitó la marca a ' + n + ' movimiento' + (n === 1 ? '' : 's')
+                 : '✓ ' + n + ' movimiento' + (n === 1 ? '' : 's') + ' marcado' + (n === 1 ? '' : 's') + ' · ' + quien);
+}
+function mdAbrirDetalle() {
+  var C = mdCuentas();
+  var fila = function (t, btn) {
+    return '<div class="md-fila"><span class="md-f">' + esc(fmtD(t.fecha || '') === '-' ? mesTxt(t.mes) : fmtD(t.fecha)) + '</span>' +
+      '<span class="md-d" title="' + esc(txDetalleLimpio(t)) + '">' + esc(txDetalleLimpio(t)) + '</span>' +
+      '<span class="md-i">' + esc(mdMonto(Number(t.impPesos) || 0, Number(t.impUSD) || 0)) + '</span>' + (btn || '') + '</div>';
+  };
+  var porFecha = function (a, b) { return String(b.fecha || b.mes || '').localeCompare(String(a.fecha || a.mes || '')); };
+  var html = C.map(function (o) {
+    return '<div class="md-q"><h4>' + esc(o.quien) + '</h4>' +
+      '<div class="md-res">Pagaste <b>' + esc(mdMonto(o.pagaste, o.pagasteU)) + '</b> · te devolvió <b>' + esc(mdMonto(o.volvio, o.volvioU)) + '</b><br>' + mdEstado(o) + '</div>' +
+      (o.gastos.length ? '<div class="md-sub">Lo que pagaste</div>' + o.gastos.slice().sort(porFecha).map(function (t) {
+        return fila(t, t.devuelve.ya
+          ? '<button class="btn btn-secondary" onclick="mdYa(\'' + t.id + '\', false)" title="Deshacer">✓ Devuelto</button>'
+          : '<button class="btn btn-secondary" onclick="mdYa(\'' + t.id + '\', true)" title="Usalo sólo si la devolución no la cargaste como ingreso">Ya me lo devolvió</button>');
+      }).join('') : '') +
+      (o.ingresos.length ? '<div class="md-sub">Lo que te devolvió</div>' + o.ingresos.slice().sort(porFecha).map(function (t) { return fila(t, ''); }).join('') : '') +
+      '</div>';
+  }).join('');
+  var ov = mdOverlay('mdDetOv', mdCerrarDetalle);
+  ov.innerHTML = '<div class="modal" style="max-width:560px;height:auto;max-height:86vh;overflow:auto">' +
+    '<div class="modal-title">↩ Me deben</div>' +
+    (html || '<p style="color:var(--muted)">No tenés nada marcado.</p>') +
+    '<p style="font-size:12px;color:var(--muted);line-height:1.5;margin:14px 0 10px">Si la devolución te entra por transferencia, cargala como ingreso y marcala con <b>↩ Me lo devuelven</b>: se descuenta sola. ' +
+    'Usá <b>Ya me lo devolvió</b> sólo si te la dieron por otro lado y no la vas a cargar.</p>' +
+    '<div style="display:flex"><button class="btn btn-primary" style="flex:1;justify-content:center" onclick="mdCerrarDetalle()">Listo</button></div></div>';
+  ov.classList.add('show');
+}
+function mdCerrarDetalle() { var ov = document.getElementById('mdDetOv'); if (ov) ov.classList.remove('show'); }
+function mdYa(id, on) {
+  var data = getData(), t = data.find(function (x) { return x.id === id; });
+  if (!t || !t.devuelve) return;
+  t.devuelve.ya = on ? Date.now() : 0;
+  saveData(data);
+  try { pushNow(); } catch (e) {}
+  render();
+  mdAbrirDetalle();
+}
 /* Cuenta movimientos de verdad (las filas virtuales no son movimientos). */
 function dvSoloReales(rows) { return (rows || []).filter(function (t) { return !(t && t._parte); }); }
 /* Texto corto del reparto, para Transacciones y los desgloses. */
@@ -11766,7 +11980,7 @@ function drvIniciar() {
 function drvCalcular() {
   const hoy = drvYM();
   const filas = (getData() || []).filter(function (t) {
-    return t && /^\d{4}-\d{2}$/.test(String(t.mes || '')) && t.mes <= hoy && !t.transf;
+    return t && /^\d{4}-\d{2}$/.test(String(t.mes || '')) && t.mes <= hoy && !t.transf && !mdEsAjeno(t);
   });
   const gastos = filas.filter(function (t) {
     return t.tipo === 'Gasto' && ((Number(t.impPesos) || 0) > 0 || (Number(t.impUSD) || 0) > 0) && drvCuotaNum(t.cuota) <= 1;
@@ -11791,18 +12005,19 @@ function drvCalcular() {
   const T = {};
   gastos.forEach(function (t) {
     if (!ventana[t.mes]) return;
+    const fr = mdPropio(t);   // lo que separaste como «Me lo devuelven» no es tuyo
     const x = derivaTema(t);
     if (x && x.ignorar) { res.ignorados++; return; }
     res.totalMov++;
     const mov = { mes: t.mes, fecha: String(t.fecha || ''), det: String([t.detalle, t.cliente].filter(Boolean).join(' · ')).trim(),
-                  rubro: String(t.rubro || ''), pesos: Number(t.impPesos) || 0, usd: Number(t.impUSD) || 0 };
+                  rubro: String(t.rubro || ''), pesos: (Number(t.impPesos) || 0) * fr, usd: (Number(t.impUSD) || 0) * fr };
     if (!x) { res.sin.push(mov); return; }
     res.leidos++;
     mov.via = x.via; mov.key = x.key; mov.tema = x.tema; mov.cond = x.cond || '';
     const o = T[x.tema] || (T[x.tema] = { tema: x.tema, con: x.con, veces: {}, pesos: {}, usd: {}, comercio: 0, rubro: 0, items: [] });
     o.veces[t.mes] = (o.veces[t.mes] || 0) + 1;
-    o.pesos[t.mes] = (o.pesos[t.mes] || 0) + (Number(t.impPesos) || 0);
-    o.usd[t.mes] = (o.usd[t.mes] || 0) + (Number(t.impUSD) || 0);
+    o.pesos[t.mes] = (o.pesos[t.mes] || 0) + (Number(t.impPesos) || 0) * fr;
+    o.usd[t.mes] = (o.usd[t.mes] || 0) + (Number(t.impUSD) || 0) * fr;
     o[x.via === 'rubro' ? 'rubro' : 'comercio']++;
     o.items.push(mov);
   });
@@ -14595,6 +14810,7 @@ function renderTx() {
   dcMigrarCuotas();   // una sola vez: la cuota sale de la descripción a su campo
   pintarPendienteTx();
   try { trfPintarBoton(); } catch (e) {}
+  try { mdPintarPanel(); } catch (e) {}
   const all = getData().filter(t => t.mes === curKey());
 
   // Poblar filtro de rubros: «Todos», «Sin asignar» y después los rubros del
@@ -14669,7 +14885,7 @@ function renderTx() {
     const reint = esReintegro(t);
     const C = {};
     C.sel = `<td data-col="sel"><input type="checkbox" class="tx-check" data-id="${t.id}" ${selectedTx.has(t.id)?'checked':''} onchange="toggleSelectTx('${t.id}', this.checked)"></td>`;
-    C.detalle = `<td data-col="detalle"><strong>${esc(txDetalleLimpio(t))}</strong>${txCuotaMovil(t)}${trfChip(t)}${pendiente ? ' <span title="Esqueleto de movimiento fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${faltaImp ? ' <span onclick="openModal(\'' + t.id + '\')" title="Tiene monto pagado pero no importe: tocá para completar el importe" style="cursor:pointer;font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Falta el importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de ${tcLabel(t)==='TD'?'Débito':'Crédito'}" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>${(t.origen === 'TARJETA' && t.creadoPorNombre) ? '<span style="font-size:10.5px;font-weight:600;color:#5B6B7C;background:rgba(91,107,124,0.10);border:1px solid rgba(91,107,124,0.22);border-radius:6px;padding:1px 6px;margin-left:6px;white-space:nowrap">\uD83D\uDC64 ' + t.creadoPorNombre + '</span>' : ''}` : ''}${dvEsDividida(t) ? `<div class="dv-linea" onclick="dvAbrir('${t.id}')" title="Ver o cambiar el reparto">✂️ ${esc(dvTextoReparto(t))}${t.partesDe ? ' <span class="dv-hered">· igual que la cuota anterior</span>' : ''}</div>` : ''}</td>`;
+    C.detalle = `<td data-col="detalle"><strong>${esc(txDetalleLimpio(t))}</strong>${txCuotaMovil(t)}${trfChip(t)}${mdChip(t)}${pendiente ? ' <span title="Esqueleto de movimiento fijo — falta completar el importe" style="font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Completar importe</span>' : ''}${faltaImp ? ' <span onclick="openModal(\'' + t.id + '\')" title="Tiene monto pagado pero no importe: tocá para completar el importe" style="cursor:pointer;font-size:11px;font-weight:600;color:#92740a;background:#fde68a;border-radius:10px;padding:2px 7px;margin-left:6px;white-space:nowrap">⚠️ Falta el importe</span>' : ''}${isTCOrigen(t) ? ` <span title="Importado desde resumen de Tarjeta de ${tcLabel(t)==='TD'?'Débito':'Crédito'}" style="font-size:10.5px;font-weight:700;color:#7c3aed;background:rgba(124,58,237,0.1);border-radius:10px;padding:2px 7px;margin-left:5px;white-space:nowrap">💳 ${getBancoLabel(t)||'TC'}</span>${(t.origen === 'TARJETA' && t.creadoPorNombre) ? '<span style="font-size:10.5px;font-weight:600;color:#5B6B7C;background:rgba(91,107,124,0.10);border:1px solid rgba(91,107,124,0.22);border-radius:6px;padding:1px 6px;margin-left:6px;white-space:nowrap">\uD83D\uDC64 ' + t.creadoPorNombre + '</span>' : ''}` : ''}${dvEsDividida(t) ? `<div class="dv-linea" onclick="dvAbrir('${t.id}')" title="Ver o cambiar el reparto">✂️ ${esc(dvTextoReparto(t))}${t.partesDe ? ' <span class="dv-hered">· igual que la cuota anterior</span>' : ''}</div>` : ''}</td>`;
     C.cuota = `<td data-col="cuota" class="tx-cuota-td">${txCuotaCelda(t)}</td>`;
     C.tipo = `<td data-col="tipo">${reint ? BADGE_REINTEGRO : `<span class="badge badge-${t.tipo.toLowerCase()}">${t.tipo}</span>`}</td>`;
     C.rubro = `<td data-col="rubro"><span class="rubro-tag">${esc(t.rubro||'-')}</span>${t.tipoGasto && !_txFijoCol ? `<span style="display:inline-block;margin-left:5px;font-size:10.5px;font-weight:600;color:var(--muted)">· <span class="tg-full">${t.tipoGasto}</span><span class="tg-abbr">${t.tipoGasto.charAt(0)}</span></span>` : ''}</td>`;
@@ -20918,7 +21134,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.78.000';
+const APP_VERSION = 'v005.79.000';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -22343,7 +22559,8 @@ function saveTx(e) {
       if (!prev.cuota) { const _c = txCuotaDe(prev); if (_c) nuevo.cuota = _c.a + '/' + _c.t; }
       if (!tx.cta) delete nuevo.cta;   // la cuenta vieja ya no explica el importe
       // Dividir es sólo para gastos con importe positivo: si dejó de serlo, se quita.
-      if (nuevo.tipo !== 'Gasto' || impP < 0 || impU < 0) { delete nuevo.partes; delete nuevo.partesDe; }
+      if (nuevo.tipo !== 'Gasto' || impP < 0 || impU < 0) { delete nuevo.partes; delete nuevo.partesDe; delete nuevo.devuelve; }
+      if (nuevo.tipo !== 'Ingreso') delete nuevo.devolucion;
       if (isTCOrigen(prev)) {
         nuevo.tipoGasto = 'Variable'; // TC nunca puede ser Fijo — se importa vía resumen cada mes
       }
@@ -22403,7 +22620,7 @@ function clearSelectionTx() {
       '<span id="bulkCountFija">0 seleccionados</span>' +
       '<span class="bbf-acciones">' +
         '<button class="btn btn-secondary" onclick="clearSelectionTx()">Cancelar</button>' +
-        '<button class="btn btn-secondary" onclick="openRubroMasivo()">🏷️ Cambiar rubro</button>' +
+        '<button class="btn btn-secondary" onclick="openRubroMasivo()">🏷️ Cambiar rubro</button><button class="btn btn-secondary" onclick="mdAbrirMarcar()">↩ Me lo devuelven</button>' +
         '<button class="btn btn-secondary" onclick="txPedirExportar()">📥 Exportar XLS</button>' +
         '<button class="btn btn-secondary" onclick="openCopiarMes()">📅 Copiar a otro mes</button>' +
         '<button class="btn btn-danger" onclick="askDeleteBulk()">🗑️ Eliminar</button>' +
