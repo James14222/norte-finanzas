@@ -328,6 +328,13 @@ html[data-tema="noche"] .md-chip.ok{color:#bbf7d0;background:#14532d}
 .md-fila .md-f{color:var(--muted);font-size:12px;white-space:nowrap}
 .md-fila .md-i{font-weight:700;white-space:nowrap}
 .md-fila button{font-size:11.5px;padding:4px 9px;white-space:nowrap}
+.md-tools{display:flex;align-items:center;gap:8px;margin:4px 0 6px;font-size:12.5px;color:var(--muted)}
+.md-tools button{font-size:12px;padding:4px 10px}
+.md-tools span{margin-left:auto;font-weight:700;color:var(--text)}
+.md-lista{max-height:44vh;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:0 10px;margin-bottom:10px}
+.md-ck{cursor:pointer}
+.md-ck input{width:17px;height:17px;flex:0 0 auto;accent-color:var(--primary)}
+.md-ck .md-tag{font-size:10.5px;font-weight:700;color:var(--muted);white-space:nowrap}
 .md-sub{font-size:12px;font-weight:700;color:var(--muted);margin:10px 0 2px;text-transform:uppercase;letter-spacing:.03em}
 /* Copia congelada de la barra de selección. Aparece pegada abajo de la barra
    superior sólo cuando la original ya se fue con el scroll. z-index 45: por
@@ -4981,7 +4988,7 @@ html[data-tema="noche"] #page-dashboard > #rosaA { color: #1A4360; }
             </div>
             <p>La línea sigue mostrando el importe completo, porque es lo que vas a pagar: el saldo pendiente, el pago de la tarjeta y Deuda en cuotas no cambian. Lo que cambia es en qué se fue la plata: Mi Rumbo, los rubros, el presupuesto, los reportes y NortIA ven cada parte en su rubro, y lo que te devuelven no cuenta como gasto tuyo.</p>
             <p><strong>Cuotas:</strong> si dividís una cuota, Norte te ofrece aplicar el mismo reparto a las otras cuotas ya cargadas de esa compra, y cuando importes el resumen del mes que viene la cuota nueva llega dividida igual. Si en el resumen hay dos compras idénticas y Norte no puede saber cuál es cuál, no divide ninguna: la dividís vos.</p>
-            <div class="ayuda-tip"><strong>Si te devuelven la plata por transferencia, no la cargues como ingreso.</strong> Esa parte ya quedó descontada de tu gasto al dividir: si además la cargás como ingreso, se cuenta dos veces y tu mes parece mejor de lo que fue. Si la transferencia entra en un resumen que importás (por ejemplo, el de Mercado Pago), destildala en la vista previa.</div>
+            <div class="ayuda-tip"><strong>Si te devuelven la plata por transferencia, no la cargues como ingreso.</strong> Si ya entró (por ejemplo, en un resumen que importaste), tildala en Transacciones y marcala con <strong>↩ Me lo devuelven</strong>: deja de contar como ingreso. Esa parte ya quedó descontada de tu gasto al dividir: si además la cargás como ingreso, se cuenta dos veces y tu mes parece mejor de lo que fue. Si la transferencia entra en un resumen que importás (por ejemplo, el de Mercado Pago), destildala en la vista previa.</div>
           </div>
           <div class="ayuda-bloque">
             <h4>↩ Me lo devuelven: gastos que no son tuyos</h4>
@@ -7860,46 +7867,76 @@ function mdOverlay(id, cerrar) {
   }
   return ov;
 }
+function mdFecha(t) {
+  if (t && t.fecha) return fmtD(t.fecha);
+  var p = String((t && t.mes) || '').split('-');
+  return p.length === 2 ? p[1] + '/' + p[0] : '';
+}
+/* La ventana lista lo que tildaste en Transacciones, todo marcado: si
+   seleccionaste muchos de golpe, destildás los que no van y listo. */
+var _mdIds = [];
 function mdAbrirMarcar() {
   var sel = getData().filter(function (t) { return selectedTx.has(t.id); });
   if (!sel.length) return;
-  var gas = sel.filter(function (t) { return t.tipo === 'Gasto' && !esReintegro(t); });
-  var ing = sel.filter(function (t) { return t.tipo === 'Ingreso'; });
-  var marcados = sel.filter(mdEsAjeno);
+  var cand = sel.filter(function (t) { return (t.tipo === 'Gasto' && !esReintegro(t)) || t.tipo === 'Ingreso'; })
+    .sort(function (x, y) { return String(y.fecha || y.mes || '').localeCompare(String(x.fecha || x.mes || '')); });
+  _mdIds = cand.map(function (t) { return t.id; });
+  var marcados = cand.filter(mdEsAjeno);
   var quienes = mdCuentas().map(function (o) { return o.quien; }).filter(function (q) { return q !== 'Sin indicar'; });
   var sug = marcados.length ? mdQuien(marcados[0].tipo === 'Gasto' ? marcados[0].devuelve : marcados[0].devolucion) : (quienes[0] || '');
   if (sug === 'Sin indicar') sug = '';
-  var pl = function (n, a, b) { return n + ' ' + (n === 1 ? a : b); };
-  var txt = '';
-  if (gas.length) txt += '<p style="margin:0 0 8px"><b>' + pl(gas.length, 'gasto', 'gastos') + '</b> que pagaste vos pero no ' + (gas.length === 1 ? 'es tuyo' : 'son tuyos') +
-    ': deja' + (gas.length === 1 ? '' : 'n') + ' de contar en Mi Rumbo, los rubros, los reportes, NortIA y Deriva. El saldo y el pago de la tarjeta no cambian.</p>';
-  if (ing.length) txt += '<p style="margin:0 0 8px"><b>' + pl(ing.length, 'ingreso', 'ingresos') + '</b> que ' + (ing.length === 1 ? 'es' : 'son') +
-    ' esa plata que vuelve: deja' + (ing.length === 1 ? '' : 'n') + ' de contar como ingreso y se descuenta' + (ing.length === 1 ? '' : 'n') + ' de lo que te deben.</p>';
-  if (!gas.length && !ing.length) txt = '<p style="margin:0 0 8px">Lo que marcaste son reintegros del banco: ya restan solos, no hace falta marcarlos.</p>';
-  var ov = mdOverlay('mdMarcarOv', mdCerrarMarcar);
-  ov.innerHTML = '<div class="modal" style="max-width:460px;height:auto">' +
-    '<div class="modal-title">↩ Me lo devuelven</div>' +
-    '<div style="font-size:13px;color:var(--muted);line-height:1.5">' + txt + '</div>' +
-    ((gas.length || ing.length) ? '<div class="form-group" style="margin-top:6px"><label>¿Quién te lo devuelve?</label>' +
+  var cuerpo;
+  if (!cand.length) {
+    cuerpo = '<p style="font-size:13px;color:var(--muted);margin:0 0 8px">Lo que tildaste son reintegros del banco: ya restan solos, no hace falta marcarlos.</p>';
+  } else {
+    cuerpo = '<p style="font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 8px">Los <b>gastos</b> que marques dejan de contar como tuyos en Mi Rumbo, los rubros, los reportes, NortIA y Deriva (el saldo y la tarjeta no cambian). ' +
+      'Los <b>ingresos</b> que marques son la plata que vuelve: dejan de contar como ingreso y se descuentan de lo que te deben.</p>' +
+      '<div class="md-tools"><button class="btn btn-secondary" onclick="mdTodos(true)">Todos</button><button class="btn btn-secondary" onclick="mdTodos(false)">Ninguno</button><span id="mdCuenta"></span></div>' +
+      '<div class="md-lista">' + cand.map(function (t) {
+        var ya = mdEsAjeno(t) ? '<span class="md-tag">' + (t.tipo === 'Gasto' ? '↩ ' + esc(mdQuien(t.devuelve)) : '↩ devolución') + '</span>' : '';
+        return '<label class="md-fila md-ck"><input type="checkbox" class="md-cb" data-id="' + esc(t.id) + '" checked onchange="mdContar()">' +
+          '<span class="md-f">' + esc(mdFecha(t)) + '</span><span class="md-d" title="' + esc(txDetalleLimpio(t)) + '">' + esc(txDetalleLimpio(t)) + '</span>' + ya +
+          '<span class="md-i" style="color:' + (t.tipo === 'Ingreso' ? 'var(--success)' : 'var(--text)') + '">' + (t.tipo === 'Ingreso' ? '+' : '') + esc(mdMonto(Number(t.impPesos) || 0, Number(t.impUSD) || 0)) + '</span></label>';
+      }).join('') + '</div>' +
+      '<div class="form-group" style="margin-top:4px"><label>¿Quién te lo devuelve?</label>' +
       '<input id="mdQuienIn" class="form-input" list="mdQuienes" maxlength="40" placeholder="Por ejemplo: la empresa" value="' + esc(sug) + '">' +
-      '<datalist id="mdQuienes">' + quienes.map(function (q) { return '<option value="' + esc(q) + '">'; }).join('') + '</datalist></div>' : '') +
+      '<datalist id="mdQuienes">' + quienes.map(function (q) { return '<option value="' + esc(q) + '">'; }).join('') + '</datalist></div>';
+  }
+  var ov = mdOverlay('mdMarcarOv', mdCerrarMarcar);
+  ov.innerHTML = '<div class="modal" style="max-width:520px;height:auto;max-height:92vh;overflow:auto">' +
+    '<div class="modal-title">↩ Me lo devuelven</div>' + cuerpo +
     '<div id="mdErr" style="color:var(--danger);font-size:12px;min-height:16px;margin-bottom:6px"></div>' +
     '<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="mdCerrarMarcar()">Cancelar</button>' +
     (marcados.length ? '<button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="mdAplicar(true)">Quitar la marca</button>' : '') +
-    ((gas.length || ing.length) ? '<button class="btn btn-primary" style="flex:2;justify-content:center" onclick="mdAplicar(false)">Marcar</button>' : '') + '</div></div>';
+    (cand.length ? '<button class="btn btn-primary" style="flex:2;justify-content:center" id="mdMarcarBtn" onclick="mdAplicar(false)">Marcar</button>' : '') + '</div></div>';
   ov.classList.add('show');
-  var inp = document.getElementById('mdQuienIn'); if (inp) { try { inp.focus(); inp.select(); } catch (e) {} }
+  mdContar();
+}
+function mdTildados() {
+  return [].slice.call(document.querySelectorAll('#mdMarcarOv .md-cb')).filter(function (c) { return c.checked; }).map(function (c) { return c.dataset.id; });
+}
+function mdTodos(on) { document.querySelectorAll('#mdMarcarOv .md-cb').forEach(function (c) { c.checked = on; }); mdContar(); }
+function mdContar() {
+  var ids = {}; mdTildados().forEach(function (i) { ids[i] = 1; });
+  var g = 0, ing = 0, p = 0;
+  getData().forEach(function (t) { if (!ids[t.id]) return; if (t.tipo === 'Ingreso') ing++; else { g++; p += Number(t.impPesos) || 0; } });
+  var el = document.getElementById('mdCuenta');
+  if (el) el.textContent = (g || ing) ? [g ? g + (g === 1 ? ' gasto' : ' gastos') + ' (' + fmtP(p) + ')' : '', ing ? ing + (ing === 1 ? ' ingreso' : ' ingresos') : ''].filter(Boolean).join(' · ') : 'Nada tildado';
+  var b = document.getElementById('mdMarcarBtn');
+  if (b) { b.disabled = !(g || ing); b.textContent = (g + ing) ? 'Marcar ' + (g + ing) : 'Marcar'; }
 }
 function mdCerrarMarcar() { var ov = document.getElementById('mdMarcarOv'); if (ov) ov.classList.remove('show'); }
 function mdAplicar(quitar) {
   var quien = '';
+  var ids = {}; mdTildados().forEach(function (i) { ids[i] = 1; });
+  if (!Object.keys(ids).length) { document.getElementById('mdErr').textContent = 'No tildaste ningún movimiento.'; return; }
   if (!quitar) {
     quien = String((document.getElementById('mdQuienIn') || {}).value || '').trim().slice(0, 40);
     if (!quien) { document.getElementById('mdErr').textContent = 'Escribí quién te lo devuelve (por ejemplo, la empresa).'; return; }
   }
   var data = getData(), n = 0;
   data.forEach(function (t) {
-    if (!t || !selectedTx.has(t.id)) return;
+    if (!t || !ids[t.id]) return;
     if (quitar) { if (t.devuelve || t.devolucion) { delete t.devuelve; delete t.devolucion; n++; } return; }
     if (t.tipo === 'Gasto' && !esReintegro(t)) {
       var ya = (t.devuelve && mdQuien(t.devuelve) === quien) ? (Number(t.devuelve.ya) || 0) : 0;
@@ -7917,7 +7954,7 @@ function mdAplicar(quitar) {
 function mdAbrirDetalle() {
   var C = mdCuentas();
   var fila = function (t, btn) {
-    return '<div class="md-fila"><span class="md-f">' + esc(fmtD(t.fecha || '') === '-' ? mesTxt(t.mes) : fmtD(t.fecha)) + '</span>' +
+    return '<div class="md-fila"><span class="md-f">' + esc(mdFecha(t)) + '</span>' +
       '<span class="md-d" title="' + esc(txDetalleLimpio(t)) + '">' + esc(txDetalleLimpio(t)) + '</span>' +
       '<span class="md-i">' + esc(mdMonto(Number(t.impPesos) || 0, Number(t.impUSD) || 0)) + '</span>' + (btn || '') + '</div>';
   };
@@ -21134,7 +21171,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.79.000';
+const APP_VERSION = 'v005.79.001';
 let novEntradas = [];
 
 function novLeida(e) {
