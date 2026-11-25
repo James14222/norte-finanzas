@@ -364,6 +364,28 @@ body.ini-abierto #pwaInstallBanner{display:none!important}
 #psCard .ps-p{margin-left:auto;font-size:12.5px;font-weight:800;color:#FF8A5C;white-space:nowrap}
 #psCard .ps-f.ok .ps-p{color:#6FBFA8}
 body.ps-activa #pnAviso{display:none!important}
+/* Norte en tu pantalla (v005.80.001) */
+.inst-tabs{display:flex;gap:6px;background:var(--bg,#f1f5f9);border:1px solid var(--border);border-radius:12px;padding:4px}
+.inst-tab{flex:1;min-height:40px;border:none;border-radius:9px;background:transparent;color:var(--muted);font:700 14px Inter,sans-serif;cursor:pointer}
+.inst-tab.on{background:#FF8A5C;color:#071420}
+.inst-nota{font-size:12.5px;color:var(--muted);margin:10px 2px 4px;line-height:1.45}
+.inst-pasos{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.inst-pasos li{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid var(--border);border-radius:14px;background:var(--card);font-size:14px;line-height:1.4;color:var(--text)}
+.inst-num{width:22px;height:22px;border-radius:50%;background:#FF8A5C;color:#071420;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.inst-ic{width:42px;height:42px;border-radius:12px;background:#0E2436;color:#E6F1EF;display:flex;align-items:center;justify-content:center;flex:0 0 auto;border:1px solid #2B5674}
+.inst-ic svg{width:24px;height:24px}
+.inst-tx b{font-weight:800}
+.inst-modal{max-width:460px;height:auto;max-height:92vh;overflow:auto}
+.inst-cab{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.inst-logo svg{width:46px;height:46px;border-radius:12px}
+.inst-sub{font-size:13px;color:var(--muted);line-height:1.45;margin-top:3px}
+.inst-toque{width:100%;justify-content:center;min-height:50px;font-size:16px}
+.inst-o{font-size:12.5px;color:var(--muted);text-align:center;margin:10px 0 8px}
+#iniCapa .inst-tabs{background:#0B1D2E;border-color:#1D4560}
+#iniCapa .inst-tab{color:#A9C4CF}#iniCapa .inst-tab.on{color:#071420}
+#iniCapa .inst-nota{color:#A9C4CF}
+#iniCapa .inst-pasos li{background:#0E2436;border-color:#1D4560;color:#E6F1EF}
+#iniCapa .inst-ic{background:#16384F}
 .md-chip{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:700;color:#075985;background:#e0f2fe;border-radius:999px;padding:1px 8px;white-space:normal;max-width:100%;vertical-align:1px}
 .md-chip.ok{color:#166534;background:#dcfce7}
 html[data-tema="noche"] .md-chip{color:#bae6fd;background:#0c3a52}
@@ -4696,7 +4718,9 @@ html[data-tema="noche"] #page-dashboard > #rosaA { color: #1A4360; }
             <button class="btn btn-primary" onclick="document.getElementById('ayudaOverlay').classList.remove('show'); inicioAbrir(true);">✨ Ver el inicio con NortIA</button>
             <div style="font-size:12px;color:var(--muted);margin:8px 0 14px">Dos minutos: tu primer gasto, el Rumbo diario y los Puntos Norte.</div>
             <button class="btn btn-secondary" onclick="document.getElementById('ayudaOverlay').classList.remove('show'); guiaAbrir(false);">🧭 Ver la guía de los menús</button>
-            <div style="font-size:12px;color:var(--muted);margin-top:8px">Un repaso por cada pantalla de Norte.</div>
+            <div style="font-size:12px;color:var(--muted);margin:8px 0 14px">Un repaso por cada pantalla de Norte.</div>
+            <button class="btn btn-secondary" onclick="document.getElementById('ayudaOverlay').classList.remove('show'); instAbrir('ayuda');">📲 Poner Norte en la pantalla del celular</button>
+            <div style="font-size:12px;color:var(--muted);margin-top:8px">El ícono que te lleva directo, paso a paso para iPhone, Android y compu.</div>
           </div>
           <div class="ayuda-bloque">
             <p>Norte es una aplicación para <strong>ver con claridad qué entra, qué sale y qué queda</strong> en tu hogar cada mes. No es una planilla ni un sistema contable: es una herramienta para tomar decisiones con datos propios, sin tener que saber de finanzas.</p>
@@ -21113,7 +21137,7 @@ function rbRefrescarPantallas() {
 //
 // La regla ata el nodo al propio uid: nadie puede marcar como leído ni votar en
 // nombre de otro, así que no hace falta pasar por una Cloud Function.
-let lect = { nov: {}, votos: {}, novHasta: 0, chat: 0, caps: {}, capsVisto: 0, cuTuto: 0, cuNuevoDesde: 0, guiaMenus: 0, inicio: 0, semana: 0, psNortia: 0 };
+let lect = { nov: {}, votos: {}, novHasta: 0, chat: 0, caps: {}, capsVisto: 0, cuTuto: 0, cuNuevoDesde: 0, guiaMenus: 0, inicio: 0, semana: 0, psNortia: 0, psInst: 0 };
 let lectListo = false;   // ¿ya contestó la nube? Hasta que conteste no se
                          // decide nada: en un dispositivo nuevo el caché
                          // está vacío y el tutorial saldría de nuevo.
@@ -21136,6 +21160,7 @@ function lectNormalizar(o) {
     inicio:    Number(o.inicio)    || 0,
     semana:    Number(o.semana)    || 0,
     psNortia:  Number(o.psNortia)  || 0,
+    psInst:    Number(o.psInst)    || 0,
     cuNuevoDesde: Number(o.cuNuevoDesde) || 0
   };
 }
@@ -21209,6 +21234,7 @@ function iniciarLecturas() {
           inicio:    Math.max(lect.inicio || 0, r.inicio || 0),
           semana:    Math.max(lect.semana || 0, r.semana || 0),
           psNortia:  Math.max(lect.psNortia || 0, r.psNortia || 0),
+          psInst:    Math.max(lect.psInst || 0, r.psInst || 0),
           cuNuevoDesde: (lect.cuNuevoDesde && r.cuNuevoDesde)
             ? Math.min(lect.cuNuevoDesde, r.cuNuevoDesde)
             : (lect.cuNuevoDesde || r.cuNuevoDesde)
@@ -21235,7 +21261,7 @@ function iniciarLecturas() {
 // Las entradas viven en la base, no en este archivo: se publican y se corrigen
 // sin volver a subir la app. Acá sólo se leen — escribirlas pasa por una Cloud
 // Function que exige superadmin.
-const APP_VERSION = 'v005.80.000';
+const APP_VERSION = 'v005.80.001';
 let novEntradas = [];
 
 function novLeida(e) {
@@ -25917,19 +25943,21 @@ function iniInstalada() { try { return window.matchMedia('(display-mode: standal
 function iniEsIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
 function iniP6() {
   const inst = iniInstalada();
-  const ios = !inst && iniEsIOS();
+  if (inst) {
+    return iniTop(5) +
+      '<h1 class="ini-h" style="margin-top:18px">¡Listo! Ya tenés Norte <em>a un toque</em>.</h1>' +
+      '<p class="ini-p">La estás usando instalada: entrar todos los días es mucho más fácil así.</p>' +
+      '<div style="display:flex;justify-content:center;margin-top:16px"><img src="' + INI_IMG.brujula + '" alt="NortIA señala su brújula" style="width:150px;height:197px;object-fit:contain"></div>' +
+      '<div class="ini-pie"><button class="ini-btn" onclick="iniTerminar(\'completado\')">Ir a Mi Rumbo</button></div>';
+  }
   return iniTop(5) +
-    '<h1 class="ini-h" style="margin-top:18px">' + (inst ? '¡Listo! Ya tenés Norte <em>a un toque</em>.' : 'Tenela a un toque, <em>como cualquier app</em>.') + '</h1>' +
-    '<p class="ini-p">' + (inst ? 'Entrar todos los días es más fácil si está en tu pantalla. Y vos ya la tenés.' : 'Instalala en tu celular: sin tienda, sin ocupar lugar. Entrar todos los días es más fácil si está en tu pantalla.') + '</p>' +
-    '<div style="display:flex;justify-content:center;margin-top:16px"><img src="' + INI_IMG.brujula + '" alt="NortIA señala su brújula" style="width:150px;height:197px;object-fit:contain"></div>' +
-    (ios ? '<div class="ini-card" style="margin-top:12px;font-size:14px;line-height:1.5">En el iPhone: tocá <b>Compartir</b> (el cuadrado con la flecha) y después <b>«Agregar a inicio»</b>.</div>' : '') +
-    '<div class="ini-card" style="margin-top:12px;display:flex;gap:12px;align-items:center"><span style="width:36px;height:36px;border-radius:10px;background:#16384F;color:#FF8A5C;display:flex;align-items:center;justify-content:center;flex:0 0 auto"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg></span>' +
-      '<p style="margin:0;font-size:13.5px;line-height:1.45">Y si un día no entrás, te mando un mail cortito para retomar donde dejaste.</p></div>' +
-    '<div class="ini-pie">' +
-      ((!inst && window.__iniPrompt)
-        ? '<button class="ini-btn" onclick="iniInstalar()">Instalar Norte</button><button class="ini-link" onclick="iniTerminar(\'completado\')">Ahora no, ir a Mi Rumbo</button>'
-        : '<button class="ini-btn" onclick="iniTerminar(\'completado\')">Ir a Mi Rumbo</button>') +
-    '</div>';
+    '<div style="display:flex;align-items:flex-start;gap:6px;margin-top:6px"><h1 class="ini-h" style="flex:1">Poné Norte en tu pantalla, <em>como cualquier app</em>.</h1>' +
+      '<img src="' + INI_IMG.brujula + '" alt="NortIA señala su brújula" style="width:76px;height:100px;object-fit:contain;flex:0 0 auto"></div>' +
+    '<p class="ini-p">Un ícono que te lleva directo, sin buscar la página. Sin tienda y sin ocupar lugar. Así entrar todos los días es un toque.</p>' +
+    (window.__iniPrompt ? '<button class="ini-btn" style="margin-top:16px" onclick="iniInstalar()">Instalar Norte con un toque</button><div style="font-size:12.5px;color:#A9C4CF;text-align:center;margin:10px 0 2px">o, paso a paso:</div>' : '<div style="height:14px"></div>') +
+    '<div class="inst-guia">' + instGuiaHtml(_instPl || instPlataforma()) + '</div>' +
+    '<p class="ini-p" style="font-size:13px">Y si un día no entrás, te mando un mail cortito para retomar donde dejaste.</p>' +
+    '<div class="ini-pie"><button class="' + (window.__iniPrompt ? 'ini-btn2' : 'ini-btn') + '" onclick="iniTerminar(\'completado\')">Listo, ir a Mi Rumbo</button></div>';
 }
 function iniInstalar() {
   const p = window.__iniPrompt; window.__iniPrompt = null;
@@ -25951,6 +25979,114 @@ function iniTerminar(motivo) {
   try { renderDash(); } catch (e) {}
 }
 
+
+/* ══════════════════════════════════════════════════════════════════════
+   CÓMO TENER NORTE EN LA PANTALLA DEL CELULAR (v005.80.001)
+   ══════════════════════════════════════════════════════════════════════
+   Pedido de Jaime: que se entienda cómo hacerse el ícono. Paso a paso con el
+   dibujo del botón que hay que tocar, para iPhone, Android y compu; arranca en
+   el del aparato que se está usando. Si el navegador ofrece instalar directo
+   (beforeinstallprompt), arriba de todo va el botón de un toque.
+   Se usa en el paso final del inicio, en Ayuda y en «Tu primera semana». */
+const INST_IC = {
+  compartir: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5v10h14V11h-1"/></svg>',
+  agregar: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg>',
+  puntos: '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>',
+  celu: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M12 8v6M9 11l3 3 3-3"/></svg>',
+  compu: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 7v6M9 10l3 3 3-3"/></svg>',
+  ok: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>',
+  n: '<svg width="22" height="22" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#071420"/><rect x="14" y="13" width="6.5" height="38" rx="2" fill="#E6F1EF"/><rect x="43.5" y="13" width="6.5" height="38" rx="2" fill="#E6F1EF"/><polygon points="15,9 36,29 28,35" fill="#FF8A5C"/><polygon points="49,55 28,35 36,29" fill="#3D7194"/></svg>'
+};
+function instPlataforma() {
+  const ua = navigator.userAgent || '';
+  if (/iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return 'ios';
+  if (/android/i.test(ua)) return 'android';
+  return 'compu';
+}
+function instEsChromeIOS() { return /crios|fxios|edgios/i.test(navigator.userAgent || ''); }
+function instPasos(pl) {
+  if (pl === 'ios') {
+    const enChrome = instEsChromeIOS();
+    return {
+      nota: enChrome ? 'En Chrome del iPhone. Si no te aparece la opción, abrí app.norteapp.ar en Safari y hacelo desde ahí.' : 'En Safari, el navegador de la brújula azul.',
+      pasos: [
+        [INST_IC.compartir, enChrome ? 'Tocá <b>Compartir</b>, arriba a la derecha, al lado de la dirección.' : 'Tocá <b>Compartir</b>: el cuadrado con la flecha para arriba, en la barra de abajo.'],
+        [INST_IC.agregar, 'Bajá un poco en la lista y tocá <b>Agregar a inicio</b> (o <b>Agregar a pantalla de inicio</b>).'],
+        [INST_IC.ok, 'Tocá <b>Agregar</b>, arriba a la derecha.'],
+        [INST_IC.n, 'Listo: aparece el ícono de <b>Norte</b> en tu pantalla. Entrá siempre desde ahí.']
+      ]
+    };
+  }
+  if (pl === 'android') {
+    return {
+      nota: 'En Chrome. En otros navegadores el menú puede estar abajo, pero la opción se llama parecido.',
+      pasos: [
+        [INST_IC.puntos, 'Tocá los <b>tres puntitos</b> de arriba a la derecha.'],
+        [INST_IC.celu, 'Elegí <b>Instalar app</b> o <b>Agregar a la pantalla principal</b>.'],
+        [INST_IC.ok, 'Confirmá con <b>Instalar</b>.'],
+        [INST_IC.n, 'Listo: aparece el ícono de <b>Norte</b> entre tus apps. Entrá siempre desde ahí.']
+      ]
+    };
+  }
+  return {
+    nota: 'En Chrome o Edge. También la podés usar directo desde el navegador, sin instalar nada.',
+    pasos: [
+      [INST_IC.compu, 'En la barra de la dirección, a la derecha, tocá el ícono de <b>Instalar</b> (una pantallita con una flecha).'],
+      [INST_IC.ok, 'Confirmá con <b>Instalar</b>.'],
+      [INST_IC.n, 'Norte se abre en su propia ventana y queda en tu escritorio.']
+    ]
+  };
+}
+function instGuiaHtml(pl) {
+  const P = instPasos(pl);
+  const tab = function (k, t) {
+    return '<button type="button" class="inst-tab' + (k === pl ? ' on' : '') + '" onclick="instTab(\'' + k + '\')" aria-pressed="' + (k === pl ? 'true' : 'false') + '">' + t + '</button>';
+  };
+  return '<div class="inst-tabs" role="group" aria-label="Elegí tu aparato">' + tab('ios', 'iPhone') + tab('android', 'Android') + tab('compu', 'Compu') + '</div>' +
+    '<p class="inst-nota">' + P.nota + '</p>' +
+    '<ol class="inst-pasos">' + P.pasos.map(function (s, i) {
+      return '<li><span class="inst-num">' + (i + 1) + '</span><span class="inst-ic">' + s[0] + '</span><span class="inst-tx">' + s[1] + '</span></li>';
+    }).join('') + '</ol>';
+}
+let _instPl = null;
+function instTab(k) {
+  _instPl = k;
+  document.querySelectorAll('.inst-guia').forEach(function (el) { el.innerHTML = instGuiaHtml(k); });
+}
+function instYa() { try { return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch (e) { return false; } }
+function instUnToque(desde) {
+  const p = window.__iniPrompt; if (!p) return;
+  window.__iniPrompt = null;
+  try { if (typeof track === 'function') track('instalar_un_toque', { desde: desde || '' }); } catch (e) {}
+  try { p.prompt(); Promise.resolve(p.userChoice).finally(function () { try { instCerrar(); } catch (e) {} }); } catch (e) {}
+}
+/* La ventana suelta, para Ayuda y para la primera semana. */
+function instAbrir(desde) {
+  let ov = document.getElementById('instOv');
+  if (!ov) {
+    ov = document.createElement('div'); ov.id = 'instOv'; ov.className = 'overlay';
+    ov.addEventListener('click', function (e) { if (e.target === ov) instCerrar(); });
+    document.body.appendChild(ov);
+  }
+  const pl = _instPl || instPlataforma();
+  const ya = instYa();
+  ov.innerHTML = '<div class="modal inst-modal" role="dialog" aria-modal="true" aria-label="Norte en tu pantalla de inicio">' +
+    '<div class="inst-cab"><span class="inst-logo">' + INST_IC.n + '</span><div><div class="modal-title" style="margin:0">Norte en tu pantalla</div>' +
+      '<div class="inst-sub">' + (ya ? 'Ya la estás usando instalada. ¡Bien!' : 'Un ícono en tu celular que te lleva directo, como cualquier app. Sin tienda y sin ocupar lugar.') + '</div></div></div>' +
+    ((!ya && window.__iniPrompt) ? '<button class="btn btn-primary inst-toque" onclick="instUnToque(\'ventana\')">Instalar Norte con un toque</button><div class="inst-o">o, paso a paso:</div>' : '') +
+    '<div class="inst-guia">' + instGuiaHtml(pl) + '</div>' +
+    '<div style="display:flex;margin-top:12px"><button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="instCerrar()">Listo</button></div></div>';
+  ov.classList.add('show');
+  try { if (typeof track === 'function') track('instalar_ayuda', { desde: desde || '', pl: pl }); } catch (e) {}
+}
+function instCerrar() { const ov = document.getElementById('instOv'); if (ov) ov.classList.remove('show'); }
+/* Si la abrió instalada, queda anotado para la primera semana. */
+function instAnotar() {
+  try {
+    if (instYa() && typeof lect !== 'undefined' && lect && !lect.psInst) { lect.psInst = Date.now(); lectEscribir('psInst', lect.psInst); }
+  } catch (e) {}
+}
+
 /* ── Tu primera semana (Mi Rumbo) ─────────────────────────────────────── */
 const PS_DIAS = 14;
 function psActiva() {
@@ -25966,10 +26102,12 @@ function psTareas() {
     { ok: dias >= 2, t: 'Volver mañana · Rumbo diario', p: '→ Isla', ir: '' },
     { ok: gastos >= 4, t: 'Cargar 3 gastos más', p: '+' + (iniPts('mov') * 3), ir: 'cargar' },
     { ok: tc, t: 'Subir el resumen de la tarjeta', p: '+' + iniPts('tc'), ir: 'tarjeta' },
-    { ok: !!(lect && lect.psNortia), t: 'Preguntarle algo a NortIA', p: 'probalo', ir: 'nortia' }
+    { ok: !!(lect && lect.psNortia), t: 'Preguntarle algo a NortIA', p: 'probalo', ir: 'nortia' },
+    { ok: instYa() || !!(lect && lect.psInst), t: 'Poner Norte en tu pantalla', p: 'cómo', ir: 'instalar' }
   ];
 }
 function psPintar() {
+  instAnotar();
   if (!window.__psHook && typeof submitQuery === 'function') {
     window.__psHook = true;
     const orig = submitQuery;
@@ -26005,6 +26143,7 @@ function psIr(k) {
   if (k === 'cargar') { try { fabElegir('texto'); } catch (e) {} }
   else if (k === 'tarjeta') { try { showPage('transacciones'); } catch (e) {} }
   else if (k === 'nortia') { try { showPage('consultas'); } catch (e) {} }
+  else if (k === 'instalar') { try { instAbrir('semana'); } catch (e) {} }
 }
 function psOcultar() {
   if (lect) { lect.semana = Date.now(); try { lectEscribir('semana', lect.semana); } catch (e) {} }
